@@ -171,16 +171,16 @@ set(CATALYST_SCRIPT_FOLDER ${CMAKE_CURRENT_SOURCE_DIR})
 configure_file(catalyst_serial.yml.in ${CMAKE_BINARY_DIR}/catalyst_serial.yml) ## keep serial for personal testing
 configure_file(catalyst.yml.in ${CMAKE_BINARY_DIR}/catalyst.yml)
 
-add_test(NAME PDI_example_catalyst_C_serial COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_BINARY_DIR}/catalyst_serial.yml")
+add_test(NAME PDI_example_catalyst_C_serial COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_BINARY_DIR}/catalyst_serial.yml")
 set_property(TEST PDI_example_catalyst_C_serial PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_catalyst_C_serial PROPERTY PROCESSORS 1)
 
-add_test(NAME PDI_example_catalyst_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_BINARY_DIR}/catalyst.yml")
+add_test(NAME PDI_example_catalyst_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_BINARY_DIR}/catalyst.yml")
 set_property(TEST PDI_example_catalyst_C PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_catalyst_C PROPERTY PROCESSORS 3)
 
 if("${BUILD_PYTHON}" AND "${CATALYST_USE_PYTHON}")
-add_test(NAME PDI_example_catalyst_P COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_BINARY_DIR}/catalyst_serial.yml")
+add_test(NAME PDI_example_catalyst_P COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_BINARY_DIR}/catalyst_serial.yml")
 set_property(TEST PDI_example_catalyst_P PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_catalyst_P PROPERTY PROCESSORS 1)
 endif("${BUILD_PYTHON}" AND "${CATALYST_USE_PYTHON}")
