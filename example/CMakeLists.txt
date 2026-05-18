@@ -142,8 +142,6 @@ if("${BUILD_VELOC_PLUGIN}")
     set_property(TEST PDI_example_veloc PROPERTY PROCESSORS 3)
     set_property(TEST PDI_example_veloc_recovery PROPERTY TIMEOUT 15)
     set_property(TEST PDI_example_veloc_recovery PROPERTY PROCESSORS 3)
-	set_property(TEST PDI_example_veloc PROPERTY ENVIRONMENT "MPICH_ASYNC_PROGRESS=0")
-    set_property(TEST PDI_example_veloc_recovery PROPERTY ENVIRONMENT "MPICH_ASYNC_PROGRESS=0")
 endif("${BUILD_VELOC_PLUGIN}")
 
 if("${BUILD_DECL_NETCDF_PLUGIN}")

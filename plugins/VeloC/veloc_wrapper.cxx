@@ -55,9 +55,7 @@ void protect_data(PDI::Context& ctx, int id, void* ptr, size_t n, size_t sub_byt
 {
 	if (VELOC_Mem_protect(id, ptr, n, sub_bytes) != VELOC_SUCCESS) {
 		ctx.logger().error("Memory protect failed for id {} with ptr = {} and size = {}", id, ptr, (n * sub_bytes));
-	} else {
-		ctx.logger().info("Memory protect succeeded for id {} with ptr = {} and size = {}", id, ptr, (n * sub_bytes));
-	}
+	} 
 }
 
 void unprotect_data(PDI::Context& ctx, int id)
