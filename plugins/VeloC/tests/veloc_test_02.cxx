@@ -23,8 +23,7 @@
  ******************************************************************************/
 
 #include <mpi.h>
-#include <iostream>
-#include <assert.h>
+#include <stdio.h>
 #include <pdi.h>
 
 const char CONF_YAML[]
@@ -80,17 +79,17 @@ int main(int argc, char* argv[])
 
 	if (cp_status) {
 		if (cp_counter != 3) {
-			std::cerr << "TEST_02 FAILED: counter value " << cp_counter << " does not match expected value " << 3 << std::endl;
+			fprintf(stderr, "TEST_02 FAILED:: counter value  %d does not match expected value %d\n", cp_counter, 3);
 			exit(1);
 		}
 	} else {
 		if (cp_counter != 2) {
-			std::cerr << "TEST_02 FAILED: counter value " << cp_counter << " does not match expected value " << 2 << std::endl;
+			fprintf(stderr, "TEST_02 FAILED:: counter value  %d does not match expected value %d\n", cp_counter, 2);
 			exit(1);
 		}
 	}
 
-	std::cout << "TEST 02 PASSED " << std::endl;
+	printf("TEST 02 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();

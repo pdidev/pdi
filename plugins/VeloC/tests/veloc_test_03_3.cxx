@@ -23,8 +23,8 @@
  ******************************************************************************/
 
 #include <mpi.h>
-#include <iostream>
 #include <hdf5.h>
+#include <stdio.h>
 #include <pdi.h>
 
 const char CONF_YAML[]
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 	if (size > 1) {
-		std::cerr << "This test should be executed with only one MPI process" << std::endl;
+		fprintf(stderr, "This test should be executed with only one MPI process\n");
 		exit(1);
 	}
 
@@ -71,27 +71,27 @@ int main(int argc, char* argv[])
 
 	PDI_multi_expose("route", "veloc_file", veloc_file, PDI_INOUT, NULL);
 	if (veloc_file[0] == '\0') {
-		std::cerr << "TEST_03_3 FAILED: veloc_file was not filled by route event" << std::endl;
+		fprintf(stderr, "TEST_03_3 FAILED: veloc_file was not filled by route event\n");
 		exit(1);
 	}
 
 	PDI_share("var", &var, PDI_OUT);
 
 	if (H5Fis_hdf5(veloc_file) <= 0) {
-		std::cerr << "ERROR: routed file is not a valid HDF5 file: " << veloc_file << std::endl;
+		fprintf(stderr, "ERROR: routed file is not a valid HDF5 file: %s\n", veloc_file);
 		exit(1);
 	}
 
 	hid_t file_id = H5Fopen(veloc_file, H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file_id < 0) {
-		std::cerr << "ERROR: failed to open HDF5 file for reading: " << veloc_file << std::endl;
+		fprintf(stderr, "ERROR: failed to open HDF5 file for reading: %s\n", veloc_file);
 		exit(1);
 	}
 
 	// Fixed: dataset renamed from "a" to "var"
 	hid_t dset_id = H5Dopen(file_id, "var", H5P_DEFAULT);
 	if (dset_id < 0) {
-		std::cerr << "ERROR: failed to open dataset 'var'" << std::endl;
+		fprintf(stderr, "ERROR: failed to open dataset 'var'\n");
 		H5Fclose(file_id);
 		exit(1);
 	}
@@ -99,14 +99,14 @@ int main(int argc, char* argv[])
 	int read_var = -1;
 	herr_t read_status = H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &read_var);
 	if (read_status < 0) {
-		std::cerr << "ERROR: HDF5 read failed" << std::endl;
+		fprintf(stderr, "ERROR: HDF5 read failed\n");
 		H5Dclose(dset_id);
 		H5Fclose(file_id);
 		exit(1);
 	}
 
 	if (read_var != expected_var) {
-		std::cerr << "TEST_03_3 FAILED: dataset value " << read_var << " does not match expected value " << expected_var << std::endl;
+		fprintf(stderr, "TEST_03_3 FAILED: dataset value %d does not match expected value %d\n", read_var, expected_var);
 		H5Dclose(dset_id);
 		H5Fclose(file_id);
 		exit(1);
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 	PDI_event("end");
 	PDI_reclaim("var");
 
-	std::cout << "TEST 03_3 PASSED" << std::endl;
+	printf("TEST 03_3 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();

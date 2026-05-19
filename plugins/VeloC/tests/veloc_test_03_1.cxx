@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-#include <mpi.h>
-#include <iostream>
 
+#include <mpi.h>
 #include <hdf5.h>
+#include <stdio.h>
 #include <pdi.h>
 
 const char CONF_YAML[]
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 	if (size > 1) {
-		std::cerr << "This test should be executed with only one MPI process" << std::endl;
+		fprintf(stderr, "This test should be executed with only one MPI process\n");
 		exit(1);
 	}
 
@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 		PDI_multi_expose("route", "veloc_file", veloc_file, PDI_INOUT, NULL);
 
 		if (veloc_file[0] == '\0') {
-			std::cerr << "TEST 03_1 FAILED : veloc_file was not filled by route event" << std::endl;
+			fprintf(stderr, "TEST 03_1 FAILED : veloc_file was not filled by route event\n");
 			exit(1);
 		}
 
@@ -80,14 +80,14 @@ int main(int argc, char* argv[])
 
 		hid_t file_id = H5Fcreate(veloc_file, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 		if (file_id < 0) {
-			std::cerr << "ERROR: HDF5 file creation failed for: " << veloc_file << std::endl;
+			fprintf(stderr, "ERROR: HDF5 file creation failed for: %s\n", veloc_file);
 			exit(1);
 		}
 
 		hid_t space_id = H5Screate(H5S_SCALAR);
 		hid_t dset_id = H5Dcreate(file_id, "var", H5T_NATIVE_INT, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 		if (dset_id < 0) {
-			std::cerr << "ERROR: HDF5 dataset creation failed" << std::endl;
+			fprintf(stderr, "ERROR: HDF5 dataset creation failed\n");
 			H5Sclose(space_id);
 			H5Fclose(file_id);
 			exit(1);
@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
 
 		herr_t write_status = H5Dwrite(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &var);
 		if (write_status < 0) {
-			std::cerr << "ERROR: HDF5 write failed at iteration " << ii << std::endl;
+			fprintf(stderr, "ERROR: HDF5 write failed at iteration %d\n", ii);
 			H5Dclose(dset_id);
 			H5Sclose(space_id);
 			H5Fclose(file_id);
@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
 		H5Fclose(file_id);
 
 		if (H5Fis_hdf5(veloc_file) <= 0) {
-			std::cerr << "TEST 03_1 FAILED : routed file is not a valid HDF5 file: " << veloc_file << std::endl;
+			fprintf(stderr, "TEST 03_1 FAILED: routed file is not a valid HDF5 file: %s\n", veloc_file);
 			exit(1);
 		}
 
@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
 		PDI_reclaim("var");
 	}
 
-	std::cout << "TEST 03_1 PASSED" << std::endl;
+	printf("TEST 03_1 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();
