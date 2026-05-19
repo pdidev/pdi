@@ -840,8 +840,7 @@ plugins:
 		*this,
 		PdiError(
 			Eq(PDI_ERR_SPECTREE),
-			StrEq(
-				"Invalid entry in specification tree: (13:28 -> 13:49) Unable to share `array_data', "
+			StrEq("Invalid entry in specification tree: (13:28 -> 13:49) Unable to share `array_data', "
 				"Unable to share `array_data', while sharing `array_data', "
 				"Dataset selection is invalid for implicit dataset `group123/array_data'"
 			)
