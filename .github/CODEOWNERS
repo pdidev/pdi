@@ -48,4 +48,3 @@ CMakeLists.txt  bmartin@cea.fr julien.bigot@cea.fr
 # Owners of the CI/CD stuff
 /.github/  bmartin@cea.fr julien.bigot@cea.fr
 /bin/      bmartin@cea.fr julien.bigot@cea.fr
-/tools     bmartin@cea.fr julien.bigot@cea.fr
