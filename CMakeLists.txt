@@ -438,23 +438,6 @@ if("${BUILD_PYTHON}")
 	)
 endif()
 
-## Catalyst
-if("${BUILD_CATALYST_PLUGIN}")
-	set(CATALYST_WRAP_PYTHON OFF)
-	if("${BUILD_PYTHON}")
-		set(CATALYST_WRAP_PYTHON ON)
-	endif()
-	sbuild_add_dependency(catalyst "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/catalyst-2.0.0"
-		CMAKE_CACHE_ARGS
-			"-DBUILD_TESTING:BOOL=OFF"
-                        "-DCATALYST_BUILD_TESTING:BOOL=OFF"
-                        "-DCATALYST_USE_MPI:BOOL=ON"
-                        "-DCATALYST_WRAP_FORTRAN:BOOL=OFF"
-                        "-DCATALYST_WRAP_PYTHON:BOOL=${CATALYST_WRAP_PYTHON}"
-		VERSION 2.0.0
-	)
-endif()
 
 ## JSON
 
@@ -576,6 +559,6 @@ sbuild_add_module(PDI_API_TESTS
 sbuild_add_module(CATALYST_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_CATALYST_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/catalyst"
-	DEPENDS PDI catalyst
+	DEPENDS PDI
 	SUBSTEPS test
 )
