@@ -41,8 +41,6 @@ if("${CATALYST_USE_MPI}")
 endif()
 
 option(CATALYST_IS_PARALLEL "Catalyst is build in parallel" "${CATALYST_USE_MPI}")
-message(WARNING "CATALYST_IS_PARALLEL=${CATALYST_IS_PARALLEL}")
-message(WARNING "${CATALYST_USE_MPI}=${CATALYST_USE_MPI}")
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins) # ${PDI_COMPONENTS})
