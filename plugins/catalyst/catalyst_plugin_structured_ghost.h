@@ -131,7 +131,7 @@ public:
 			throw PDI::Spectree_error{
 				m_parent_tree,
 				"Invalid configuration in mask_ghost for topology `{}', the dimension of the problem `{}' is not equal to `{}' the number of "
-			    "elements in size and in start.",
+				"elements in size and in start.",
 				m_topology_name,
 				m_dimensions.size(),
 				m_size.size()
