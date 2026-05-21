@@ -43,12 +43,21 @@ add_library(pdi_veloc_plugin MODULE
 target_link_libraries(pdi_veloc_plugin 
     PUBLIC 
     PDI::PDI_plugins 
-    veloc::client          
+    veloc::client       
     MPI::MPI_C 
 )
 
 set_target_properties(pdi_veloc_plugin PROPERTIES
     CXX_VISIBILITY_PRESET hidden)
+
+# to link libveloc-modules.so 
+get_target_property(VELOC_MODULES_LOCATION veloc::modules LOCATION)
+
+target_link_options(pdi_veloc_plugin PRIVATE
+    "-Wl,--no-as-needed"
+    "${VELOC_MODULES_LOCATION}"
+    "-Wl,--as-needed"
+)
 
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_veloc_plugin
