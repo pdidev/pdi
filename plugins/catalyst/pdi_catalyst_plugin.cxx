@@ -182,7 +182,7 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 	std::stack<Spec_tree_node> remaining_tree_and_parent_node;
 	remaining_tree_and_parent_node.push({execute_spec, "catalyst", execute_node});
 	current_parent_tree = execute_spec; // initialize parent tree as execute_spec
-	
+
 	while (!remaining_tree_and_parent_node.empty()) {
 		auto current = remaining_tree_and_parent_node.top();
 		remaining_tree_and_parent_node.pop();
@@ -231,7 +231,7 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 							remaining_tree_and_parent_node.push({value, PDI::to_string(key), conduit_cpp::c_node(&current_node)});
 
 							current_parent_tree = current.tree;
-							
+
 						} else {
 							throw PDI::System_error("Error in creating vtkGhostType: a conduit node doesn't exist !!");
 						}
