@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (c) 2024-2025 Kitware SAS
-# SPDX-FileCopyrightText: Copyright (c) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-# SPDX-License-Identifier: Apache 2.0
+# SPDX-FileCopyrightText: Copyright (c) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# SPDX-License-Identifier: Apache 2.0 
 
 cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_catalyst_plugin LANGUAGES C CXX)
@@ -11,21 +11,12 @@ option(BUILD_CATALYST_PARALLEL "Enable Catalyst parallel build" ON)
 
 include(CTest)
 
-# if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
-# 	enable_language(Fortran)
-# 	set(PDI_COMPONENTS f90)
-# endif()
-
 include(GNUInstallDirs)
-
-# PDI
-#find_package(PDI REQUIRED COMPONENTS plugins)
 
 # Python
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
 # Catalyst
-# find_package(catalyst REQUIRED)
 find_package(catalyst REQUIRED)
 if("${BUILD_CATALYST_PARALLEL}" AND NOT "${CATALYST_USE_MPI}")
 	message(FATAL_ERROR "Catalyst with MPI support required, sequential catalyst only found. Please set -DBUILD_CATALYST_PARALLEL=OFF to disable parallel Catalyst")
@@ -33,17 +24,14 @@ endif()
 
 # MPI
 if("${CATALYST_USE_MPI}")
-	# if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
-	# 	set(MPI_COMPONENTS Fortran)
-	# endif()
-	find_package(MPI REQUIRED COMPONENTS C) # ${MPI_COMPONENTS})
+	find_package(MPI REQUIRED COMPONENTS C)
 	set(CATALYST_DEPS catalyst::catalyst MPI::MPI_C)
 endif()
 
 option(CATALYST_IS_PARALLEL "Catalyst is build in parallel" "${CATALYST_USE_MPI}")
 
 # PDI
-find_package(PDI REQUIRED COMPONENTS plugins) # ${PDI_COMPONENTS})
+find_package(PDI REQUIRED COMPONENTS plugins)
 
 # The Plugin
 add_library(pdi_catalyst_plugin MODULE pdi_catalyst_plugin.cxx)
@@ -60,7 +48,6 @@ install(TARGETS pdi_catalyst_plugin
 
 # Tests
 if("${BUILD_TESTING}")
-    enable_testing()
     add_subdirectory(tests)
     add_subdirectory(tests_ghost)
 endif()
