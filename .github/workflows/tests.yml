@@ -68,9 +68,11 @@ jobs:
         version:  ['latest', 'oldest']
         compiler: ['gcc', 'clang']
         mpi:      ['openmpi', 'mpich']
-        variant:  ['mini', 'all']
-        # exclude config already done in first
-        exclude: [ { version: latest, compiler: clang, mpi: mpich, variant: all } ]
+        # exclude config already done in second 
+        # exclude debian/unstable + mpich due to mpich issue #7814 
+        exclude:
+          - { base: 'ubuntu/jammy', mpi: openmpi, variant: mini }
+          - { base: 'debian/unstable', mpi: mpich }
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout branch
@@ -88,8 +90,11 @@ jobs:
         base:    ['ubuntu/jammy', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
         mpi:     ['openmpi', 'mpich']
         variant: ['mini', 'all']
-        # exclude config already done in second
-        exclude: [ { base: 'ubuntu/jammy', mpi: openmpi, variant: mini } ]
+        # exclude config already done in second 
+        # exclude debian/unstable + mpich due to mpich issue #7814 
+        exclude:
+          - { base: 'ubuntu/jammy', mpi: openmpi, variant: mini }
+          - { base: 'debian/unstable', mpi: mpich }
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout branch
