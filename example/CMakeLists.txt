@@ -36,6 +36,7 @@ set(MPI_COMPONENTS C)
 set(PARACONF_COMPONENTS C)
 set(PDI_COMPONENTS C)
 
+option(BUILD_CATALYST_PLUGIN    "Build Catalyst plug-in"     OFF)
 option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in"    OFF)
 option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in"  OFF)
 option(BUILD_FORTRAN            "Build with Fortran support" OFF)
