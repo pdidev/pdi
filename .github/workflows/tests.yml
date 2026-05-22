@@ -68,11 +68,8 @@ jobs:
         version:  ['latest', 'oldest']
         compiler: ['gcc', 'clang']
         mpi:      ['openmpi', 'mpich']
-        # exclude config already done in second 
-        # exclude debian/unstable + mpich due to mpich issue #7814 
-        exclude:
-          - { base: 'ubuntu/jammy', mpi: openmpi, variant: mini }
-          - { base: 'debian/unstable', mpi: mpich }
+        # exclude config already done in first
+        exclude: [ { version: latest, compiler: clang, mpi: mpich, variant: all } ]
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout branch
