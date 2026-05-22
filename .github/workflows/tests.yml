@@ -68,6 +68,7 @@ jobs:
         version:  ['latest', 'oldest']
         compiler: ['gcc', 'clang']
         mpi:      ['openmpi', 'mpich']
+        variant:  ['mini', 'all']
         # exclude config already done in first
         exclude: [ { version: latest, compiler: clang, mpi: mpich, variant: all } ]
     runs-on: ubuntu-24.04
