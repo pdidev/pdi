@@ -30,34 +30,33 @@ include(GNUInstallDirs)
 add_compile_definitions(OMPI_SKIP_MPICXX=1)
 
 find_package(spdlog 1.9 REQUIRED)
-find_package(PDI REQUIRED plugins)
-find_package(MPI REQUIRED COMPONENTS C CXX)
-
-find_package(veloc REQUIRED)
+find_package(PDI    REQUIRED plugins)
+find_package(MPI    REQUIRED COMPONENTS C CXX)
+find_package(er     REQUIRED)
+find_package(axl    REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(veloc  REQUIRED)
 
 add_library(pdi_veloc_plugin MODULE
-		veloc_wrapper.cxx
-        veloc.cxx
-        veloc_cfg.cxx)
+    veloc_wrapper.cxx
+    veloc.cxx
+    veloc_cfg.cxx)
 
-target_link_libraries(pdi_veloc_plugin 
-    PUBLIC 
-    PDI::PDI_plugins 
-    veloc::client       
-    MPI::MPI_C 
-)
+# to link libraries needed but whose symbols are not directly present in the plugin 
+target_link_libraries(pdi_veloc_plugin
+    PUBLIC
+        PDI::PDI_plugins
+        veloc::client
+        MPI::MPI_C
+        "-Wl,--push-state,--no-as-needed"
+        veloc::modules
+        er::er
+        axl::axl
+        OpenSSL::Crypto
+        "-Wl,--pop-state")
 
 set_target_properties(pdi_veloc_plugin PROPERTIES
-    CXX_VISIBILITY_PRESET hidden)
-
-# to link libveloc-modules.so 
-get_target_property(VELOC_MODULES_LOCATION veloc::modules LOCATION)
-
-target_link_options(pdi_veloc_plugin PRIVATE
-    "-Wl,--no-as-needed"
-    "${VELOC_MODULES_LOCATION}"
-    "-Wl,--as-needed"
-)
+    CXX_VISIBILITY_PRESET  hidden)
 
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_veloc_plugin
