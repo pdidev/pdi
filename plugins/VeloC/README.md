@@ -12,8 +12,11 @@ The VeloC plugin does not currently support the full set of features of VeloC, b
 declarative interface to access the core features.
 
 ## Requirements 
-In order to use the VeloC plugin, the user needs to install VeloC 1.8 or above as it is not vendored in PDI. <br>
-This can be done following the instructions [here](https://veloc.readthedocs.io/en/latest/quick.html#download-and-install).
+In order to use the VeloC plugin, the user needs to install VeloC 1.8 or above as it is not vendored in PDI. This can be done following the instructions [here](https://veloc.readthedocs.io/en/latest/quick.html#download-and-install). <br>
+
+The user also needs an MPI implementation, such as 
+  - [openmpi](https://www.open-mpi.org/) 4.1 or above,
+  - [mpich](https://www.mpich.org/) 4.0 or above but not higher than 4.3.2 due to [issue 7814](https://github.com/pmodels/mpich/issues/7814)
 
 ## Configuration grammar
 

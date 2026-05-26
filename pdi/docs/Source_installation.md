@@ -205,7 +205,7 @@ Dependencies of **the VeloC plugin**:
 * the [VeloC](https://veloc.readthedocs.io/en/latest/userguide.html) library version 1.8 or above (not provided),
 * **a MPI implementation**, such as
   - [openmpi](https://www.open-mpi.org/) 4.1 or above,
-  - [mpich](https://www.mpich.org/) 4.0 or above.
+  - [mpich](https://www.mpich.org/) 4.0 or above but not higher than 4.3.2 due to [issue 7814](https://github.com/pmodels/mpich/issues/7814)
 
 Dependencies of **the JSON plugin**:
 
