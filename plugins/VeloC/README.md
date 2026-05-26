@@ -11,7 +11,7 @@ Please note for applications's customs checkpoints, VeloC does not automate the 
 The VeloC plugin does not currently support the full set of features of VeloC, but it offers a simple
 declarative interface to access the core features.
 
-## Requirements 
+## External Dependencies   
 In order to use the VeloC plugin, the user needs to install VeloC 1.8 or above as it is not vendored in PDI. This can be done following the instructions [here](https://veloc.readthedocs.io/en/latest/quick.html#download-and-install). <br>
 
 The user also needs an MPI implementation, such as 
@@ -142,6 +142,15 @@ The Veloc plugin binds data structures to the memory address provided during the
 In applications that perform pointer swaps inside a loop, this can lead to checkpointing irrelevant data. To mitigate this, consider triggering checkpoints only on selected iterations (e.g. every other iteration).
 
 
-## Example
-Check [veloc.yml](../../example/veloc.yml) and [veloc_recovery.yml](../../example/veloc_recovery.yml) in the pdi example folder for an example of how to use the *managed_checkpointing* behaviour of the plugin. <br>
-Check [veloc_test_03_1.cxx](./tests/veloc_test_03_1.cxx) and [veloc_test_03_2.cxx](./tests/veloc_test_03_2.cxx) for an example of how to use the *custom_checkpointing* behaviour of the plugin. 
+## YAML Syntax Example
+Check [veloc.yml](../../example/veloc.yml) and [veloc_recovery.yml](../../example/veloc_recovery.yml) in the pdi example folder for an example of how to configure the *managed_checkpointing* behaviour of the plugin. <br>
+Check [veloc_test_03_1.cxx](./tests/veloc_test_03_1.cxx) and [veloc_test_03_2.cxx](./tests/veloc_test_03_2.cxx) for an example of how to configure the *custom_checkpointing* behaviour of the plugin. 
+
+## Running a program
+In order to run a program with the VeloC plugin, follow the following steps: <br>
+  * install VeloC (see [above section](#external-dependencies))
+  * install an MPI implementation (see [above section](#external-dependencies))
+  * install PDI and its dependencies ([see documentation]( ../../pdi/docs/Source_installation.md))
+  * source pdi environment 
+  * append path/to/veloc/install/lib/ to LD_LIBRARY_PATH
+  * compile your program and run 
