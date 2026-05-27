@@ -89,10 +89,7 @@ jobs:
         mpi:     ['openmpi', 'mpich']
         variant: ['mini', 'all']
         # exclude config already done in second 
-        # exclude debian/unstable + mpich due to mpich issue #7814 
-        exclude:
-          - { base: 'ubuntu/jammy', mpi: openmpi, variant: mini }
-          - { base: 'debian/unstable', mpi: mpich }
+        exclude: { base: 'ubuntu/jammy', mpi: openmpi, variant: mini }
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout branch
