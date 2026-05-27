@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <filesystem>
 #include <iostream>
 #include <list>
 #include <sstream>
@@ -61,6 +62,8 @@ using std::unordered_map;
 
 namespace damaris_pdi {
 
+namespace fs = std::filesystem;
+
 namespace {
 
 bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const string& name, Desc_type desc_type)
@@ -79,6 +82,88 @@ bool load_event(unordered_map<string, Event_type>& events, Context& ctx, const s
 		ctx.logger().warn("Duplicate use of a descriptor `{}')", name);
 	}
 	return result.second;
+}
+
+// function to create directory for storage
+bool creation_directory_cpp(const string& dir_name)
+{
+	fs::path path_dir{fs::current_path()};
+	const fs::path path_name{"/"+dir_name};
+	path_dir += path_name;
+	std::error_code ec; // error code
+	if (fs::exists(path_dir, ec)) {
+		if (fs::is_directory(path_dir, ec)) {
+			// Directory already exists
+			return true;
+		} else {
+			// case path is not a directory
+			throw PDI::System_error{"`{}' exists and is not a directory", path_dir.c_str()};
+		}
+	}
+
+	// The directory doesn't exist
+	if (fs::create_directories(path_dir, ec)) {
+		return true;
+	}
+
+	// Handle race condition:
+	// another process may have created it meanwhile
+	if (fs::exists(path_dir, ec) && fs::is_directory(path_dir, ec)) {
+		return true;
+	}
+
+	// The directory is not created
+	throw PDI::System_error{"Cannot create directory `{}': `{}'", path_dir.c_str(), ec.message()};
+	return false;
+}
+
+/// @brief
+/// @param dir_name
+/// @return true if the directory is created or exists
+bool creation_directory_c_only(Context& ctx, const string& dir_name)
+{
+	// Remark: This function doesn't work if dir_name="./dir1/dir2/*"
+	//         because we need to do : mkdir(dir1), mkdir(dir1/dir2), ..
+	//
+	// ensure the folder exists
+	struct stat st;
+	int stat_result = stat(dir_name.c_str(), &st);
+	if (stat_result != 0) {
+		ctx.logger().info("The directory {} doesn't exist try to create", dir_name);
+
+		int ret = mkdir(dir_name.c_str(), 0755);
+
+		if (ret == 0) { // the directory is created
+			return true;
+		}
+
+		// handle race condition or case where directory exist
+		if (errno == EEXIST) {
+			// recuperate the status before new comparison
+			int stat_result_new = stat(dir_name.c_str(), &st);
+			// a previous process already created it
+			if (stat_result_new == 0 && S_ISDIR(st.st_mode)) {
+				return true;
+			} else {
+				// case path is not a directory
+				ctx.logger().error("`{}' exists and is not a directory", dir_name.c_str());
+				perror("Error in created the directory.");
+				return false;
+			}
+		}
+		perror("Error in created the directory.");
+		return false;
+	} else {
+		int stat_result_new = stat(dir_name.c_str(), &st);
+		if (stat_result_new == 0 && S_ISDIR(st.st_mode)) {
+			return true;
+		} else {
+			// case path is not a directory
+			ctx.logger().error("`{}' exists and is not a directory.", dir_name.c_str());
+			return false;
+		}
+	}
+	return false;
 }
 
 } // namespace
@@ -120,10 +205,10 @@ Damaris_cfg::Damaris_cfg(Context& ctx, PC_tree_t tree)
 			//default_when = to_string(value);
 			parse_architecture_tree(ctx, value);
 		} else if (key == "communicator") {
-			m_communicator = to_string(value);
-			if (!m_communicator) {
-				throw Spectree_error{key_tree, "no MPI communicator setted `{}'", key};
-			}
+			// m_communicator = to_string(value);
+			// if (!m_communicator) {
+			// 	throw Spectree_error{key_tree, "no MPI communicator setted `{}'", key};
+			// }
 		} else if (key == "init_on_event" || key == "on_init") {
 			m_init_on_event = to_string(value);
 			load_event(m_events, ctx, m_init_on_event, Event_type::DAMARIS_INITIALIZE);
@@ -218,9 +303,16 @@ Damaris_cfg::Damaris_cfg(Context& ctx, PC_tree_t tree)
 	damarisXMLModifyModel.RepalceWithRegEx(find_replace_map);
 
 	m_xml_config_object = damarisXMLModifyModel.GetConfigString();
+	
+	std::ofstream outputXMLFile("log/damaris_config.xml");
 
-	//printf("-------------------------------------------------------XML OBJECT MODIFIED----------------------------------------------\n%s", damarisXMLModifyModel.GetConfigString().c_str());
-	//exit(0);
+	if (outputXMLFile.is_open()) {
+		outputXMLFile << damarisXMLModifyModel.GetConfigString(); 
+
+		outputXMLFile.close(); 
+	} else {
+		ctx.logger().error("Could not open the file for writing damaris xml config");
+	}
 }
 
 void Damaris_cfg::parse_architecture_tree(Context& ctx, PC_tree_t arch_tree)
@@ -335,6 +427,7 @@ void Damaris_cfg::parse_parameters_tree(Context& ctx, PC_tree_t parameters_tree_
 
 				} else {
 					std::cerr << "ERROR: damaris_cfg unrecogognized parameter map string: " << key << std::endl;
+					throw std::runtime_error("ERROR: damaris_cfg unrecogognized parameter map string: " + key);
 				}
 			});
 			//m_parameter_expression.emplace(prmxml.param_name_, prmxml.param_value_);
@@ -606,7 +699,6 @@ void Damaris_cfg::parse_storages_tree(Context& ctx, PC_tree_t storages_tree_list
 		each(storages_tree, [&](PC_tree_t storagest_key, PC_tree_t storage_tree) { //each storage
 			damaris::model::DamarisStoreXML store{};
 			std::map<std::string, std::string> find_replace_map = {};
-
 			each(storage_tree, [&](PC_tree_t st_key, PC_tree_t value) { //storage info
 				std::string key = to_string(st_key);
 
@@ -619,18 +711,15 @@ void Damaris_cfg::parse_storages_tree(Context& ctx, PC_tree_t storages_tree_list
 					store.store_opt_FileMode_ = to_string(value);
 				} else if (key == "files_path") {
 					store.store_opt_FilesPath_ = to_string(value);
-					//Ensure the folder exists
-					struct stat st;
-					if (stat(store.store_opt_FilesPath_.c_str(), &st) == 0 && S_ISDIR(st.st_mode)) {
-					} else {
-						if (mkdir(store.store_opt_FilesPath_.c_str(), 0775) == -1) {
-							exit(1);
-						} else {
-							//ctx.logger().info("HDF5 files_path created successfully: '{}'", to_string(value));
-						}
+					// bool create_dir = creation_directory_c_only(ctx, store.store_opt_FilesPath_);
+					bool create_dir = creation_directory_cpp(store.store_opt_FilesPath_);
+					if (!create_dir) {
+						Spectree_error{storage_tree, "The key `{}' doesn't exist for a storage.", key};
+						std::exit(EXIT_FAILURE);
 					}
 				} else {
 					std::cerr << "ERROR: damaris_cfg unrecogognized storage map string: " << key << std::endl;
+					throw Spectree_error{storage_tree, "The key `{}' doesn't exist for a storage.", key};
 				}
 			});
 			m_storages.emplace(store.store_name_, store);
@@ -645,8 +734,8 @@ void Damaris_cfg::parse_storages_tree(Context& ctx, PC_tree_t storages_tree_list
 
 void Damaris_cfg::parse_write_tree(Context& ctx, PC_tree_t write_tree_list)
 {
-	each(write_tree_list, [&](PC_tree_t writet_key, PC_tree_t write_ds_tree) { //each dataset to write
-		std::string ds_name = to_string(writet_key); //the name of the data to write, if dataset not specified afterward!
+	each(write_tree_list, [&](PC_tree_t write_key, PC_tree_t write_ds_tree) { //each dataset to write
+		std::string ds_name = to_string(write_key); //the name of the data to write, if dataset not specified afterward!
 		Dataset_Write_Info ds_write_info;
 
 		//dataset
@@ -756,8 +845,15 @@ void Damaris_cfg::parse_log_tree(Context& ctx, PC_tree_t config)
 		{{"_SIM_LOG_NAME_", log_file_name}, {"_LOG_ROTATION_SIZE_", log_rotation_size}, {"_LOG_FLUSH_", log_flush}, {"_LOG_LEVEL_", log_level}}
 	);
 
-	//Update the xml config
-	damarisXMLModifyModel.RepalceWithRegEx(find_replace_map);
+	ctx.logger().info("begin update xml for log");
+	try {
+		//Update the xml config
+		damarisXMLModifyModel.RepalceWithRegEx(find_replace_map);
+	} catch (...) {
+		ctx.logger().info("error in RepalceWithRegEx");
+		throw Value_error{"error in RepalceWithRegEx\n The XML file for damaris is`{}'", damarisXMLModifyModel.GetConfigString()};
+	}
+	ctx.logger().info("end update xml for log");
 }
 
 bool Damaris_cfg::is_dataset_to_write(std::string data_name)
@@ -786,6 +882,7 @@ bool Damaris_cfg::is_parameter_to_update(std::string data_name)
 	return is_parameter_to_update;
 }
 
+// Jacques: you can't call two times this function ==> do an error
 bool Damaris_cfg::is_needed_metadata(std::string data_name)
 {
 	bool is_needed_metadata = false;
@@ -795,7 +892,6 @@ bool Damaris_cfg::is_needed_metadata(std::string data_name)
 		for (auto& depends_on_data: prm_depends_on_data) {
 			//auto &depends_on_data_name   = depends_on_data.first;
 			//auto &depends_on_data_state  = depends_on_data.second;
-
 			if (data_name == depends_on_data.first && depends_on_data.second == false) {
 				depends_on_data.second = true;
 				is_needed_metadata = true;
@@ -806,6 +902,7 @@ bool Damaris_cfg::is_needed_metadata(std::string data_name)
 	return is_needed_metadata;
 }
 
+// Jacques: Comme on ne change pas les valeurs de  m_parameter_depends_on ici on peut se permettre d'utiliser auto. Mais on fait une copie.
 std::unordered_map<std::string, std::pair<std::string, std::string>> Damaris_cfg::get_updatable_parameters(Context& ctx)
 {
 	std::unordered_map<std::string, std::pair<std::string, std::string>> updatable_parameters;
@@ -825,7 +922,7 @@ std::unordered_map<std::string, std::pair<std::string, std::string>> Damaris_cfg
 		if (to_be_updated) { //Update the parameter
 			PDI::Expression prm_value = m_parameter_expression.at(prm_name);
 			damaris::model::DamarisParameterXML prmxml = m_parameters.at(prm_name);
-			prmxml.param_value_ = prm_value.to_string(ctx);
+			prmxml.param_value_ = prm_value.to_string(ctx); // Jacques: A quoi cela sert?
 			std::pair<std::string, std::string> update_info;
 			update_info.first = prm_value.to_string(ctx);
 			update_info.second = prmxml.param_datatype_;
@@ -842,14 +939,16 @@ void Damaris_cfg::reset_parameter_depends_on(std::string prm_name)
 	if (m_parameter_depends_on.find(prm_name) == m_parameter_depends_on.end()) {
 		// not found
 		//  handle the error
+		throw Value_error{"m_parameter_depends_on not found: `{}'", prm_name.c_str()};
 	} else {
-		std::unordered_map<std::string, bool> prm_depends_on_data = m_parameter_depends_on.at(prm_name);
-		for (auto depends_on_data: prm_depends_on_data) {
+		std::unordered_map<std::string, bool>& prm_depends_on_data = m_parameter_depends_on.at(prm_name);
+		for (auto& depends_on_data: prm_depends_on_data) {
 			depends_on_data.second = false;
 		}
 	}
 }
 
+// Jacques: This function is never call
 void Damaris_cfg::reset_parameter_depends_on(std::vector<std::string> prm_list)
 {
 	for (auto prm_name: prm_list) {
@@ -857,13 +956,14 @@ void Damaris_cfg::reset_parameter_depends_on(std::vector<std::string> prm_list)
 	}
 }
 
+// Jacques: This function is never call
 void Damaris_cfg::reset_all_parameters_depends_on()
 {
-	for (auto prm_depends_on: m_parameter_depends_on) {
-		auto prm_name = prm_depends_on.first;
-		auto prm_depends_on_data = prm_depends_on.second;
+	for (auto& prm_depends_on: m_parameter_depends_on) {
+		auto& prm_name = prm_depends_on.first;
+		auto& prm_depends_on_data = prm_depends_on.second;
 
-		for (auto depends_on_data: prm_depends_on_data) {
+		for (auto& depends_on_data: prm_depends_on_data) {
 			depends_on_data.second = false;
 		}
 	}

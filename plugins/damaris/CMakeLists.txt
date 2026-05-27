@@ -30,11 +30,12 @@
 
 cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_damaris_plugin LANGUAGES C CXX)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 # TODO:
 include(CTest)
-
+enable_testing()
 include(GNUInstallDirs)
 
 #Damaris
@@ -82,12 +83,10 @@ install(TARGETS pdi_damaris_plugin
 		LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}"
 )
 
-#[===[ TODO
 # Tests
 if("${BUILD_TESTING}")
 	add_subdirectory(tests/)
 endif()
-]===]
 
 if("${DAMARIS_BUILD_EXAMPLES}")
     add_subdirectory(example/)

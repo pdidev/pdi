@@ -266,9 +266,9 @@ public:
 	std::string end_iteration_on_event() const;
 	std::string finalize_on_event() const;
 
-	const std::unordered_map<std::string, std::unordered_set<int>>& recover_var() const;
+	// const std::unordered_map<std::string, std::unordered_set<int>>& recover_var() const;
 
-	const std::unordered_map<std::string, std::set<std::tuple<PDI::Expression, PDI::Expression, std::string>>>& send_file() const;
+	// const std::unordered_map<std::string, std::set<std::tuple<PDI::Expression, PDI::Expression, std::string>>>& send_file() const;
 
 
 	bool is_dataset_to_write(std::string data_name);

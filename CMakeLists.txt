@@ -34,8 +34,6 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 project(PDI_DIST LANGUAGES C CXX)
 
-
-
 ### Build options
 
 ## Global options
@@ -466,7 +464,7 @@ sbuild_add_module(DECL_HDF5_PLUGIN
 sbuild_add_module(DECL_NETCDF_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DECL_NETCDF_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf"
-	DEPENDS PDI NetCDF
+	DEPENDS PDI HDF5 NetCDF
 	SUBSTEPS test
 )
 
@@ -518,7 +516,8 @@ sbuild_add_module(USER_CODE_PLUGIN
 sbuild_add_module(DAMARIS_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DAMARIS_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/damaris"
-	DEPENDS PDI
+	DEPENDS PDI HDF5
+	SUBSTEPS test
 )
 
 sbuild_add_module(PDI_EXAMPLE

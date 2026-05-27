@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 	//  - client process = heat simulation process
 	//  - server process = damaris process for writting hdf5 file.
 
-	int is_client=0;
+	int is_client = 0;
 	PDI_expose("is_client", &is_client, PDI_INOUT); // The order doesn't care
 	PDI_expose("mpi_comm", &main_comm, PDI_INOUT); // <-- allow plugin to set, returns Damaris client comm
 

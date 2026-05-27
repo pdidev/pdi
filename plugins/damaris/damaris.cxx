@@ -140,6 +140,7 @@ public:
 					void* prm_value_buffer;
 					size_t prm_buffer_size;
 					if (std::find(std::begin(int_numbers_types), std::end(int_numbers_types), prm_type) != std::end(int_numbers_types)) {
+						std::cout << "int_numbers_types contains " << prm_type << " value=" << prm_value << '\n';
 						int prm_long_value = std::atoi(prm_value.c_str());
 						prm_value_buffer = &prm_long_value;
 						prm_buffer_size = sizeof(int);
