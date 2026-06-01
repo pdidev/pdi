@@ -32,7 +32,7 @@ failure: 0 #restore not required
 ```yml
 failure: 1 #restore required
 ```
-* *config_file* : path to [VeloC's own configuration file](https://veloc.readthedocs.io/en/latest/userguide.html#setup)
+* *config_file* : path to [VeloC's own configuration file](https://veloc.readthedocs.io/en/latest/userguide.html#setup). <br> Please note the plugin currently only works in synchronous mode. This means the parameter "mode" should be set to "sync" in VeloC's configuration file. 
 
 ```yml
 config_file: veloc_config.cfg 
