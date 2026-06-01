@@ -42,6 +42,10 @@ private:
 	/// @param event_name: name of the current event
 	void process_event(const std::string& event_name);
 
+	/// @brief trigger action of catalyst plugin when an event occur
+	/// @param event_name: name of the current event
+	void process_multi_event(const std::string& event_name);
+
 	/// @brief function running in pdi_init
 	void run_catalyst_initialize();
 
@@ -51,7 +55,7 @@ private:
 	/// @brief function running in pdi_finalize
 	void run_catalyst_finalize();
 
-	/// @brief TO COMPLET
+	/// @brief function to create vtkGhostType object
 	/// @param execute_node
 	/// @param execute_spec
 	/// @param list_vtkGhostType_to_create
@@ -121,6 +125,9 @@ private:
 
 	/// @brief name of event use to call catalyst_execute
 	std::string m_pdi_execute_event_name;
+
+	/// @brief name of event use to call catalyst_initialize
+	std::string m_pdi_initialize_event_name;
 };
 
 PDI_PLUGIN(catalyst)
