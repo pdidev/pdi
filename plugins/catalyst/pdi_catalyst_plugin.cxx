@@ -25,9 +25,28 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 	, m_spec_tree(spec_tree)
 	, catalyst_is_initialize{false}
 {
-	ctx.callbacks().add_init_callback([this]() { this->process_pdi_init(); });
-	//	ctx.callbacks().add_data_callback([this](const std::string& data_name, PDI::Ref ref) { this->process_data(data_name, ref); });
-	ctx.callbacks().add_event_callback([this](const std::string& event_name) { this->process_event(event_name); });
+	auto communicator_spec = PC_get(m_spec_tree, ".communicator");
+
+	if (PC_status(communicator_spec)) {
+		// case no communicator is given:
+		//  - communicator is considered to be  MPI_COMM_WORLD
+		//	- call catalyst_initialize on_init
+		ctx.callbacks().add_init_callback([this]() { this->process_pdi_init(); });
+		ctx.callbacks().add_event_callback([this](const std::string& event_name) { this->process_event(event_name); });
+	} else {
+		// case no communicator is given:
+		//	- call catalyst_initialize on event given in initialize_on_event
+
+		auto initialize_event_spec = PC_get(m_spec_tree, ".initialize_on_event");
+		if (PC_status(initialize_event_spec)) {
+			throw PDI::Spectree_error{m_spec_tree, "Catalyst: A communicator is given without specified initialize_on_event"};
+		} else {
+			m_pdi_initialize_event_name = PDI::to_string(initialize_event_spec);
+			m_pdi_execute_event_name = read_pdi_execute_event_name();
+
+			ctx.callbacks().add_event_callback([this](const std::string& event_name) { this->process_multi_event(event_name); });
+		}
+	}
 }
 
 catalyst_plugin::~catalyst_plugin() noexcept(false)
@@ -68,11 +87,26 @@ void catalyst_plugin::process_pdi_init()
 // 	}
 // }
 
+
+void catalyst_plugin::process_multi_event(const std::string& event_name)
+{
+	if (event_name == this->m_pdi_initialize_event_name) {
+		context().logger().info("call run_catalyst_initialize in event `{}'...", event_name);
+		this->run_catalyst_initialize();
+	} else {
+		this->process_event(event_name);
+	}
+}
+
 void catalyst_plugin::process_event(const std::string& event_name)
 {
 	if (event_name == this->m_pdi_execute_event_name) {
-		context().logger().info("call run_catalyst_execute in event `{}'...", event_name);
-		run_catalyst_execute();
+		if (catalyst_is_initialize) {
+			context().logger().info("call run_catalyst_execute in event `{}'...", event_name);
+			run_catalyst_execute();
+		} else {
+			throw PDI::System_error("Try to execute catalyst_execute before catalyst_initialize.");
+		}
 	}
 }
 
@@ -258,7 +292,7 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 		remaining_tree_and_parent_node.pop();
 		context().logger().info("Read node of name`{}'", current.name);
 		if (current.name == "ghost_layers") {
-			context().logger().info(" ghost_layers keys will be read after");
+			context().logger().debug(" ghost_layers keys will be read after");
 			// } else if  (current.name == "elements") {
 			// 	int data_tree_size = PDI::len(current.tree);
 			// 	// Check for dynamic PDI Data array
@@ -327,6 +361,8 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 						} else {
 							throw PDI::Spectree_error{current.tree, "The scalar type must be a string for `{}'.", current.name};
 						}
+					} else {
+						throw PDI::Spectree_error{current.tree, "The scalar type must be a string for `{}'.", current.name};
 					}
 				} break;
 				case YAML_LITERAL_SCALAR_STYLE:
@@ -367,6 +403,8 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 
 void catalyst_plugin::run_catalyst_execute()
 {
+	assert(catalyst_is_initialize == true);
+
 	context().logger().info("run_catalyst_execute()");
 	conduit_cpp::Node node;
 	std::vector<Catalyst_plugin_structured_ghost> list_vtkGhostType_to_create; // object contain vector vtkGhostType
@@ -778,7 +816,7 @@ std::string catalyst_plugin::read_pdi_execute_event_name()
 	if (PC_status(execute_spec) == PC_OK) {
 		event_name = PDI::to_string(execute_spec);
 	} else {
-		throw PDI::Spectree_error{execute_spec, "No event name for catalyst plugin is given"};
+		throw PDI::Spectree_error{execute_spec, "No event name for catalyst plugin is given `{}'.", event_name};
 	}
 	context().logger().info("result: read_pdi_execute_event_name `{}'.", event_name);
 	return event_name;
