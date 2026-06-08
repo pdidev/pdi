@@ -26,9 +26,13 @@
 #include "config.h"
 
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <map>
 #include <memory>
+#include <stdexcept>
+#include <unordered_set>
 #include <vector>
 
 #include <dlfcn.h>
@@ -45,11 +49,6 @@
 
 #include "global_context.h"
 
-#include <filesystem>
-#include <fstream>
-#include <stdexcept>
-#include <unordered_set>
-
 namespace fs = std::filesystem;
 
 using std::exception;
@@ -63,178 +62,196 @@ using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
-#if defined(PARACONF_VERSION)
-#if (PARACONF_UNTYPED_VERSION >= PARACONF_UNTYPED_COMPUTE_VERSION(1, 1, 0))
-#define PDI_HAS_PC_PATH 1
-#else
-#define PDI_HAS_PC_PATH 0
-#endif
-#else
-#define PDI_HAS_PC_PATH 0
-#endif
-
 namespace PDI {
 
 namespace {
 
-void load_data(Global_context& ctx, PC_tree_t node, bool is_metadata)
+/** A class that represents a path to include a yaml subtree, i.e. both the path of the file itself and the subtree in
+ * the file.
+ */
+class Include_path
 {
-	int map_len = len(node);
-	for (int map_id = 0; map_id < map_len; ++map_id) {
-		PC_tree_t key_node = PC_get(node, "{%d}", map_id);
-		Data_descriptor& dsc = ctx.make_and_check_descriptor(key_node); // Both defining a descriptor and checking for duplicate
-		dsc.metadata(is_metadata);
-		dsc.default_type(ctx.datatype(PC_get(node, "<%d>", map_id)));
-	}
-	ctx.logger().trace("Loaded {} {}", map_len, is_metadata ? "metadata" : "data");
-}
+	/// The path of the file
+	fs::path m_file_path;
 
-// Forward definition, used by collect_ordered_nodes_impl() below
-void collect_ordered_nodes(
-	Context& ctx,
-	PC_tree_t conf,
-	std::unordered_set<std::string>& globally_loaded,
-	std::unordered_set<std::string>& include_chain,
-	std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
-	const std::string& known_path = {},
-	PC_tree_t include_directive = {},
-	const std::string& parent_id = ""
-);
+	/// The path of the subtree inside the file
+	std::string m_ypath;
 
-/// Definition of collect_ordered_nodes() to handle local no_path_counter
-void collect_ordered_nodes_impl(
-	Context& ctx,
-	PC_tree_t conf,
-	std::unordered_set<std::string>& globally_loaded, ///< all files loaded so far across all branches, to detect diamond includes
-	std::unordered_set<std::string>& include_chain, ///< files currently open in the active include branch, to detect circular includes
-	std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
-	std::size_t& no_path_counter, // to be sure that we do not reuse a unique counter/id, in the case we do not have paths
-	const std::string& known_path,
-	PC_tree_t include_directive, // exact line
-	const std::string& parent_id // includer id
-)
-{
-	// ── Step 1: identity ─────────────────────────────────────────────────────
-	std::string current_id;
-	bool has_real_path = false;
+public:
+	/** Builds an Include_path from a know file and subtree path
+	 * \param file_path the path of the file
+	 * \param ypath the subtree path as a valid paraconf ypath
+	 */
+	// Include_path(fs::path file_path, std::string ypath)
+	// 	: m_file_path(std::move(file_path))
+	// 	, m_ypath(ypath)
+	// {}
 
-	if (!known_path.empty()) {
-		current_id = known_path;
-		has_real_path = true;
-	}
-#if PDI_HAS_PC_PATH
-	else
+	/** Builds an Include_path from a PC_tree_t
+	 * \param include_directive either a scalar file path or a mapping with `file` and `subtree` keys
+	 */
+	Include_path(PC_tree_t include_directive)
 	{
-		const char* raw_path = PC_path(conf);
-		if (raw_path && fs::exists(raw_path)) {
-			current_id = fs::canonical(raw_path).string();
-			has_real_path = true;
-		}
-	}
-#endif
-	if (!has_real_path) {
-		current_id = "<no-path:" + std::to_string(no_path_counter++) + ">";
-	}
-
-	// ── Step 2: circular detection ───────────────────────────────────────────
-	if (has_real_path && include_chain.count(current_id)) {
-		if (!parent_id.empty()) {
-			throw Spectree_error(
-				include_directive,
-				"Circular include detected: '{}' is already being loaded (included from '{}')",
-				current_id,
-				parent_id
-			);
+		if (is_map(include_directive)) {
+			m_file_path = PDI::to_string(PC_get(include_directive, ".file"));
+			m_ypath = PDI::to_string(PC_get(include_directive, ".subtree"));
 		} else {
-			throw Spectree_error(include_directive, "Circular include detected: '{}' is already being loaded", current_id);
+			m_file_path = PDI::to_string(include_directive, ".file");
 		}
 	}
 
-	// ── Step 3: diamond detection ────────────────────────────────────────────
-	if (globally_loaded.count(current_id)) {
-		if (!parent_id.empty()) {
-			// m_logger.warn("Diamond include: '{}' has already been loaded, skipping (included again from '{}')", current_id, parent_id);
-			ctx.logger().warn("Diamond include: '{}' has already been loaded, skipping (included again from '{}')", current_id, parent_id);
-		} else {
-			// m_logger.warn("Diamond include: '{}' has already been loaded, skipping", current_id);
-			ctx.logger().warn("Diamond include: '{}' has already been loaded, skipping", current_id);
+	/** Returns the path of the file
+	 * \returns the path of the file
+	 */
+	const fs::path& file_path() const { return m_file_path; }
+
+	/** Returns the path of the subtree inside the file
+	 * \returns the path of the subtree inside the file
+	 */
+	const std::string& ypath() const { return m_ypath; }
+
+	auto operator<=> (const Include_path&) const = default;
+
+	/** Converts the path to a string representation
+	 * \returns a string representation of the path
+	 */
+	std::string to_string() const { return fmt::format("yaml://{}{}{}", file_path().string(), ((ypath() != "") ? "#" : ""), ypath()); }
+
+	/** Loads the subtree identified by this path
+	*/
+	PC_tree_t pc_tree() const
+	{
+		PC_tree_t result = PC_parse_path(file_path().string().c_str());
+		if (PC_status(result)) {
+			throw System_error("Unable to include file `{}': {}", file_path().string(), PC_errmsg());
 		}
-		return;
+		result = PC_get(result, ypath().c_str());
+		if (PC_status(result)) {
+			throw System_error("Unable to include subtree `{}' from file `{}': {}", ypath(), file_path().string(), PC_errmsg());
+		}
+		return result;
 	}
+};
 
-	include_chain.insert(current_id);
-	globally_loaded.insert(current_id);
 
-	// ── Step 4: recurse into includes (post-order: children before parent) ───
-	PC_tree_t includes = PC_get(conf, ".include");
-	if (!PC_status(includes)) {
-		PDI::each(includes, [&](PC_tree_t node) {
-			// `node` is the scalar YAML node of the include entry
-			// Spectree_error(node, ...) gives the exact line of the offending directive
-			const std::string inc = PDI::to_string(node);
-			const bool is_absolute = fs::path(inc).is_absolute();
+} // namespace
+} // namespace PDI
 
-#if PDI_HAS_PC_PATH
-			if (!is_absolute && !has_real_path) {
-				throw Spectree_error(
-					node,
-					"Relative include '{}' cannot be resolved: "
-					"the root config was parsed from a string (no file path available)",
-					inc
-				);
-			}
-			fs::path full_path = is_absolute ? fs::path(inc) : fs::path(fs::path(current_id).parent_path()) / inc;
-#else
-			if (!is_absolute) {
-				throw Spectree_error(node,
-					"Relative include '{}' is not supported: "
-					"Paraconf >= 1.1 is required for relative path resolution",
-					inc
-				);
-			}
-			fs::path full_path = fs::path(inc);
-#endif
-
-			if (!fs::exists(full_path)) {
-				// has_real_path tells us whether we can name the includer file
-				if (has_real_path) {
-					throw Spectree_error(node, "Included file not found: '{}' (included from '{}')", full_path.string(), current_id);
-				} else {
-					throw Spectree_error(node, "Included file not found: '{}'", full_path.string());
-				}
-			}
-			full_path = fs::canonical(full_path);
-
-			PC_tree_t sub = PC_parse_path(full_path.string().c_str());
-			if (PC_status(sub) != PC_OK) {
-				throw Spectree_error(node, "Failed to parse included file: '{}'", full_path.string());
-			}
-
-			collect_ordered_nodes(ctx, sub, globally_loaded, include_chain, ordered_nodes, full_path.string(), node, current_id);
-		});
+namespace std {
+template <>
+struct hash<PDI::Include_path> {
+	std::size_t operator() (const PDI::Include_path& path) const
+	{
+		// Computes the hash of an inc_path using boost strategy
+		std::size_t result = std::hash<fs::path>()(path.file_path());
+		result ^= std::hash<std::string>()(path.ypath()) + 0x9e3779b9 + (result << 6) + (result >> 2);
+		return result;
 	}
+};
+} // namespace std
 
-	// ── Step 5: append this node after its children (post-order) ────────────
-	ordered_nodes.emplace_back(current_id, conf);
-	include_chain.erase(current_id);
-}
+namespace PDI {
+namespace {
 
-/// Traverses the include tree once in post-order (deepest includes first),
-/// filling `ordered_nodes` with (canonical_id, PC_tree_t) pairs.
-/// Diamond/circular detection is handled here.
-void collect_ordered_nodes(
-	Context& ctx,
+/** Gather the files included by the provided configuration.
+ * 
+ * The result is as an ordered list where elements at the end of the list can depend on those coming before.
+ * 
+ * \param logger a logger
+ * \param conf the configuration where to look for included files
+ * \param parents the set of subtree path that are in the include chain of conf (including conf)
+ * \param result_path the path of all files already in result
+ * \param result the ordered list of (transitively) included files to which conf and its requirements will be added
+ */
+void get_includes(
+	Logger& logger,
 	PC_tree_t conf,
-	std::unordered_set<std::string>& globally_loaded,
-	std::unordered_set<std::string>& include_chain,
-	std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
-	const std::string& known_path,
-	PC_tree_t include_directive,
-	const std::string& parent_id
+	std::unordered_set<Include_path>& parents,
+	std::unordered_set<Include_path>& result_path,
+	std::vector<PC_tree_t>& result
 )
 {
-	std::size_t no_path_counter = 0;
-	collect_ordered_nodes_impl(ctx, conf, globally_loaded, include_chain, ordered_nodes, no_path_counter, known_path, include_directive, parent_id);
+	PC_tree_t inc_tree = PC_get(conf, ".include");
+	if (!PC_status(inc_tree))
+		opt_each(inc_tree, [&](PC_tree_t include_directive) {
+			Include_path subconf_path{include_directive};
+			if (parents.contains(subconf_path)) {
+				// if we are in the include chain, this is a recursive include and an error
+				throw Spectree_error(include_directive, "Circular include of `({}){}'", subconf_path.file_path().string(), subconf_path.ypath());
+			}
+			if (result_path.contains(subconf_path)) return; // if we were already included, nothing to do
+			parents.emplace(subconf_path);
+			try {
+				logger.trace("Including {}", subconf_path.to_string());
+				get_includes(logger, subconf_path.pc_tree(), parents, result_path, result);
+			} catch (const Spectree_error& e) {
+				rethrow_with_context(std::current_exception(), "included from ({}){}", subconf_path.file_path().string(), subconf_path.ypath());
+			}
+			parents.erase(subconf_path);
+			result_path.emplace(subconf_path);
+		});
+	result.emplace_back(conf);
+}
+
+/** Gather the files included by the provided configuration.
+ * 
+ * Returns the result as an ordered list where elements at the end of the list can depend on those coming before.
+ * 
+ * \param logger a logger
+ * \param conf the configuration where to look for included files
+ *
+ * \returns the ordered list of (transitively) included confs, including `conf`
+ */
+std::vector<PC_tree_t> get_includes(Logger& logger, PC_tree_t conf)
+{
+	std::unordered_set<Include_path> in_progress;
+	std::unordered_set<Include_path> result_path;
+	std::vector<PC_tree_t> result;
+	PC_tree_t inc_tree = PC_get(conf, ".include");
+	if (!PC_status(inc_tree))
+		opt_each(inc_tree, [&](PC_tree_t include_directive) {
+			Include_path subconf_path{include_directive};
+			try {
+				get_includes(logger, subconf_path.pc_tree(), in_progress, result_path, result);
+				logger.trace("Including {}", subconf_path.to_string());
+			} catch (const Spectree_error& e) {
+				rethrow_with_context(std::current_exception(), "included from ({}){}", subconf_path.file_path().string(), subconf_path.ypath());
+			}
+		});
+	result.emplace_back(conf);
+	return result;
+}
+
+/** Loads the data (or metadata) from a yaml tree
+ * \param ctx the context in which to load
+ * \param node the tree from where to load
+ * \param is_metadata whether this is a metadata subtree instead of a data one
+ * \param def_location the location of all loaded data/metadata for duplicate detection
+ */
+void load_data(Context& ctx, PC_tree_t node, bool is_metadata, std::map<std::string, std::optional<Yaml_region>>& def_location)
+{
+	int nb_desc = 0;
+	each(node, [&](PC_tree_t key_node, PC_tree_t value_node) {
+		auto&& [location_it, is_new] = def_location.emplace(to_string(key_node), Yaml_region::make(value_node));
+		auto&& [data_name, region] = *location_it;
+		if (!is_new) {
+			throw Spectree_error(
+				key_node,
+				"redefinition of '{}'{}{}",
+				data_name,
+				(region ? " previously defined in `" : ""),
+				to_string(region),
+				(region ? "'" : "")
+			);
+		}
+		auto&& descriptor = ctx[data_name];
+		descriptor.metadata(is_metadata);
+		descriptor.default_type(ctx.datatype(value_node));
+		++nb_desc;
+	});
+	auto&& region = Yaml_region::make(node);
+	ctx.logger()
+		.trace("Loaded {} {}{}{}{}", nb_desc, (is_metadata ? "metadata" : "data"), (region ? " from `" : ""), to_string(region), (region ? "'" : ""));
 }
 
 } // namespace
@@ -264,16 +281,44 @@ void Global_context::finalize()
 
 Global_context::Global_context(PC_tree_t conf)
 	: m_logger{"PDI", PC_get(conf, ".logging")}
-	, m_plugins{*this, conf}
+	, m_plugins{*this}
 	, m_callbacks{*this}
 {
+	// Handle includes and gather all files
+	std::vector<PC_tree_t> confs = get_includes(logger(), conf);
+
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);
+	// load user datatypes
+	for (auto&& conf: confs) {
+		Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
+	}
 
-	load_pdi_config(conf); // single tree traversal + two flat sub-passes (one for the plugins, one for the types/metadata/data)
+	m_plugins.load_plugins(confs);
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
+
+	std::map<std::string, std::optional<Yaml_region>> data_definition_location;
+
+	for (auto&& conf: confs) {
+		PC_tree_t metadata = PC_get(conf, ".metadata");
+		if (!PC_status(metadata)) {
+			load_data(*this, metadata, true, data_definition_location);
+		}
+	}
+
+	for (auto&& conf: confs) {
+		PC_tree_t data = PC_get(conf, ".data");
+		if (!PC_status(data)) {
+			load_data(*this, data, false, data_definition_location);
+		}
+	}
+	// no data is spurious, but not an error
+	if (data_definition_location.empty()) {
+		m_logger.warn("No data (or metadata) defined in specification tree");
+	}
+
 
 	m_callbacks.call_init_callbacks();
 	m_logger.info("Initialization successful");
@@ -367,81 +412,6 @@ void Global_context::finalize_and_exit()
 {
 	Global_context::finalize();
 	exit(0);
-}
-
-void Global_context::load_pdi_config(PC_tree_t conf)
-{
-	std::unordered_set<std::string> globally_loaded;
-	std::unordered_set<std::string> include_chain;
-	std::vector<std::pair<std::string, PC_tree_t>> ordered_nodes;
-	collect_ordered_nodes(*this, conf, globally_loaded, include_chain, ordered_nodes);
-
-	// Sub-pass A: user types first, plugins may reference them during initialization
-	for (auto& [id, node]: ordered_nodes)
-		Datatype_template::load_user_datatypes(*this, PC_get(node, ".types"));
-
-	// Sub-pass B: register and load plugins, now that user types are available
-	for (auto& [id, node]: ordered_nodes)
-		m_plugins.register_plugins(node);
-	m_plugins.load_plugins();
-
-	// Sub-pass C: metadata, data
-	for (auto& [id, node]: ordered_nodes) {
-		if (auto m = PC_get(node, ".metadata"); !PC_status(m)) load_data(*this, m, true);
-		if (auto d = PC_get(node, ".data"); !PC_status(d)) load_data(*this, d, false);
-	}
-}
-
-Data_descriptor& Global_context::make_and_check_descriptor(PC_tree_t key_node)
-{
-	std::string descriptor_name = to_string(key_node);
-
-	auto [descriptor_entry, is_new_entry] = m_descriptors.emplace(
-		descriptor_name,
-		std::unique_ptr<Data_descriptor>(new Data_descriptor_impl(*this, descriptor_name.c_str(), key_node))
-	);
-
-	if (!is_new_entry) {
-		// first_definition_node: from the deepest included file (first encountered in post-order)
-		PC_tree_t first_definition_node = static_cast<Data_descriptor_impl&>(*descriptor_entry->second).m_source_node;
-
-		// redefinition_node: from the parent/root config (encountered later in post-order)
-		PC_tree_t redefinition_node = key_node;
-
-#if PDI_HAS_PC_PATH
-		const char* first_definition_path = PC_path(first_definition_node);
-		const char* redefinition_path = PC_path(redefinition_node);
-		bool first_has_path = first_definition_path && fs::exists(first_definition_path);
-		bool redef_has_path = redefinition_path && fs::exists(redefinition_path);
-
-		if (first_has_path && redef_has_path) {
-			throw Spectree_error(
-				redefinition_node,
-				"Duplicate definition of '{}', first defined in '{}', then redefined in '{}'",
-				descriptor_name,
-				redefinition_path, // root/parent file = first from user's perspective
-				first_definition_path // deepest included file = redefinition from user's perspective
-			);
-		} else if (first_has_path) {
-			throw Spectree_error(
-				redefinition_node,
-				"Duplicate definition of '{}', first defined in a string config, then redefined in '{}'",
-				descriptor_name,
-				first_definition_path
-			);
-		} else if (redef_has_path) {
-			throw Spectree_error(
-				redefinition_node,
-				"Duplicate definition of '{}', first defined in '{}', then redefined in a string config",
-				descriptor_name,
-				redefinition_path
-			);
-		}
-#endif
-		throw Spectree_error(redefinition_node, "Duplicate definition of '{}'", descriptor_name);
-	}
-
-	return *descriptor_entry->second;
 }
 
 Global_context::~Global_context()

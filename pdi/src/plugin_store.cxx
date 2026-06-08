@@ -143,7 +143,7 @@ void Plugin_store::Stored_plugin::ensure_loaded(map<string, shared_ptr<Stored_pl
 	}
 }
 
-void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
+void Plugin_store::initialize_path(std::vector<PC_tree_t> const & confs)
 {
 	// STEP 1: get path from PDI_PLUGIN_PATH
 	if (const char* env_plugin_path = std::getenv("PDI_PLUGIN_PATH")) {
@@ -156,18 +156,21 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 	}
 
 	// STEP 2: get path from yaml file
-	if (!PC_status(plugin_path_node)) {
-		if (is_list(plugin_path_node)) {
-			int len = PDI::len(plugin_path_node);
-			for (int i = 0; i < len; i++) {
-				m_ctx.logger().trace("Adding plugin path from yaml: `{}'", PDI::to_string(PC_get(plugin_path_node, "[%d]", i)));
-				m_plugin_path.push_back(PDI::to_string(PC_get(plugin_path_node, "[%d]", i)));
+	for (PC_tree_t conf: confs) {
+		PC_tree_t plugin_path_node = PC_get(conf, ".plugin_path");
+		if (!PC_status(plugin_path_node)) {
+			if (is_list(plugin_path_node)) {
+				int len = PDI::len(plugin_path_node);
+				for (int i = 0; i < len; i++) {
+					m_ctx.logger().trace("Adding plugin path from yaml: `{}'", PDI::to_string(PC_get(plugin_path_node, "[%d]", i)));
+					m_plugin_path.push_back(PDI::to_string(PC_get(plugin_path_node, "[%d]", i)));
+				}
+			} else if (is_scalar(plugin_path_node)) {
+				m_ctx.logger().trace("Adding plugin path from yaml: `{}'", PDI::to_string(plugin_path_node));
+				m_plugin_path.push_back(PDI::to_string(plugin_path_node));
+			} else {
+				throw Spectree_error{plugin_path_node, "plugin_path must be a single path or an array of paths"};
 			}
-		} else if (is_scalar(plugin_path_node)) {
-			m_ctx.logger().trace("Adding plugin path from yaml: `{}'", PDI::to_string(plugin_path_node));
-			m_plugin_path.push_back(PDI::to_string(plugin_path_node));
-		} else {
-			throw Spectree_error{plugin_path_node, "plugin_path must be a single path or an array of paths"};
 		}
 	}
 
@@ -237,20 +240,31 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 	throw Plugin_error{"Unable to load plugin `{}': {}", plugin_name, join(load_errors, ", ")};
 }
 
-Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf)
+Plugin_store::Plugin_store(Context& ctx)
 	: m_ctx(ctx)
-{
-	initialize_path(PC_get(conf, ".plugin_path"));
-	// Plugin registration is deferred to register_plugins(),
-	// called for each node (root included) by load_pdi_config_impl().
-}
+{}
 
-void Plugin_store::load_plugins()
+void Plugin_store::load_plugins(std::vector<PC_tree_t> const & confs)
 {
+	initialize_path(confs);
+
+	// pre-load the plugins
+	for (auto&& conf: confs) {
+		int nb_plugins = len(PC_get(conf, ".plugins"), 0);
+		auto&& region = Yaml_region::make(conf);
+		m_ctx.logger().trace("Loading {} plugin(s){}{}{}", nb_plugins, (region ? " from `" : ""), to_string(region), (region ? "'" : ""));
+		for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
+			string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
+			if (m_plugins.contains(plugin_name)) {
+				throw Spectree_error(PC_get(conf, ".plugins"), "Duplicate load of plugin {}", plugin_name);
+			}
+			m_plugins.emplace(plugin_name, make_shared<Stored_plugin>(m_ctx, *this, plugin_name, PC_get(conf, ".plugins<%d>", plugin_id)));
+		}
+	}
+
 	std::vector<std::exception_ptr> errors;
 	for (auto&& plugin: m_plugins) {
 		try {
-			//TODO: what to do if a single plugin fails to load?
 			plugin.second->ensure_loaded(m_plugins);
 		} catch (...) {
 			try {
@@ -261,20 +275,6 @@ void Plugin_store::load_plugins()
 		}
 	}
 	rethrow_with_context(errors, "");
-}
-
-void Plugin_store::register_plugins(PC_tree_t conf)
-{
-	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
-	if (nb_plugins > 0) m_ctx.logger().trace("Registering {} plugin(s)", nb_plugins);
-	for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
-		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
-		if (m_plugins.count(plugin_name)) {
-			m_ctx.logger().warn("Plugin `{}' already registered, skipping", plugin_name);
-			continue;
-		}
-		m_plugins.emplace(plugin_name, make_shared<Stored_plugin>(m_ctx, *this, plugin_name, PC_get(conf, ".plugins<%d>", plugin_id)));
-	}
 }
 
 } // namespace PDI

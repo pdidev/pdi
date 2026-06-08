@@ -108,9 +108,9 @@ class Plugin_store
 	std::map<std::string, std::shared_ptr<Stored_plugin>> m_plugins;
 
 	/** initialize m_plugin_path from all its sources
-	 * \param plugin_path_node the plugin_path node of the config
+	 * \param confs the config nodes containing plugin_path
 	 */
-	void initialize_path(PC_tree_t plugin_path_node);
+	void initialize_path(std::vector<PC_tree_t> const & confs);
 
 	/** dlopen's a plugin taking m_plugin_path into account
 	 * \param name the name of the plugin
@@ -121,19 +121,14 @@ class Plugin_store
 public:
 	/** Builds a plugin store
 	 * \param ctx the context in which to load the plugins
-	 * \param conf the configuration specifying the plugin path & list of plugins to load
 	 */
-	Plugin_store(Context& ctx, PC_tree_t conf);
-	// Plugin_store(Context& ctx);
+	Plugin_store(Context& ctx);
 
 	/** Actually load the plugins
+	 * 
+	 * \param confs the configurations specifying the list of plugin paths & plugins to load
 	 */
-	void load_plugins();
-
-	/** Register plugins from an additional config node (e.g. an included file)
-	 *  Actual loading still happens in load_plugins()
-	 */
-	void register_plugins(PC_tree_t conf);
+	void load_plugins(std::vector<PC_tree_t> const & confs);
 };
 
 } // namespace PDI
