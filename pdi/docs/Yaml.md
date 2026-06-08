@@ -104,10 +104,35 @@ complete syntax).
 
 ## YAML Parsing with Paraconf
 
-The PDI_init function gets as parameter a tree with `logging`, `include`,
-`data`, `metadata` and `plugins` maps defined in its root. User can define its
-own values in yaml and pass to %PDI only the subtree:
+The PDI_init function gets as parameter a tree with `include`, `logging`,
+`types`, `metadata`, `data`, `plugin_path`, and `plugins` keys defined in its
+root.
 
+```yaml
+metadata:
+  iteration: int
+data:
+  main_field: double
+plugins:
+  decl_hdf5:
+       ...
+```
+
+C source code:
+```C
+PDI_init(PC_parse_path("example.yaml"));
+```
+
+Fortran source code:
+```Fortran
+type(PC_tree_t), target :: yaml_tree
+
+call PC_parse_path("example.yaml", yaml_tree)
+call PDI_init(yaml_tree)
+```
+
+If one wants to store additional information unrelated to %PDI in the the same
+file, it is possible to pass only the subtree to %PDI:
 ```yaml
 duration: 0.75
 size: [64, 64]
@@ -126,8 +151,7 @@ pdi_subtree:
 
 C source code:
 ```C
-PC_tree_t root = PC_parse_path("example.yaml");
-PDI_init(PC_get(root, "pdi_subtree"));
+PDI_init(PC_get(PC_parse_path("example.yaml"), ".pdi_subtree"));
 ```
 
 Fortran source code:
@@ -135,5 +159,5 @@ Fortran source code:
 type(PC_tree_t),target :: root
 
 call PC_parse_path("example.yaml", root)
-call PDI_init(PC_get(root, "pdi_subtree"))
+call PDI_init(PC_get(root, ".pdi_subtree"))
 ```

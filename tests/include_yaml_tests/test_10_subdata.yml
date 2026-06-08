@@ -1,5 +1,0 @@
-include:
-  - test_10.yml
-
-data:
-  scalar_subdata: int
