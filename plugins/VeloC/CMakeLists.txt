@@ -70,7 +70,31 @@ if(NOT axl_FOUND)
         INTERFACE_INCLUDE_DIRECTORIES "${AXL_INCLUDE_DIR}")
 endif()
 find_package(OpenSSL REQUIRED)
-find_package(veloc  REQUIRED)
+find_package(veloc CONFIG QUIET)
+if(NOT veloc_FOUND)
+    find_path(VELOC_INCLUDE_DIR NAMES veloc.h
+        HINTS ${WITH_VELOC_PREFIX} ENV WITH_VELOC_PREFIX ${CMAKE_PREFIX_PATH}
+        PATH_SUFFIXES include)
+    find_library(VELOC_CLIENT_LIBRARY  NAMES veloc veloc-client
+        HINTS ${WITH_VELOC_PREFIX} ENV WITH_VELOC_PREFIX ${CMAKE_PREFIX_PATH}
+        PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR} lib lib64)
+    find_library(VELOC_MODULES_LIBRARY NAMES veloc-modules
+        HINTS ${WITH_VELOC_PREFIX} ENV WITH_VELOC_PREFIX ${CMAKE_PREFIX_PATH}
+        PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR} lib lib64)
+    if(NOT (VELOC_INCLUDE_DIR AND VELOC_CLIENT_LIBRARY AND VELOC_MODULES_LIBRARY))
+        message(FATAL_ERROR
+            "VeloC not found: no CMake config and could not locate veloc client/modules "
+            "libraries under prefix. Looked for libveloc(-client) and libveloc-modules.")
+    endif()
+    add_library(veloc::client UNKNOWN IMPORTED)
+    set_target_properties(veloc::client PROPERTIES
+        IMPORTED_LOCATION "${VELOC_CLIENT_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${VELOC_INCLUDE_DIR}")
+    add_library(veloc::modules UNKNOWN IMPORTED)
+    set_target_properties(veloc::modules PROPERTIES
+        IMPORTED_LOCATION "${VELOC_MODULES_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${VELOC_INCLUDE_DIR}")
+endif()
 
 add_library(pdi_veloc_plugin MODULE
     veloc_wrapper.cxx
