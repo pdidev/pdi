@@ -32,8 +32,43 @@ add_compile_definitions(OMPI_SKIP_MPICXX=1)
 find_package(spdlog 1.9 REQUIRED)
 find_package(PDI    REQUIRED plugins)
 find_package(MPI    REQUIRED COMPONENTS C CXX)
-find_package(er     REQUIRED)
-find_package(axl    REQUIRED)
+# --- ER: config mode if available (er >= 0.5), else prefix fallback (er 0.x) ---
+find_package(er CONFIG QUIET)
+if(NOT er_FOUND)
+    find_path(ER_INCLUDE_DIR NAMES er.h
+        HINTS ${WITH_ER_PREFIX} ENV WITH_ER_PREFIX ${ER_ROOT} ENV ER_ROOT ${CMAKE_PREFIX_PATH}
+        PATH_SUFFIXES include)
+    find_library(ER_LIBRARY NAMES er
+        HINTS ${WITH_ER_PREFIX} ENV WITH_ER_PREFIX ${ER_ROOT} ENV ER_ROOT ${CMAKE_PREFIX_PATH}
+        PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR} lib lib64)
+    if(NOT (ER_INCLUDE_DIR AND ER_LIBRARY))
+        message(FATAL_ERROR "ER not found: no CMake config and no er.h/liber under prefix. "
+                            "Set WITH_ER_PREFIX or CMAKE_PREFIX_PATH to the ER install.")
+    endif()
+    add_library(er::er UNKNOWN IMPORTED)
+    set_target_properties(er::er PROPERTIES
+        IMPORTED_LOCATION "${ER_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${ER_INCLUDE_DIR}")
+endif()
+
+# --- AXL: same story, axl <= 0.3.0 ships no config ---
+find_package(axl CONFIG QUIET)
+if(NOT axl_FOUND)
+    find_path(AXL_INCLUDE_DIR NAMES axl.h
+        HINTS ${WITH_AXL_PREFIX} ENV WITH_AXL_PREFIX ${AXL_ROOT} ENV AXL_ROOT ${CMAKE_PREFIX_PATH}
+        PATH_SUFFIXES include)
+    find_library(AXL_LIBRARY NAMES axl
+        HINTS ${WITH_AXL_PREFIX} ENV WITH_AXL_PREFIX ${AXL_ROOT} ENV AXL_ROOT ${CMAKE_PREFIX_PATH}
+        PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR} lib lib64)
+    if(NOT (AXL_INCLUDE_DIR AND AXL_LIBRARY))
+        message(FATAL_ERROR "AXL not found: no CMake config and no axl.h/libaxl under prefix. "
+                            "Set WITH_AXL_PREFIX or CMAKE_PREFIX_PATH to the AXL install.")
+    endif()
+    add_library(axl::axl UNKNOWN IMPORTED)
+    set_target_properties(axl::axl PROPERTIES
+        IMPORTED_LOCATION "${AXL_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${AXL_INCLUDE_DIR}")
+endif()
 find_package(OpenSSL REQUIRED)
 find_package(veloc  REQUIRED)
 
