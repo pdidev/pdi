@@ -196,7 +196,25 @@ endfunction()
 
 # Try to find NetCDF using an installed netcdf-config.cmake
 function(_NetCDF_find_CMAKE)
-	find_package(netCDF CONFIG QUIET)
+	# 1. Check if an active nc-config tool exists (respects loaded cluster modules)
+	find_program(_NetCDF_NC_CONFIG NAMES nc-config)
+
+	set(_NetCDF_HINTS)
+	if(_NetCDF_NC_CONFIG)
+		# Query the active tool for its prefix directory
+		execute_process(COMMAND "${_NetCDF_NC_CONFIG}" --prefix
+			OUTPUT_VARIABLE _NetCDF_PREFIX
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
+		if(_NetCDF_PREFIX)
+			# Establish this path as a high-priority search location
+			set(_NetCDF_HINTS HINTS "${_NetCDF_PREFIX}")
+		endif()
+	endif()
+
+	# 2. Search for the config file, checking the active module path BEFORE standard system paths
+	find_package(netCDF CONFIG QUIET ${_NetCDF_HINTS})
+
 	if("${netCDF_FOUND}")
 		# Forward the variables in a consistent way.
 		set(NetCDF_FOUND TRUE)
