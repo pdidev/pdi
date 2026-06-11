@@ -353,7 +353,7 @@ endfunction()
 
 _NetCDF_find("${NetCDF_FIND_STRATEGIES}")
 
-# Use nc-config for missing features (like PARALLEL4) and reject invalid sequential installations
+# Use nc-config for missing features (like PARALLEL4) and reject invalid installations
 if(NetCDF_FOUND)
 	find_program(_NetCDF_PATCH_CFGSCRIPT NAMES nc-config HINTS "${NetCDF_INCLUDE_DIRECTORIES}/../bin")
 	if(_NetCDF_PATCH_CFGSCRIPT)
@@ -372,9 +372,17 @@ if(NetCDF_FOUND)
 		endforeach()
 	endif()
 
-	# If parallel NetCDF is explicitly requested, but the system installation 
-	# we just found is sequential, reject it entirely to trigger the AUTO fallback.
+	# Reject if sequential is found but parallel is requested OR if version is too old
+	set(_NetCDF_REJECT FALSE)
 	if(BUILD_NETCDF_PARALLEL AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
+		set(_NetCDF_REJECT TRUE)
+	endif()
+	if(NetCDF_FIND_VERSION AND NetCDF_VERSION VERSION_LESS NetCDF_FIND_VERSION)
+		message(STATUS "Discovered NetCDF version ${NetCDF_VERSION} is older than required ${NetCDF_FIND_VERSION}. Rejecting.")
+		set(_NetCDF_REJECT TRUE)
+	endif()
+
+	if(_NetCDF_REJECT)
 		set(NetCDF_FOUND FALSE)
 		unset(NetCDF_VERSION)
 		unset(NetCDF_INCLUDE_DIRECTORIES)
