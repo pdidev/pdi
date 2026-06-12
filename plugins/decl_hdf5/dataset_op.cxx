@@ -392,17 +392,8 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 					}
 				}
 
-				// Remark: message error is defined outside Config_error because is too long.
-				static constexpr char const * const msg_config_error
-					= "Found `{0}' match(es) in the list of datasets section for `{1}'."
-					  " Cannot choose the right element in datasets.\n"
-					  "The elements that match `{1}' are:\n"
-					  " - {2}\n"
-					  "Attention: The elements are considered as a regex.";
-
-				throw Spectree_error{
-					m_dataset_selection.selection_tree(),
-					msg_config_error,
+				throw PDI::Invalid_action_error{
+					"found {} regexes in the \"datasets:\" list that match the dataset `{}' to write:\n - {}",
 					list_dataset_found.size(),
 					dataset_name,
 					fmt::join(list_dataset_found, "\n - ")

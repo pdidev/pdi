@@ -30,6 +30,7 @@
 #define PDI_PARACONF_WRAPPER_H_
 
 #include <functional>
+#include <optional>
 #include <string>
 
 #include <paraconf.h>
@@ -44,10 +45,67 @@ namespace PDI {
 struct PDI_EXPORT Paraconf_wrapper {
 	PC_errhandler_t m_handler;
 
-
 	Paraconf_wrapper();
 
 	~Paraconf_wrapper();
+};
+
+/** A region in a YAML "file", from start to end
+ */
+class Yaml_region
+{
+public:
+	/// a location in a YAML stream
+	struct Yaml_mark {
+		/// the line of the location
+		size_t line;
+		/// the column of the location
+		size_t column;
+	};
+
+private:
+	/// the "file" where this region resides (might be "<string>" if not in a file
+	std::string m_file;
+
+	/// the start location of the region
+	Yaml_mark m_start;
+
+	/// the end location of the region
+	Yaml_mark m_end;
+
+	/** Builds a new YAML region that contains a given YAML subtree
+	 * 
+	 * \warning the subtree must be valid
+	 * \pre PC_status(tree) == PC_OK
+	 * \param tree the subtree
+	 */
+	Yaml_region(PC_tree_t tree);
+
+public:
+	/** Gives access to the "file" where this region resides
+	 * 
+	 * \return the "file" where this region resides (might be "<string>" if not in a file)
+	 */
+	inline const std::string& file() const { return m_file; }
+
+	/** Gives access to the start location of the region
+	 * 
+	 * \return the start location of the region
+	 */
+	inline const Yaml_mark& start() const { return m_start; }
+
+	/** Gives access to the end location of the region
+	 * 
+	 * \return the end location of the region
+	 */
+	inline const Yaml_mark& end() const { return m_end; }
+
+	/** Builds a YAML region that contains a given YAML subtree or nothing if the tree is invalid
+	 * 
+	 * \param tree the subtree
+	 * \return the YAML region or an empty optional if the tree was invalid or had no region specified
+	 */
+	static std::optional<Yaml_region> make(PC_tree_t tree);
 };
 
 /** Returns the length of a node.

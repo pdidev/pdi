@@ -844,7 +844,7 @@ struct DataRefAnyTypedTest
 };
 
 typedef ::testing::Types<Ref, Ref_r, Ref_w, Ref_rw> RefTypes;
-TYPED_TEST_CASE(DataRefAnyTypedTest, RefTypes);
+TYPED_TEST_SUITE(DataRefAnyTypedTest, RefTypes);
 
 /*
  * Name:                DataRefAnyTypedTest.NullRef
