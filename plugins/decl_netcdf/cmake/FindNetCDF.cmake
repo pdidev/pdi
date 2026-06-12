@@ -196,56 +196,7 @@ endfunction()
 
 # Try to find NetCDF using an installed netcdf-config.cmake
 function(_NetCDF_find_CMAKE)
-	# 1. Check if an active nc-config tool exists (respects loaded cluster modules)
-	find_program(_NetCDF_NC_CONFIG NAMES nc-config)
-
-	set(_NetCDF_HINTS)
-	if(_NetCDF_NC_CONFIG)
-		# Query the active tool for its prefix directory
-		execute_process(COMMAND "${_NetCDF_NC_CONFIG}" --prefix
-			OUTPUT_VARIABLE _NetCDF_PREFIX
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
-		if(_NetCDF_PREFIX)
-			# Establish this path as a high-priority search location
-			set(_NetCDF_HINTS HINTS "${_NetCDF_PREFIX}")
-		endif()
-	endif()
-
-	# 2. Search for the config file, checking the active module path BEFORE standard system paths
-	find_package(netCDF CONFIG QUIET ${_NetCDF_HINTS})
-
-    # --- "GATEKEEPER INTERCEPTOR" to validate what CMake found
-    if(${netCDF_FOUND})
-        set(_NetCDF_VALID TRUE)
-        
-        # Check: Is the found version older than what our library requested? (e.g., 4.7.4 < 4.8)
-        if(NetCDF_FIND_VERSION AND netCDF_VERSION VERSION_LESS NetCDF_FIND_VERSION)
-            set(_NetCDF_VALID FALSE)
-        endif()
-        
-        # If the candidate is invalid (like the cluster's system 4.7.4), reject it
-        if(NOT _NetCDF_VALID)
-            if(NOT "${NetCDF_FIND_QUIETLY}")
-                message(STATUS "Rejected unsuitable NetCDF version ${netCDF_VERSION} found at system path.")
-            endif()
-            
-            # Wipe CMake's memory of this bad find so it doesn't pollute the build
-            unset(netCDF_FOUND CACHE)
-            unset(netCDF_VERSION CACHE)
-            unset(netCDF_DIR CACHE)
-            
-            # Fallback Strategy: If we have a loaded module prefix, force CMake to search 
-            # ONLY there, completely ignoring standard system directories like /usr/lib
-            if(_NetCDF_PREFIX)
-                find_package(netCDF CONFIG QUIET HINTS "${_NetCDF_PREFIX}" NO_DEFAULT_PATH)
-            else()
-                set(netCDF_FOUND FALSE)
-            endif()
-        endif()
-    endif()
-    # ---
-
+	find_package(netCDF CONFIG QUIET)
 	if("${netCDF_FOUND}")
 		# Forward the variables in a consistent way.
 		set(NetCDF_FOUND TRUE)
@@ -368,18 +319,9 @@ function(_NetCDF_find STRATEGIES)
 	if("x${NetCDF_CFGSCRIPT}x" STREQUAL "xx")
 		set(NetCDF_CFGSCRIPT nc-config)
 	endif()
-	# if(TARGET NetCDF::NetCDF)
-	# 	return()
-	# endif()
 	if(TARGET NetCDF::NetCDF)
-        # CMake has no direct "delete target" API, but you can
-        # redirect it to a dummy so consumers get a loud link error
-        # rather than silently using the wrong library.
-        set_target_properties(NetCDF::NetCDF PROPERTIES
-            INTERFACE_LINK_LIBRARIES ""
-            INTERFACE_INCLUDE_DIRECTORIES ""
-        )
-    endif()
+		return()
+	endif()
 	set(NetCDF_FOUND FALSE)
 	foreach(STRATEGY IN LISTS STRATEGIES)
 		if("CMAKE" STREQUAL "${STRATEGY}")
@@ -409,156 +351,7 @@ function(_NetCDF_find STRATEGIES)
 	_NetCDF_public_vars()
 endfunction()
 
-function(_NetCDF_find STRATEGIES)
-	if("x${STRATEGIES}x" STREQUAL "xx")
-        set(STRATEGIES CMAKE CFGSCRIPT PKGCONFIG FALLBACK)
-    endif()
-    if("x${NetCDF_CFGSCRIPT}x" STREQUAL "xx")
-        set(NetCDF_CFGSCRIPT nc-config)
-    endif()
-    if(TARGET NetCDF::NetCDF)
-        return()
-    endif()
-    set(NetCDF_FOUND FALSE)
-	foreach(STRATEGY IN LISTS STRATEGIES)
-		if("CMAKE" STREQUAL "${STRATEGY}")
-			set(STRATEGY_NAME "cmake config file")
-			message(STATUS "Looking for NetCDF using ${STRATEGY_NAME}")
-			_NetCDF_find_CMAKE()
-		elseif("CFGSCRIPT" STREQUAL "${STRATEGY}")
-			set(STRATEGY_NAME "${NetCDF_CFGSCRIPT}")
-			message(STATUS "Looking for NetCDF using ${STRATEGY_NAME}")
-			_NetCDF_find_CFGSCRIPT("${NetCDF_CFGSCRIPT}")
-		elseif("PKGCONFIG" STREQUAL "${STRATEGY}")
-			set(STRATEGY_NAME "pkg-config")
-			message(STATUS "Looking for NetCDF using ${STRATEGY_NAME}")
-			_NetCDF_find_PKGCONFIG()
-		elseif("FALLBACK" STREQUAL "${STRATEGY}")
-			set(STRATEGY_NAME "fallback strategy")
-			message(STATUS "Looking for NetCDF using ${STRATEGY_NAME}")
-			_NetCDF_find_BASIC()
-		else()
-			message(SEND_ERROR "Invalid strategy to find NetCDF: ${STRATEGY}")
-		endif()
-		if("${NetCDF_FOUND}")
-            # --- patch missing features via nc-config ---
-            find_program(_NetCDF_PATCH_CFGSCRIPT NAMES nc-config
-                HINTS "${NetCDF_INCLUDE_DIRECTORIES}/../bin")
-            if(_NetCDF_PATCH_CFGSCRIPT)
-                foreach(_FEATURE IN LISTS _NetCDF_features_list)
-                    string(TOLOWER "--has-${_FEATURE}" _FEATURE_OPT)
-                    execute_process(COMMAND "${_NetCDF_PATCH_CFGSCRIPT}" "${_FEATURE_OPT}"
-                        OUTPUT_VARIABLE _FEATURE_VAL RESULT_VARIABLE _FEATURE_RET
-                        OUTPUT_STRIP_TRAILING_WHITESPACE)
-                    if(_FEATURE_RET EQUAL 0 AND "x${_FEATURE_VAL}" MATCHES "yes")
-                        if(NOT "${_FEATURE}" IN_LIST NetCDF_FEATURES)
-                            list(APPEND NetCDF_FEATURES "${_FEATURE}")
-                        endif()
-                    endif()
-                endforeach()
-            endif()
-
-            # --- validate: reject if requirements not met, then continue ---
-            set(_NetCDF_VALID TRUE)
-            if(BUILD_NETCDF_PARALLEL AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
-                message(STATUS "Looking for NetCDF using ${STRATEGY_NAME} -- found sequential only, PARALLEL4 required, trying next strategy")
-                set(_NetCDF_VALID FALSE)
-            endif()
-            if(NetCDF_FIND_VERSION AND NetCDF_VERSION VERSION_LESS NetCDF_FIND_VERSION)
-                message(STATUS "Looking for NetCDF using ${STRATEGY_NAME} -- found ${NetCDF_VERSION}, need >=${NetCDF_FIND_VERSION}, trying next strategy")
-                set(_NetCDF_VALID FALSE)
-            endif()
-
-            if(_NetCDF_VALID)
-                message(STATUS "Looking for NetCDF using ${STRATEGY_NAME} -- found")
-                break()
-            else()
-                # Reset state and evict all caches before trying the next strategy
-                set(NetCDF_FOUND FALSE)
-                unset(NetCDF_VERSION)
-                unset(NetCDF_INCLUDE_DIRECTORIES)
-                unset(NetCDF_LINK_LIBRARIES)
-                unset(NetCDF_FEATURES)
-                unset(NetCDF_META_H CACHE)
-                unset(_NetCDF_PATCH_CFGSCRIPT CACHE)
-                unset(netCDF_DIR CACHE)        # cmake config-mode cache
-                unset(netCDF_CONFIG CACHE)     # cmake config-mode cache
-                get_cmake_property(_allvars CACHE_VARIABLES)
-                foreach(_var IN LISTS _allvars)
-                    if(_var MATCHES "^NetCDF_LIBRARY_")
-                        unset("${_var}" CACHE)
-                    endif()
-                endforeach()
-            endif()
-        endif()
-    endforeach()
-    _NetCDF_public_vars()
-endfunction()
-
 _NetCDF_find("${NetCDF_FIND_STRATEGIES}")
-
-# Use nc-config for missing features (like PARALLEL4) and reject invalid installations
-if(NetCDF_FOUND)
-	find_program(_NetCDF_PATCH_CFGSCRIPT NAMES nc-config HINTS "${NetCDF_INCLUDE_DIRECTORIES}/../bin")
-	if(_NetCDF_PATCH_CFGSCRIPT)
-		foreach(_FEATURE IN LISTS _NetCDF_features_list)
-			string(TOLOWER "--has-${_FEATURE}" _FEATURE_OPT)
-			execute_process(COMMAND "${_NetCDF_PATCH_CFGSCRIPT}" "${_FEATURE_OPT}"
-				OUTPUT_VARIABLE _FEATURE_VAL
-				RESULT_VARIABLE _FEATURE_RET
-				OUTPUT_STRIP_TRAILING_WHITESPACE
-			)
-			if(_FEATURE_RET EQUAL 0 AND "x${_FEATURE_VAL}" MATCHES "yes")
-				if(NOT "${_FEATURE}" IN_LIST NetCDF_FEATURES)
-					list(APPEND NetCDF_FEATURES "${_FEATURE}")
-				endif()
-			endif()
-		endforeach()
-	endif()
-
-	# Reject if sequential is found but parallel is requested OR if version is too old
-	set(_NetCDF_REJECT FALSE)
-	# if(BUILD_NETCDF_PARALLEL AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
-	# 	set(_NetCDF_REJECT TRUE)
-	# endif()
-	if("PARALLEL4" IN_LIST NetCDF_FIND_COMPONENTS AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
-		message(STATUS "NetCDF found but PARALLEL4 component requested and not available. Rejecting.")
-		set(_NetCDF_REJECT TRUE)
-	endif()
-	if(NetCDF_FIND_VERSION AND NetCDF_VERSION VERSION_LESS NetCDF_FIND_VERSION)
-		message(STATUS "Discovered NetCDF version ${NetCDF_VERSION} is older than required ${NetCDF_FIND_VERSION}. Rejecting.")
-		set(_NetCDF_REJECT TRUE)
-	endif()
-
-	# if(_NetCDF_REJECT)
-	# 	set(NetCDF_FOUND FALSE)
-	# 	unset(NetCDF_VERSION)
-	# 	unset(NetCDF_INCLUDE_DIRECTORIES)
-	# 	unset(NetCDF_LINK_LIBRARIES)
-	# endif()
-	if(_NetCDF_REJECT)
-		set(NetCDF_FOUND FALSE)
-		unset(NetCDF_VERSION)
-		unset(NetCDF_INCLUDE_DIRECTORIES)
-		unset(NetCDF_LINK_LIBRARIES)
-		unset(NetCDF_FEATURES)
-
-		# Evict all cached library search results so a subsequent
-		# find_package() call can discover the vendored library instead.
-		get_cmake_property(_allvars CACHE_VARIABLES)
-		foreach(_var IN LISTS _allvars)
-			if(_var MATCHES "^NetCDF_LIBRARY_")
-				unset("${_var}" CACHE)
-			endif()
-		endforeach()
-
-		# Also evict the cached find_file() result for the meta header
-		# and the patching nc-config path, otherwise they too re-resolve
-		# to the system installation.
-		unset(NetCDF_META_H CACHE)
-		unset(_NetCDF_PATCH_CFGSCRIPT CACHE)
-	endif()
-endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(NetCDF

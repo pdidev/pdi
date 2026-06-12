@@ -390,13 +390,20 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			-DNETCDF_ENABLE_TESTS:BOOL=OFF
 		VERSION 4.8
 	)
-	if("${NETCDF_FOUND}")
+	if(NOT "${NETCDF_FOUND}")
+		message(FATAL_ERROR
+			"NetCDF setup failed: A suitable SYSTEM version (>= 4.8) could not be found.\n"
+			"    you have the following options:\n"
+			"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NetCDF=EMBEDDED' to cmake\n"
+			"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake"
+		)
+	else()
 		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
 			message(FATAL_ERROR
 				"You requested a parallel NetCDF build (-DBUILD_NETCDF_PARALLEL=ON) but a sequential SYSTEM version has been found\n"
 				"    you have the following options:\n"
 				"     * build with this sequential NetCDF => pass `-DBUILD_NETCDF_PARALLEL=OFF' to cmake\n"
-				"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NETCDF=EMBEDDED' to cmake\n"
+				"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NetCDF=EMBEDDED' to cmake\n"
 				"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake"
 			)
 		endif()
