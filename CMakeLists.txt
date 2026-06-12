@@ -390,7 +390,11 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			-DNETCDF_ENABLE_TESTS:BOOL=OFF
 		VERSION 4.8
 	)
-	if(NOT "${NETCDF_FOUND}")
+
+	message(STATUS "NETCDF_FOUND=${NETCDF_FOUND}")
+	message(STATUS "NetCDF_FOUND=${NetCDF_FOUND}")
+
+	if(NOT "${NetCDF_FOUND}")
 		message(FATAL_ERROR
 			"NetCDF setup failed: A suitable SYSTEM version (>= 4.8) could not be found.\n"
 			"    you have the following options:\n"
