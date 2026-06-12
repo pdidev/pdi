@@ -32,7 +32,8 @@
 
 using PDI::Context;
 using PDI::Datatype_sptr;
-using PDI::Error;
+using PDI::Spectree_error;
+using PDI::Impl_error;
 using PDI::Plugin;
 using PDI::Ref;
 using PDI::Ref_r;
@@ -69,8 +70,8 @@ class veloc_plugin: public Plugin
 			RefType ref = context().desc(data.second).ref();
 
 			if (nulltype(ref.type())) {
-				throw Error{
-					PDI_ERR_SPECTREE,
+				throw Spectree_error{
+					m_config.tree(),
 					"VELOC PLUGIN YAML: Protected data `{}' (id: `{}') has no valid type, "
 					"check that the name in protect_data matches the data/metadata section",
 					data.second,
@@ -137,7 +138,7 @@ public:
 					desc.first
 				);
 			} else {
-				throw Error{PDI_ERR_IMPL, "Unexpected Desc Type"};
+				throw Impl_error{"Unexpected Desc Type"};
 			}
 		} // data call backs
 
@@ -249,7 +250,7 @@ public:
 				context().callbacks().add_event_callback([this](const string& event_name) { end_restart(context()); }, event.first);
 			} break;
 			default:
-				throw Error{PDI_ERR_IMPL, "Unexpected event type"};
+				throw Impl_error{"Unexpected event type"};
 			}
 		} // event call backs
 	}

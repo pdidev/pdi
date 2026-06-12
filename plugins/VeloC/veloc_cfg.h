@@ -89,6 +89,8 @@ class Veloc_cfg
 {
 	std::string m_config_file;
 
+	PC_tree_t m_tree;
+
 	std::string m_cp_label;
 
 	std::string m_iter_name;
@@ -107,6 +109,8 @@ class Veloc_cfg
 
 public:
 	Veloc_cfg(PDI::Context& ctx, PC_tree_t tree);
+
+	PC_tree_t tree(){ return m_tree; };
 
 	std::string config() { return m_config_file; }
 

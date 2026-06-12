@@ -1,16 +1,15 @@
 ##############################################################################
-# SPDX-FileCopyrightText: 2014-2024 Centre national de la recherche scientifique (CNRS)
-# SPDX-FileCopyrightText: 2014-2024 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
-# SPDX-FileCopyrightText: 2014-2024 Julien Bigot <julien.bigot@cea.fr>
-# SPDX-FileCopyrightText: 2014-2024 Université Paris-Saclay
-# SPDX-FileCopyrightText: 2014-2024 Université de Versailles Saint-Quentin-en-Yvelines
+# SPDX-FileCopyrightText: 2014-2026 Centre national de la recherche scientifique (CNRS)
+# SPDX-FileCopyrightText: 2014-2026 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
+# SPDX-FileCopyrightText: 2014-2026 Julien Bigot <julien.bigot@cea.fr>
+# SPDX-FileCopyrightText: 2014-2026 Université Paris-Saclay
+# SPDX-FileCopyrightText: 2014-2026 Université de Versailles Saint-Quentin-en-Yvelines
 #
 # SPDX-License-Identifier: MIT
 ##############################################################################
 
 cmake_policy(PUSH)
-cmake_minimum_required(VERSION 3.16...3.28)
-
+cmake_policy(VERSION 3.22...4.2)
 # Compute the installation prefix relative to this file.
 get_filename_component(_CURRENT_LIST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 set(ZPP_CMAKE_DIR "${_CURRENT_LIST_DIR}" CACHE PATH "Path to ZPP path")
