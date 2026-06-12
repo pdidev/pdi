@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+
 #include <mpi.h>
-#include <iostream>
+#include <stdio.h>
 #include <pdi.h>
 
 const char CONF_YAML[]
@@ -58,7 +59,7 @@ int main(int argc, char* argv[])
 
 	PDI_expose("cp_status", &cp_status, PDI_IN);
 	if (cp_status != 1) {
-		std::cerr << "TEST_01_1 FAILED: status value " << cp_status << " does not match expected value " << 1 << std::endl;
+		fprintf(stderr, "TEST_01_1 FAILED: status value %d does not match expected value %d\n", cp_status, 1);
 		exit(1);
 	}
 
@@ -69,10 +70,11 @@ int main(int argc, char* argv[])
 	PDI_expose("cp_counter", &cp_counter, PDI_IN);
 
 	if (cp_counter != 2) {
-		std::cerr << "TEST_01_1 FAILED: counter value " << cp_counter << " does not match expected value " << 1 << std::endl;
+		fprintf(stderr, "TEST_01_1 FAILED: counter value %d does not match expected value %d\n", cp_counter, 2);
 		exit(1);
 	}
-	std::cout << "TEST 01_1 PASSED " << std::endl;
+
+	printf("TEST 0_1_1 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();

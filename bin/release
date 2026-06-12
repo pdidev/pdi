@@ -72,7 +72,7 @@ s%$OMAJOR\.$OMINOR\.$OPATCH/build%$MAJOR.$MINOR.$PATCH/build%;
 " -i pdi/docs/Source_installation.md
 sed "s/set(PDI_VERSION .*/set(PDI_VERSION \"$MAJOR.$MINOR.$PATCH\")/" -i mock_pdi/PDIConfigVersion.cmake
 sed "
-s/## \[Unreleased\].*/## [$MAJOR.$MINOR.$PATCH] - $(date +%Y-%d-%m)/;
+s/## \[Unreleased\].*/## [$MAJOR.$MINOR.$PATCH] - $(date +%Y-%m-%d)/;
 /^#### /{N;/^####.*\n *$/d}
 " -i CHANGELOG.md
 git commit -qm "PDI Release $MAJOR.$MINOR.$PATCH" VERSION pdi/docs/Source_installation.md mock_pdi/PDIConfigVersion.cmake CHANGELOG.md

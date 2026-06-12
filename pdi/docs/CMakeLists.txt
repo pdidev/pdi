@@ -45,7 +45,6 @@ set(DOXYGEN_INPUT
 		"${CMAKE_CURRENT_SOURCE_DIR}/Yaml.md"
 		"${PDI_BINARY_DIR}/pdi/export.h"
 		"${PDI_BINARY_DIR}/pdi/version.h"
-		"${PDIF_H}"
 		"${PDI_SOURCE_DIR}/include/pdi.h"
 		"${PDI_SOURCE_DIR}/include/pdi/"
 		"${PDI_SOURCE_DIR}/../example/README.md"
@@ -58,7 +57,8 @@ set(DOXYGEN_INPUT
 		"${PDI_SOURCE_DIR}/../plugins/pycall/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/serialize/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/set_value/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/json/README.md")
+		"${PDI_SOURCE_DIR}/../plugins/json/README.md"
+		"${PDI_SOURCE_DIR}/../plugins/VeloC/README.md")
 
 set(DOXY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 cmake_path(NORMAL_PATH DOXY_ROOT)
@@ -77,7 +77,6 @@ add_custom_target(doc ALL
 	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../"
 	DEPENDS ${DOXYGEN_INPUT}
 )
-add_dependencies(doc generated_files_for_doc)
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html/" DESTINATION "${CMAKE_INSTALL_DOCDIR}/html")
 
 add_subdirectory(First_steps)

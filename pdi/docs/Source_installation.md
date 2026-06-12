@@ -99,7 +99,7 @@ The following flags define which features of the distribution to enable or not.
 |`BUILD_DECL_NETCDF_PLUGIN` |`ON`   |Build the Decl'NetCDF plugin.|
 |`BUILD_FORTRAN`            |`ON`   |Build the Fortran interface.|
 |`BUILD_HDF5_PARALLEL`      |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|            
-|`BUILD_VELOC_PLUGIN`       |`OFF`  |Build the VeloC plugin.|
+|`BUILD_VELOC_PLUGIN`       |`OFF`  |Build the VeloC plugin. (unstable)|
 |`BUILD_JSON_PLUGIN`        |`OFF`  |Build the Json plugin.|
 |`BUILD_MPI_PLUGIN`         |`ON`   |Build the MPI plugin.|
 |`BUILD_NETCDF_PARALLEL`    |`ON`   |Build the parallel version of the Decl'NetCDF plugin instead of the sequential one.|
@@ -202,7 +202,7 @@ Dependencies of **the Decl'NetCDF plugin**:
 
 Dependencies of **the VeloC plugin**:
 * the PDI library,
-* the [VeloC](https://veloc.readthedocs.io/en/latest/userguide.html) library version 1.8 or above (not provided)
+* the [VeloC](https://veloc.readthedocs.io/en/latest/userguide.html) library version 1.8 or above (not provided),
 * **a MPI implementation**, such as
   - [openmpi](https://www.open-mpi.org/) 4.1 or above,
   - [mpich](https://www.mpich.org/) 4.0 or above.

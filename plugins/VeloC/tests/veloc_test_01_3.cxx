@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
- 
+
 #include <mpi.h>
-#include <iostream>
+#include <stdio.h>
 #include <pdi.h>
 
 const char CONF_YAML[]
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 	PDI_expose("cp_status", &cp_status, PDI_IN);
 
 	if (cp_status != 0) {
-		std::cerr << "TEST_01_3 FAILED: status value " << cp_status << " does not match expected value " << 0 << std::endl;
+		fprintf(stderr, "TEST_01_3 FAILED: status value %d does not match expected value %d\n", cp_status, 0);
 		exit(1);
 	}
 
@@ -68,21 +68,21 @@ int main(int argc, char* argv[])
 	PDI_expose("cp_status", &cp_status, PDI_IN);
 
 	if (cp_status != 1) {
-		std::cerr << "TEST_01_3 FAILED: status value " << cp_status << " does not match expected value " << 1 << std::endl;
+		fprintf(stderr, "TEST_01_3 FAILED: status value %d does not match expected value %d\n", cp_status, 1);
 		exit(1);
 	}
 
 	if (rec_ii != 0) {
-		std::cerr << "TEST_01_3 FAILED: recovered iter value " << rec_ii << " does not match expected value " << 0 << std::endl;
+		fprintf(stderr, "TEST_01_3 FAILED: recovered iter value  %d does not match expected value %d\n", rec_ii, 0);
 		exit(1);
 	}
 
 	if (rec_var != 51) {
-		std::cerr << "TEST_01_3 FAILED: recovered var value " << rec_var << " does not match expected value " << 51 << std::endl;
+		fprintf(stderr, "TEST_01_3 FAILED: recovered var value  %d does not match expected value %d\n", rec_var, 51);
 		exit(1);
 	}
 
-	std::cout << "TEST 01_3 PASSED " << std::endl;
+	printf("TEST 01_3 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();

@@ -40,13 +40,13 @@
 
 void init(PDI::Context& ctx, MPI_Comm comm, std::string veloc_file);
 
-void protect_data(PDI::Context& ctx, int id, void* ptr, size_t n, size_t sub_bytes);
+void protect_data(PDI::Context& ctx, int id, const void* ptr, size_t n, size_t sub_bytes);
 
 void unprotect_data(PDI::Context& ctx, int id);
 
 void write_checkpoint(PDI::Context& ctx, std::string label, int version);
 
-int read_checkpoint(PDI::Context& ctx, std::string label, int cp_id); // is this needed? can't remember anymore
+int read_checkpoint(PDI::Context& ctx, std::string label, int cp_id);
 
 void init_checkpoint(PDI::Context& ctx, std::string label, int version);
 

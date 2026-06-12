@@ -93,7 +93,7 @@ class Veloc_cfg
 
 	std::string m_iter_name;
 
-	int m_failure = 0;            
+	int m_failure = 0;
 
 	ManagedCheckpointingCfg m_managed;
 
@@ -116,7 +116,7 @@ public:
 
 	int failure() { return m_failure; }
 
-	ManagedCheckpointingCfg&  managed() { return m_managed; }
+	ManagedCheckpointingCfg& managed() { return m_managed; }
 
 	bool managed_defined() { return m_managed.is_valid; }
 
@@ -124,12 +124,13 @@ public:
 
 	ManualCheckpoint& manual_cp() { return m_custom.manual_cp; }
 
-	ManualRecovery&  manual_rec() { return m_custom.manual_rec; }
+	ManualRecovery& manual_rec() { return m_custom.manual_rec; }
 
-	std::unordered_map<std::string, Desc_type>&  descs() { return m_descs; }
+	std::unordered_map<std::string, Desc_type>& descs() { return m_descs; }
 
-	std::unordered_map<std::string, Event_type>&  events() { return m_events; }
-}; 
+	std::unordered_map<std::string, Event_type>& events() { return m_events; }
+};
+
 // class Veloc_cfg
 
 #endif // VELOC_CFG_H_

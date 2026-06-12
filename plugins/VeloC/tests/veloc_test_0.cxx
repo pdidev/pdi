@@ -23,13 +23,13 @@
  ******************************************************************************/
 
 #include <mpi.h>
-#include <iostream>
+#include <stdio.h>
 #include <pdi.h>
 
 static void error_handler(PDI_status_t status, const char* message, void* ctx)
 {
 	if (status) {
-		std::cerr << "[PDI error] " << message << "\n";
+		fprintf(stderr, "[PDI error] %s\n", message);
 		*static_cast<int*>(ctx) = 1;
 	}
 }
@@ -369,14 +369,15 @@ int main(int argc, char* argv[])
 		}
 
 		bool ok = (has_errored == t.expect_error);
-		std::cout << (ok ? "[PASS] " : "[FAIL] ") << t.name << "\n";
+		printf("%s %s\n", ok ? "[PASS]" : "[FAIL]\n", t.name);
 		ok ? ++passed : ++failed;
 	}
 
-	std::cout << "\n" << passed << " passed, " << failed << " failed.\n";
+
+	printf("%d passed, %d failed.\n", passed, failed);
 
 	if (failed == 0) {
-		std::cout << "TEST 0_0 PASSED " << std::endl;
+		printf("TEST 0_0 PASSED\n");
 	}
 
 	MPI_Finalize();

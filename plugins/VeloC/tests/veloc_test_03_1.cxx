@@ -21,107 +21,104 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-#include <mpi.h> 
-#include <iostream>
 
+#include <mpi.h>
 #include <hdf5.h>
+#include <stdio.h>
 #include <pdi.h>
 
-const char CONF_YAML[] =
-    "data:\n"
-    "  var: int\n"
-    "  ii: int\n"
-    "  veloc_file: {type: array, subtype: char, size: 256}\n"
-    "plugins:\n"
-    "  veloc:\n"
-    "    failure: 0\n"
-    "    config_file: veloc_config.cfg\n"
-    "    checkpoint_label: test_03\n"
-    "    iteration: ii\n"
-    "    custom_checkpointing:\n"
-    "       veloc_file: veloc_file\n"
-    "       custom_checkpoint:\n"
-    "           original_file: file1.h5\n"
-    "           start_on: start\n"
-    "           route_file_on: route\n"
-    "           end_on: end\n";
-
+const char CONF_YAML[]
+	= "data:\n"
+	  "  var: int\n"
+	  "  ii: int\n"
+	  "  veloc_file: {type: array, subtype: char, size: 256}\n"
+	  "plugins:\n"
+	  "  veloc:\n"
+	  "    failure: 0\n"
+	  "    config_file: veloc_config.cfg\n"
+	  "    checkpoint_label: test_03\n"
+	  "    iteration: ii\n"
+	  "    custom_checkpointing:\n"
+	  "       veloc_file: veloc_file\n"
+	  "       custom_checkpoint:\n"
+	  "           original_file: file1.h5\n"
+	  "           start_on: start\n"
+	  "           route_file_on: route\n"
+	  "           end_on: end\n";
 
 int main(int argc, char* argv[])
 {
-    MPI_Init(&argc, &argv);
-    PC_tree_t conf = PC_parse_string(CONF_YAML);
-    PDI_init(conf);
+	MPI_Init(&argc, &argv);
+	PC_tree_t conf = PC_parse_string(CONF_YAML);
+	PDI_init(conf);
 
-    int size;
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+	int size;
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    if(size>1){
-        std::cerr << "This test should be executed with only one MPI process" << std::endl;
-        exit(1);
-    }
+	if (size > 1) {
+		fprintf(stderr, "This test should be executed with only one MPI process\n");
+		exit(1);
+	}
 
-    int ii = 0;
-    int var = 0;
-    char veloc_file[256];
+	int ii = 0;
+	int var = 0;
+	char veloc_file[256];
 
-    for (ii = 0; ii < 3; ii++) {
-        var = 2 * ii;
+	for (ii = 0; ii < 3; ii++) {
+		var = 2 * ii;
 
-        PDI_multi_expose("start", "ii", &ii, PDI_OUT,
-                            "var", &var, PDI_OUT, NULL);
+		PDI_multi_expose("start", "ii", &ii, PDI_OUT, "var", &var, PDI_OUT, NULL);
 
-        PDI_multi_expose("route", "veloc_file", veloc_file, PDI_INOUT, NULL);
-        
-        if (veloc_file[0] == '\0') {
-            std::cerr << "TEST 03_1 FAILED : veloc_file was not filled by route event" << std::endl;
-            exit(1);
-        }
+		PDI_multi_expose("route", "veloc_file", veloc_file, PDI_INOUT, NULL);
 
-        PDI_share("var", &var, PDI_OUT);
+		if (veloc_file[0] == '\0') {
+			fprintf(stderr, "TEST 03_1 FAILED : veloc_file was not filled by route event\n");
+			exit(1);
+		}
 
-        hid_t file_id = H5Fcreate(veloc_file, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-        if (file_id < 0) {
-            std::cerr << "ERROR: HDF5 file creation failed for: " << veloc_file << std::endl;
-            exit(1);
-        }
+		PDI_share("var", &var, PDI_OUT);
 
-        hid_t space_id = H5Screate(H5S_SCALAR);
-        hid_t dset_id  = H5Dcreate(file_id, "var", H5T_NATIVE_INT, space_id,
-                                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-        if (dset_id < 0) {
-            std::cerr << "ERROR: HDF5 dataset creation failed" << std::endl;
-            H5Sclose(space_id);
-            H5Fclose(file_id);
-            exit(1);
-        }
+		hid_t file_id = H5Fcreate(veloc_file, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+		if (file_id < 0) {
+			fprintf(stderr, "ERROR: HDF5 file creation failed for: %s\n", veloc_file);
+			exit(1);
+		}
 
-        herr_t write_status = H5Dwrite(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &var);
-        if (write_status < 0) {
-            std::cerr << "ERROR: HDF5 write failed at iteration " << ii << std::endl;
-            H5Dclose(dset_id);
-            H5Sclose(space_id);
-            H5Fclose(file_id);
-            exit(1);
-        }
+		hid_t space_id = H5Screate(H5S_SCALAR);
+		hid_t dset_id = H5Dcreate(file_id, "var", H5T_NATIVE_INT, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		if (dset_id < 0) {
+			fprintf(stderr, "ERROR: HDF5 dataset creation failed\n");
+			H5Sclose(space_id);
+			H5Fclose(file_id);
+			exit(1);
+		}
 
-        H5Dclose(dset_id);
-        H5Sclose(space_id);
-        H5Fclose(file_id);
+		herr_t write_status = H5Dwrite(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &var);
+		if (write_status < 0) {
+			fprintf(stderr, "ERROR: HDF5 write failed at iteration %d\n", ii);
+			H5Dclose(dset_id);
+			H5Sclose(space_id);
+			H5Fclose(file_id);
+			exit(1);
+		}
 
-        if (H5Fis_hdf5(veloc_file) <= 0) {
-            std::cerr << "TEST 03_1 FAILED : routed file is not a valid HDF5 file: " << veloc_file << std::endl;
-            exit(1);
-        }
+		H5Dclose(dset_id);
+		H5Sclose(space_id);
+		H5Fclose(file_id);
 
-        PDI_event("end");
-        PDI_reclaim("var");
-    }
+		if (H5Fis_hdf5(veloc_file) <= 0) {
+			fprintf(stderr, "TEST 03_1 FAILED: routed file is not a valid HDF5 file: %s\n", veloc_file);
+			exit(1);
+		}
 
-    std::cout << "TEST 03_1 PASSED" << std::endl;
+		PDI_event("end");
+		PDI_reclaim("var");
+	}
 
-    PDI_finalize();
-    MPI_Finalize();
+	printf("TEST 03_1 PASSED\n");
 
-    return 0;
+	PDI_finalize();
+	MPI_Finalize();
+
+	return 0;
 }
