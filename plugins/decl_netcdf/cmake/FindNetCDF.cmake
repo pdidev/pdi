@@ -215,6 +215,37 @@ function(_NetCDF_find_CMAKE)
 	# 2. Search for the config file, checking the active module path BEFORE standard system paths
 	find_package(netCDF CONFIG QUIET ${_NetCDF_HINTS})
 
+    # --- "GATEKEEPER INTERCEPTOR" to validate what CMake found
+    if(${netCDF_FOUND})
+        set(_NetCDF_VALID TRUE)
+        
+        # Check: Is the found version older than what our library requested? (e.g., 4.7.4 < 4.8)
+        if(NetCDF_FIND_VERSION AND netCDF_VERSION VERSION_LESS NetCDF_FIND_VERSION)
+            set(_NetCDF_VALID FALSE)
+        endif()
+        
+        # If the candidate is invalid (like the cluster's system 4.7.4), reject it
+        if(NOT _NetCDF_VALID)
+            if(NOT "${NetCDF_FIND_QUIETLY}")
+                message(STATUS "Rejected unsuitable NetCDF version ${netCDF_VERSION} found at system path.")
+            endif()
+            
+            # Wipe CMake's memory of this bad find so it doesn't pollute the build
+            unset(netCDF_FOUND CACHE)
+            unset(netCDF_VERSION CACHE)
+            unset(netCDF_DIR CACHE)
+            
+            # Fallback Strategy: If we have a loaded module prefix, force CMake to search 
+            # ONLY there, completely ignoring standard system directories like /usr/lib
+            if(_NetCDF_PREFIX)
+                find_package(netCDF CONFIG QUIET HINTS "${_NetCDF_PREFIX}" NO_DEFAULT_PATH)
+            else()
+                set(netCDF_FOUND FALSE)
+            endif()
+        endif()
+    endif()
+    # ---
+
 	if("${netCDF_FOUND}")
 		# Forward the variables in a consistent way.
 		set(NetCDF_FOUND TRUE)
