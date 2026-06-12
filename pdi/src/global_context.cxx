@@ -35,6 +35,7 @@
 #include <unordered_set>
 #include <vector>
 
+
 #include <dlfcn.h>
 #include <unistd.h>
 
@@ -318,7 +319,6 @@ Global_context::Global_context(PC_tree_t conf)
 	if (data_definition_location.empty()) {
 		m_logger.warn("No data (or metadata) defined in specification tree");
 	}
-
 
 	m_callbacks.call_init_callbacks();
 	m_logger.info("Initialization successful");

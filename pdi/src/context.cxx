@@ -42,11 +42,11 @@ using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 
-Context::Iterator::Iterator(const unordered_map<string, unique_ptr<Data_descriptor>>::iterator& data)
+Context::Iterator::Iterator(const Descriptors_map::iterator& data)
 	: m_data(data)
 {}
 
-Context::Iterator::Iterator(unordered_map<string, unique_ptr<Data_descriptor>>::iterator&& data)
+Context::Iterator::Iterator(Descriptors_map::iterator&& data)
 	: m_data(std::move(data))
 {}
 
@@ -76,12 +76,12 @@ bool Context::Iterator::operator== (const Iterator& o)
 	return (m_data == o.m_data);
 }
 
-Context::Iterator Context::get_iterator(const std::unordered_map<std::string, unique_ptr<Data_descriptor>>::iterator& data)
+Context::Iterator Context::get_iterator(const Descriptors_map::iterator& data)
 {
 	return data;
 }
 
-Context::Iterator Context::get_iterator(std::unordered_map<std::string, unique_ptr<Data_descriptor>>::iterator&& data)
+Context::Iterator Context::get_iterator(Descriptors_map::iterator&& data)
 {
 	return std::move(data);
 }

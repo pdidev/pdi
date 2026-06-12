@@ -61,7 +61,7 @@ private:
 	std::unordered_map<std::string, Datatype_template_parser> m_datatype_parsers;
 
 	/// Descriptors of the data
-	std::unordered_map<std::string, std::unique_ptr<Data_descriptor>> m_descriptors;
+	Descriptors_map m_descriptors;
 
 	/// The plugins, this should be late in the list to be destroyed early
 	Plugin_store m_plugins;

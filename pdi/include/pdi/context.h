@@ -43,15 +43,29 @@ namespace PDI {
 class PDI_EXPORT Context
 {
 public:
+	class String_hash
+		: public std::hash<std::string>
+		, public std::hash<std::string_view>
+	{
+	public:
+		using is_transparent = void;
+		using std::hash<std::string>::operator();
+		using std::hash<std::string_view>::operator();
+
+		auto operator() (char const * key) const noexcept { return std::hash<std::string_view>{}(key); }
+	};
+
+	using Descriptors_map = std::unordered_map<std::string, std::unique_ptr<Data_descriptor>, String_hash, std::equal_to<void>>;
+
 	/** An iterator used to go through the descriptor store.
 	 */
 	class Iterator
 	{
 		friend class Context;
 		/// The iterator this wraps
-		std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator m_data;
-		Iterator(const std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator& data);
-		Iterator(std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator&& data);
+		Descriptors_map::iterator m_data;
+		Iterator(const Descriptors_map::iterator& data);
+		Iterator(Descriptors_map::iterator&& data);
 
 	public:
 		Data_descriptor* operator->();
@@ -63,12 +77,12 @@ public:
 
 	/** A function that parses a PC_tree_t to create a datatype_template
 	 */
-	typedef std::function<Datatype_template_sptr(Context&, PC_tree_t)> Datatype_template_parser;
+	using Datatype_template_parser = std::function<Datatype_template_sptr(Context&, PC_tree_t)>;
 
 protected:
-	Iterator get_iterator(const std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator& data);
+	Iterator get_iterator(const Descriptors_map::iterator& data);
 
-	Iterator get_iterator(std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator&& data);
+	Iterator get_iterator(Descriptors_map::iterator&& data);
 
 public:
 	virtual ~Context();
