@@ -32,6 +32,8 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* Added ability to require some files in tests running in clean directory to fix
+  [#699](https://github.com/pdidev/pdi/issues/699)
 
 #### Changed
 
@@ -40,6 +42,8 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* Correctly genrerate test directory name to prevent random failures
+  [#700](https://github.com/pdidev/pdi/issues/700)
 
 #### Security
 
