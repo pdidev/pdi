@@ -39,6 +39,7 @@ if(NOT TARGET benchmark::benchmark)
   option(BENCHMARK_ENABLE_TESTING "Enable testing of the benchmark library." OFF)
   option(BENCHMARK_ENABLE_WERROR "Build Release candidates with -Werror." OFF)
   option(BENCHMARK_ENABLE_INSTALL "Enable installation of benchmark. (Projects embedding benchmark may want to turn this OFF.)" OFF)
+  set(BENCHMARK_ENABLE_DOXYGEN OFF CACHE BOOL "Disable benchmark doxygen documentation" FORCE)
   add_subdirectory("../../vendor/benchmark-4ed29ae/" "benchmark" EXCLUDE_FROM_ALL)
 endif()
 

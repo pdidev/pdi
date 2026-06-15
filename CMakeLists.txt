@@ -36,6 +36,29 @@ project(PDI_DIST LANGUAGES C CXX)
 
 
 
+### Doxygen path protection wrapper
+
+find_program(SYSTEM_DOXYGEN_EXECUTABLE NAMES doxygen)
+
+if(SYSTEM_DOXYGEN_EXECUTABLE)
+	set(DOXYGEN_WRAPPER "${CMAKE_BINARY_DIR}/doxygen_wrapper.sh")
+
+	if(NOT EXISTS "${DOXYGEN_WRAPPER}")
+		file(WRITE "${DOXYGEN_WRAPPER}"
+			"#!/bin/sh\n"
+			"unset LD_LIBRARY_PATH\n"
+			"exec \"${SYSTEM_DOXYGEN_EXECUTABLE}\" \"$@\"\n"
+		)
+		execute_process(COMMAND chmod +x "${DOXYGEN_WRAPPER}")
+	endif()
+
+	set(DOXYGEN_EXECUTABLE "${DOXYGEN_WRAPPER}" CACHE FILEPATH "Path to doxygen wrapper" FORCE)
+else()
+	message(STATUS " Warning: Doxygen binary was not found on the system. Skipping wrapper creation.")
+endif()
+
+
+
 ### Build options
 
 ## Global options
@@ -324,6 +347,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 			-DHDF5_BUILD_EXAMPLES:BOOL=OFF
 			-DHDF5_BUILD_TOOLS:BOOL=ON
 			-DHDF5_BUILD_UTILS:BOOL=OFF
+			-DHDF5_BUILD_DOC:BOOL=OFF
 			"-DHDF5_INSTALL_BIN_DIR:STRING=${CMAKE_INSTALL_BINDIR}"
 			"-DHDF5_INSTALL_CMAKE_DIR:STRING=${CMAKE_INSTALL_DATADIR}/cmake/hdf5"
 			"-DHDF5_INSTALL_DATA_DIR:STRING=${CMAKE_INSTALL_DATADIR}/hdf5"
@@ -388,6 +412,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			-DNETCDF_ENABLE_EXAMPLES:BOOL=OFF
 			-DNETCDF_ENABLE_FILTER_TESTING:BOOL=OFF
 			-DNETCDF_ENABLE_TESTS:BOOL=OFF
+			-DNETCDF_ENABLE_DOXYGEN:BOOL=OFF
 		VERSION 4.8
 	)
 	if("${NETCDF_FOUND}")
