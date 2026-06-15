@@ -4,9 +4,12 @@
 #include "catalyst.hpp" // ???
 #include "catalyst_plugin_structured_ghost.h" // ???
 
+#include <unordered_set>
+
 #include <pdi/context.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
+
 
 struct conduit_node_impl; // ??
 typedef struct conduit_node_impl conduit_node; // ??
@@ -24,6 +27,8 @@ typedef struct conduit_node_impl conduit_node; // ??
 class catalyst_plugin: public PDI::Plugin
 {
 public:
+	static std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> dependencies() { return {{"mpi"}, {"mpi"}}; }
+
 	/// @brief Builds a catalsyt_plugin specification tree from its yaml config
 	catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree);
 
