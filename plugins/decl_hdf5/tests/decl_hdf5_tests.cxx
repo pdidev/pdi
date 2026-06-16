@@ -931,7 +931,7 @@ plugins:
 	ASSERT_GE(status, 0);
 
 #if defined(__clang__) && (__clang_major__ == 15)
-// Skipping the numerical comparaison because Clang 15 has known issues with ranges.
+// Skipping the numerical comparison because Clang 15 has known issues with ranges.
 #else
 	EXPECT_THAT(read_float_array, testing::ElementsAreArray(test_array | std::views::transform([](std::array<double, N> const & aref) {
 																return testing::Pointwise(testing::FloatEq(), aref);
