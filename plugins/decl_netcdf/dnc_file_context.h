@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -109,7 +109,6 @@ public:
 	 * \param other Dnc_file_context to move
 	 */
 	Dnc_file_context(Dnc_file_context&& other) noexcept;
-
 };
 
 } // namespace decl_netcdf
