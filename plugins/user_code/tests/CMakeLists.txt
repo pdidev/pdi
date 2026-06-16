@@ -66,3 +66,8 @@ add_executable(user_code_05_c user_code_test_05.c)
 target_link_libraries(user_code_05_c PDI::PDI_C)
 set_target_properties(user_code_05_c PROPERTIES ENABLE_EXPORTS TRUE)
 add_test(NAME user_code_05_c COMMAND user_code_05_c)
+
+add_executable(user_code_06_c user_code_test_06.c)
+target_link_libraries(user_code_06_c PDI::PDI_C)
+set_target_properties(user_code_06_c PROPERTIES ENABLE_EXPORTS TRUE)
+add_test(NAME user_code_06_c COMMAND user_code_06_c)
