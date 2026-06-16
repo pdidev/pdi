@@ -62,7 +62,26 @@ set(PDI_VENDORED_SPDLOG_DIR     "vendor/spdlog-1.15.3")
 set(PDI_VENDORED_YAML_DIR       "vendor/libyaml-0.2.5")
 set(PDI_VENDORED_ZPP_DIR        "vendor/zpp-1.1.2")
 
+### Doxygen path protection wrapper
 
+find_program(SYSTEM_DOXYGEN_EXECUTABLE NAMES doxygen)
+
+if(SYSTEM_DOXYGEN_EXECUTABLE)
+	set(DOXYGEN_WRAPPER "${CMAKE_BINARY_DIR}/doxygen_wrapper.sh")
+
+	if(NOT EXISTS "${DOXYGEN_WRAPPER}")
+		file(WRITE "${DOXYGEN_WRAPPER}"
+			"#!/bin/sh\n"
+			"unset LD_LIBRARY_PATH\n"
+			"exec \"${SYSTEM_DOXYGEN_EXECUTABLE}\" \"$@\"\n"
+		)
+		execute_process(COMMAND chmod +x "${DOXYGEN_WRAPPER}")
+	endif()
+
+	set(DOXYGEN_EXECUTABLE "${DOXYGEN_WRAPPER}" CACHE FILEPATH "Path to doxygen wrapper" FORCE)
+else()
+	message(STATUS " Warning: Doxygen binary was not found on the system. Skipping wrapper creation.")
+endif()
 
 ### Build options
 
