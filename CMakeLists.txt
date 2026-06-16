@@ -79,6 +79,8 @@ option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 option(BUILD_TIMER_PLUGIN       "Build Timer plugin" ON)
 option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 
+
+
 ### Default build type
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
