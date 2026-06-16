@@ -164,7 +164,6 @@ public:
 	/// call the function that has been registered
 	void call(Context& ctx)
 	{
-		ctx.event("user_code_start_timer");
 		// all exposed aliases that will be unexposed on destroy
 		vector<ExposedAlias> exposed_aliases;
 		for (auto&& alias: m_aliases) {
@@ -180,7 +179,6 @@ public:
 		} catch (...) {
 			ctx.logger().error("While calling user code, caught exception");
 		}
-		ctx.event("user_code_stop_timer");
 	}
 
 }; // class Trigger
