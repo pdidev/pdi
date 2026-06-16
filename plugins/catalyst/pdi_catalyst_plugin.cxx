@@ -171,12 +171,12 @@ void catalyst_plugin::run_catalyst_initialize()
 	context().logger().info("Read mpi_comm.");
 
 	const char* env_p = std::getenv("CATALYST_IMPLEMENTATION_NAME");
-	std::string st_env_p = env_p;
 
 	if (env_p == nullptr) {
 		context().logger().warn("No CATALYST_IMPLEMENTATION_NAME is given");
 		context().logger().warn("The communicator correspond to MPI_COMM_WORD.");
 	} else {
+		std::string st_env_p = env_p;
 		if (st_env_p == "paraview") {
 			// define the communicator if it exist
 
