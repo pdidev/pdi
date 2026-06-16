@@ -227,13 +227,33 @@ struct user_code_plugin: Plugin {
 		if (!PC_status(on_data))
 			each(on_data, [&](PC_tree_t data_name, PC_tree_t datas) {
 				opt_each(datas, [&](PC_tree_t one_data) {
-					each(one_data, [&](PC_tree_t function_name, PC_tree_t parameters) {
-						Trigger data_trigger{to_string(function_name), parameters, 1L};
+					Expression when_exp = 1L;
+					std::string when_string = "true";
+
+					if (!PC_status(PC_get(one_data, ".when"))) {
+						when_exp = Expression(PC_get(one_data, ".when"));
+						when_string = to_string(PC_get(one_data, ".when"));
+					}
+					
+					for (int i = 0; i < PDI::len(one_data, 0); i++) {
+						PC_tree_t function_name = PC_get(one_data, "{%d}", i);
+
+						if (to_string(function_name) == "when") continue;
+
+						PC_tree_t parameters = PC_get(one_data, ".%s", to_string(function_name).c_str());
+
+						Trigger data_trigger{to_string(function_name), parameters, when_exp};
 						ctx.callbacks().add_data_callback(
 							[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
 							to_string(data_name)
 						);
-					});
+						ctx.logger().debug(
+							"User_code setup: data `{}' calls function `{}', under condition `{}'",
+							to_string(data_name),
+							to_string(function_name),
+							when_string
+						);
+					}
 				});
 			});
 

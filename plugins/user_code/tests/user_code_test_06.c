@@ -37,7 +37,7 @@ const char* CONFIG_YAML
 	  "metadata:         \n"
 	  "  cond: int       \n"
 	  "data:             \n"
-	  "  test_var: double\n"
+	  "  test_var: int   \n"
 	  "  input: int      \n"
 	  "  output: int     \n"
 	  "plugins:          \n"
@@ -47,7 +47,11 @@ const char* CONFIG_YAML
 	  "        when: $cond \n"
 	  "        test: {} \n"
 	  "      testing_bis: \n"
-	  "        test: {}  \n";
+	  "        test: {}  \n"
+      "    on_data:     \n"
+	  "      test_var:    \n"
+	  "        when: $cond=1 \n"
+	  "        add_ten: {test_input: $test_var} \n";
 
 static void fct_test_value(int var, const int value, int fatal, const char* fct, int line)
 {
@@ -60,6 +64,14 @@ static void fct_test_value(int var, const int value, int fatal, const char* fct,
 		fflush(stdout);
 	}
 	return;
+}
+
+void add_ten(void)
+{
+    int* buffer = NULL;
+    PDI_access("test_input", (void**)&buffer, PDI_IN);
+    (*buffer)+=10;
+    PDI_release("test_input");
 }
 
 void test(void)
@@ -77,10 +89,16 @@ int main(int argc, char* argv[])
 {
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
-	int cond = 1;
-	PDI_expose("cond", &cond, PDI_OUT);
 
-	int in = CST0;
+    int test_var = 99;
+	
+    int cond = 1;
+	PDI_expose("cond", &cond, PDI_OUT);
+    PDI_expose("test_var", &test_var, PDI_OUT);
+
+    assert(test_var==109);
+	
+    int in = CST0;
 	int out = CST0;
 	PDI_multi_expose(
 		"testing",
@@ -93,6 +111,7 @@ int main(int argc, char* argv[])
 		NULL
 	);
 	if (cond) test_value(out, CST1, FATAL);
+
 	in = CST0;
 	out = CST0;
 	PDI_multi_expose(
