@@ -27,7 +27,7 @@ typedef struct conduit_node_impl conduit_node; // ??
 class catalyst_plugin: public PDI::Plugin
 {
 public:
-	static std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> dependencies() { return { std::set<unordered_set<std::string>{}, {"mpi"}}; }
+	static std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> dependencies() { return { std::unordered_set<std::string>{}, {"mpi"}}; }
 
 	/// @brief Builds a catalsyt_plugin specification tree from its yaml config
 	catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree);
