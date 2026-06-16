@@ -12,7 +12,7 @@ and this project adheres to
 ### For users
 
 #### Added
-* Add test for HDF5 precision conversion
+* Add test for HDF5 precision conversion [#708](https://github.com/pdidev/pdi/issues/708)
 * Improved messages for specification tree errors, with file & line numbers and
   support for file names from Paraconf 1.1,
   [#657](https://github.com/pdidev/pdi/issues/657)
