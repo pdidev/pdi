@@ -234,7 +234,7 @@ struct user_code_plugin: Plugin {
 						when_exp = Expression(PC_get(one_data, ".when"));
 						when_string = to_string(PC_get(one_data, ".when"));
 					}
-					
+
 					for (int i = 0; i < PDI::len(one_data, 0); i++) {
 						PC_tree_t function_name = PC_get(one_data, "{%d}", i);
 
