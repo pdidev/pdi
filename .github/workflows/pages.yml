@@ -67,7 +67,7 @@ jobs:
         name: pages
         path: public
     - name: Publish pages artifact
-      if: "${{ github.event.ref_type == 'tag' }}"
+      if: "${{ github.ref_type == 'tag' }}"
       uses: softprops/action-gh-release@v3
       with:
         files: pages.zip
