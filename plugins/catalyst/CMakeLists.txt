@@ -50,4 +50,5 @@ install(TARGETS pdi_catalyst_plugin
 if("${BUILD_TESTING}")
     add_subdirectory(tests)
     add_subdirectory(tests_ghost)
+    add_subdirectory(tests_comm)
 endif()

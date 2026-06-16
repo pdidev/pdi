@@ -27,4 +27,5 @@ add_test(NAME TestPDICatalystSerial COMMAND ${Python3_EXECUTABLE} "${CMAKE_SOURC
 # test with MPI
 if(${CATALYST_USE_MPI})
   add_test(NAME TestPDICatalystMPI COMMAND ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests/run_test_mpi.py" "${CMAKE_BINARY_DIR}/tests/" "${CMAKE_SOURCE_DIR}/tests/" "${MPIEXEC_EXECUTABLE}")
+  set_property(TEST TestPDICatalystMPI PROPERTY TIMEOUT 10)
 endif()
