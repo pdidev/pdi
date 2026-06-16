@@ -133,6 +133,8 @@ private:
 
 	/// @brief name of event use to call catalyst_initialize
 	std::string m_pdi_initialize_event_name;
+
+	PDI::Expression m_communicator;
 };
 
 PDI_PLUGIN(catalyst)
