@@ -52,7 +52,7 @@ struct PDI_EXPORT Paraconf_wrapper {
 
 /** A region in a YAML "file", from start to end
  */
-class Yaml_region
+class PDI_EXPORT Yaml_region
 {
 public:
 	/// a location in a YAML stream
@@ -113,14 +113,14 @@ public:
  * \param location the location to convert
  * \return the string representation
  */
-std::string to_string(Yaml_region location);
+std::string PDI_EXPORT to_string(Yaml_region location);
 
 /** Converts an optional Yaml region into a string representation for debugging purpose
  * 
  * \param location the location to convert
  * \return the string representation
  */
-std::string to_string(std::optional<Yaml_region> location);
+std::string PDI_EXPORT to_string(std::optional<Yaml_region> location);
 
 /** Returns the length of a node.
  *
