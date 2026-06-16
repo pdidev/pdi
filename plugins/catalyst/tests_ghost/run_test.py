@@ -16,7 +16,6 @@ test_name     = sys.argv[3]
 env = os.environ.copy()
 env["CATALYST_DATA_DUMP_DIRECTORY"] = binary_folder + '/' + test_name
 env["CATALYST_IMPLEMENTATION_NAME"] = 'stub' # need to get the conduit json file for comparison
-# env["CATALYST_IMPLEMENTATION_PATHS"] = '/local/home/jm280892/local_9_12_paraview_catalyst/build_catalyst3/lib/catalyst/'
 
 env["PDI_PLUGIN_PATH"] = binary_folder + '/..'
 
