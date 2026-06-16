@@ -35,7 +35,7 @@
 const char* CONFIG_YAML
 	= "logging: trace    \n"
 	  "metadata:         \n"
-      "  cond: int       \n"
+	  "  cond: int       \n"
 	  "data:             \n"
 	  "  test_var: double\n"
 	  "  input: int      \n"
@@ -43,11 +43,11 @@ const char* CONFIG_YAML
 	  "plugins:          \n"
 	  "  user_code:      \n"
 	  "    on_event:     \n"
-      "      testing:    \n"
-      "        when: $cond \n"
-      "        test: {} \n"
-      "      testing_bis: \n" 
-      "        test: {}  \n";
+	  "      testing:    \n"
+	  "        when: $cond \n"
+	  "        test: {} \n"
+	  "      testing_bis: \n"
+	  "        test: {}  \n";
 
 static void fct_test_value(int var, const int value, int fatal, const char* fct, int line)
 {
@@ -77,8 +77,8 @@ int main(int argc, char* argv[])
 {
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
-    int cond = 1;
-    PDI_expose("cond", &cond, PDI_OUT);
+	int cond = 1;
+	PDI_expose("cond", &cond, PDI_OUT);
 
 	int in = CST0;
 	int out = CST0;
@@ -92,10 +92,10 @@ int main(int argc, char* argv[])
 		PDI_IN, // import function output
 		NULL
 	);
-	if(cond) test_value(out, CST1, FATAL);
-    in = CST0;
+	if (cond) test_value(out, CST1, FATAL);
+	in = CST0;
 	out = CST0;
-    PDI_multi_expose(
+	PDI_multi_expose(
 		"testing_bis",
 		"input",
 		&in,
@@ -105,6 +105,6 @@ int main(int argc, char* argv[])
 		PDI_IN, // import function output
 		NULL
 	);
-    test_value(out, CST1, FATAL);
+	test_value(out, CST1, FATAL);
 	PDI_finalize();
 }
