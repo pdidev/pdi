@@ -10,6 +10,7 @@
 
 #include "catalyst.hpp"
 
+#include <cstdlib> // need to retrive the environement variable
 #include <iostream>
 #include <stack>
 #include <unordered_map>
@@ -90,12 +91,19 @@ void catalyst_plugin::process_pdi_init()
 
 void catalyst_plugin::process_multi_event(const std::string& event_name)
 {
-	if (event_name == this->m_pdi_initialize_event_name) {
-		context().logger().info("call run_catalyst_initialize in event `{}'...", event_name);
+	int world_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+	if (event_name == this->m_pdi_initialize_event_name && !catalyst_is_initialize) {
+		context().logger().info("call run_catalyst_initialize in event `{}'... rank `{}'", event_name, world_rank);
 		this->run_catalyst_initialize();
+		context().logger().info("call end run_catalyst_initialize in event `{}'... rank `{}'", event_name, world_rank);
 	} else {
 		this->process_event(event_name);
 	}
+
+	context().logger().info("Je suis arriver a la barrier `{}'... rank `{}'", event_name, world_rank);
+	MPI_Barrier(MPI_COMM_WORLD);
 }
 
 void catalyst_plugin::process_event(const std::string& event_name)
@@ -105,7 +113,20 @@ void catalyst_plugin::process_event(const std::string& event_name)
 			context().logger().info("call run_catalyst_execute in event `{}'...", event_name);
 			run_catalyst_execute();
 		} else {
+#ifdef CATALYST_IS_PARALLEL
+			if (m_communicator) {
+				MPI_Comm tmp_comm = *(static_cast<const MPI_Comm*>(PDI::Ref_r{m_communicator.to_ref(context())}.get()));
+				if (tmp_comm != MPI_COMM_NULL) {
+					throw PDI::System_error("Try to execute catalyst_execute before catalyst_initialize.");
+				} else {
+					context().logger().debug("catalyst_execute is not called for this process.");
+				}
+			} else {
+				throw PDI::System_error("Try to execute catalyst_execute before catalyst_initialize.");
+			}
+#else
 			throw PDI::System_error("Try to execute catalyst_execute before catalyst_initialize.");
+#endif
 		}
 	}
 }
@@ -142,26 +163,52 @@ void catalyst_plugin::run_catalyst_initialize()
 	// node["catalyst/scripts/[name_of_the_script]/filename"] = string
 	// node["catalyst/scripts/[name_of_the_script]/args"] = string
 
+
+	bool process_run_catalayst = true;
+
 #ifdef CATALYST_IS_PARALLEL
+
 	context().logger().info("Read mpi_comm.");
 
-	auto communicator_spec = PC_get(this->m_spec_tree, ".communicator");
-	if (!PC_status(communicator_spec)) {
-		PDI::Expression communicator = PDI::to_string(communicator_spec);
-		MPI_Comm tmp_comm = *(static_cast<const MPI_Comm*>(PDI::Ref_r{communicator.to_ref(context())}.get()));
+	const char* env_p = std::getenv("CATALYST_IMPLEMENTATION_NAME");
+	std::string st_env_p = env_p;
 
-		// create communicator node
-		auto communicator_node = node["catalyst/mpi_comm"];
-
-		// set the fortran MPI_COMMUNICATOR
-		communicator_node.set_int64(static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
-
-		context().logger().debug("value of the communicator is {}:", static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
+	if (env_p == nullptr) {
+		context().logger().warn("No CATALYST_IMPLEMENTATION_NAME is given");
+		context().logger().warn("The communicator correspond to MPI_COMM_WORD.");
 	} else {
-		// context().logger().warn("value of the communicator is {}:", static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
-		//throw PDI::Spectree_error{communicator_spec, "No communicator is given."};
-		context().logger().warn("No communicator is given by default the communicator is MPI_COMM_WORD.");
+		if (st_env_p == "paraview") {
+			// define the communicator if it exist
+
+			auto communicator_spec = PC_get(this->m_spec_tree, ".communicator");
+			if (!PC_status(communicator_spec)) {
+				m_communicator = PDI::to_string(communicator_spec);
+				MPI_Comm tmp_comm = *(static_cast<const MPI_Comm*>(PDI::Ref_r{m_communicator.to_ref(context())}.get()));
+
+				// create communicator node
+				auto communicator_node = node["catalyst/mpi_comm"];
+
+				// set the fortran MPI_COMMUNICATOR
+				communicator_node.set_int64(static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
+
+				context().logger().debug("value of the communicator is {}:", static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
+
+				if (tmp_comm == MPI_COMM_NULL) {
+					process_run_catalayst = false;
+				}
+			} else {
+				// context().logger().warn("value of the communicator is {}:", static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
+				//throw PDI::Spectree_error{communicator_spec, "No communicator is given."};
+				context().logger().warn("No communicator is given by default the communicator is MPI_COMM_WORD.");
+			}
+		} else if (st_env_p == "stub") {
+			context().logger().warn("The communicator correspond to MPI_COMM_WORD.");
+		} else {
+			throw PDI::System_error("CATALYST_IMPLEMENTATION_NAME is not recognized: `{}'", env_p);
+		}
 	}
+
+
 #else
 	context().logger().info("Catalyst is used with no mpi");
 	auto communicator_spec = PC_get(this->m_spec_tree, ".communicator");
@@ -173,6 +220,7 @@ void catalyst_plugin::run_catalyst_initialize()
 			PDI::to_string(communicator_spec)
 		};
 	}
+
 #endif
 
 	// The following node is supported in the last version of Paraview
@@ -182,18 +230,15 @@ void catalyst_plugin::run_catalyst_initialize()
 	// node["catalyst/pipelines"]
 	// node["catalyst/python_path"]
 
-	if (context().logger().level() == spdlog::level::debug || context().logger().level() == spdlog::level::trace) {
-		context().logger().debug("Print node before catalyst_initialize call...");
-		node.print();
+	if (process_run_catalayst) {
+		context().logger().debug("catalyst_initialize call...");
+		auto result = catalyst_initialize(conduit_cpp::c_node(&node));
+		if (result != catalyst_status_ok) {
+			context().logger().error("catalyst_initialize failure");
+			throw PDI::System_error("catalyst_initialize failure");
+		}
+		catalyst_is_initialize = true;
 	}
-
-	context().logger().debug("catalyst_initialize call...");
-	auto result = catalyst_initialize(conduit_cpp::c_node(&node));
-	if (result != catalyst_status_ok) {
-		// context().logger().error("catalyst_initialize failure");
-		throw PDI::System_error("catalyst_initialize failure");
-	}
-	catalyst_is_initialize = true;
 }
 
 void catalyst_plugin::read_info_for_creating_vtk_ghost(
