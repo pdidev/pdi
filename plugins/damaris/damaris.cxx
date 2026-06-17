@@ -104,7 +104,7 @@ public:
 			ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) { this->data(name, ref); }, desc.first);
 			data_cb_concat.append(desc.first + ", ");
 		}
-		context().logger().info("Data for callback : {}", data_cb_concat);
+		context().logger().debug("Data for callback : {}", data_cb_concat);
 
 		//Sim configured event names
 		for (auto&& event: m_config.events()) {
@@ -140,21 +140,18 @@ public:
 					void* prm_value_buffer;
 					size_t prm_buffer_size;
 					if (std::find(std::begin(int_numbers_types), std::end(int_numbers_types), prm_type) != std::end(int_numbers_types)) {
-						std::cout << "int_numbers_types contains " << prm_type << " value=" << prm_value << '\n';
 						int prm_long_value = std::atoi(prm_value.c_str());
 						prm_value_buffer = &prm_long_value;
 						prm_buffer_size = sizeof(int);
 
 						int msg_err = m_damaris->damaris_pdi_parameter_set(prm_name.c_str(), prm_value_buffer, prm_buffer_size);
 					} else if (std::find(std::begin(real_numbers_types), std::end(real_numbers_types), prm_type) != std::end(real_numbers_types)) {
-						std::cout << "real_numbers_types contains " << prm_type << '\n';
 						double prm_dbl_value = std::atof(prm_value.c_str());
 						prm_value_buffer = &prm_dbl_value;
 						prm_buffer_size = sizeof(double);
 
 						int msg_err = m_damaris->damaris_pdi_parameter_set(prm_name.c_str(), prm_value_buffer, prm_buffer_size);
 					} else {
-						std::cout << "String === " << prm_type << '\n';
 						std::string prm_string_value = prm_value;
 						prm_value_buffer = &prm_string_value;
 						prm_buffer_size = sizeof(std::string);
@@ -169,7 +166,7 @@ public:
 			if (updatable_parameters.size() > 0) {
 				prm_name_concat.pop_back();
 				prm_name_concat.pop_back();
-				context().logger().info("data `{}' Is a needed metadata for the evaluation of parameters {}", name, prm_name_concat);
+				context().logger().debug("data `{}' is a needed metadata for the evaluation of parameters {}", name, prm_name_concat);
 			}
 		} else if (m_config.is_dataset_to_write(name)) {
 			if (Ref_r rref = ref) {
@@ -177,10 +174,10 @@ public:
 
 				//Only write when autorized!
 				if (ds_write_info.when.to_long(context())) {
-					context().logger().info("data `{}' will be written when = '{}'", name, ds_write_info.when.to_long(context()));
+					context().logger().debug("data `{}' will be written when = '{}'", name, ds_write_info.when.to_long(context()));
 
 					int32_t block = ds_write_info.block.to_long(context());
-					context().logger().info("data `{}' will be written in block = '{}'", name, block);
+					context().logger().debug("data `{}' will be written in block = '{}'", name, block);
 					int64_t position[3]
 						= {ds_write_info.position[0].to_long(context()),
 					       ds_write_info.position[1].to_long(context()),
@@ -189,7 +186,7 @@ public:
 					const void* data = static_cast<const void*>(rref.get());
 
 					if (block > 0) {
-						context().logger().info(
+						context().logger().debug(
 							"data `{}' will be written at: block '{}' and position '{}:{}:{}', when = '{}'",
 							name,
 							block,
@@ -243,9 +240,9 @@ public:
 						for (auto it = after_write_events.begin(); it != after_write_events.end(); it++) {
 							std::string aw_event = it->c_str();
 							if (m_event_handler.is_damaris_api_call_event(aw_event)) {
-								context().logger().info("event `{}' has been triggered", aw_event);
+								context().logger().debug("event `{}' has been triggered", aw_event);
 
-								context().logger().info("is_damaris_api_call_event ( `{}' ) = TRUE", aw_event);
+								context().logger().debug("is_damaris_api_call_event ( `{}' ) = TRUE", aw_event);
 								m_event_handler.damaris_api_call_event(context(), m_damaris, aw_event, {});
 							} else { //Non Damaris call event
 							}
@@ -254,10 +251,11 @@ public:
 					}
 				}
 			} else {
-				context().logger().error("The Damaris need write access over the data (`{}')", name);
+				// context().logger().error("The Damaris need write access on the data (`{}')", name);
+				throw PDI::System_error{"The Damaris need write access on the data `{}' ", name};
 			}
 		} else if (m_config.is_parameter_to_update(name)) {
-			context().logger().info("m_config.is_parameter_to_update('{}') = `{}'", name, m_config.is_parameter_to_update(name));
+			context().logger().debug("m_config.is_parameter_to_update('{}') = `{}'", name, m_config.is_parameter_to_update(name));
 			std::pair<std::string, Desc_type> prm_to_update_info = m_config.get_parameter_to_update_info(name);
 			std::string prm_name = prm_to_update_info.first;
 			size_t size;
@@ -289,17 +287,11 @@ public:
 		//is_client_get !?
 		else if (name == m_config.is_client_dataset_name())
 		{
-			context().logger().info("'{}' == m_config.is_client_dataset_name() = '{}'", name, (name == m_config.is_client_dataset_name()));
+			context().logger().debug("'{}' == m_config.is_client_dataset_name() = '{}'", name, (name == m_config.is_client_dataset_name()));
 
 			if (Ref_w wref = ref) {
-				context().logger().info(
-					":) D) '{}' == m_config.is_client_dataset_name() = '{}' | m_damaris->get_is_client() = '{}'",
-					name,
-					(name == m_config.is_client_dataset_name()),
-					m_damaris->get_is_client()
-				);
 				*static_cast<int*>(wref.get()) = m_damaris->get_is_client();
-				context().logger().info("------------------- CALLED is_client_dataset_name Return is_client = '{}')", m_damaris->get_is_client());
+				context().logger().debug("is_client = '{}', buffer can be written", m_damaris->get_is_client());
 			} else {
 				//MayBe a PDI_multi_expose is under traitement
 				multi_expose_transaction_dataname.emplace_back(name);
@@ -313,7 +305,7 @@ public:
 				int err = m_damaris->damaris_pdi_client_comm_get(&client_comm);
 
 				*static_cast<MPI_Comm*>(wref.get()) = client_comm;
-				context().logger().info("------------------- CALLED is_client_dataset_name Return client_comm SETED)");
+				context().logger().debug("client_comm has been setted");
 			} else {
 				//MayBe a PDI_multi_expose is under traitement
 				multi_expose_transaction_dataname.emplace_back(name);
@@ -344,9 +336,9 @@ public:
 				m_event_handler.damaris_api_call_event(context(), m_damaris, finalize_event_name, multi_expose_transaction_dataname);
 			}
 		} else if (m_event_handler.is_damaris_api_call_event(event_name)) {
-			context().logger().info("event `{}' has been triggered", event_name);
+			context().logger().debug("event `{}' has been triggered", event_name);
 
-			context().logger().info("is_damaris_api_call_event ( `{}' ) = TRUE", event_name);
+			context().logger().debug("is_damaris_api_call_event ( `{}' ) = TRUE", event_name);
 			m_event_handler.damaris_api_call_event(context(), m_damaris, event_name, multi_expose_transaction_dataname);
 
 			multi_expose_transaction_dataname.clear();
@@ -371,7 +363,7 @@ public:
 
 	void damaris_init()
 	{
-		context().logger().info("In damaris_init()");
+		context().logger().debug("In damaris_init()");
 		std::string init_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_INITIALIZE);
 		m_event_handler.damaris_api_call_event(context(), m_damaris, init_event_name, multi_expose_transaction_dataname);
 	}
@@ -379,7 +371,7 @@ public:
 	~damaris_plugin()
 	{
 		if (m_config.finalize_on_event().empty() && m_damaris) {
-			context().logger().info("Calling  DAMARIS_FINALIZE in ~damaris_plugin()");
+			context().logger().debug("Calling  DAMARIS_FINALIZE in ~damaris_plugin()");
 			std::string finalize_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_FINALIZE);
 			m_event_handler.damaris_api_call_event(context(), m_damaris, finalize_event_name, multi_expose_transaction_dataname);
 		}

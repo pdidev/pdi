@@ -69,7 +69,7 @@ namespace damaris_pdi {
 // Constructer calls damaris_init()
 Damaris_wrapper::Damaris_wrapper(Context& ctx, const char* xmlConfigObject, MPI_Comm comm)
 {
-	ctx.logger().info("Damaris lib initialization starts...");
+	ctx.logger().debug("Damaris lib initialization starts...");
 	int status = damaris_pdi_initialize(xmlConfigObject, comm);
 	if (status != DAMARIS_OK) {
 		throw Plugin_error{"Cannot initialize Damaris library"};

@@ -70,7 +70,7 @@ bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const stri
 {
 	auto&& result = descs.emplace(name, desc_type);
 	if (!result.second) {
-		ctx.logger().warn("Duplicate use of a descriptor `{}')", name);
+		ctx.logger().debug("Duplicate use of a descriptor `{}')", name);
 	}
 	return result.second;
 }
@@ -79,7 +79,7 @@ bool load_event(unordered_map<string, Event_type>& events, Context& ctx, const s
 {
 	auto&& result = events.emplace(name, event_type);
 	if (!result.second) {
-		ctx.logger().warn("Duplicate use of a descriptor `{}')", name);
+		ctx.logger().debug("Duplicate event name `{}' in `{}' (previously defined in `{}')", result.first->first, event_names.at(event_type), event_names.at(result.first->second));
 	}
 	return result.second;
 }
@@ -426,8 +426,7 @@ void Damaris_cfg::parse_parameters_tree(Context& ctx, PC_tree_t parameters_tree_
 
 
 				} else {
-					std::cerr << "ERROR: damaris_cfg unrecogognized parameter map string: " << key << std::endl;
-					throw std::runtime_error("ERROR: damaris_cfg unrecogognized parameter map string: " + key);
+					throw PDI::System_error{"ERROR: damaris_cfg unrecogognized parameter map string: `{}'", key};
 				}
 			});
 			//m_parameter_expression.emplace(prmxml.param_name_, prmxml.param_value_);
@@ -718,7 +717,6 @@ void Damaris_cfg::parse_storages_tree(Context& ctx, PC_tree_t storages_tree_list
 						std::exit(EXIT_FAILURE);
 					}
 				} else {
-					std::cerr << "ERROR: damaris_cfg unrecogognized storage map string: " << key << std::endl;
 					throw Spectree_error{storage_tree, "The key `{}' doesn't exist for a storage.", key};
 				}
 			});
@@ -845,15 +843,12 @@ void Damaris_cfg::parse_log_tree(Context& ctx, PC_tree_t config)
 		{{"_SIM_LOG_NAME_", log_file_name}, {"_LOG_ROTATION_SIZE_", log_rotation_size}, {"_LOG_FLUSH_", log_flush}, {"_LOG_LEVEL_", log_level}}
 	);
 
-	ctx.logger().info("begin update xml for log");
 	try {
 		//Update the xml config
 		damarisXMLModifyModel.RepalceWithRegEx(find_replace_map);
 	} catch (...) {
-		ctx.logger().info("error in RepalceWithRegEx");
-		throw Value_error{"error in RepalceWithRegEx\n The XML file for damaris is`{}'", damarisXMLModifyModel.GetConfigString()};
+		throw Value_error{"Error in RepalceWithRegEx in parse_log_tree\n The XML file for damaris is`{}'", damarisXMLModifyModel.GetConfigString()};
 	}
-	ctx.logger().info("end update xml for log");
 }
 
 bool Damaris_cfg::is_dataset_to_write(std::string data_name)

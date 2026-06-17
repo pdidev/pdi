@@ -94,7 +94,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		damaris_pdi_init(ctx, m_damaris, xml_config_object.c_str());
 
 		if (m_start_on_event.empty()) {
-			ctx.logger().info("Plugin sent damaris_start() to Damaris, in initialize");
+			ctx.logger().debug("Plugin sent damaris_start() to Damaris, in initialize");
 
 			std::string start_event_name = this->get_event_name(Event_type::DAMARIS_START);
 			PDI_status_t status = PDI_event(start_event_name.c_str());
@@ -105,14 +105,14 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		// function until they are asked to stop by clients. On clients,
 		// is_client will be set to 1 (0 on servers).
 		if (!m_damaris) {
-			ctx.logger().warn("Trying to call damaris_start() before plugin initialization (`{}')", event_name);
+			//ctx.logger().error("Trying to call damaris_start() before plugin initialization (`{}')", event_name);
+			throw PDI::System_error("Trying to call damaris_start() before plugin initialization (`{}')", event_name);
 			return;
 		}
 		std::string arg1_name;
 		int is_client;
 		int err = m_damaris->damaris_pdi_start(&is_client);
 		m_damaris->set_is_client(is_client);
-		//ctx.logger().info("------------------- CALLED damaris_pdi_start Return IS_CLIENT = '{}')", is_client);
 
 		int arg_pos = 0;
 		int nb_awaited_args = 1;
@@ -123,10 +123,10 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		//for (auto it = expose_dataname.rbegin(); it != expose_dataname.rend(); ++it) {
 		//while (arg_pos < nb_awaited_args)
 		for (; it != expose_dataname.end(); it++) {
-			ctx.logger().info("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
+			ctx.logger().debug("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
 
 			if (arg_pos == 1 && strcmp("is_client", it->c_str()) == 0) {
-				ctx.logger().info("------------------- CALLED damaris_pdi_start {} = '{}')", arg1_name, is_client);
+				ctx.logger().debug("Calling damaris_pdi_start {} = '{}')", arg1_name, is_client);
 
 				int* inout_is_client;
 				PDI_access(it->c_str(), (void**)&inout_is_client, PDI_INOUT);
@@ -178,10 +178,10 @@ void Damaris_api_call_handler::damaris_api_call_event(
 	else if (event_name == event_names.at(Event_type::DAMARIS_PARAMETER_GET))
 	{
 		if (!m_damaris) {
-			ctx.logger().warn("Trying to call damaris_parameter_get() before plugin initialization (`{}')", event_name);
+			//ctx.logger().error("Trying to call damaris_parameter_get() before plugin initialization (`{}')", event_name);
+			throw PDI::System_error("Trying to call damaris_parameter_get() before plugin initialization (`{}')", event_name);
 			return;
 		}
-		ctx.logger().info("------------------- INNNNN DAMARIS_PARAMETER_GET Event...");
 
 		char* var_name;
 		std::string arg1_name = "prm_name";
@@ -196,13 +196,10 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		if (!data_name.empty()) {
 			var_name = (char*)data_name.c_str();
 			buffer = va_arg(extra_args, void*);
-			ctx.logger().info("------------------- INNNNN DAMARIS_PARAMETER_GET Event.. EXTRA ARGS.... AFTER buffer");
 			*size = va_arg(extra_args, int);
-			ctx.logger().info("------------------- INNNNN DAMARIS_PARAMETER_GET Event.. EXTRA ARGS.... AFTER size...");
 
-
-			ctx.logger().info(
-				"------------------- CALLING damaris_pdi_parameter_get arg_pos({}==='{}', {}==='{}', {}==='{}')",
+			ctx.logger().debug(
+				"Calling damaris_pdi_parameter_get arg_pos({}==='{}', {}==='{}', {}==='{}')",
 				arg1_name,
 				var_name,
 				arg2_name,
@@ -218,7 +215,8 @@ void Damaris_api_call_handler::damaris_api_call_event(
 	else if (event_name == event_names.at(Event_type::DAMARIS_PARAMETER_SET))
 	{
 		if (!m_damaris) {
-			ctx.logger().warn("Trying to call damaris_parameter_set() before plugin initialization (`{}')", event_name);
+			//ctx.logger().error("Trying to call damaris_parameter_set() before plugin initialization (`{}')", event_name);
+			throw PDI::System_error("Trying to call damaris_parameter_set() before plugin initialization (`{}')", event_name);
 			return;
 		}
 
@@ -237,8 +235,8 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			buffer = va_arg(extra_args, void*);
 			*size = va_arg(extra_args, size_t);
 
-			ctx.logger().info(
-				"------------------- CALLING damaris_pdi_parameter_set arg_pos({}==='{}', {}==='{}', {}==='{}')",
+			ctx.logger().debug(
+				"Calling damaris_pdi_parameter_set arg_pos({}==='{}', {}==='{}', {}==='{}')",
 				arg1_name,
 				var_name,
 				arg2_name,
@@ -266,7 +264,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		//for (auto it = expose_dataname.rbegin(); it != expose_dataname.rend(); ++it) {
 		//while (arg_pos < nb_awaited_args)
 		for (; it != expose_dataname.end(); it++) {
-			ctx.logger().info("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
+			ctx.logger().debug("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
 
 			if (arg_pos == 1) {
 				static MPI_Comm* comm;
@@ -283,7 +281,8 @@ void Damaris_api_call_handler::damaris_api_call_event(
 	else if (event_name == event_names.at(Event_type::DAMARIS_SET_POSITION))
 	{
 		if (!m_damaris) {
-			ctx.logger().warn("Trying to call damaris_set_position() before plugin initialization (`{}')", event_name);
+			//ctx.logger().error("Trying to call damaris_set_position() before plugin initialization (`{}')", event_name);
+			throw PDI::System_error("Trying to call damaris_set_position() before plugin initialization (`{}')", event_name);
 			return;
 		}
 
@@ -313,7 +312,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			//for (auto it = expose_dataname.rbegin(); it != expose_dataname.rend(); ++it) {
 			//while (arg_pos < nb_awaited_args)
 			for (; it != expose_dataname.end(); it++) {
-				ctx.logger().info("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
+				ctx.logger().debug("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
 
 				if (arg_pos == 1) {
 					PDI_access(it->c_str(), (void**)&var_name, PDI_IN);
@@ -329,8 +328,8 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			}
 		}
 
-		ctx.logger().info(
-			"------------------- CALLING damaris_pdi_set_position arg_pos({}==='{}', {}==='{}')",
+		ctx.logger().debug(
+			"Calling damaris_pdi_set_position arg_pos({}==='{}', {}==='{}')",
 			arg1_name,
 			var_name,
 			arg2_name,
@@ -342,7 +341,8 @@ void Damaris_api_call_handler::damaris_api_call_event(
 	else if (event_name == event_names.at(Event_type::DAMARIS_WRITE))
 	{
 		if (!m_damaris) {
-			ctx.logger().warn("Trying to call damaris_write() before plugin initialization (`{}')", event_name);
+			//ctx.logger().error("Trying to call damaris_write() before plugin initialization (`{}')", event_name);
+			throw PDI::System_error("Trying to call damaris_write() before plugin initialization (`{}')", event_name);
 			return;
 		}
 		char* var_name;
@@ -372,7 +372,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			//for (auto it = expose_dataname.rbegin(); it != expose_dataname.rend(); ++it) {
 			//while (arg_pos < nb_awaited_args)
 			for (; it != expose_dataname.end(); it++) {
-				ctx.logger().info("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
+				ctx.logger().debug("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
 
 				if (arg_pos == 1) {
 					PDI_access(it->c_str(), (void**)&var_name, PDI_IN);
@@ -388,14 +388,15 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			}
 		}
 
-		ctx.logger().info("------------------- CALLING damaris_pdi_write arg_pos({}==='{}', {}==={})", arg1_name, var_name, arg2_name, *(int*)data);
+		ctx.logger().debug("Calling damaris_pdi_write arg_pos({}==='{}', {}==={})", arg1_name, var_name, arg2_name, *(int*)data);
 		int err = m_damaris->damaris_pdi_write((const char*)var_name, (void*)data);
 	}
 	// DAMARIS_SET_BLOCK_POSITION
 	else if (event_name == event_names.at(Event_type::DAMARIS_SET_BLOCK_POSITION))
 	{
 		if (!m_damaris) {
-			ctx.logger().warn("Trying to call damaris_set_position() before plugin initialization (`{}')", event_name);
+			//ctx.logger().error("Trying to call damaris_set_position() before plugin initialization (`{}')", event_name);
+			throw PDI::System_error("Trying to call damaris_set_position() before plugin initialization (`{}')", event_name);
 			return;
 		}
 
@@ -424,7 +425,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			//for (auto it = expose_dataname.rbegin(); it != expose_dataname.rend(); ++it) {
 			//while (arg_pos < nb_awaited_args)
 			for (; it != expose_dataname.end(); it++) {
-				ctx.logger().info("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
+				ctx.logger().debug("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
 
 				if (arg_pos == 1) {
 					PDI_access(it->c_str(), (void**)&var_name, PDI_IN);
@@ -444,8 +445,8 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			}
 		}
 
-		ctx.logger().info(
-			"------------------- CALLING damaris_pdi_set_block_position arg_pos({}==='{}', {}==='{}', {}==='{}')",
+		ctx.logger().debug(
+			"Calling damaris_pdi_set_block_position arg_pos({}==='{}', {}==='{}', {}==='{}')",
 			arg1_name,
 			var_name,
 			arg2_name,
@@ -459,7 +460,8 @@ void Damaris_api_call_handler::damaris_api_call_event(
 	else if (event_name == event_names.at(Event_type::DAMARIS_WRITE_BLOCK))
 	{
 		if (!m_damaris) {
-			ctx.logger().warn("Trying to call damaris_write() before plugin initialization (`{}')", event_name);
+			//ctx.logger().error("Trying to call damaris_write() before plugin initialization (`{}')", event_name);
+			throw PDI::System_error("Trying to call damaris_write() before plugin initialization (`{}')", event_name);
 			return;
 		}
 		char* var_name;
@@ -488,7 +490,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			//for (auto it = expose_dataname.rbegin(); it != expose_dataname.rend(); ++it) {
 			//while (arg_pos < nb_awaited_args)
 			for (; it != expose_dataname.end(); it++) {
-				ctx.logger().info("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
+				ctx.logger().debug("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
 
 				if (arg_pos == 1) {
 					PDI_access(it->c_str(), (void**)&var_name, PDI_IN);
@@ -508,8 +510,8 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			}
 		}
 
-		ctx.logger().info(
-			"------------------- CALLING damaris_pdi_write_block arg_pos({}==='{}', {}==='{}', {}==='{}')",
+		ctx.logger().debug(
+			"Calling damaris_pdi_write_block arg_pos({}==='{}', {}==='{}', {}==='{}')",
 			arg1_name,
 			var_name,
 			arg2_name,
@@ -528,27 +530,32 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		if (m_damaris) {
 			int err = m_damaris->damaris_pdi_end_iteration();
 
-			ctx.logger().info("Plugin sent damaris_end_iteration() to Damaris");
+			//TODO: only one rank should display the info
+			ctx.logger().info("Data sent to Damaris (end of iteration)");
 		} else {
-			ctx.logger().warn("Trying to call damaris_end_iteration() before plugin initialization (`{}')", event_name);
+			//ctx.logger().error("Trying to call damaris_end_iteration() before plugin initialization (`{}')", event_name);
+			throw PDI::System_error("Trying to call damaris_end_iteration() before plugin initialization (`{}')", event_name);
 		}
 	} else if (event_name == event_names.at(Event_type::DAMARIS_STOP)) {
-		// DAMARIS_STOP is called and the Daamris server processes will return from the damaris_start() call
+		// DAMARIS_STOP is called and the Damaris server processes will return from the damaris_start() call
 		if (!m_damaris) {
-			ctx.logger().warn("Trying to call damaris_strop() before plugin initialization (`{}')", event_name);
+			//ctx.logger().error("Trying to call damaris_stop() before plugin initialization (`{}')", event_name);
+			throw PDI::System_error("Trying to call damaris_stop() before plugin initialization (`{}')", event_name);
 			return;
 		}
 
 		int err = m_damaris->damaris_pdi_stop();
 	} else if (event_name == event_names.at(Event_type::DAMARIS_FINALIZE)) {
 		if (!m_damaris) {
-			ctx.logger().warn("Trying to call damaris_strop() before plugin initialization (`{}')", event_name);
+			//ctx.logger().error("Trying to call damaris_strop() before plugin initialization (`{}')", event_name);
+			throw PDI::System_error("Trying to call damaris_strop() before plugin initialization (`{}')", event_name);
 			return;
 		}
 
 		try {
 			if (m_stop_on_event.empty() && m_damaris->get_is_client()) {
-				ctx.logger().info("Plugin sent damaris_stop() to Damaris, in finalization");
+				//TODO: only one rank should display the info
+				ctx.logger().debug("Plugin sent damaris_stop() to Damaris, in finalization");
 
 				//std::string stop_event_name = this->get_event_name(Event_type::DAMARIS_STOP);
 				//PDI_status_t status = PDI_event(stop_event_name.c_str());
@@ -556,18 +563,23 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				int stop_err = m_damaris->damaris_pdi_stop();
 			}
 
+			//TODO: only one rank should display the info
 			ctx.logger().info("Plugin sent damaris_finalize() to Damaris");
 			int err = m_damaris->damaris_pdi_finalize();
 			if (err == DAMARIS_OK) {
 				ctx.logger().info("Damaris finalized successfully!");
 			}
 		} catch (const std::exception& e) {
-			ctx.logger().error("Issue when finalizing Damaris: {}", e.what());
+			//ctx.logger().error("Issue when finalizing Damaris: {}", e.what());
+			throw PDI::System_error("Issue when finalizing Damaris: {}", e.what());
 		} catch (...) {
-			ctx.logger().error("An issue occurred when finalizing Damaris.");
+			//ctx.logger().error("An issue occurred when finalizing Damaris.");
+			throw PDI::System_error("An issue occurred when finalizing Damaris.");
 		}
 	} else {
 		assert(false && "Unexpected damaris event type");
+		//ctx.logger().warn("Unexpected damaris event type.");
+		throw PDI::System_error("Unexpected damaris event type in calling 'damaris_api_call_event'.");
 	}
 }
 
@@ -579,12 +591,13 @@ void Damaris_api_call_handler::damaris_pdi_init(Context& ctx, unique_ptr<Damaris
 			//TODO: could be replaced by a communicator passed from the simulation!
 		}
 
-		// This creator method calls damaris_initialize(), passin in an XML file, so if we want to
+		// This creator method calls damaris_initialize(), passing in an XML file, so if we want to
 		// pre-fill our xml file, we need to do this somehow before:
 		// PDI_expose("mpi_comm", &main_comm, PDI_INOUT);
 
 		m_damaris.reset(new Damaris_wrapper{ctx, damaris_xml_object, comm});
 
+		//TODO: only one rank should display the info
 		ctx.logger().info("Plugin initialized successfully");
 	}
 }
