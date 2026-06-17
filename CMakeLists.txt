@@ -397,7 +397,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NetCDF=EMBEDDED' to cmake\n"
 			"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake\n"
 			"       you may need to change the discovery order so the config script is tried first =>\n"
-			"       pass `-DNetCDF_FIND_STRATEGIES=\"CFGSCRIPT;CMAKE;PKGCONFIG;FALLBACK\"' to cmake"
+			"       pass `-DNetCDF_FIND_STRATEGIES=\"CFGSCRIPT\"' to cmake"
 		)
 	elseif("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES AND NOT "EMBEDDED" STREQUAL "${USE_NetCDF}")
 		message(FATAL_ERROR
@@ -407,7 +407,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NetCDF=EMBEDDED' to cmake\n"
 			"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake\n"
 			"       you may need to change the discovery order so the config script is tried first =>\n"
-			"       pass `-DNetCDF_FIND_STRATEGIES=\"CFGSCRIPT;CMAKE;PKGCONFIG;FALLBACK\"' to cmake"
+			"       pass `-DNetCDF_FIND_STRATEGIES=\"CFGSCRIPT\"' to cmake"
 		)
 	endif()
 endif()
