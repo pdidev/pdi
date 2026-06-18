@@ -13,6 +13,7 @@ and this project adheres to
 
 #### Added
 * A timer plugin is added to reflect the time consumed by pdi and its plugins.
+  [#710](https://github.com/pdidev/pdi/issues/710)
 * Improved messages for specification tree errors, with file & line numbers and
   support for file names from Paraconf 1.1,
   [#657](https://github.com/pdidev/pdi/issues/657)
