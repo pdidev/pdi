@@ -118,12 +118,21 @@ private:
 		print_timer_property();
 	}
 
+	/** Register the start and stop events for a timer with given name
+	 *
+	 * \param start_event name of the event to start the timer
+	 * \param stop_event name of the event to stop the timer
+	 * \param timer_name name of the timer
+	 */
 	void register_timer(std::string& start_event, std::string& stop_event, std::string& timer_name)
 	{
 		start_events[start_event].push_back(timer_name);
 		stop_events[stop_event].push_back(timer_name);
 	}
 
+	/** Print all timer setup information to the debug log
+	 *
+	 */
 	void print_timer_property()
 	{
 		context().logger().debug("All registered timers: ");
@@ -141,6 +150,10 @@ private:
 		}
 	}
 
+	/** Start a timer with given name
+	 *
+	 * \param name name of the timer to start
+	 */
 	void startTimer(const std::string& name)
 	{
 		if (start_times.find(name) != start_times.end()) {
@@ -150,7 +163,10 @@ private:
 		start_times[name] = std::chrono::high_resolution_clock::now();
 	}
 
-	// Stop a timer and accumulate the duration
+	/** Stop a timer with given name and accumulate the duration of the timer
+	 *
+	 * \param name name of the timer to stop
+	 */
 	void stopTimer(const std::string& name)
 	{
 		auto it = start_times.find(name);
