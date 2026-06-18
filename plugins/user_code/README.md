@@ -318,6 +318,7 @@ A \ref on_event_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
+|`"when"` (*optional*)|a $-expression defines a condtion for executing the function|
 |`".*"` (*optional*)|a \ref function_list_node|
 
 * each key identifies the name of an event, which will trigger specified functions when it occurs.
@@ -328,6 +329,7 @@ A \ref function_list_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
+|`"when"` (*optional*)|a $-expression defines a condtion for executing the function|
 |`".*"` (*optional*)|a \ref function_param_list_node|
 
 * each key identifies the name of a function, which will be called on specified event or data,
@@ -346,6 +348,8 @@ A \ref function_param_list_node is a dictionary that contains the following keys
 ## Specification tree example {#full_spec_tree_example_node}
 
 ```yaml                   
+metadata:
+    cond: int
 data:
     desc1: int                          
     desc2: float                   
@@ -354,12 +358,14 @@ plugins:
     user_code:                   
         on_data:                   
             desc1:                 
+                when: `$cond>1`
                 fun1: {in: $desc2, out: $desc3}
             desc2:
                 fun2: {}
                 fun3: {out: $desc2}
         on_event:                  
             event1:                 
+                when: `$cond<1`     
                 fun2: {}
             event2:
                 fun4: {param1: $desc2, param2: $desc1, param3: $desc3}
