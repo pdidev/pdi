@@ -33,24 +33,22 @@
 #define test_value(var, value, fatal) fct_test_value(var, value, fatal, __func__, __LINE__)
 
 const char* CONFIG_YAML
-	= "logging: trace    \n"
-	  "metadata:         \n"
-	  "  cond: int       \n"
-	  "data:             \n"
-	  "  test_var: int   \n"
-	  "  input: int      \n"
-	  "  output: int     \n"
-	  "plugins:          \n"
-	  "  user_code:      \n"
-	  "    on_event:     \n"
-	  "      testing:    \n"
-	  "        when: $cond \n"
-	  "        test: {} \n"
-	  "      testing_bis: \n"
-	  "        test: {}  \n"
-	  "    on_data:     \n"
-	  "      test_var:    \n"
-	  "        when: $cond=1 \n"
+	= "logging: trace                           \n"
+	  "metadata:                                \n"
+	  "  cond: int                              \n"
+	  "data:                                    \n"
+	  "  test_var: int                          \n"
+	  "  input: int                             \n"
+	  "  output: int                            \n"
+	  "plugins:                                 \n"
+	  "  user_code:                             \n"
+	  "    on_event:                            \n"
+	  "      testing:                           \n"
+	  "        when: $cond                      \n"
+	  "        test: {}                         \n"
+	  "    on_data:                             \n"
+	  "      test_var:                          \n"
+	  "        when: $cond=1                    \n"
 	  "        add_ten: {test_input: $test_var} \n";
 
 static void fct_test_value(int var, const int value, int fatal, const char* fct, int line)
@@ -90,40 +88,30 @@ int main(int argc, char* argv[])
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
 
-	int test_var = 99;
-
-	int cond = 1;
+	// NO function will be called because cond = 0
+	int cond = 0;
 	PDI_expose("cond", &cond, PDI_OUT);
-	PDI_expose("test_var", &test_var, PDI_OUT);
 
-	assert(test_var == 109);
+	int test_var = 99;
+	PDI_expose("test_var", &test_var, PDI_OUT);
+	assert(test_var == 99);
 
 	int in = CST0;
 	int out = CST0;
-	PDI_multi_expose(
-		"testing",
-		"input",
-		&in,
-		PDI_OUT, // export function input
-		"output",
-		&out,
-		PDI_IN, // import function output
-		NULL
-	);
-	if (cond) test_value(out, CST1, FATAL);
+	PDI_multi_expose("testing", "input", &in, PDI_OUT, "output", &out, PDI_IN, NULL);
+	test_value(out, CST0, FATAL);
+
+	// Function will be called because cond = 1
+	cond = 1;
+	PDI_expose("cond", &cond, PDI_OUT);
+
+	PDI_expose("test_var", &test_var, PDI_OUT);
+	assert(test_var == 109);
 
 	in = CST0;
 	out = CST0;
-	PDI_multi_expose(
-		"testing_bis",
-		"input",
-		&in,
-		PDI_OUT, // export function input
-		"output",
-		&out,
-		PDI_IN, // import function output
-		NULL
-	);
+	PDI_multi_expose("testing", "input", &in, PDI_OUT, "output", &out, PDI_IN, NULL);
 	test_value(out, CST1, FATAL);
+
 	PDI_finalize();
 }
