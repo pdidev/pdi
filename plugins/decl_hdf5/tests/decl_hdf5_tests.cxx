@@ -898,10 +898,10 @@ plugins:
 
 	// read double precision dataset and compare
 	hid_t file_id = H5Fopen("d2d_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
-	hid_t dataset_id = H5Dopen2(file_id, "/double_ds", H5P_DEFAULT);
-	hid_t type_id = H5Dget_type(dataset_id);
 	ASSERT_GE(file_id, 0);
+	hid_t dataset_id = H5Dopen2(file_id, "/double_ds", H5P_DEFAULT);
 	ASSERT_GE(dataset_id, 0);
+	hid_t type_id = H5Dget_type(dataset_id);
 	ASSERT_GE(type_id, 0);
 
 	EXPECT_GT(H5Tequal(type_id, H5T_IEEE_F64LE), 0);
@@ -916,7 +916,7 @@ plugins:
 	H5Dclose(dataset_id);
 	H5Fclose(file_id);
 
-	// read simple precision dataset and compare
+	// read single precision dataset and compare
 	file_id = H5Fopen("d2f_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	dataset_id = H5Dopen2(file_id, "/float_ds", H5P_DEFAULT);
 	type_id = H5Dget_type(dataset_id);
@@ -930,9 +930,8 @@ plugins:
 	status = H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_float_array.data()->data());
 	ASSERT_GE(status, 0);
 
-#if defined(__clang__) && (__clang_major__ == 15)
+#if !defined(__clang__) || (__clang_major__ != 15)
 // Skipping the numerical comparison because Clang 15 has known issues with ranges.
-#else
 	EXPECT_THAT(read_float_array, testing::ElementsAreArray(test_array | std::views::transform([](std::array<double, N> const & aref) {
 																return testing::Pointwise(testing::FloatEq(), aref);
 															})));
