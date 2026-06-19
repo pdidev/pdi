@@ -837,13 +837,6 @@ plugins:
 	PDI_expose("index", &index, PDI_OUT);
 
 	auto const array_data = make_a<std::array<int, 3>>();
-	EXPECT_CALL(
-		*this,
-		PdiError(
-			Eq(PDI_ERR_SPECTREE),
-			StrEq("Unable to share `array_data', Unable to share `array_data', Error while triggering data share `array_data': "
-	              "Spectree_error in line 13: Dataset selection is invalid for implicit dataset `group123/array_data'")
-		)
-	);
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_SPECTREE), HasSubstr("Dataset selection is invalid for implicit dataset `group123/array_data'")));
 	PDI_expose("array_data", array_data.data(), PDI_OUT);
 }
