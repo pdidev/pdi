@@ -52,12 +52,12 @@ endif()
 )
 
 add_executable(decl_hdf5_tests decl_hdf5_tests.cxx)
-target_link_libraries(decl_hdf5_tests PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest GTest::gtest_main ${HDF5_DEPS})
+target_link_libraries(decl_hdf5_tests PDI::PDI_C GTest::gmock_main GTest::gtest_main ${HDF5_DEPS})
 gtest_discover_tests(decl_hdf5_tests)
 
 # compression test
 add_executable(decl_hdf5_deflate decl_hdf5_test_deflate.cxx)
-target_link_libraries(decl_hdf5_deflate PDI::PDI_C GTest::gtest GTest::gtest_main ${HDF5_DEPS})
+target_link_libraries(decl_hdf5_deflate PDI::PDI_C GTest::gtest_main ${HDF5_DEPS})
 gtest_discover_tests(decl_hdf5_deflate)
 
 # PDI_import/PDI_export
