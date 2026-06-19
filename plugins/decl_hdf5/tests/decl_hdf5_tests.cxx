@@ -930,8 +930,8 @@ plugins:
 	status = H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_float_array.data()->data());
 	ASSERT_GE(status, 0);
 
-#if !defined(__clang__) || (__clang_major__ != 15)
 // Skipping the numerical comparison because Clang 15 has known issues with ranges.
+#if !defined(__clang__) || (__clang_major__ != 15)
 	EXPECT_THAT(read_float_array, testing::ElementsAreArray(test_array | std::views::transform([](std::array<double, N> const & aref) {
 																return testing::Pointwise(testing::FloatEq(), aref);
 															})));
@@ -955,9 +955,8 @@ plugins:
 	status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_int_array.data()->data());
 	ASSERT_GE(status, 0);
 
-#if defined(__clang__) && (__clang_major__ == 15)
 // Skipping the numerical comparison because Clang 15 has known issues with ranges.
-#else
+#if !defined(__clang__) || (__clang_major__ != 15)
 	EXPECT_THAT(read_int_array, testing::ElementsAreArray(test_array | std::views::transform([](std::array<double, N> const & aref) {
 															  return testing::ElementsAreArray(aref | std::views::transform([](double const & ref) {
 																								   return static_cast<int>(ref);
