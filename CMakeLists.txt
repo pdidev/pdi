@@ -34,8 +34,6 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 project(PDI_DIST LANGUAGES C CXX)
 
-
-
 ### Build options
 
 ## Global options
@@ -77,7 +75,7 @@ option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
-
+option(BUILD_DAMARIS_PLUGIN   	"Build Damaris plug-in" OFF)
 
 
 ### Default build type
@@ -122,7 +120,9 @@ if("${BUILD_DECL_HDF5_PLUGIN}")
 endif()
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" CACHE STRING "" FORCE)
 
-
+if("${BUILD_DAMARIS_PLUGIN}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/damaris/cmake")
+endif()
 
 ### Sanity check
 
@@ -464,7 +464,7 @@ sbuild_add_module(DECL_HDF5_PLUGIN
 sbuild_add_module(DECL_NETCDF_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DECL_NETCDF_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf"
-	DEPENDS PDI NetCDF
+	DEPENDS PDI HDF5 NetCDF
 	SUBSTEPS test
 )
 
@@ -510,6 +510,13 @@ sbuild_add_module(USER_CODE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_USER_CODE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code"
 	DEPENDS PDI
+	SUBSTEPS test
+)
+
+sbuild_add_module(DAMARIS_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_DAMARIS_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/damaris"
+	DEPENDS PDI HDF5
 	SUBSTEPS test
 )
 
