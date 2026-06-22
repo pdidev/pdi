@@ -266,6 +266,7 @@ inline void PdiTest::InitPdi(PC_tree_t tree)
 {
 	FinalizePdi();
 	m_conf = tree;
+	ASSERT_EQ(PC_OK, PC_status(m_conf));
 	PDI_errhandler({s_pdi_errhandler, this});
 	PDI_init(m_conf);
 }
