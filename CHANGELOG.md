@@ -8,7 +8,7 @@ and this project adheres to
 
 
 
-## [1.11.1] - Unreleased
+## [1.11.1] - 2026-06-23
 
 ### For users
 
