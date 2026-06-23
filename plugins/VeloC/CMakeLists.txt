@@ -37,6 +37,15 @@ find_package(axl    REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(veloc  REQUIRED)
 
+# HDF5
+set(HDF5_USE_STATIC_LIBRARIES OFF)
+set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
+find_package(HDF5 REQUIRED COMPONENTS C)
+if("${HDF5_VERSION}" VERSION_LESS 1.10)
+    message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
+endif()
+set(HDF5_DEPS hdf5::hdf5)
+
 add_library(pdi_veloc_plugin MODULE
     veloc_wrapper.cxx
     veloc.cxx

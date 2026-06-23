@@ -39,15 +39,6 @@ endif()
 "
 )
 
-# HDF5
-set(HDF5_USE_STATIC_LIBRARIES OFF)
-set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
-find_package(HDF5 REQUIRED COMPONENTS C)
-if("${HDF5_VERSION}" VERSION_LESS 1.10)
-    message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
-endif()
-set(HDF5_DEPS hdf5::hdf5)
-
 # Create persistent shared workdirs and pre-copy config at configure time
 set(VELOC_TEST_01_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/workdir_01")
 set(VELOC_TEST_03_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/workdir_03")
