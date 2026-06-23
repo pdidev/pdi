@@ -10,7 +10,7 @@ To publish a small fix as a patch release:
 * commit (or better, make a MR) in the version branch
 * merge the version branch into main
 * in the merge commit:
-  - keep the content of `pdi/VERSION` from main (next with `-alpha` suffix)
+  - keep the content of `VERSION` from main (next with `-alpha` suffix)
   - keep the content `pdi/docs/Source_installation.md` from main except
     with the version updated to the just released one
 * tag the new release: `git tag -m "PDI release ${VERSION}" -s "${VERSION}"`

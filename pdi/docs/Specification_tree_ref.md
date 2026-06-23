@@ -9,35 +9,44 @@ The *specification tree root* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
+|`"include"` (*optional*)     | a \ref include_or_seq_node |
+|`"logging"` (*optional*)     | a \ref logging_node |
 |`"types"` (*optional*)|a \ref types_map_node|
-|`"data"` (*optional*)|a \ref data_map_node|
 |`"metadata"` (*optional*)|a \ref data_map_node|
-|`"plugins"` (*optional*)|a \ref plugin_map_node|
-|`"logging"` (*optional*)|a \ref logging_node|
+|`"data"` (*optional*)        | a \ref data_map_node |
 |`"plugin_path"` (*optional*)|a \ref plugin_path_map_node|
+|`"plugins"` (*optional*)     | a \ref plugin_map_node |
 |`".*"` (*optional*)| *anything* |
 
-* the `types` section specifies user-defined datatypes
-* the `data` and `metadata` sections specify the type of the data in buffers
+* the `include` section specify other YAML configuration part of a same
+  Paraconf tree
+* the `logging` section specify logger properties
+* the `metadata` and `data` sections specify the type of the data in buffers
   exposed by the application; for `metadata`, %PDI keeps a copy while it only
   keeps references for `data`,
+* the `plugin_path` section specifies the path to directories where %PDI should
+  search for plugins
 * the `plugins` section specifies the list of plugins to load and their
   configuration,
-* the `plugin_path` section specifies the path to a directory where %PDI should
-  search for plugins
-* the `logging` section specify logger properties
+* the `types` section specifies user-defined datatypes
 * additional sections are ignored.
 
 ### Example:
 
 ```{.python}
+include: my_other_configuration_file.yml
+logging: trace
+types:
+  metadata_t: int
 metadata:
-  my_metadata: int
+  my_metadata: metadata_t
 data:
   my_data:
     type: array
     subtype: double
-    size: 5
+    size: $my_metadata
+plugin_path:
+  - /usr/lib/pdi
 plugins:
   decl_hdf5: #...
   mpi: #...
@@ -382,6 +391,80 @@ It accepts no parameter.
 
 ```{.python}
 type: float
+```
+
+
+## include {#include_node}
+
+An *include* can be **any of**:
+* a **scalar**,
+* a \ref include_with_subtree_node.
+
+In that context, a scalar is interpreted as a shortcut for a
+\ref include_with_subtree_node whose `file` value is set to that scalar and `subtree`
+to an empty string.
+
+### Example:
+```yaml
+"/my/file.yaml"
+```
+
+is interpreted as if it was:
+```yaml
+file: "/my/file.yaml"
+subtree: ""
+```
+
+
+## include_or_seq {#include_or_seq_node}
+
+An *include_or_seq* can be **any of**:
+* a \ref include_node,
+* an \ref include_seq_node.
+
+In that context, a single \ref include_node is interpreted as a shortcut for a
+sequence containing a single \ref include_node.
+
+For example, the following:
+```
+file: "/my/file.yaml"
+subtree: ".pdi"
+```
+
+is interpreted as if it was:
+```
+- file: "/my/file.yaml"
+  subtree: ".pdi"
+```
+
+
+## include_seq {#include_seq_node}
+
+A *include_seq* is a **sequence** where each element of the sequence is
+a \ref include_node.
+
+
+## include_with_subtree {#include_with_subtree_node}
+
+A *include_with_subtree* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"file"`    | a **scalar** representing the path of the file |
+|`"subtree"` | a **scalar** representing the ypath of a subtree in the file |
+
+The path is interpreted relative to the working directory of the execution.
+The subtree ypath is expanded according to 
+
+### Example:
+```yaml
+file: "/my/file.yaml"
+subtree: ".pdi"
+```
+or
+```yaml
+file: "relative_file.yaml"
+subtree: "[1]"
 ```
 
 
