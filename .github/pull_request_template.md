@@ -1,5 +1,3 @@
-!!!INSERT YOUR DESCRIPTION HERE!!!
-
 # List of things to check before making a PR
 
 Before merging your code, please check the following:
