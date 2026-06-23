@@ -136,9 +136,12 @@ class Trigger
 	/// all the aliases to setup
 	vector<Alias> m_aliases;
 
+	Expression m_when;
+
 public:
 	/// parse tree to initialiaze this instance
-	Trigger(string funcname, PC_tree_t params)
+	Trigger(string funcname, PC_tree_t params, Expression when_exp)
+		: m_when(when_exp)
 	{
 		void* fct_uncast = dlsym(RTLD_DEFAULT, funcname.c_str());
 		if (!fct_uncast) { // force loading from the main exe
@@ -168,7 +171,9 @@ public:
 			exposed_aliases.emplace_back(alias.expose(ctx));
 		}
 		try {
-			m_fct();
+			if (m_when.to_long(ctx)) {
+				m_fct();
+			}
 		} catch (const std::exception& e) {
 			ctx.logger().error("While calling user code, caught exception: {}", e.what());
 		} catch (...) {
@@ -187,13 +192,33 @@ struct user_code_plugin: Plugin {
 		if (!PC_status(on_event))
 			each(on_event, [&](PC_tree_t event_name, PC_tree_t events) {
 				opt_each(events, [&](PC_tree_t one_event) {
-					each(one_event, [&](PC_tree_t function_name, PC_tree_t parameters) {
-						Trigger event_trigger{to_string(function_name), parameters};
+					Expression when_exp = 1L;
+					std::string when_string = "true";
+
+					if (!PC_status(PC_get(one_event, ".when"))) {
+						when_exp = Expression(PC_get(one_event, ".when"));
+						when_string = to_string(PC_get(one_event, ".when"));
+					}
+
+					for (int i = 0; i < PDI::len(one_event, 0); i++) {
+						PC_tree_t function_name = PC_get(one_event, "{%d}", i);
+
+						if (to_string(function_name) == "when") continue;
+
+						PC_tree_t parameters = PC_get(one_event, ".%s", to_string(function_name).c_str());
+
+						Trigger event_trigger{to_string(function_name), parameters, when_exp};
 						ctx.callbacks().add_event_callback(
 							[&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); },
 							to_string(event_name)
 						);
-					});
+						ctx.logger().debug(
+							"User_code setup: event `{}' calls function `{}', under condition `{}'",
+							to_string(event_name),
+							to_string(function_name),
+							when_string
+						);
+					}
 				});
 			});
 
@@ -202,13 +227,33 @@ struct user_code_plugin: Plugin {
 		if (!PC_status(on_data))
 			each(on_data, [&](PC_tree_t data_name, PC_tree_t datas) {
 				opt_each(datas, [&](PC_tree_t one_data) {
-					each(one_data, [&](PC_tree_t function_name, PC_tree_t parameters) {
-						Trigger data_trigger{to_string(function_name), parameters};
+					Expression when_exp = 1L;
+					std::string when_string = "true";
+
+					if (!PC_status(PC_get(one_data, ".when"))) {
+						when_exp = Expression(PC_get(one_data, ".when"));
+						when_string = to_string(PC_get(one_data, ".when"));
+					}
+
+					for (int i = 0; i < PDI::len(one_data, 0); i++) {
+						PC_tree_t function_name = PC_get(one_data, "{%d}", i);
+
+						if (to_string(function_name) == "when") continue;
+
+						PC_tree_t parameters = PC_get(one_data, ".%s", to_string(function_name).c_str());
+
+						Trigger data_trigger{to_string(function_name), parameters, when_exp};
 						ctx.callbacks().add_data_callback(
 							[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
 							to_string(data_name)
 						);
-					});
+						ctx.logger().debug(
+							"User_code setup: data `{}' calls function `{}', under condition `{}'",
+							to_string(data_name),
+							to_string(function_name),
+							when_string
+						);
+					}
 				});
 			});
 
