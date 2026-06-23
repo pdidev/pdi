@@ -74,6 +74,9 @@ and this project adheres to
   fix [#690](https://github.com/pdidev/pdi/issues/690)
 * Updated the embedded version of zpp to fix an issue with Fortran on MacOSX,
   part of [#688](https://github.com/pdidev/pdi/issues/688)
+* Fix an issue build and tests script in case of spdlog mismatch between the
+  vendored version and dependency of doxygen,
+  [#712](https://github.com/pdidev/pdi/issues/712)
 
 #### Security
 
