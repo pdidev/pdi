@@ -36,7 +36,7 @@
 
 namespace PDI {
 
-Delayed_data_callbacks::Delayed_data_callbacks(Global_context& ctx)
+Delayed_data_callbacks::Delayed_data_callbacks(Context& ctx)
 	: m_context{ctx}
 	, m_datanames{}
 {}

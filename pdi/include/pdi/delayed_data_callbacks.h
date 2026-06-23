@@ -31,7 +31,7 @@
 #include <pdi/pdi_fwd.h>
 #include "pdi/context.h"
 
-#include "global_context.h"
+#include "context.h"
 
 namespace PDI {
 
@@ -41,11 +41,11 @@ class PDI_EXPORT Delayed_data_callbacks
 	std::vector<std::string> m_datanames;
 
 	/// The context where the list of data is a part of
-	Global_context& m_context;
+	Context& m_context;
 
 public:
 	/// constructor
-	Delayed_data_callbacks(Global_context& ctx);
+	Delayed_data_callbacks(Context& ctx);
 
 	Delayed_data_callbacks(const Delayed_data_callbacks&) = delete;
 
