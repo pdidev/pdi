@@ -15,6 +15,8 @@ and this project adheres to
 * A timer plugin is added to reflect the time consumed by pdi and its plugins.
   [#710](https://github.com/pdidev/pdi/issues/710)
 * Add test for HDF5 precision conversion [#708](https://github.com/pdidev/pdi/issues/708)
+* Added support for `includes` in the specification tree, hence solving the 
+  long-standing issue [#80](https://github.com/pdidev/pdi/issues/80)
 * Improved messages for specification tree errors, with file & line numbers and
   support for file names from Paraconf 1.1,
   [#657](https://github.com/pdidev/pdi/issues/657)
@@ -33,6 +35,9 @@ and this project adheres to
   requested in [#500](https://github.com/pdidev/pdi/issues/500)
 
 #### Changed
+* Improved the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
+  and documented the cmake option to override 'NetCDF_FIND_STRATEGIES' as
+  requested in [#500](https://github.com/pdidev/pdi/issues/500)
 
 #### Deprecated
 
@@ -96,7 +101,7 @@ and this project adheres to
   [#699](https://github.com/pdidev/pdi/issues/699)
 
 #### Fixed
-* Correctly genrerate test directory name to prevent random failures
+* Correctly generate test directory name to prevent random failures
   [#700](https://github.com/pdidev/pdi/issues/700)
 
 
