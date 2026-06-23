@@ -910,10 +910,10 @@ plugins:
 
 	// read single precision dataset and compare
 	file_id = H5Fopen("d2f_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
-	dataset_id = H5Dopen2(file_id, "/float_ds", H5P_DEFAULT);
-	type_id = H5Dget_type(dataset_id);
 	ASSERT_GE(file_id, 0);
+	dataset_id = H5Dopen2(file_id, "/float_ds", H5P_DEFAULT);
 	ASSERT_GE(dataset_id, 0);
+	type_id = H5Dget_type(dataset_id);
 	ASSERT_GE(type_id, 0);
 
 	EXPECT_GT(H5Tequal(type_id, H5T_IEEE_F32LE), 0);
@@ -935,10 +935,10 @@ plugins:
 
 	// read integer dataset and compare
 	file_id = H5Fopen("d2i_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
-	dataset_id = H5Dopen2(file_id, "/int_ds", H5P_DEFAULT);
-	type_id = H5Dget_type(dataset_id);
 	ASSERT_GE(file_id, 0);
+	dataset_id = H5Dopen2(file_id, "/int_ds", H5P_DEFAULT);
 	ASSERT_GE(dataset_id, 0);
+	type_id = H5Dget_type(dataset_id);
 	ASSERT_GE(type_id, 0);
 
 	EXPECT_GT(H5Tequal(type_id, H5T_STD_I32LE), 0);
