@@ -12,6 +12,8 @@ and this project adheres to
 ### For users
 
 #### Added
+* Added support for `includes` in the specification tree, hence solving the 
+  long-standing issue [#80](https://github.com/pdidev/pdi/issues/80)
 * Improved messages for specification tree errors, with file & line numbers and
   support for file names from Paraconf 1.1,
   [#657](https://github.com/pdidev/pdi/issues/657)
@@ -26,6 +28,9 @@ and this project adheres to
   [#688](https://github.com/pdidev/pdi/issues/688)
 
 #### Changed
+* Improved the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
+  and documented the cmake option to override 'NetCDF_FIND_STRATEGIES' as
+  requested in [#500](https://github.com/pdidev/pdi/issues/500)
 
 #### Deprecated
 
@@ -59,19 +64,6 @@ and this project adheres to
 
 ## [1.11.1] - 2026-06-23
 
-### For users
-
-#### Added
-* Update the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
-  and document the cmake option to override 'NetCDF_FIND_STRATEGIES' as
-  requested in [#500](https://github.com/pdidev/pdi/issues/500)
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
 #### Fixed
 * Do not fail building the documentation when Fortran support is disabled, to
   fix [#690](https://github.com/pdidev/pdi/issues/690)
@@ -81,8 +73,6 @@ and this project adheres to
   vendored version and dependency of doxygen,
   [#712](https://github.com/pdidev/pdi/issues/712)
 
-#### Security
-
 
 ### For plugin developers
 
@@ -90,17 +80,9 @@ and this project adheres to
 * Added ability to require some files in tests running in clean directory to fix
   [#699](https://github.com/pdidev/pdi/issues/699)
 
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
 #### Fixed
-* Correctly genrerate test directory name to prevent random failures
+* Correctly generate test directory name to prevent random failures
   [#700](https://github.com/pdidev/pdi/issues/700)
-
-#### Security
 
 
 
