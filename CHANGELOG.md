@@ -42,6 +42,8 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* Support conversion of `Yaml_region` to a `string`
+  [#702](https://github.com/pdidev/pdi/issues/702)
 
 #### Changed
 
@@ -56,11 +58,14 @@ and this project adheres to
 
 
 
-## [1.11.1] - Unreleased
+## [1.11.1] - 2026-06-23
 
 ### For users
 
 #### Added
+* Update the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
+  and document the cmake option to override 'NetCDF_FIND_STRATEGIES' as
+  requested in [#500](https://github.com/pdidev/pdi/issues/500)
 
 #### Changed
 
@@ -73,6 +78,9 @@ and this project adheres to
   fix [#690](https://github.com/pdidev/pdi/issues/690)
 * Updated the embedded version of zpp to fix an issue with Fortran on MacOSX,
   part of [#688](https://github.com/pdidev/pdi/issues/688)
+* Fix an issue build and tests script in case of spdlog mismatch between the
+  vendored version and dependency of doxygen,
+  [#712](https://github.com/pdidev/pdi/issues/712)
 
 #### Security
 
@@ -80,6 +88,8 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* Added ability to require some files in tests running in clean directory to fix
+  [#699](https://github.com/pdidev/pdi/issues/699)
 
 #### Changed
 
@@ -88,6 +98,8 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* Correctly genrerate test directory name to prevent random failures
+  [#700](https://github.com/pdidev/pdi/issues/700)
 
 #### Security
 

@@ -62,6 +62,8 @@ includes:
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
+set(NetCDF_FIND_STRATEGIES "CMAKE;CFGSCRIPT;PKGCONFIG;FALLBACK" CACHE STRING "Semicolon-separated list controlling NetCDF discovery order")
+
 set(_NetCDF_features_list CDF5 DAP DAP2 DAP4 DISKLESS HDF4 HDF5 JNA MMAP NC2 NC4 PARALLEL PARALLEL4 PNETCDF)
 
 macro(_NetCDF_remove_duplicates_from_beginning _list_name)
