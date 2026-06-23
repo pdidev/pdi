@@ -4,7 +4,7 @@
 
 To publish a small fix as a patch release:
 * make your changes based on the version branch (`v${X}.${Y}`)
-* change the version in `pdi/VERSION`
+* change the version in `VERSION`
 * change the version in `pdi/docs/Source_installation.md`
 * change the version in `mock_pdi/PDIConfigVersion.cmake`
 * commit (or better, make a MR) in the version branch
