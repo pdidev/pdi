@@ -209,6 +209,12 @@ protected:
 		return ::PDI::make_random<T>(m_random_generator);
 	}
 
+	/** Requires a file from the original working-directory to be present on the effective working-directory
+	 * 
+	 * \param file the file to make present
+	 */
+	inline void with_file(std::filesystem::path file) { std::filesystem::create_symlink((m_workdir / file), (m_tmpdir / file.filename())); }
+
 	/** Initialize PDI with the provided PC_tree
 	 * 
 	 * Takes ownership of the tree.
@@ -243,7 +249,8 @@ PdiTest::PdiTest()
 	}());
 	auto const filename = [&]() {
 		static constexpr char const VALID_FILE_CHARS[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-";
-		std::uniform_int_distribution<size_t> random(0, std::ranges::size(VALID_FILE_CHARS) - 1);
+		// -1 for closed set and -1 for ending \0 => -2
+		std::uniform_int_distribution<size_t> random(0, std::ranges::size(VALID_FILE_CHARS) - 2);
 		std::string filename(16, '\0');
 		std::generate(filename.begin(), filename.end(), [&]() { return VALID_FILE_CHARS[random(random_generator)]; });
 		auto&& test_info = *::testing::UnitTest::GetInstance()->current_test_info();
@@ -260,8 +267,8 @@ inline void PdiTest::InitPdi(PC_tree_t tree)
 	FinalizePdi();
 	m_conf = tree;
 	ASSERT_EQ(PC_OK, PC_status(m_conf));
-	ASSERT_EQ(PDI_OK, PDI_init(m_conf));
 	PDI_errhandler({s_pdi_errhandler, this});
+	PDI_init(m_conf);
 }
 
 inline void PdiTest::FinalizePdi()
