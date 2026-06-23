@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #=============================================================================
 # Copyright (c) 2024-2025 Centre national de la recherche scientifique (CNRS)
-# Copyright (c) 2024-2025 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
+# Copyright (c) 2024-2026 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
 # Copyright (c) 2024-2025 Institut national de recherche en informatique et en automatique (Inria)
 # Copyright (c) 2024-2025 Université Paris-Saclay
 # Copyright (c) 2024-2025 Université de Versailles Saint-Quentin-en-Yvelines
@@ -32,48 +32,57 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cd "$(dirname "$(dirname "$0")")"
 
-if [ 0 -eq $# ]
-then CLANG_FORMAT_ARGS=""
-elif [ "x--apply" = "x$1" ]
-then CLANG_FORMAT_ARGS="-i"
-elif [ "x--quiet" = "x$1" ]
-then CLANG_FORMAT_ARGS="-q"
+# Use "./test_indent" to run check
+# Use "./test_indent -i" to apply fix
+
+set -euo pipefail
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "$REPO_ROOT"
+
+IMAGE="ghcr.io/pdidev/run_clang_format:v4"
+CONTAINER_OPTS=(run --rm)
+
+CLANG_FORMAT_ARGS=()
+if [ $# -gt 0 ]; then
+    case "$1" in
+        -i|--apply)
+            CLANG_FORMAT_ARGS+=("-i")
+            ;;
+        -q|--quiet)
+            CLANG_FORMAT_ARGS+=("-q")
+            ;;
+        -h|--help)
+            echo "Usage: $0 [-i|--apply] [-q|--quiet]" >&2
+            echo "  Checks (or with -i/--apply, enforces) the indentation of C/C++ files" >&2
+            echo "  With -q/--quiet, only the return code provides info" >&2
+            exit 0
+            ;;
+        *)
+            echo "Error: Unknown option '$1'" >&2
+            echo "Usage: $0 [-i|--apply] [-q|--quiet]" >&2
+            exit 1
+            ;;
+    esac
+fi
+
+if command -v docker &>/dev/null; then
+    CONTAINER_CMD="docker"
+    CONTAINER_OPTS+=("--user" "$(id -u):$(id -g)")
+elif command -v podman &>/dev/null; then
+    CONTAINER_CMD="podman"
+    CONTAINER_OPTS+=("--userns=keep-id")
 else
-	echo "Usage: $0 [--apply|--quiet]" >&2
-	echo "  Checks (or with --apply, enforce) the indentation of PDI files" >&2
-	echo "  With --quiet, only the return code gives info" >&2
-	exit 1
+    echo "Error: neither docker nor podman found in PATH" >&2
+    exit 127
 fi
 
-RUN_CLANG_FORMAT='false'
+echo "Collecting files and running clang-format via $CONTAINER_CMD"
 
-# Look for a docker based version
-DOCKER="$(which docker)"
-if "${DOCKER}" --version >/dev/null 2>&1
-then
-	RUN_CLANG_FORMAT="${DOCKER} run --rm -v $(pwd):/src ghcr.io/pdidev/run-clang-format:v4"
-fi
+git ls-files -z --full-name \
+    | grep -zZv '^vendor/' \
+    | grep -zZE '\.(c|h|cc|hh|cpp|hpp|cxx|hxx)$' \
+    | xargs -0 "$CONTAINER_CMD" "${CONTAINER_OPTS[@]}" -v "$REPO_ROOT":/src -w /src "$IMAGE" "${CLANG_FORMAT_ARGS[@]}"
 
-# Look for a local version
-if [ -f vendor/run-clang-format/run-clang-format.py ]
-then
-	for CLANG_FORMAT in clang-format-18 clang-format18 clang-format
-	do
-		CLANG_FORMAT="$(which "${CLANG_FORMAT}")"
-		if which "${CLANG_FORMAT}" >/dev/null && [ 18 -eq "$("${CLANG_FORMAT}" --version | sed 's/.*version\s\+\([0-9]\+\)\..*/\1/')" 2>/dev/null ]
-		then
-			RUN_CLANG_FORMAT="python3 vendor/run-clang-format/run-clang-format.py --clang-format-executable ${CLANG_FORMAT}"
-			break
-		fi
-	done
-fi
-
-if [ "${RUN_CLANG_FORMAT}" = false ]
-then
-	echo "clang-format version 18 not found and docker not usable"
-	exit 127
-fi
-
-git ls-files -z --full-name | grep -zZv '^vendor/' | grep -zZ '\.[hHcC]\(\|++\|xx\|pp\)\s*$' | xargs -0 ${RUN_CLANG_FORMAT} ${CLANG_FORMAT_ARGS}
+echo "Done"

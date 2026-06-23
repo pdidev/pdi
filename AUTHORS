@@ -7,6 +7,7 @@ Julian Auriac - CEA (julian.auriac@cea.fr)
 * Improvement of a Decl'HDF5 test to work on OSX
 * Addition of API tests
 * Fix examples to distinguish MPI behaviours
+* Add local CI
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Initial design and implementation
