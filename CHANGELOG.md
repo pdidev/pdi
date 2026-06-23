@@ -41,6 +41,8 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* Support conversion of `Yaml_region` to a `string`
+  [#702](https://github.com/pdidev/pdi/issues/702)
 
 #### Changed
 
