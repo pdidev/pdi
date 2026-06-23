@@ -4,8 +4,9 @@ spirit, we list here in alphabetical order a condensed list of their contributio
 Julian Auriac - CEA (julian.auriac@cea.fr)
 * Add mock PDI
 * Fix CI bug where tests.xml file could not be written
-* Improvement of a Decl'HDF5 test to work on OSX
-* Addition of API tests
+* Add local CI
+* Improve a Decl'HDF5 test to work on OSX
+* Add API tests
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Initial design and implementation
