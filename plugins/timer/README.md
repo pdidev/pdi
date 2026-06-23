@@ -17,7 +17,7 @@ plugins:
     - timer_E: ["pdi"]
 ```
 
-The timer plugin configuration contains a list of timer names (e.g. `- timer_A`, `- timer_B`, etc). Each timer will record the time spent between the `start` and `stop` events.
+The timer plugin configuration contains a list of timer names (e.g. `- timer_A`, `- timer_B`, etc.). Each timer will record the time spent between the `start` and `stop` events.
 
 `timer_A` uses a map-styled definition where both keys `start` and `stop` are mandatory.
 
