@@ -34,6 +34,7 @@ and this project adheres to
 #### Fixed
 * Migrate from `TYPED_TEST_CASE` to `TYPED_TEST_SUITE`, from `INSTANTIATE_TEST_CASE_P`
   to `INSTANTIATE_TEST_SUITE_P` to resolve deprecation warnings.
+* Fix for PR [#711](https://github.com/pdidev/pdi/pull/711) of issue [#500](https://github.com/pdidev/pdi/issues/500).
 
 #### Security
 
@@ -43,6 +44,7 @@ and this project adheres to
 #### Added
 * Support conversion of `Yaml_region` to a `string`
   [#702](https://github.com/pdidev/pdi/issues/702)
+* CMake options documentation for HDF5 and NetCDF.
 
 #### Changed
 
