@@ -344,7 +344,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 				"     * use another version of HDF5 from the system => pass `-DHDF5_ROOT=/path/to/hdf5/root/' to cmake"
 			)
 		endif()
-	elseif(NOT "EMBEDDED" STREQUAL "${USE_HDF5}")
+	elseif(NOT "EMBEDDED" STREQUAL "${USE_HDF5}" AND NOT "AUTO" STREQUAL "${USE_HDF5}")
 		message(FATAL_ERROR
 			"HDF5 setup failed: A suitable SYSTEM version (>= 1.10) could not be found.\n"
 			"    you have the following options:\n"
@@ -409,7 +409,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 				"       pass `-DNetCDF_FIND_STRATEGIES=\"CFGSCRIPT\"' to cmake"
 			)
 		endif()
-	elseif(NOT "EMBEDDED" STREQUAL "${USE_NetCDF}")
+	elseif(NOT "EMBEDDED" STREQUAL "${USE_NetCDF}" AND NOT "AUTO" STREQUAL "${USE_NetCDF}")
 		message(FATAL_ERROR
 			"NetCDF setup failed: A suitable SYSTEM version (>= 4.8) could not be found.\n"
 			"    you have the following options:\n"
