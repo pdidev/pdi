@@ -24,6 +24,7 @@ and this project adheres to
   codes.
 * Added support for MacOS and fixed all CI issues on MacOS, fix
   [#688](https://github.com/pdidev/pdi/issues/688)
+* Added new VeloC plugin. Enables users to write and recover checkpoints using the [VeloC library](https://veloc.readthedocs.io/en/latest/userguide.html)
 
 #### Changed
 
