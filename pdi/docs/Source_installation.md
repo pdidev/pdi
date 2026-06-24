@@ -123,16 +123,25 @@ The following flags define whether to:
 
 |Flag           |Default   |Description|
 |:--------------|:---------|:----------|
-|`USE_benchmark`|`EMBEDDED`|the [Benchmark](https://github.com/google/benchmark) library.|
-|`USE_Doxygen`  |`AUTO`    |the [doxygen](http://www.doxygen.nl/) tool.|
-|`USE_GTest`    |`EMBEDDED`|the [googletest](https://github.com/google/googletest) library.|
-|`USE_HDF5`     |`AUTO`    |the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library.|
-|`USE_JSON`     |`AUTO`    |the [Json](https://github.com/nlohmann/json/) library.|
-|`USE_paraconf` |`AUTO`    |the [paraconf](https://github.com/pdidev/paraconf) library.|
-|`USE_pybind11` |`AUTO`    |the [pybind11](https://pybind11.readthedocs.io/en/stable) library.|
-|`USE_spdlog`   |`AUTO`    |the [spdlog](https://github.com/gabime/spdlog) library.|
-|`USE_yaml`     |`AUTO`    |the [yaml](https://github.com/jbigot/zpp) library.|
-|`USE_Zpp`      |`EMBEDDED`|the [zpp](https://github.com/jbigot/zpp) preprocessor.|
+|`USE_benchmark`|`EMBEDDED`|The [Benchmark](https://github.com/google/benchmark) library.|
+|`USE_Doxygen`  |`AUTO`    |The [doxygen](http://www.doxygen.nl) tool.|
+|`USE_GTest`    |`EMBEDDED`|The [googletest](https://github.com/google/googletest) library.|
+|`USE_HDF5`     |`AUTO`    |The [HDF5](https://www.hdfgroup.org/solutions/hdf5) library.|
+|`USE_JSON`     |`AUTO`    |The [Json](https://github.com/nlohmann/json) library.|
+|`USE_NetCDF`   |`AUTO`    |The [NetCDF](https://www.unidata.ucar.edu/software/netcdf) library.|
+|`USE_paraconf` |`AUTO`    |The [paraconf](https://github.com/pdidev/paraconf) library.|
+|`USE_pybind11` |`AUTO`    |The [pybind11](https://pybind11.readThedocs.io/en/stable) library.|
+|`USE_spdlog`   |`AUTO`    |The [spdlog](https://github.com/gabime/spdlog) library.|
+|`USE_yaml`     |`AUTO`    |The [yaml](https://github.com/yaml/libyaml) library.|
+|`USE_Zpp`      |`EMBEDDED`|The [zpp](https://github.com/jbigot/zpp) preprocessor.|
+
+* and in the case of HDF5 and NetCDF, to require a specific dependency:
+
+|Flag                    |Default                                 |Description|
+|:-----------------------|:---------------------------------------|:----------|
+|`HDF5_ROOT`             |`</path/to/hdf5/install>`               |Root directory of an HDF5 installation.|
+|`NetCDF_CFGSCRIPT`      |`nc-config`                             |Path of the NetCDF configuration script used by the CFGSCRIPT discovery strategy.|
+|`NetCDF_FIND_STRATEGIES`|`\"CMAKE;CFGSCRIPT;PKGCONFIG;FALLBACK\"`|Ordered list of strategies used to locate a NetCDF installation.|
 
 
 The following flags define where to install %PDI, those prefixed with `CMAKE_`
@@ -140,18 +149,18 @@ are provided and documented by the
 [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)
 cmake module.
 
-|Flag          |Default   |Description|
-|:-------------|:---------|:----------|
-|`INSTALL_CMAKEDIR`|`PDIDATADIR/cmake`|Cmake modules.|
-|`INSTALL_FMODDIR`|`LIBDIR/pdi/finclude/${COMPILER_VERSION}`|Fortran modules|
-|`INSTALL_PDIDATADIR`|`DATADIR/pdi`|PDI data|
-|`INSTALL_PDIPLUGINDIR`|`LIBDIR/pdi/plugins_${PDI_VERSION}`|PDI plugins|
-|`CMAKE_INSTALL_BINDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|user executables|
-|`CMAKE_INSTALL_DATADIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|read-only architecture-independent data|
-|`CMAKE_INSTALL_DOCDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|documentation root|
-|`CMAKE_INSTALL_INCLUDEDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|C header files|
-|`CMAKE_INSTALL_LIBDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|object code libraries|
-|`CMAKE_INSTALL_PREFIX`|see [CMake doc](https://cmake.org/cmake/help/v3.22/variable/CMAKE_INSTALL_PREFIX.html)|Installation base|
+|Flag                      |Default                                                                                |Description|
+|:-------------------------|:--------------------------------------------------------------------------------------|:----------|
+|`INSTALL_CMAKEDIR`        |`PDIDATADIR/cmake`                                                                     |Cmake modules.|
+|`INSTALL_FMODDIR`         |`LIBDIR/pdi/finclude/${COMPILER_VERSION}`                                              |Fortran modules|
+|`INSTALL_PDIDATADIR`      |`DATADIR/pdi`                                                                          |PDI data|
+|`INSTALL_PDIPLUGINDIR`    |`LIBDIR/pdi/plugins_${PDI_VERSION}`                                                    |PDI plugins|
+|`CMAKE_INSTALL_BINDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |user executables|
+|`CMAKE_INSTALL_DATADIR`   |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |read-only architecture-independent data|
+|`CMAKE_INSTALL_DOCDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |documentation root|
+|`CMAKE_INSTALL_INCLUDEDIR`|See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |C header files|
+|`CMAKE_INSTALL_LIBDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |object code libraries|
+|`CMAKE_INSTALL_PREFIX`    |See [CMake doc](https://cmake.org/cmake/help/v3.22/variable/CMAKE_INSTALL_PREFIX.html).|Installation base|
 
 ## List of dependencies {#dependecies}
 
