@@ -38,21 +38,17 @@ public:
 	~catalyst_plugin() noexcept(false);
 
 private:
-	/// @brief callback used at pdi_init
+	/// @brief callback to trigger action of catalyst_initialize
 	void process_pdi_init();
 
-	/// @brief trigger action of catalyst plugin when a data is exposed to pdi
-	/// @param data_name: name of the current data exposed to pdi
-	/// @param ref: reference of the data exposed to pdi
-	void process_data(const std::string& data_name, PDI::Ref ref);
-
-	/// @brief trigger action of catalyst plugin when an event occur
+	/// @brief callback to trigger action of catalyst_execute when an event occur
 	/// @param event_name: name of the current event
 	void process_event(const std::string& event_name);
 
-	/// @brief trigger action of catalyst plugin when an event occur
+	/// @brief callback to trigger action of catalyst_initialize when an event occur
+	/// This function is used when a communicator is given by the user
 	/// @param event_name: name of the current event
-	void process_multi_event(const std::string& event_name);
+	void process_pdi_init_with_event(const std::string& event_name);
 
 	/// @brief function running in pdi_init
 	void run_catalyst_initialize();
@@ -122,14 +118,12 @@ private:
 
 	/// @brief  variable to know if catalyst_initialize is called.
 	/// Remark: The call of catalyst_finalize doesn't return a okay status if catalyst_initialize is not called before.
-	///         Example: In case of config error in the yaml file needed by catalyst_initialize. Moreover, the config error message cannot be see by the user.
-	bool catalyst_is_initialize;
+	///         Example: In case of config error in the yaml file needed by catalyst_initialize.
+	//          Moreover, the config error message cannot be see by the user.
+	bool catalyst_is_initialized;
 
 	/// @brief specification tree for catalyst plugin
 	PC_tree_t m_spec_tree;
-
-	/// @brief list of pdi data array passed to catalyst in catalyst_execute
-	/// std::unordered_map<std::string, PDI::Ref> m_current_pdi_data;
 
 	/// @brief name of event use to call catalyst_execute
 	std::string m_pdi_execute_event_name;
