@@ -40,7 +40,7 @@ plugins:
       state:
         timestep: '$cycle'
         time: '$time'
-        multiblock: 1
+        multiblock: 1 ###What is multiblock (check legacy vtkMultiBlockDataSet)
       channels:
         grid:
           type: "mesh"
