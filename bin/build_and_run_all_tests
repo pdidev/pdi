@@ -95,6 +95,15 @@ then
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_spdlog=SYSTEM"
 fi
 
+if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) ]] && [ -d /opt/catalyst/lib ];
+then
+	# Workaround: catalyst need a minimal version of cmake when catalyst is compiled in the image the directory /opt/catalyst/lib exist.
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_CATALYST_PLUGIN=ON"
+else
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_CATALYST_PLUGIN=OFF"
+fi
+
+
 # And now for the actual tests
 
 printf "\n\n\n\e[1;36m *** Configure, build & test the whole pdi distribution\e[m\n\n"
