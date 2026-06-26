@@ -97,7 +97,7 @@ fi
 
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) ]] && [ -d /opt/catalyst/lib ];
 then
-	# Workaround: catalyst need a minimal version of cmake when catalyst is compiled in the image the directory /opt/catalyst/lib exist.
+	# Workaround: catalyst need a minimal version of cmake when catalyst is compiled the directory contains the library of catalyst
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_CATALYST_PLUGIN=ON"
 else
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_CATALYST_PLUGIN=OFF"
