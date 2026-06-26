@@ -361,6 +361,13 @@ then
 	CMAKE_FLAGS="-DBUILD_JSON_PLUGIN=ON ${CMAKE_FLAGS}"
 fi
 
+if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) ]] && [ -d /opt/catalyst/lib ];
+then
+	# Workaround: catalyst need a minimal version of cmake when catalyst is compiled in the image the directory /opt/catalyst/lib exist.
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_CATALYST_PLUGIN=ON"
+else
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_CATALYST_PLUGIN=OFF"
+fi
 
 
 # Configure, build and test one project in the build directory tests_<name>, with a junit report of the same name, which CI collects as tests_*.xml.
@@ -376,7 +383,6 @@ conf_build_and_run() {
 	${LAUNCHER} cmake --build "${NAME}" -- ${MAKEFLAGS}
 	${LAUNCHER} ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/${NAME}.xml"} ${EXCLUDED_PDI_TESTS:+-E "$EXCLUDED_PDI_TESTS"} --test-dir "${NAME}"
 }
-
 
 
 # And now for the actual tests
