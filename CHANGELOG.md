@@ -8,6 +8,40 @@ and this project adheres to
 
 
 
+## [1.11.2] - TODO
+
+### For users
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+* Fixed the build failure of a test in 1.11.1
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+
 ## [1.11.1] - 2026-06-23
 
 ### For users

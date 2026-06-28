@@ -33,6 +33,7 @@
 using PDI::make_random;
 using PDI::random_init;
 using testing::Eq;
+using testing::HasSubstr;
 using testing::StartsWith;
 using testing::StrEq;
 

@@ -32,7 +32,7 @@ set -e -o pipefail
 export LC_ALL=C
 
 cd "$(mktemp --tmpdir -d PDI.release.XXXXXXXXXX)"
-printf "cloning..."
+printf "cloning... "
 git clone -q git@github.com:pdidev/pdi.git .
 printf "\n"
 PDIDIR="$PWD"
@@ -41,19 +41,26 @@ OMAJOR="$(git tag -l | sort -V | tail -n 1 | sed -E 's/^([0-9]+)\.[0-9]+\.[0-9]+
 OMINOR="$(git tag -l | sort -V | tail -n 1 | sed -E 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/')"
 OPATCH="$(git tag -l | sort -V | tail -n 1 | sed -E 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/')"
 
-printf "select your type of release:\n * mInor $((OMAJOR)).$((OMINOR+1)).0 (i)\n * mAjor $((OMAJOR+1)).0.0 (a)\n * cancel and eXit (x)\n"
-read -p '[iaX] ' RELTYPE
-while [[ ! "$RELTYPE" =~ ^i$|^I$|^a$|^A$|^x$|^X$|^$ ]]
-do read -p 'please enter either i, a, or x [iaX] ' RELTYPE
+printf "select your type of release:\n * Patch $((OMAJOR)).$((OMINOR)).$((OPATCH+1)) (p)\n * mInor $((OMAJOR)).$((OMINOR+1)).0 (i)\n * mAjor $((OMAJOR+1)).0.0 (a)\n * cancel and eXit (x)\n"
+read -p '[piaX] ' RELTYPE
+while [[ ! "$RELTYPE" =~ ^p$|^P$|^i$|^I$|^a$|^A$|^x$|^X$|^$ ]]
+do read -p 'please enter either p, i, a, or x [piaX] ' RELTYPE
 done
 case "$RELTYPE" in
+[pP])
+	MAJOR="$(( OMAJOR ))"
+	MINOR="$(( OMINOR ))"
+	PATCH="$(( OPATCH + 1 ))"
+;;
 [iI])
 	MAJOR="$(( OMAJOR ))"
 	MINOR="$(( OMINOR + 1 ))"
+	PATCH=0
 ;;
 [aA])
 	MAJOR="$(( OMAJOR + 1 ))"
 	MINOR=0
+	PATCH=0
 ;;
 *)
 	printf "Ok, exiting...\n"
@@ -61,9 +68,11 @@ case "$RELTYPE" in
 	exit
 ;;
 esac
-PATCH=0
 
-git switch -qc "v$MAJOR.$MINOR"
+if (( PATCH == 0 ))
+then git switch -qc "v$MAJOR.$MINOR" origin/main
+else git switch -q "v$MAJOR.$MINOR"
+fi
 echo "$MAJOR.$MINOR.$PATCH" > VERSION
 sed "
 s/release $OMAJOR\.$OMINOR\.$OPATCH/release $MAJOR.$MINOR.$PATCH/;
@@ -71,21 +80,25 @@ s%$OMAJOR\.$OMINOR\.$OPATCH\.tar\.gz%$MAJOR.$MINOR.$PATCH\.tar\.gz%;
 s%$OMAJOR\.$OMINOR\.$OPATCH/build%$MAJOR.$MINOR.$PATCH/build%;
 " -i pdi/docs/Source_installation.md
 sed "s/set(PDI_VERSION .*/set(PDI_VERSION \"$MAJOR.$MINOR.$PATCH\")/" -i mock_pdi/PDIConfigVersion.cmake
-sed "
-s/## \[Unreleased\].*/## [$MAJOR.$MINOR.$PATCH] - $(date +%Y-%m-%d)/;
-/^#### /{N;/^####.*\n *$/d}
-" -i CHANGELOG.md
+sed "s/## \[$MAJOR.$MINOR.$PATCH\].*/## [$MAJOR.$MINOR.$PATCH] - $(date +%Y-%m-%d)/;/^#### /{N;/^.*\n\s*$/d}" -i CHANGELOG.md
+sed '/^### /{N;N;/^.*\n\s*\n\s*$/d}' -i CHANGELOG.md
 git commit -qm "PDI Release $MAJOR.$MINOR.$PATCH" VERSION pdi/docs/Source_installation.md mock_pdi/PDIConfigVersion.cmake CHANGELOG.md
 git tag -m "PDI release $MAJOR.$MINOR.$PATCH" -s "$MAJOR.$MINOR.$PATCH"
+sed -E '1,/^(## .*)/s/^(## .*)/## [Unreleased]\n\n### For users\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n### For plugin developers\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n\n\1/' -i CHANGELOG.md
+git commit -qm "Prepare CHANGELOG for next patch release" CHANGELOG.md
 git switch -q main
-git merge -qm "Merge branch 'v1.10' back into main" --no-ff "v$MAJOR.$MINOR"
+git merge --no-commit -q --no-ff "v$MAJOR.$MINOR" &> /dev/null || true
 
 echo "$MAJOR.$((MINOR+1)).0-alpha" > VERSION
-sed -E '1,/^(## .*)/s/^(## .*)/## [Unreleased]\n\n### For users\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n### For plugin developers\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n\n\1/' -i CHANGELOG.md
-git commit -qC HEAD --amend VERSION CHANGELOG.md
+if (( PATCH == 0 ))
+then 
+	sed -E '1,/^(## .*)/s/^(## .*)/## [Unreleased]\n\n### For users\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n### For plugin developers\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n\n\1/' -i CHANGELOG.md
+fi
+git add VERSION CHANGELOG.md
+git commit -q -m "Merge branch 'v${MAJOR}.${MINOR}' back into main"
 
 read -p "Do you want to push the release that has been prepared in ${PDIDIR} ? [yN] " VALID
-while [[ ! "$RELTYPE" =~ ^i$|^I$|^a$|^A$|^x$|^X$|^$ ]]
+while [[ ! "$VALID" =~ ^y$|^Y$|^n$|^N$|^$ ]]
 do read -p 'please enter either y or n [yN] ' VALID
 done
 case "${VALID}" in
