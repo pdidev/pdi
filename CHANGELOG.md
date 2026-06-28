@@ -8,51 +8,18 @@ and this project adheres to
 
 
 
-## [1.11.2] - TODO
+## [1.11.2] - 2026-06-28
 
 ### For users
 
-#### Added
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
 #### Fixed
 * Fixed the build failure of a test in 1.11.1
-
-#### Security
-
-
-### For plugin developers
-
-#### Added
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
-#### Fixed
-
-#### Security
 
 
 
 ## [1.11.1] - 2026-06-23
 
 ### For users
-
-#### Added
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
 
 #### Fixed
 * Do not fail building the documentation when Fortran support is disabled, to
@@ -63,8 +30,6 @@ and this project adheres to
   vendored version and dependency of doxygen,
   [#712](https://github.com/pdidev/pdi/issues/712)
 
-#### Security
-
 
 ### For plugin developers
 
@@ -72,17 +37,9 @@ and this project adheres to
 * Added ability to require some files in tests running in clean directory to fix
   [#699](https://github.com/pdidev/pdi/issues/699)
 
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
 #### Fixed
 * Correctly genrerate test directory name to prevent random failures
   [#700](https://github.com/pdidev/pdi/issues/700)
-
-#### Security
 
 
 
