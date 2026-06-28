@@ -24,6 +24,9 @@ and this project adheres to
   codes.
 * Added support for MacOS and fixed all CI issues on MacOS, fix
   [#688](https://github.com/pdidev/pdi/issues/688)
+* Update the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
+  and document the cmake option to override 'NetCDF_FIND_STRATEGIES' as
+  requested in [#500](https://github.com/pdidev/pdi/issues/500)
 
 #### Changed
 
@@ -50,42 +53,6 @@ and this project adheres to
 
 #### Removed
 * `PDI::Error` is now an abstract class and should never be used directly.
-
-#### Fixed
-
-#### Security
-
-
-
-## [Unreleased]
-
-### For users
-
-#### Added
-* Update the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
-  and document the cmake option to override 'NetCDF_FIND_STRATEGIES' as
-  requested in [#500](https://github.com/pdidev/pdi/issues/500)
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
-#### Fixed
-
-#### Security
-
-
-### For plugin developers
-
-#### Added
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
 
 #### Fixed
 
