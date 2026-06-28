@@ -57,7 +57,7 @@ and this project adheres to
 
 
 
-## [1.11.1] - 2026-06-23
+## [Unreleased]
 
 ### For users
 
@@ -73,13 +73,6 @@ and this project adheres to
 #### Removed
 
 #### Fixed
-* Do not fail building the documentation when Fortran support is disabled, to
-  fix [#690](https://github.com/pdidev/pdi/issues/690)
-* Updated the embedded version of zpp to fix an issue with Fortran on MacOSX,
-  part of [#688](https://github.com/pdidev/pdi/issues/688)
-* Fix an issue build and tests script in case of spdlog mismatch between the
-  vendored version and dependency of doxygen,
-  [#712](https://github.com/pdidev/pdi/issues/712)
 
 #### Security
 
@@ -87,8 +80,6 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
-* Added ability to require some files in tests running in clean directory to fix
-  [#699](https://github.com/pdidev/pdi/issues/699)
 
 #### Changed
 
@@ -97,10 +88,43 @@ and this project adheres to
 #### Removed
 
 #### Fixed
-* Correctly genrerate test directory name to prevent random failures
-  [#700](https://github.com/pdidev/pdi/issues/700)
 
 #### Security
+
+
+
+## [1.11.2] - 2026-06-28
+
+### For users
+
+#### Fixed
+* Fixed the build failure of a test in 1.11.1
+
+
+
+## [1.11.1] - 2026-06-23
+
+### For users
+
+#### Fixed
+* Do not fail building the documentation when Fortran support is disabled, to
+  fix [#690](https://github.com/pdidev/pdi/issues/690)
+* Updated the embedded version of zpp to fix an issue with Fortran on MacOSX,
+  part of [#688](https://github.com/pdidev/pdi/issues/688)
+* Fix an issue build and tests script in case of spdlog mismatch between the
+  vendored version and dependency of doxygen,
+  [#712](https://github.com/pdidev/pdi/issues/712)
+
+
+### For plugin developers
+
+#### Added
+* Added ability to require some files in tests running in clean directory to fix
+  [#699](https://github.com/pdidev/pdi/issues/699)
+
+#### Fixed
+* Correctly genrerate test directory name to prevent random failures
+  [#700](https://github.com/pdidev/pdi/issues/700)
 
 
 
