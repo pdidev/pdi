@@ -12,8 +12,10 @@ binary_folder = sys.argv[1]
 source_folder = sys.argv[2]
 mpi_exec = sys.argv[3]
 
+pwd_value = os.getcwd() # get the current directory
+
 env = os.environ.copy()
-env["CATALYST_DATA_DUMP_DIRECTORY"] = binary_folder
+env["CATALYST_DATA_DUMP_DIRECTORY"] = pwd_value
 env["CATALYST_IMPLEMENTATION_NAME"] = 'stub' # need to get the conduit json file for comparison
 env["PDI_PLUGIN_PATH"] = binary_folder + '/..'
 

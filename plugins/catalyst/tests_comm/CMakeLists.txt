@@ -31,6 +31,7 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 
 if(${CATALYST_USE_MPI})
+  set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/runtest-dir")
   # MPI
   find_package(MPI COMPONENTS C CXX REQUIRED)
 
@@ -46,7 +47,7 @@ if(${CATALYST_USE_MPI})
 
   find_package(Python3 COMPONENTS Interpreter)
 
-  add_test(NAME TestPDICatalystComm COMMAND ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests_comm/run_test_mpi.py" "${CMAKE_BINARY_DIR}/tests_comm/" "${CMAKE_SOURCE_DIR}/tests_comm/" "${MPIEXEC_EXECUTABLE}") 
+  add_test(NAME TestPDICatalystComm COMMAND "${RUNTEST_DIR}" ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests_comm/run_test_mpi.py" "${CMAKE_BINARY_DIR}/tests_comm/" "${CMAKE_SOURCE_DIR}/tests_comm/" "${MPIEXEC_EXECUTABLE}") 
   set_property(TEST TestPDICatalystComm PROPERTY TIMEOUT 3)
 
 endif()

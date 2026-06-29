@@ -11,8 +11,10 @@ import json
 binary_folder = sys.argv[1]
 source_folder = sys.argv[2]
 
+pwd_value = os.getcwd() # get the current directory
+
 env = os.environ.copy()
-env["CATALYST_DATA_DUMP_DIRECTORY"] = binary_folder
+env["CATALYST_DATA_DUMP_DIRECTORY"] = pwd_value
 env["CATALYST_IMPLEMENTATION_NAME"] = 'stub' # need to get the conduit json file for comparison
 env["PDI_PLUGIN_PATH"] = binary_folder + '/..'
 result = subprocess.run([binary_folder + "/TestPDICatalyst", binary_folder + "/pdi.yml"], env=env)
@@ -29,7 +31,7 @@ if(endianness == 'big'):
 
 # Check the initialize json dump
 reference_initialize_json = source_folder + "/" + reference_directory + "/initialize_reference.json"
-actual_initialize_json = binary_folder + "initialize_params.conduit_bin.1.0_json"
+actual_initialize_json = pwd_value + "/" + "initialize_params.conduit_bin.1.0_json"
 with open(reference_initialize_json) as ref_file:
     with open(actual_initialize_json) as actual_file:
         ref_json = json.load(ref_file)
@@ -44,14 +46,14 @@ with open(reference_initialize_json) as ref_file:
 # Check the execute json dump
 reference_execute_json = source_folder + "/" + reference_directory + "/execute_reference.json"
 for step in range(9):
-    filepath = binary_folder + f"execute_invc{step}_params.conduit_bin.1.0_json"
+    filepath = pwd_value + "/" + f"execute_invc{step}_params.conduit_bin.1.0_json"
     if not filecmp.cmp(reference_execute_json, filepath):
         print(f'Differences detected in file "{filepath}" compared to reference "{reference_execute_json}')
         exit(1)
 
 # Check the finalize json dump
 reference_finalize_json = source_folder + "/" + reference_directory + "/finalize_reference.json"
-actual_finalize_json = binary_folder + "finalize_params.conduit_bin.1.0_json"
+actual_finalize_json = pwd_value + "/" + "finalize_params.conduit_bin.1.0_json"
 if not filecmp.cmp(reference_finalize_json, actual_finalize_json):
     print(f'Differences detected in file "{actual_finalize_json}" compared to reference "{reference_finalize_json}')
     exit(1)
