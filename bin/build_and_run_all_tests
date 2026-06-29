@@ -77,7 +77,7 @@ fi
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_MPI}" = "xmpich" ]]
 then
 	# Workaround: mpi4py in debuntu is packaged for openmpi only
-	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}PDI_example_trace_P|PDI_example_decl_hdf5_P"
+	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}PDI_example_trace_P|PDI_example_decl_hdf5_P|PDI_example_catalyst_P"
 fi
 
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_LIBS}" = "xprovided" ]]
@@ -94,6 +94,15 @@ then
 	#             (see  https://github.com/pdidev/test_env/actions/runs/27519792247/job/81335351522)
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_spdlog=SYSTEM"
 fi
+
+if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) ]] && [ -d /opt/catalyst/lib ];
+then
+	# Workaround: catalyst need a minimal version of cmake when catalyst is compiled the directory contains the library of catalyst
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_CATALYST_PLUGIN=ON"
+else
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_CATALYST_PLUGIN=OFF"
+fi
+
 
 # And now for the actual tests
 
