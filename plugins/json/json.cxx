@@ -69,6 +69,7 @@ public:
 
 	~json_plugin() { context().logger().info("Closing plugin"); }
 
+	static std::string pretty_name() { return "JSON"; }
 
 private:
 	/** Read the configuration file
@@ -328,6 +329,7 @@ private:
 	 */
 	void write_data(const std::string& data_name, Ref_r&& reference)
 	{
+		context().event("json_start_timer");
 		Logger& logger = context().logger();
 
 		for (const auto& [condition, fpath]: m_data_to_path_map[data_name]) {
@@ -374,6 +376,7 @@ private:
 			}
 			logger.debug("Done ! {} ", data_name);
 		}
+		context().event("json_stop_timer");
 	}
 };
 

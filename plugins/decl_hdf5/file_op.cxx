@@ -261,6 +261,8 @@ File_op::File_op(Expression&& file, Collision_policy collision_policy)
 
 void File_op::execute(Context& ctx)
 {
+	ctx.event("decl_hdf5_start_timer");
+
 	// first gather the ops we actually want to do
 	vector<Dataset_op> dset_reads;
 	vector<Dataset_op> dset_writes;
@@ -434,6 +436,7 @@ void File_op::execute(Context& ctx)
 
 		ctx.logger().trace("Getting size of `{}' dataset finished", dataset_name);
 	}
+	ctx.event("decl_hdf5_stop_timer");
 	ctx.logger().trace("All operations done in `{}'. Closing the file.", filename);
 }
 
