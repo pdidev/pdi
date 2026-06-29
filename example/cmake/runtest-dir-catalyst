@@ -10,11 +10,9 @@ trap finish EXIT
 
 while [ '--runtest-dir-copy-file' = "$1" ]
 do
-	echo "first=$1"
 	shift
 	cp "$1" "${WKDIR}/"
 	shift
-	echo "second=$1"
 done
 
 cd "${WKDIR}"
