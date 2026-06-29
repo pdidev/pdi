@@ -30,6 +30,8 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
+set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/runtest-dir")
+
 # Creation of executable
 add_executable(TestPDICatalystGhost
  example.c)
@@ -47,5 +49,5 @@ set(CATALYST_SCRIPT_FOLDER ${CMAKE_SOURCE_DIR}/tests_ghost)
 configure_file(catalyst_serial_structured.yml.in pdi_structured.yml)
 
 find_package(Python3 COMPONENTS Interpreter)
-add_test(NAME TestPDICatalystGhost_uniform COMMAND ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests_ghost/run_test.py" "${CMAKE_BINARY_DIR}/tests_ghost/" "${CMAKE_SOURCE_DIR}/tests_ghost/" "true_uniform")
-add_test(NAME TestPDICatalystGhost_structured COMMAND ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests_ghost/run_test.py" "${CMAKE_BINARY_DIR}/tests_ghost/" "${CMAKE_SOURCE_DIR}/tests_ghost/" "true_structured")
+add_test(NAME TestPDICatalystGhost_uniform COMMAND "${RUNTEST_DIR}" ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests_ghost/run_test.py" "${CMAKE_BINARY_DIR}/tests_ghost/" "${CMAKE_SOURCE_DIR}/tests_ghost/" "true_uniform")
+add_test(NAME TestPDICatalystGhost_structured COMMAND "${RUNTEST_DIR}" ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests_ghost/run_test.py" "${CMAKE_BINARY_DIR}/tests_ghost/" "${CMAKE_SOURCE_DIR}/tests_ghost/" "true_structured")

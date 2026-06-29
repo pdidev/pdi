@@ -77,23 +77,6 @@ void catalyst_plugin::process_pdi_init()
 	this->m_pdi_execute_event_name = this->read_pdi_execute_event_name();
 }
 
-// void catalyst_plugin::process_pdi_init_with_communicator(const std::string& event_name)
-// {
-// 	int world_rank;
-// 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-// 	if (event_name == this->m_pdi_initialize_event_name && !catalyst_is_initialized) {
-// 		context().logger().trace("call run_catalyst_initialize in event `{}'", event_name);
-// 		this->run_catalyst_initialize();
-// 		//this->process_pdi_init();
-// 	} else {
-// 		this->process_event(event_name);
-// 	}
-
-// 	context().logger().debug("I'm arrived to the barrier in event `{}'... rank `{}'", event_name, world_rank);
-// 	MPI_Barrier(MPI_COMM_WORLD);
-// }
-
 void catalyst_plugin::process_pdi_init_with_event(const std::string& event_name)
 {
 	if (event_name == this->m_pdi_initialize_event_name && !catalyst_is_initialized) {

@@ -13,8 +13,10 @@ binary_folder = sys.argv[1]
 source_folder = sys.argv[2]
 test_name     = sys.argv[3] 
 
+pwd_value = os.getcwd() # get the current directory
+
 env = os.environ.copy()
-env["CATALYST_DATA_DUMP_DIRECTORY"] = binary_folder + '/' + test_name
+env["CATALYST_DATA_DUMP_DIRECTORY"] = pwd_value + "/" + test_name
 env["CATALYST_IMPLEMENTATION_NAME"] = 'stub' # need to get the conduit json file for comparison
 
 env["PDI_PLUGIN_PATH"] = binary_folder + '/..'
@@ -75,7 +77,7 @@ def check_ghost_type(file_bin_json, expected_solution):
 
 ################################################################
 
-file_bin_json = binary_folder + "/" + test_name + "/execute_invc0_params.conduit_bin.1.0"
+file_bin_json = pwd_value + "/" + test_name + "/execute_invc0_params.conduit_bin.1.0"
 
 expected_solution = expected_vtk_ghost_type()
 check_ghost_type(file_bin_json, expected_solution)
