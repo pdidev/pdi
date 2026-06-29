@@ -28,9 +28,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-# Use "./run-local-CI.sh" to run CI locally from a container
+# Use "./test_CI" to run CI locally from a container
 
 set -euo pipefail
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "$REPO_ROOT"
 
 # ----------- Config ------------------
 IMAGE="ghcr.io/pdidev/ubuntu/rolling/openmpi/all:v4"
@@ -38,34 +41,36 @@ TMP_DIR="/tmp_dir_test"
 BINARY_PATH="bin/build_and_run_all_tests"
 # ------------------------------------
 
-if command -v podman &>/dev/null; then
-  CONTAINER_CMD="podman"
-  USERNS_ARGS="--userns=keep-id"
-elif command -v docker &>/dev/null; then
-  CONTAINER_CMD="docker"
-  USERNS_ARGS="--user $(id -u):$(id -g)"
+if [[ ! -f "$BINARY_PATH" ]]; then
+    echo "Error: Test runner script not found at $REPO_ROOT/$BINARY_PATH" >&2
+    exit 1
+fi
+
+CONTAINER_OPTS=(run --rm)
+
+if command -v docker &>/dev/null; then
+    CONTAINER_CMD="docker"
+    CONTAINER_OPTS+=("--user" "$(id -u):$(id -g)")
+elif command -v podman &>/dev/null; then
+    CONTAINER_CMD="podman"
+    CONTAINER_OPTS+=("--userns=keep-id")
 else
-  echo "Error: neither podman nor docker found in PATH." >&2
-  exit 1
+    echo "Error: neither docker nor podman found in PATH" >&2
+    exit 127
 fi
 
-REPO_ROOT=$(git rev-parse --show-toplevel)
+echo "Running CI tests via $CONTAINER_CMD"
+echo ""
 
-if [[ ! -f "$REPO_ROOT/$BINARY_PATH" ]]; then
-  echo "Script not found at $REPO_ROOT/$BINARY_PATH"
-  exit 1
-fi
+"$CONTAINER_CMD" "${CONTAINER_OPTS[@]}" \
+    -v "$REPO_ROOT":/src \
+    -w /src \
+    --tmpfs "${TMP_DIR}:exec" \
+    -e MAKEFLAGS="-j 4" \
+    -e TEST_DIR="$TMP_DIR" \
+    -e CMAKE_FLAGS="-DBUILD_DOCUMENTATION=OFF" \
+    "$IMAGE" \
+    "/src/$BINARY_PATH"
 
-echo -e "Running CI tests (using $CONTAINER_CMD)\n"
-
-$CONTAINER_CMD run --rm \
-  $USERNS_ARGS \
-  -v "$REPO_ROOT":/src \
-  --tmpfs "$TMP_DIR:exec" \
-  -e MAKEFLAGS="-j 4" \
-  -e TEST_DIR="/tmp_dir_test" \
-  -e CMAKE_FLAGS="-DBUILD_DOCUMENTATION=OFF" \
-  "$IMAGE" \
-  /src/bin/build_and_run_all_tests
-
-echo -e "\nDone"
+echo ""
+echo "Done"
