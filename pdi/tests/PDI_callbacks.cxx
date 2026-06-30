@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -165,6 +165,7 @@ TEST_F(CallbacksTest, add_data_callback)
 	});
 	ASSERT_EQ(x, 0);
 	this->test_context->desc("data_x").share(&x, true, true);
+	ASSERT_EQ(x, 42);
 	this->test_context->desc("data_x").reclaim();
 	ASSERT_EQ(x, 42);
 }
