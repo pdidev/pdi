@@ -46,10 +46,10 @@ endif()
 "
 )
 
-# copy yaml file, to binary folder, for example_damaris_plugin_with_is_client.c
+# copy yaml file, to binary folder
 configure_file(test_damaris_scalar_type.yml test_damaris_scalar_type.yml COPYONLY)
+# configure generic launcher bash for test
 configure_file(run_launch.sh.in run_launch.sh)
-#configure_file(run_launch_mpi.sh.in run_launch_mpi.sh)
 
 add_executable(test_damaris_scalar_type test_damaris_scalar_type.c)
 add_executable(read_damaris_scalar_type read_damaris_scalar_type.c)
