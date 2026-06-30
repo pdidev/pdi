@@ -124,7 +124,6 @@ The following flags define whether to:
 |Flag           |Default   |Description|
 |:--------------|:---------|:----------|
 |`USE_benchmark`|`EMBEDDED`|The [Benchmark](https://github.com/google/benchmark) library.|
-|`USE_Doxygen`  |`AUTO`    |The [doxygen](http://www.doxygen.nl) tool.|
 |`USE_GTest`    |`EMBEDDED`|The [googletest](https://github.com/google/googletest) library.|
 |`USE_HDF5`     |`AUTO`    |The [HDF5](https://www.hdfgroup.org/solutions/hdf5) library.|
 |`USE_JSON`     |`AUTO`    |The [Json](https://github.com/nlohmann/json) library.|
