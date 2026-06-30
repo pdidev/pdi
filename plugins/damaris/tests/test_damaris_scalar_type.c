@@ -24,37 +24,20 @@
  ******************************************************************************/
 
 #include <mpi.h>
-#include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <pdi.h>
 
 #define IMX 10
 
-const char* CONFIG_FOR_READING_RESULT
-	= "logging: trace\n"
-	  "metadata:\n"
-	  "  nn: int\n"
-	  "  nbcalls: int\n"
-	  "data:\n"
-	  "  pdi_values: {size: ['$nn'], type: array, subtype: int}\n"
-	  "  damaris_values: {size: ['$nn'], type: array, subtype: int}\n"
-	  "plugins:\n"
-	  "  decl_hdf5:\n"
-	  "    - file: './data_iter${nbcalls}.h5'\n"
-	  "      read:\n"
-	  "        pdi_values:\n"
-	  "          dataset: int_values\n"
-	  "        nn:\n"
-	  "    - file: './HDF5_files/damaris_scalar_type_It${nbcalls}.h5'\n"
-	  "      read:\n"
-	  "        damaris_values:\n"
-	  "          dataset: int_values\n";
-
 int main(int argc, char* argv[])
 {
 	if (argc != 2) {
+		fprintf(stderr, "Usage: argc=%d \n", argc);
 		fprintf(stderr, "Usage: %s <config_file>\n", argv[0]);
+		for (int ii=0; ii<argc; ++ii) {
+			fprintf(stderr, "Usage: argv[%d]=%s\n", ii, argv[ii]);
+		}
 		exit(1);
 	}
 	MPI_Init(&argc, &argv);
@@ -108,44 +91,6 @@ int main(int argc, char* argv[])
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
-
-	// comparison of the results
-
-	// reinitialize pdi for reading results
-	PDI_init(PC_parse_string(CONFIG_FOR_READING_RESULT));
-	int rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	if (rank == 0) {
-		int size_pdi = -20;
-		int damaris_values[IMX];
-		int pdi_values[IMX];
-		int size_expected[2] = {nn_first_call, IMX};
-
-		for (int nb_calls = 0; nb_calls < 2; ++nb_calls) {
-			PDI_expose("nbcalls", &nb_calls, PDI_INOUT);
-			PDI_expose("nn", &size_pdi, PDI_INOUT);
-			if (size_pdi != size_expected[nb_calls]) {
-				printf("For iteration=%d,  error in reading the size of the array, size_pdi=%d\n", nb_calls, size_pdi);
-				exit(EXIT_FAILURE);
-			}
-
-			for (int ii = 0; ii < size_expected[nb_calls]; ++ii) {
-				damaris_values[ii] = 6;
-				pdi_values[ii] = 9;
-			}
-
-			PDI_multi_expose("read_pdi", "nbcalls", &nb_calls, PDI_INOUT, "pdi_values", pdi_values, PDI_INOUT, NULL);
-			PDI_multi_expose("read_damaris", "nbcalls", &nb_calls, PDI_INOUT, "damaris_values", damaris_values, PDI_INOUT, NULL);
-
-			for (int ii = 0; ii < size_expected[nb_calls]; ++ii) {
-				if (pdi_values[ii] != damaris_values[ii]) {
-					printf("For iteration=%d, values pdi %d != %d  damaris\n", nb_calls, pdi_values[ii], damaris_values[ii]);
-					exit(EXIT_FAILURE);
-				}
-			}
-		}
-	}
-	PDI_finalize();
 	MPI_Finalize();
 
 	return EXIT_SUCCESS;

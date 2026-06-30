@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ "$#" -eq 2 ]; then
+    echo "Run sequential script."
+    $1 $2
+elif [ "$#" -eq 3 ]; then
+    echo "Run parallel script."
+    ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} $1 ${MPIEXEC_PREFLAGS} $2 ${MPIEXEC_POSTFLAGS} $3
+else 
+    echo "Error in the number of argument is 2 or 3."
+fi
+
