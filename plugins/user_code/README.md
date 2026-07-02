@@ -318,7 +318,7 @@ A \ref on_event_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
-|`"when"` (*optional*)|a $-expression defines a condtion for executing the function|
+|`"when"` (*optional*)|a $-expression defines a condition for executing the function|
 |`".*"` (*optional*)|a \ref function_list_node|
 
 * each key identifies the name of an event, which will trigger specified functions when it occurs.
@@ -329,7 +329,7 @@ A \ref function_list_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
-|`"when"` (*optional*)|a $-expression defines a condtion for executing the function|
+|`"when"` (*optional*)|a $-expression defines a condition for executing the function|
 |`".*"` (*optional*)|a \ref function_param_list_node|
 
 * each key identifies the name of a function, which will be called on specified event or data,

@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
 
-	// NO function will be called because cond = 0
+	// No function will be called because cond = 0
 	int cond = 0;
 	PDI_expose("cond", &cond, PDI_OUT);
 
