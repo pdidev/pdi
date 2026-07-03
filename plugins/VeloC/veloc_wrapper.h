@@ -40,7 +40,7 @@
 
 void init(PDI::Context& ctx, MPI_Comm comm, std::string veloc_file);
 
-void protect_data(PDI::Context& ctx, int id, const void* ptr, size_t n, size_t sub_bytes);
+void protect_data(PDI::Context& ctx, int id, const void* ptr, size_t n_elements, size_t element_bytes);
 
 void unprotect_data(PDI::Context& ctx, int id);
 

@@ -49,15 +49,15 @@ const char CONF_VALID[]
 	  "    custom_checkpointing:\n"
 	  "      veloc_file : veloc_file_buf \n"
 	  "      custom_checkpoint:\n"
-	  "           original_file: my_file.dat\n"
-	  "           start_on: start_ckp\n"
-	  "           route_file_on: route_ckp\n"
-	  "           end_on: end_ckp\n"
+	  "           filename: my_file.dat\n"
+	  "           start_on_event: start_ckp\n"
+	  "           route_file_on_event: route_ckp\n"
+	  "           end_on_event: end_ckp\n"
 	  "      custom_recover:\n"
-	  "           original_file: my_file.dat\n"
-	  "           start_on: start_rec\n"
-	  "           route_file_on: route_rec\n"
-	  "           end_on: end_rec\n";
+	  "           filename: my_file.dat\n"
+	  "           start_on_event: start_rec\n"
+	  "           route_file_on_event: route_rec\n"
+	  "           end_on_event: end_rec\n";
 
 const char CONF_CONFIG_MISSING[]
 	= "metadata:\n"
@@ -105,7 +105,7 @@ const char CONF_ITER_NOT_PROTECTED[]
 	  "    iteration: ii\n"
 	  "    managed_checkpointing:\n"
 	  "      protect_data: [var]\n"
-	  "      checkpoint_on: ckp\n";
+	  "      checkpoint_on_event: ckp\n";
 
 const char CONF_BAD_FAILURE[]
 	= "metadata:\n"
@@ -120,7 +120,7 @@ const char CONF_BAD_FAILURE[]
 	  "    iteration: ii\n"
 	  "    managed_checkpointing:\n"
 	  "      protect_data: [ii,var]\n"
-	  "      checkpoint_on: ckp\n";
+	  "      checkpoint_on_event: ckp\n";
 
 const char CONF_PROTECT_DATA_MISSING[]
 	= "metadata:\n"
@@ -134,7 +134,7 @@ const char CONF_PROTECT_DATA_MISSING[]
 	  "    checkpoint_label: test_01\n"
 	  "    iteration: ii\n"
 	  "    managed_checkpointing:\n"
-	  "      checkpoint_on: ckp\n";
+	  "      checkpoint_on_event: ckp\n";
 
 const char CONF_CP_OFILE_MISSING[]
 	= "metadata:\n"
@@ -150,10 +150,10 @@ const char CONF_CP_OFILE_MISSING[]
 	  "    iteration: ii\n"
 	  "    custom_checkpointing:\n"
 	  "       custom_checkpoint:\n"
-	  "           original_file: my_file.dat\n"
-	  "           start_on: start_ckp\n"
-	  "           route_file_on: route_ckp\n"
-	  "           end_on: end_ckp\n";
+	  "           filename: my_file.dat\n"
+	  "           start_on_event: start_ckp\n"
+	  "           route_file_on_event: route_ckp\n"
+	  "           end_on_event: end_ckp\n";
 
 const char CONF_CP_START_MISSING[]
 	= "metadata:\n"
@@ -170,9 +170,9 @@ const char CONF_CP_START_MISSING[]
 	  "    custom_checkpointing:\n"
 	  "       veloc_file : veloc_file_buf\n"
 	  "       custom_checkpoint:\n"
-	  "           original_file: my_file.dat\n"
-	  "           route_file_on: route_ckp\n"
-	  "           end_on: end_ckp\n";
+	  "           filename: my_file.dat\n"
+	  "           route_file_on_event: route_ckp\n"
+	  "           end_on_event: end_ckp\n";
 
 const char CONF_CP_ROUTE_MISSING[]
 	= "metadata:\n"
@@ -189,9 +189,9 @@ const char CONF_CP_ROUTE_MISSING[]
 	  "    custom_checkpointing:\n"
 	  "       veloc_file : veloc_file_buf\n"
 	  "       custom_checkpoint:\n"
-	  "           original_file: my_file.dat\n"
-	  "           start_on: start_ckp\n"
-	  "           end_on: end_ckp\n";
+	  "           filename: my_file.dat\n"
+	  "           start_on_event: start_ckp\n"
+	  "           end_on_event: end_ckp\n";
 
 const char CONF_CP_END_MISSING[]
 	= "metadata:\n"
@@ -208,9 +208,9 @@ const char CONF_CP_END_MISSING[]
 	  "    custom_checkpointing:\n"
 	  "       veloc_file : veloc_file_buf\n"
 	  "       custom_checkpoint:\n"
-	  "           original_file: my_file.dat\n"
-	  "           start_on: start_ckp\n"
-	  "           route_file_on: route_ckp\n";
+	  "           filename: my_file.dat\n"
+	  "           start_on_event: start_ckp\n"
+	  "           route_file_on_event: route_ckp\n";
 
 const char CONF_REC_OFILE_MISSING[]
 	= "metadata:\n"
@@ -227,9 +227,9 @@ const char CONF_REC_OFILE_MISSING[]
 	  "    custom_checkpointing:\n"
 	  "       veloc_file : veloc_file_buf\n"
 	  "       custom_recover:\n"
-	  "           start_on: start_ckp\n"
-	  "           route_file_on: route_ckp\n"
-	  "           end_on: end_ckp\n";
+	  "           start_on_event: start_ckp\n"
+	  "           route_file_on_event: route_ckp\n"
+	  "           end_on_event: end_ckp\n";
 
 const char CONF_REC_START_MISSING[]
 	= "metadata:\n"
@@ -246,9 +246,9 @@ const char CONF_REC_START_MISSING[]
 	  "    custom_checkpointing:\n"
 	  "       veloc_file : veloc_file_buf\n"
 	  "       custom_recover:\n"
-	  "           original_file: my_file.dat\n"
-	  "           route_file_on: route_ckp\n"
-	  "           end_on: end_ckp\n";
+	  "           filename: my_file.dat\n"
+	  "           route_file_on_event: route_ckp\n"
+	  "           end_on_event: end_ckp\n";
 
 const char CONF_REC_ROUTE_MISSING[]
 	= "metadata:\n"
@@ -263,12 +263,12 @@ const char CONF_REC_ROUTE_MISSING[]
 	  "    checkpoint_label: test_01\n"
 	  "    iteration: ii\n"
 	  "    protect_data: [ii, var]\n"
-	  "    recover_on: rec\n"
+	  "    recover_on_event: rec\n"
 	  "    custom_recover:\n"
-	  "      original_file: my_file.dat\n"
+	  "      filename: my_file.dat\n"
 	  "      veloc_file: veloc_file_buf\n"
-	  "      start_on: start_rec\n"
-	  "      end_on: end_rec\n";
+	  "      start_on_event: start_rec\n"
+	  "      end_on_event: end_rec\n";
 
 const char CONF_REC_END_MISSING[]
 	= "metadata:\n"
@@ -283,12 +283,12 @@ const char CONF_REC_END_MISSING[]
 	  "    checkpoint_label: test_01\n"
 	  "    iteration: ii\n"
 	  "    protect_data: [ii, var]\n"
-	  "    recover_on: rec\n"
+	  "    recover_on_event: rec\n"
 	  "    custom_recover:\n"
-	  "      original_file: my_file.dat\n"
+	  "      filename: my_file.dat\n"
 	  "      veloc_file: veloc_file_buf\n"
-	  "      start_on: start_rec\n"
-	  "      route_file_on: route_rec\n";
+	  "      start_on_event: start_rec\n"
+	  "      route_file_on_event: route_rec\n";
 
 const char CONF_DUPLICATE_EVENTS[]
 	= "metadata:\n"
@@ -303,15 +303,15 @@ const char CONF_DUPLICATE_EVENTS[]
 	  "    iteration: ii\n"
 	  "    custom_checkpointing:\n"
 	  "      custom_checkpoint:\n"
-	  "           original_file: my_file.dat\n"
-	  "           start_on: start_ckp\n"
-	  "           route_file_on: route_ckp\n"
-	  "           end_on: end_ckp\n"
+	  "           filename: my_file.dat\n"
+	  "           start_on_event: start_ckp\n"
+	  "           route_file_on_event: route_ckp\n"
+	  "           end_on_event: end_ckp\n"
 	  "      custom_recover:\n"
-	  "           original_file: my_file.dat\n"
-	  "           start_on: start_ckp\n"
-	  "           route_file_on: route_ckp\n"
-	  "           end_on: end_ckp\n";
+	  "           filename: my_file.dat\n"
+	  "           start_on_event: start_ckp\n"
+	  "           route_file_on_event: route_ckp\n"
+	  "           end_on_event: end_ckp\n";
 
 int main(int argc, char* argv[])
 {
@@ -334,14 +334,14 @@ int main(int argc, char* argv[])
 		{"missing protect_data", CONF_PROTECT_DATA_MISSING, 1},
 
 		{"custom_checkpoint: missing veloc_file", CONF_CP_OFILE_MISSING, 1},
-		{"custom_checkpoint: missing start_on", CONF_CP_START_MISSING, 1},
-		{"custom_checkpoint: missing route_file_on", CONF_CP_ROUTE_MISSING, 1},
-		{"custom_checkpoint: missing end_on", CONF_CP_END_MISSING, 1},
+		{"custom_checkpoint: missing start_on_event", CONF_CP_START_MISSING, 1},
+		{"custom_checkpoint: missing route_file_on_event", CONF_CP_ROUTE_MISSING, 1},
+		{"custom_checkpoint: missing end_on_event", CONF_CP_END_MISSING, 1},
 
-		{"custom_recover: missing original_file", CONF_REC_OFILE_MISSING, 1},
-		{"custom_recover: missing start_on", CONF_REC_START_MISSING, 1},
-		{"custom_recover: missing route_file_on", CONF_REC_ROUTE_MISSING, 1},
-		{"custom_recover: missing end_on", CONF_REC_END_MISSING, 1},
+		{"custom_recover: missing filename", CONF_REC_OFILE_MISSING, 1},
+		{"custom_recover: missing start_on_event", CONF_REC_START_MISSING, 1},
+		{"custom_recover: missing route_file_on_event", CONF_REC_ROUTE_MISSING, 1},
+		{"custom_recover: missing end_on_event", CONF_REC_END_MISSING, 1},
 
 		{"missing config_file", CONF_DUPLICATE_EVENTS, 1},
 	};

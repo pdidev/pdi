@@ -34,10 +34,10 @@ void init(PDI::Context& ctx, MPI_Comm comm, const string veloc_file)
 	}
 }
 
-void protect_data(PDI::Context& ctx, int id, const void* ptr, size_t n, size_t sub_bytes)
+void protect_data(PDI::Context& ctx, int id, const void* ptr, size_t n_elements, size_t element_bytes)
 {
-	if (VELOC_Mem_protect(id, const_cast<void*>(ptr), n, sub_bytes) != VELOC_SUCCESS) {
-		ctx.logger().error("Memory protect failed for id {} with ptr = {} and size = {}", id, ptr, (n * sub_bytes));
+	if (VELOC_Mem_protect(id, const_cast<void*>(ptr), n_elements, element_bytes) != VELOC_SUCCESS) {
+		ctx.logger().error("Memory protect failed for id {} with ptr = {} and size = {}", id, ptr, (n_elements * element_bytes));
 		exit(2);
 	}
 }

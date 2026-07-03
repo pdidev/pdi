@@ -34,6 +34,7 @@ using PDI::Context;
 using PDI::Datatype_sptr;
 using PDI::Spectree_error;
 using PDI::Impl_error;
+using PDI::Type_error;
 using PDI::Plugin;
 using PDI::Ref;
 using PDI::Ref_r;
@@ -43,9 +44,9 @@ using std::string;
 
 // Same logic as in scalar_datatype.cxx
 namespace {
-inline bool nulltype(const PDI::Datatype_sptr& d)
+inline bool nulltype(const PDI::Datatype_sptr& datatype)
 {
-	const auto* scalar = dynamic_cast<const PDI::Scalar_datatype*>(d.get());
+	const auto* scalar = dynamic_cast<const PDI::Scalar_datatype*>(datatype.get());
 	if (!scalar) return false;
 	if (scalar->buffersize()) return false;
 	if (scalar->datasize()) return false;
@@ -81,21 +82,23 @@ class veloc_plugin: public Plugin
 
 			if (ref) {
 				const Datatype_sptr type = ref.type();
-				size_t n = 1;
-				size_t bytes = type->datasize();
+				size_t n_elements = 1;
+				size_t total_bytes = type->datasize(); 
 
+				if (!type->dense()) { 
+					throw Impl_error{
+						fmt::format("Sparse types are not supported (`{}`)", data.second)
+
+					};
+				}
+				
 				if (auto* array_type = dynamic_cast<const PDI::Array_datatype*>(type.get())) {
-					n = array_type->subsize();
+					n_elements = array_type->subsize();
 				}
 
-				size_t sub_bytes = bytes / n;
+				size_t element_bytes = total_bytes / n_elements;
 
-				if (!type->dense()) {
-					context().logger().warn("Sparse types are not supported (`{}')", data.second);
-					continue;
-				}
-
-				protect_data(context(), data.first, ref.get(), n, sub_bytes);
+				protect_data(context(), data.first, ref.get(), n_elements, element_bytes);
 			}
 		}
 	}
@@ -138,7 +141,7 @@ public:
 					desc.first
 				);
 			} else {
-				throw Impl_error{"Unexpected Desc Type"};
+				throw Type_error{"Unexpected Desc Type"};
 			}
 		} // data call backs
 
@@ -250,7 +253,7 @@ public:
 				context().callbacks().add_event_callback([this](const string& event_name) { end_restart(context()); }, event.first);
 			} break;
 			default:
-				throw Impl_error{"Unexpected event type"};
+				throw Type_error{"Unexpected event type"};
 			}
 		} // event call backs
 	}

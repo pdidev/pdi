@@ -43,7 +43,7 @@ const char CONF_YAML[]
 	  "    iteration: ii\n"
 	  "    managed_checkpointing:\n"
 	  "      protect_data: [ii, var]\n"
-	  "      checkpoint_on: ckp\n";
+	  "      checkpoint_on_event: ckp\n";
 
 int main(int argc, char* argv[])
 {

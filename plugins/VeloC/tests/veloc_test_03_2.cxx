@@ -41,10 +41,10 @@ const char CONF_YAML[]
 	  "    custom_checkpointing:\n"
 	  "       veloc_file: veloc_file\n"
 	  "       custom_recover:\n"
-	  "           original_file: file1.h5\n"
-	  "           start_on: start\n"
-	  "           route_file_on: route\n"
-	  "           end_on: end\n";
+	  "           filename: file1.h5\n"
+	  "           start_on_event: start\n"
+	  "           route_file_on_event: route\n"
+	  "           end_on_event: end\n";
 
 int main(int argc, char* argv[])
 {

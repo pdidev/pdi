@@ -43,7 +43,7 @@ const char CONF_YAML[]
 	  "    iteration: ii\n"
 	  "    managed_checkpointing:\n"
 	  "      protect_data: [ii, var]\n"
-	  "      recover_on: recover\n";
+	  "      recover_on_event: recover\n";
 
 int main(int argc, char* argv[])
 {

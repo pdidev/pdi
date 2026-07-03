@@ -44,7 +44,7 @@ const char CONF_YAML[]
 	  "    iteration: ii\n"
 	  "    managed_checkpointing:\n"
 	  "      protect_data: [ii, arr]\n"
-	  "      synchronize_on: sync\n"
+	  "      synchronize_on_event: sync\n"
 	  "      when: '$ii % 2 = 0 '\n";
 
 int main(int argc, char* argv[])

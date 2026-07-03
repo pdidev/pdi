@@ -6,10 +6,14 @@ The VeloC plugin enables
 * writing and reading applications' custom checkpoint files using [VeloC file-based API](https://veloc.readthedocs.io/en/latest/api.html#example#memory-based-api)
 * handling the persistence, versioning, and transfer of checkpoint files using [VeloC](https://veloc.readthedocs.io/en/latest/)
 
-Please note for applications's customs checkpoints, VeloC does not automate the serialization or deserialization of data structure like it does for generic-data checkpoints; that remains manual and user‑defined. 
+Please note: <br> 
+* for applications's customs checkpoints, VeloC does not automate the serialization or deserialization of data structure like it does for generic-data checkpoints; that remains manual and user‑defined. (See [VeloC documentation](https://veloc.readthedocs.io/en/latest/)) <br>
+* VeloC configuration file requires the definition of a temporary storage directory and a persistent one. The latter is where users will find the persistent checkpoint files with the following naming convention : `label-rank-version.dat`
+
+
 
 The VeloC plugin does not currently support the full set of features of VeloC, but it offers a simple
-declarative interface to access the core features.
+declarative interface to access the core features, as explained in the following paragraphs. 
 
 ## External Dependencies   
 In order to use the VeloC plugin, the user needs to install VeloC 1.8 or above as it is not vendored in PDI. This can be done following the instructions [here](https://veloc.readthedocs.io/en/latest/quick.html#download-and-install). <br>

@@ -22,6 +22,6 @@ pdi:
       iteration : iter # needed by VeloC to name checkpoint files 
       managed_checkpointing:
         protect_data: [iter, main_field,elapsed_offset] # data to be checkpointed or recovered, iter must be included
-        synchronize_on: newiter # PDI_event to check status and consequently checkpoint/recover  
+        synchronize_on_event: newiter # PDI_event to check status and consequently checkpoint/recover  
         when : '$iter % 1000 = 0'
 
