@@ -25,6 +25,9 @@ and this project adheres to
 * Added support for MacOS and fixed all CI issues on MacOS, fix
   [#688](https://github.com/pdidev/pdi/issues/688)
 * Add `when` keyword for user_code plugin, fix [#698](https://github.com/pdidev/pdi/issues/698)
+* Update the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
+  and document the cmake option to override 'NetCDF_FIND_STRATEGIES' as
+  requested in [#500](https://github.com/pdidev/pdi/issues/500)
 
 #### Changed
 
@@ -42,6 +45,8 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* Support conversion of `Yaml_region` to a `string`
+  [#702](https://github.com/pdidev/pdi/issues/702)
 
 #### Changed
 
@@ -56,40 +61,38 @@ and this project adheres to
 
 
 
-## [1.11.1] - Unreleased
+## [1.11.2] - 2026-06-28
 
 ### For users
 
-#### Added
+#### Fixed
+* Fixed the build failure of a test in 1.11.1
 
-#### Changed
 
-#### Deprecated
 
-#### Removed
+## [1.11.1] - 2026-06-23
+
+### For users
 
 #### Fixed
 * Do not fail building the documentation when Fortran support is disabled, to
   fix [#690](https://github.com/pdidev/pdi/issues/690)
 * Updated the embedded version of zpp to fix an issue with Fortran on MacOSX,
   part of [#688](https://github.com/pdidev/pdi/issues/688)
-
-#### Security
+* Fix an issue build and tests script in case of spdlog mismatch between the
+  vendored version and dependency of doxygen,
+  [#712](https://github.com/pdidev/pdi/issues/712)
 
 
 ### For plugin developers
 
 #### Added
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
+* Added ability to require some files in tests running in clean directory to fix
+  [#699](https://github.com/pdidev/pdi/issues/699)
 
 #### Fixed
-
-#### Security
+* Correctly genrerate test directory name to prevent random failures
+  [#700](https://github.com/pdidev/pdi/issues/700)
 
 
 
