@@ -42,7 +42,6 @@ const char CONF_VALID[]
 	  "  veloc_file_buf: {type: array, subtype: char, size: 256}\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_0\n"
 	  "    iteration: ii\n"
@@ -66,7 +65,6 @@ const char CONF_CONFIG_MISSING[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    checkpoint_label: test_0\n"
 	  "    iteration: ii\n";
 
@@ -77,7 +75,6 @@ const char CONF_LABEL_MISSING[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    iteration: ii\n";
 
@@ -88,7 +85,6 @@ const char CONF_ITERATION_MISSING[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_0\n";
 
@@ -99,27 +95,11 @@ const char CONF_ITER_NOT_PROTECTED[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_0\n"
 	  "    iteration: ii\n"
 	  "    managed_checkpointing:\n"
 	  "      protect_data: [var]\n"
-	  "      checkpoint_on_event: ckp\n";
-
-const char CONF_BAD_FAILURE[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    failure: 99\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_0\n"
-	  "    iteration: ii\n"
-	  "    managed_checkpointing:\n"
-	  "      protect_data: [ii,var]\n"
 	  "      checkpoint_on_event: ckp\n";
 
 const char CONF_PROTECT_DATA_MISSING[]
@@ -129,7 +109,6 @@ const char CONF_PROTECT_DATA_MISSING[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_01\n"
 	  "    iteration: ii\n"
@@ -144,7 +123,6 @@ const char CONF_CP_OFILE_MISSING[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_01\n"
 	  "    iteration: ii\n"
@@ -163,7 +141,6 @@ const char CONF_CP_START_MISSING[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_01\n"
 	  "    iteration: ii\n"
@@ -182,7 +159,6 @@ const char CONF_CP_ROUTE_MISSING[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_01\n"
 	  "    iteration: ii\n"
@@ -201,7 +177,6 @@ const char CONF_CP_END_MISSING[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_01\n"
 	  "    iteration: ii\n"
@@ -220,7 +195,6 @@ const char CONF_REC_OFILE_MISSING[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 1\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_01\n"
 	  "    iteration: ii\n"
@@ -239,7 +213,6 @@ const char CONF_REC_START_MISSING[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 1\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_01\n"
 	  "    iteration: ii\n"
@@ -258,7 +231,6 @@ const char CONF_REC_ROUTE_MISSING[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 1\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_01\n"
 	  "    iteration: ii\n"
@@ -297,7 +269,6 @@ const char CONF_DUPLICATE_EVENTS[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_0\n"
 	  "    iteration: ii\n"
@@ -330,7 +301,6 @@ int main(int argc, char* argv[])
 		{"missing checkpoint_label", CONF_LABEL_MISSING, 1},
 		{"missing iteration", CONF_ITERATION_MISSING, 1},
 		{"iteration not in protect_data", CONF_ITER_NOT_PROTECTED, 1},
-		{"invalid failure value", CONF_BAD_FAILURE, 1},
 		{"missing protect_data", CONF_PROTECT_DATA_MISSING, 1},
 
 		{"custom_checkpoint: missing veloc_file", CONF_CP_OFILE_MISSING, 1},
@@ -377,7 +347,7 @@ int main(int argc, char* argv[])
 	printf("%d passed, %d failed.\n", passed, failed);
 
 	if (failed == 0) {
-		printf("TEST 0_0 PASSED\n");
+		printf("veloc_test_yaml PASSED\n");
 	}
 
 	MPI_Finalize();

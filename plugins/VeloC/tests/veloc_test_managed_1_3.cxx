@@ -35,7 +35,6 @@ const char CONF_YAML[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 1\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    status: cp_status\n"
 	  "    counter: cp_counter\n"
@@ -52,37 +51,25 @@ int main(int argc, char* argv[])
 	PC_tree_t conf = PC_parse_string(CONF_YAML);
 	PDI_init(conf);
 
-	int cp_status;
+	int cp_status = 0 ;
 	int rec_ii = -1;
 	int rec_var = 0;
 
-	PDI_expose("cp_status", &cp_status, PDI_IN);
-
-	if (cp_status != 0) {
-		fprintf(stderr, "TEST_01_3 FAILED: status value %d does not match expected value %d\n", cp_status, 0);
-		exit(1);
-	}
+	PDI_expose("cp_status", &cp_status, PDI_OUT);
 
 	PDI_multi_expose("recover", "ii", &rec_ii, PDI_INOUT, "var", &rec_var, PDI_INOUT, NULL);
 
-	PDI_expose("cp_status", &cp_status, PDI_IN);
-
-	if (cp_status != 1) {
-		fprintf(stderr, "TEST_01_3 FAILED: status value %d does not match expected value %d\n", cp_status, 1);
-		exit(1);
-	}
-
 	if (rec_ii != 0) {
-		fprintf(stderr, "TEST_01_3 FAILED: recovered iter value  %d does not match expected value %d\n", rec_ii, 0);
+		fprintf(stderr, "veloc_test_managed_1_3 FAILED: recovered iter value  %d does not match expected value %d\n", rec_ii, 0);
 		exit(1);
 	}
 
 	if (rec_var != 51) {
-		fprintf(stderr, "TEST_01_3 FAILED: recovered var value  %d does not match expected value %d\n", rec_var, 51);
+		fprintf(stderr, "veloc_test_managed_1_3 FAILED: recovered var value  %d does not match expected value %d\n", rec_var, 51);
 		exit(1);
 	}
 
-	printf("TEST 01_3 PASSED\n");
+	printf("veloc_test_managed_1_3 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();

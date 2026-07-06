@@ -34,7 +34,6 @@ const char CONF_YAML[]
 	  "  veloc_file: {type: array, subtype: char, size: 256}\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_03\n"
 	  "    iteration: ii\n"
@@ -72,7 +71,7 @@ int main(int argc, char* argv[])
 		PDI_multi_expose("route", "veloc_file", veloc_file, PDI_INOUT, NULL);
 
 		if (veloc_file[0] == '\0') {
-			fprintf(stderr, "TEST 03_1 FAILED : veloc_file was not filled by route event\n");
+			fprintf(stderr, "veloc_test_manual_1 FAILED : veloc_file was not filled by route event\n");
 			exit(1);
 		}
 
@@ -107,7 +106,7 @@ int main(int argc, char* argv[])
 		H5Fclose(file_id);
 
 		if (H5Fis_hdf5(veloc_file) <= 0) {
-			fprintf(stderr, "TEST 03_1 FAILED: routed file is not a valid HDF5 file: %s\n", veloc_file);
+			fprintf(stderr, "veloc_test_manual_1 FAILED: routed file is not a valid HDF5 file: %s\n", veloc_file);
 			exit(1);
 		}
 
@@ -115,7 +114,7 @@ int main(int argc, char* argv[])
 		PDI_reclaim("var");
 	}
 
-	printf("TEST 03_1 PASSED\n");
+	printf("veloc_test_manual_1 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();

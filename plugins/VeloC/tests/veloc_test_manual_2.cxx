@@ -32,14 +32,15 @@ const char CONF_YAML[]
 	  "  var: int\n"
 	  "  ii: int\n"
 	  "  veloc_file: {type: array, subtype: char, size: 256}\n"
+	  "  cp_status: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 1\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    checkpoint_label: test_03\n"
 	  "    iteration: ii\n"
 	  "    custom_checkpointing:\n"
 	  "       veloc_file: veloc_file\n"
+	  "       status: cp_status\n"
 	  "       custom_recover:\n"
 	  "           filename: file1.h5\n"
 	  "           start_on_event: start\n"
@@ -63,6 +64,9 @@ int main(int argc, char* argv[])
 	int ii = 0;
 	int var = 0;
 	char veloc_file[256];
+	int cp_status = 0; // app wants to recover 
+	
+	PDI_expose("cp_status", &cp_status, PDI_OUT);
 
 	int expected_var = 4;
 
@@ -70,7 +74,7 @@ int main(int argc, char* argv[])
 
 	PDI_multi_expose("route", "veloc_file", veloc_file, PDI_INOUT, NULL);
 	if (veloc_file[0] == '\0') {
-		fprintf(stderr, "TEST_03_2 FAILED : veloc_file was not filled by route event\n");
+		fprintf(stderr, "veloc_test_manual_2 FAILED : veloc_file was not filled by route event\n");
 		exit(1);
 	}
 
@@ -104,7 +108,7 @@ int main(int argc, char* argv[])
 	}
 
 	if (read_var != expected_var) {
-		fprintf(stderr, "TEST_03_2 FAILED: dataset value %d does not match expected value\n", expected_var);
+		fprintf(stderr, "veloc_test_manual_2 FAILED: dataset value %d does not match expected value\n", expected_var);
 		H5Dclose(dset_id);
 		H5Fclose(file_id);
 		exit(1);
@@ -116,7 +120,7 @@ int main(int argc, char* argv[])
 	PDI_event("end");
 	PDI_reclaim("var");
 
-	printf("TEST 03_2 PASSED\n");
+	printf("veloc_test_manual_2 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();

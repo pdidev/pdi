@@ -148,7 +148,7 @@ In applications that perform pointer swaps inside a loop, this can lead to check
 
 ## YAML Syntax Example
 Check [veloc.yml](../../example/veloc.yml) and [veloc_recovery.yml](../../example/veloc_recovery.yml) in the pdi example folder for an example of how to configure the *managed_checkpointing* behaviour of the plugin. <br>
-Check [veloc_test_03_1.cxx](./tests/veloc_test_03_1.cxx) and [veloc_test_03_2.cxx](./tests/veloc_test_03_2.cxx) for an example of how to configure the *custom_checkpointing* behaviour of the plugin. 
+Check [veloc_test_manual_1.cxx](./tests/veloc_test_manual_1.cxx) and [veloc_test_manual_2.cxx](./tests/veloc_test_manual_2.cxx) for an example of how to configure the *custom_checkpointing* behaviour of the plugin. 
 
 ## Running a program
 In order to run a program with the VeloC plugin, follow the following steps: <br>

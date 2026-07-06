@@ -35,7 +35,6 @@ const char CONF_YAML[]
 	  "  var: int\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    status: cp_status\n"
 	  "    counter: cp_counter\n"
@@ -59,7 +58,7 @@ int main(int argc, char* argv[])
 
 	PDI_expose("cp_status", &cp_status, PDI_IN);
 	if (cp_status != 1) {
-		fprintf(stderr, "TEST_01_1 FAILED: status value %d does not match expected value %d\n", cp_status, 1);
+		fprintf(stderr, "veloc_test_managed_1_1 FAILED: status value %d does not match expected value %d\n", cp_status, 1);
 		exit(1);
 	}
 
@@ -70,11 +69,11 @@ int main(int argc, char* argv[])
 	PDI_expose("cp_counter", &cp_counter, PDI_IN);
 
 	if (cp_counter != 2) {
-		fprintf(stderr, "TEST_01_1 FAILED: counter value %d does not match expected value %d\n", cp_counter, 2);
+		fprintf(stderr, "veloc_test_managed_1_1 FAILED: counter value %d does not match expected value %d\n", cp_counter, 2);
 		exit(1);
 	}
 
-	printf("TEST 0_1_1 PASSED\n");
+	printf("veloc_test_managed_1_1 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();

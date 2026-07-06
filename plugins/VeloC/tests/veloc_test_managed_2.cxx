@@ -36,7 +36,6 @@ const char CONF_YAML[]
 	  "  arr:  {type: array, size: '$arr_size', subtype: double}\n"
 	  "plugins:\n"
 	  "  veloc:\n"
-	  "    failure: 0\n"
 	  "    config_file: veloc_config.cfg\n"
 	  "    counter: cp_counter\n"
 	  "    status: cp_status\n"
@@ -61,35 +60,33 @@ int main(int argc, char* argv[])
 	PDI_expose("arr_size", &arr_size, PDI_OUT);
 
 	double* arr = new double[arr_size];
-	for (int i = 0; i < arr_size; i++)
+	for (int i = 0; i < arr_size; i++){
 		arr[i] = 0.0;
+	}
 
 	PDI_expose("cp_status", &cp_status, PDI_IN);
 
-	for (; ii < 10; ++ii) {
+	for (; ii < 5; ++ii) {	
 		arr[ii] = ii * 2;
 		PDI_multi_expose("sync", "ii", &ii, PDI_INOUT, "arr", arr, PDI_INOUT, NULL);
+	}
 
-		if ((cp_status) && (ii == 5)) {
-			break;
-		}
+	cp_status = 0; // app wants to recover 
+	PDI_expose("cp_status", &cp_status, PDI_OUT);
+
+	for (; ii < 10 ; ++ii) {	
+		arr[ii] = ii * 2;
+		PDI_multi_expose("sync", "ii", &ii, PDI_INOUT, "arr", arr, PDI_INOUT, NULL);
 	}
 
 	PDI_expose("cp_counter", &cp_counter, PDI_IN);
 
-	if (cp_status) {
-		if (cp_counter != 3) {
-			fprintf(stderr, "TEST_02 FAILED:: counter value  %d does not match expected value %d\n", cp_counter, 3);
+	if (cp_counter != 5) {
+			fprintf(stderr, "veloc_test_managed_2:: counter value  %d does not match expected value %d\n", cp_counter, 5);
 			exit(1);
-		}
-	} else {
-		if (cp_counter != 2) {
-			fprintf(stderr, "TEST_02 FAILED:: counter value  %d does not match expected value %d\n", cp_counter, 2);
-			exit(1);
-		}
 	}
 
-	printf("TEST 02 PASSED\n");
+	printf("veloc_test_managed_2 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();

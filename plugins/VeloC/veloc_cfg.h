@@ -95,8 +95,6 @@ class Veloc_cfg
 
 	std::string m_iter_name;
 
-	int m_failure = 0;
-
 	ManagedCheckpointingCfg m_managed;
 
 	CustomCheckpointingCfg m_custom;
@@ -117,8 +115,6 @@ public:
 	std::string label() { return m_cp_label; }
 
 	std::string iter_name() { return m_iter_name; }
-
-	int failure() { return m_failure; }
 
 	ManagedCheckpointingCfg& managed() { return m_managed; }
 

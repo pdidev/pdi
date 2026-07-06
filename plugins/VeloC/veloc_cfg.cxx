@@ -174,8 +174,6 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 
 		if (key == "config_file") {
 			m_config_file = to_string(value);
-		} else if (key == "failure") {
-			m_failure = to_long(value);
 		} else if (key == "checkpoint_label") {
 			m_cp_label = to_string(value);
 		} else if (key == "iteration") {
@@ -323,11 +321,6 @@ void Veloc_cfg::check_conformity(Context& ctx)
 		throw Spectree_error{m_tree,"VeloC Plugin Spectree: The name of the iteration number in the PDI data store must be defined"};
 	}
 
-	if (m_failure != 0 && m_failure != 1) {
-		throw Spectree_error{m_tree,"VeloC Plugin Spectree: The `failure' key must be 0 or 1"};
-	}
-
-	// user must choose between a managed and custom configuration
 	if (m_managed.is_valid && m_custom.is_valid) {
 		throw Spectree_error{
 			m_tree,
@@ -381,12 +374,6 @@ void Veloc_cfg::check_conformity(Context& ctx)
 		if (!rec_events_defined && m_managed.requested_checkpoint != -1) {
 			ctx.logger().warn("VeloC Plugin Spectree: No recovery events have been defined "
 			                  "inside `managed_checkpointing'. Ignoring `recover_from_iteration' key");
-		}
-
-		// Warn : failure=1 without recovery/sync events
-		if (m_failure == 1 && !rec_events_defined && !sync_events_defined) {
-			ctx.logger().warn("VeloC Plugin Spectree: `failure' is set to 1 but no recovery or "
-			                  "synchronization events have been defined inside `managed_checkpointing'");
 		}
 	}
 
