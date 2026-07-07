@@ -54,6 +54,10 @@ enum class Desc_type {
 	COUNTER_CP
 };
 
+/** 
+ * A ManualCheckpoint stores all information related to the definition 
+ * of a checkpoint using VeloC file-based API 
+ */
 struct ManualCheckpoint {
 	bool is_valid = false;
 	std::string original_file;
@@ -62,6 +66,10 @@ struct ManualCheckpoint {
 	Event_type end_cp_on;
 };
 
+/** 
+ * A ManualRecovery stores all information related to the definition 
+ * of a recovery using VeloC file-based API 
+ */
 struct ManualRecovery {
 	bool is_valid = false;
 	std::string original_file;
@@ -71,13 +79,10 @@ struct ManualRecovery {
 	int requested_checkpoint = -1;
 };
 
-struct ManagedCheckpointingCfg {
-	bool is_valid = false;
-	std::unordered_map<int, std::string> protected_data;
-	PDI::Expression when = 1L;
-	int requested_checkpoint = -1;
-};
-
+/** 
+ * A CustomCheckpointingCfg stores all information related to the 
+ * definition of a checkpoint-restart process using VeloC file-based API 
+ */
 struct CustomCheckpointingCfg {
 	bool is_valid = false;
 	std::string routed_file;
@@ -85,50 +90,132 @@ struct CustomCheckpointingCfg {
 	ManualRecovery manual_rec;
 };
 
+/** 
+ * A ManagedCheckpointingCfg stores all information related to the definition 
+ * of a checkpoint using VeloC memory-based API 
+ */
+struct ManagedCheckpointingCfg {
+	bool is_valid = false;
+	std::unordered_map<int, std::string> protected_data;
+	PDI::Expression when = 1L;
+	int requested_checkpoint = -1;
+};
+
+/** 
+ * A Veloc_cfg stores all information required for the correct functioning of VeloC 
+ */
 class Veloc_cfg
 {
+	/// The path of VeloC configuration file 
 	std::string m_config_file;
 
+	/// The subtree defining the behaviour of the plugin 
 	PC_tree_t m_tree;
 
+	/// The label common to all checkpoints' names of a simulation 
 	std::string m_cp_label;
 
+	/// The name of the iterator in the PDI data store   
 	std::string m_iter_name;
 
+	/// The configuration of a managed checkpoint
 	ManagedCheckpointingCfg m_managed;
 
+	/// The configuration of a custom checkpoint 
 	CustomCheckpointingCfg m_custom;
 
+	/// Collection of descriptors keyed by type
 	std::unordered_map<std::string, Desc_type> m_descs;
 
+	/// Collection of events keyed by type
 	std::unordered_map<std::string, Event_type> m_events;
 
+	/**
+	 * @brief checks that all information stored is coherent 
+	 * 
+	 * @param ctx the context from which to access the logger
+	 */
 	void check_conformity(PDI::Context& ctx);
 
 public:
 	Veloc_cfg(PDI::Context& ctx, PC_tree_t tree);
 
+	/**
+	 * @brief returns the subtree defining the behaviour of the plugin 
+	 * 
+	 * @return PC_tree_t subtree defining the behaviour of the plugin 
+	 */
 	PC_tree_t tree(){ return m_tree; };
 
+	/**
+	 * @brief returns the path to VeloC's configuration file
+	 * 
+	 * @return std::string VeloC's configuration file path
+	 */
 	std::string config() { return m_config_file; }
 
-	std::string label() { return m_cp_label; }
+ 	/**
+     * @brief returns the common checkpoint label
+     *
+     * @return std::string the commong checkpoint label
+     */
+    std::string label() { return m_cp_label; }
 
-	std::string iter_name() { return m_iter_name; }
+    /**
+     * @brief returns the iterator name in the PDI data store
+     *
+     * @return std::string the iterator name in the PDI data store
+     */
+    std::string iter_name() { return m_iter_name; };
 
-	ManagedCheckpointingCfg& managed() { return m_managed; }
+    /**
+     * @brief returns the managed checkpoint configuration
+     *
+     * @return the managed checkpoint configuration
+     */
+    ManagedCheckpointingCfg& managed() { return m_managed; }
 
-	bool managed_defined() { return m_managed.is_valid; }
+    /**
+     * @brief returns whether a managed checkpointing behaviour is configured.
+     *
+     * @return true if managed checkpointing is defined, false otherwise.
+     */
+    bool managed_defined() { return m_managed.is_valid; }
 
-	CustomCheckpointingCfg& custom() { return m_custom; }
+    /**
+     * @brief returns the custom checkpoint-recover configuration
+     *
+     * @return the custom checkpoint-recover configuration
+     */
+    CustomCheckpointingCfg& custom() { return m_custom; }
 
-	ManualCheckpoint& manual_cp() { return m_custom.manual_cp; }
+    /**
+     * @brief returns the custom checkpoint configuration
+     *
+     * @return the manual checkpoint configuration
+     */
+    ManualCheckpoint& manual_cp() { return m_custom.manual_cp; }
 
-	ManualRecovery& manual_rec() { return m_custom.manual_rec; }
+    /**
+     * @brief returns the custom recovery configuration
+     *
+     * @return the custom recovery configuration
+     */
+    ManualRecovery& manual_rec() { return m_custom.manual_rec; }
 
-	std::unordered_map<std::string, Desc_type>& descs() { return m_descs; }
+    /**
+     * @brief returns the descriptor map
+     *
+     * @return the map of descriptors keyed by name
+     */
+    std::unordered_map<std::string, Desc_type>& descs() { return m_descs; }
 
-	std::unordered_map<std::string, Event_type>& events() { return m_events; }
+    /**
+     * @brief returns the event map
+     *
+     * @return the map of events keyed by name
+     */
+    std::unordered_map<std::string, Event_type>& events() { return m_events; }
 };
 
 // class Veloc_cfg
