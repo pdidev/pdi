@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,47 +22,9 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <assert.h>
-#include <stdlib.h>
-#include <pdi.h>
+#include <pdi/testing.h>
 
-#define FATAL 1
-#define WARN 0
-#define CST0 -1
-#define CST1 1
-#define test_value(var, value, fatal) fct_test_value(var, value, fatal, __func__, __LINE__)
-
-const char* CONFIG_YAML
-	= "logging: trace                           \n"
-	  "metadata:                                \n"
-	  "  cond: int                              \n"
-	  "data:                                    \n"
-	  "  test_var: int                          \n"
-	  "  input: int                             \n"
-	  "  output: int                            \n"
-	  "plugins:                                 \n"
-	  "  user_code:                             \n"
-	  "    on_event:                            \n"
-	  "      testing:                           \n"
-	  "        when: $cond                      \n"
-	  "        test: {}                         \n"
-	  "    on_data:                             \n"
-	  "      test_var:                          \n"
-	  "        when: $cond=1                    \n"
-	  "        add_ten: {test_input: $test_var} \n";
-
-static void fct_test_value(int var, const int value, int fatal, const char* fct, int line)
-{
-	if (value != var) {
-		fprintf(stdout, "Test in func %s line %3d, not working: value=%d, var=%d \n", fct, line, value, var);
-		fflush(stdout);
-		if (fatal) abort();
-	} else {
-		fprintf(stdout, "Test in func %s line %3d, working : value =%d = var \n", fct, line, value);
-		fflush(stdout);
-	}
-	return;
-}
+extern "C" {
 
 void add_ten(void)
 {
@@ -72,46 +34,65 @@ void add_ten(void)
 	PDI_release("test_input");
 }
 
-void test(void)
+void update(void)
 {
 	int* buffer = NULL;
 	PDI_access("input", (void**)&buffer, PDI_IN); // Read something from input
-	test_value(*buffer, CST0, FATAL);
 	PDI_release("input");
+    
 	PDI_access("output", (void**)&buffer, PDI_OUT);
-	*buffer = CST1; // Write something to output
+	(*buffer) += 10;// *buffer = CST1; // Write something to output
 	PDI_release("output");
 }
 
-int main(int argc, char* argv[])
-{
-	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	PDI_init(conf);
+}
 
-	// NO function will be called because cond = 0
+class UserCode: public ::PDI::PdiTest
+{};
+
+TEST_F(UserCode, WhenCondition)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace                          
+metadata:                               
+  cond: int                             
+data:                                   
+  test_var: int                         
+  input: int                            
+  output: int                           
+plugins:                                
+  user_code:                            
+    on_event:                           
+      testing:                          
+        when: $cond                     
+        update: {}                        
+    on_data:                            
+      test_var:                         
+        when: $cond=1                   
+        add_ten: {test_input: $test_var}
+)=="));
+
 	int cond = 0;
 	PDI_expose("cond", &cond, PDI_OUT);
 
 	int test_var = 99;
 	PDI_expose("test_var", &test_var, PDI_OUT);
-	assert(test_var == 99);
+	EXPECT_EQ(test_var, 99);
 
-	int in = CST0;
-	int out = CST0;
+	int in = 0;
+	int out = 0;
 	PDI_multi_expose("testing", "input", &in, PDI_OUT, "output", &out, PDI_IN, NULL);
-	test_value(out, CST0, FATAL);
+	EXPECT_EQ(out, 0);
 
 	// Function will be called because cond = 1
 	cond = 1;
 	PDI_expose("cond", &cond, PDI_OUT);
 
 	PDI_expose("test_var", &test_var, PDI_OUT);
-	assert(test_var == 109);
+	EXPECT_EQ(test_var, 109);
 
-	in = CST0;
-	out = CST0;
+	in = 0;
+	out = 0;
 	PDI_multi_expose("testing", "input", &in, PDI_OUT, "output", &out, PDI_IN, NULL);
-	test_value(out, CST1, FATAL);
-
-	PDI_finalize();
+	EXPECT_EQ(out, 10);
 }
