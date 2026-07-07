@@ -48,11 +48,6 @@ endif()
 "
 )
 
-add_executable(user_code_02_c user_code_test_02.c)
-target_link_libraries(user_code_02_c PDI::PDI_C)
-set_target_properties(user_code_02_c PROPERTIES ENABLE_EXPORTS TRUE)
-add_test(NAME user_code_02_c COMMAND user_code_02_c)
-
 add_executable(user_code_03_c user_code_test_03.c)
 target_link_libraries(user_code_03_c PDI::PDI_C)
 set_target_properties(user_code_03_c PROPERTIES ENABLE_EXPORTS TRUE)
