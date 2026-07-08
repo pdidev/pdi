@@ -164,3 +164,52 @@ plugins:
 
 	EXPECT_TRUE(std::filesystem::exists("myfile_iter3.h5"));
 }
+
+TEST_F(CheckMultiExpose, WriteArrayWithMetadataSize)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata:
+  Nsize: int
+data:
+  pdi_array: { type: array, size: ["$Nsize"], subtype: int }
+plugins:
+  trace: info
+  decl_hdf5:
+    file: "mydata.h5"
+    write: [Nsize, pdi_array]
+)=="));
+
+	int Nsize= 3;
+	auto array_data = make_a<std::array<int, 3>>();
+
+	ASSERT_FALSE(std::filesystem::exists("mydata.h5"));
+
+	PDI_multi_expose("my_test", "pdi_array", array_data.data(), PDI_OUT, "Nsize", &Nsize, PDI_INOUT, NULL);
+
+	EXPECT_TRUE(std::filesystem::exists("mydata.h5"));
+}
+
+TEST_F(CheckMultiExpose, WriteArrayWithDataSize)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  pdi_array: { type: array, size: ["$Nsize"], subtype: int }
+  Nsize: int
+plugins:
+  trace: info
+  decl_hdf5:
+    file: "mydata.h5"
+    write: [Nsize, pdi_array]
+)=="));
+
+	int Nsize= 3;
+	auto array_data = make_a<std::array<int, 3>>();
+
+	ASSERT_FALSE(std::filesystem::exists("mydata.h5"));
+
+	PDI_multi_expose("my_test", "pdi_array", array_data.data(), PDI_OUT, "Nsize", &Nsize, PDI_INOUT, NULL);
+
+	EXPECT_TRUE(std::filesystem::exists("mydata.h5"));
+}
