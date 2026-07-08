@@ -52,7 +52,7 @@ class DeclNetcdf: public ::PDI::PdiTest
 // Tests simple write and read of scalar and array depending on event
 TEST_F(DeclNetcdf, RecordScalarAndArray)
 {
-  InitPdi(PC_parse_string(R"==(
+	InitPdi(PC_parse_string(R"==(
 logging: trace
 data:
   record:
