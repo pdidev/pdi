@@ -328,13 +328,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			}
 		}
 
-		ctx.logger().debug(
-			"Calling damaris_pdi_set_position arg_pos({}==='{}', {}==='{}')",
-			arg1_name,
-			var_name,
-			arg2_name,
-			*(int64_t*)position
-		);
+		ctx.logger().debug("Calling damaris_pdi_set_position arg_pos({}==='{}', {}==='{}')", arg1_name, var_name, arg2_name, *(int64_t*)position);
 		int err = m_damaris->damaris_pdi_set_position((const char*)var_name, (const int64_t*)position);
 	}
 	// DAMARIS_WRITE

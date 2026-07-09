@@ -79,7 +79,12 @@ bool load_event(unordered_map<string, Event_type>& events, Context& ctx, const s
 {
 	auto&& result = events.emplace(name, event_type);
 	if (!result.second) {
-		ctx.logger().debug("Duplicate event name `{}' in `{}' (previously defined in `{}')", result.first->first, event_names.at(event_type), event_names.at(result.first->second));
+		ctx.logger().debug(
+			"Duplicate event name `{}' in `{}' (previously defined in `{}')",
+			result.first->first,
+			event_names.at(event_type),
+			event_names.at(result.first->second)
+		);
 	}
 	return result.second;
 }
@@ -88,7 +93,7 @@ bool load_event(unordered_map<string, Event_type>& events, Context& ctx, const s
 bool creation_directory_cpp(const string& dir_name)
 {
 	fs::path path_dir{fs::current_path()};
-	const fs::path path_name{"/"+dir_name};
+	const fs::path path_name{"/" + dir_name};
 	path_dir += path_name;
 	std::error_code ec; // error code
 	if (fs::exists(path_dir, ec)) {
@@ -303,13 +308,13 @@ Damaris_cfg::Damaris_cfg(Context& ctx, PC_tree_t tree)
 	damarisXMLModifyModel.RepalceWithRegEx(find_replace_map);
 
 	m_xml_config_object = damarisXMLModifyModel.GetConfigString();
-	
+
 	std::ofstream outputXMLFile("log/damaris_config.xml");
 
 	if (outputXMLFile.is_open()) {
-		outputXMLFile << damarisXMLModifyModel.GetConfigString(); 
+		outputXMLFile << damarisXMLModifyModel.GetConfigString();
 
-		outputXMLFile.close(); 
+		outputXMLFile.close();
 	} else {
 		ctx.logger().error("Could not open the file for writing damaris xml config");
 	}

@@ -28,7 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 
 ##
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
@@ -46,15 +46,18 @@ endif()
 "
 )
 
-## used ctest in next commit
+## first test: write an integer array with damaris and with decl_hdf5 and compare the result
+## The size of the array change between the two iterations
 
-# copy yaml file, to binary folder, for example_damaris_plugin_with_is_client.c
-configure_file(test_damaris_scalar_type.yml test_damaris_scalar_type.yml COPYONLY)
-add_executable (test_damaris_scalar_type test_damaris_scalar_type.c)
-target_link_libraries (test_damaris_scalar_type PDI::PDI_C MPI::MPI_C)
+add_executable(damaris_write_int_array damaris_write_int_array.cxx)
+target_link_libraries(damaris_write_int_array  PDI::PDI_C MPI::MPI_C)
+target_compile_features(damaris_write_int_array  PUBLIC cxx_std_17)
 
-add_test(NAME test_damaris_scalar_type COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:test_damaris_scalar_type>" "${CMAKE_CURRENT_SOURCE_DIR}/test_damaris_scalar_type.yml")
+add_executable(damaris_read_int_array damaris_read_int_array.cxx)
+target_link_libraries(damaris_read_int_array PDI::PDI_C)
+target_compile_features(damaris_read_int_array PUBLIC cxx_std_17)
 
-#add_test(NAME test_damaris_scalar_type COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:test_damaris_scalar_type>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/test_damaris_scalar_type.yml")
-#set_property(TEST test_damaris_scalar_type PROPERTY TIMEOUT 15)
-#set_property(TEST test_damaris_scalar_type PROPERTY PROCESSORS 2)
+add_test(NAME test_damaris_depends_on
+     COMMAND "${RUNTEST_DIR}"  "/bin/bash" "-exc"
+     "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS} $<TARGET_FILE:damaris_write_int_array> ${MPIEXEC_POSTFLAGS} && $<TARGET_FILE:damaris_read_int_array>")
+set_property(TEST test_damaris_depends_on PROPERTY TIMEOUT 8)

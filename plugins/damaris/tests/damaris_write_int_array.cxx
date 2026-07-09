@@ -24,51 +24,82 @@
  ******************************************************************************/
 
 #include <mpi.h>
-#include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <pdi.h>
 
 #define IMX 10
 
-const char* CONFIG_FOR_READING_RESULT
-	= "logging: trace\n"
-	  "metadata:\n"
-	  "  nn: int\n"
-	  "  nbcalls: int\n"
-	  "data:\n"
-	  "  pdi_values: {size: ['$nn'], type: array, subtype: int}\n"
-	  "  damaris_values: {size: ['$nn'], type: array, subtype: int}\n"
-	  "plugins:\n"
-	  "  decl_hdf5:\n"
-	  "    - file: './data_iter${nbcalls}.h5'\n"
-	  "      read:\n"
-	  "        pdi_values:\n"
-	  "          dataset: int_values\n"
-	  "        nn:\n"
-	  "    - file: './HDF5_files/damaris_scalar_type_It${nbcalls}.h5'\n"
-	  "      read:\n"
-	  "        damaris_values:\n"
-	  "          dataset: int_values\n";
+constexpr char CONFIG_YAML[] = R"(
+logging: debug
+pdi:
+  metadata:
+    nn: int
+    mpi_comm: MPI_Comm
+    is_client: int
+    nbcalls: int
+  data:
+    int_values: {size: ["$nn"], type: array, subtype: int}
+  plugins:
+    trace: info
+    mpi:
+    decl_hdf5:
+      - file: 'data_iter${nbcalls}.h5'
+        communicator: $mpi_comm
+        write: [nn, nbcalls, int_values]
+        on_event: write
+    damaris:
+      architecture:
+        sim_name: damaris_scalar_type
+        domains: 1
+        dedicated:
+          core: 1
+          node: 0
+      get_is_client: is_client
+      client_comm_get: mpi_comm
+      datasets:
+        - dataset:
+            name: int_values
+            layout: int_values_layout
+            storage: hdf5_storage
+      layouts:
+        - layout:
+            name: int_values_layout
+            type: int
+            global: ["$nn"]
+            dimensions: ["$nn"]
+            ghosts: '0:0'
+            depends_on: [nn]
+      storages:
+        - storage:
+            name: hdf5_storage
+            type: HDF5
+            file_mode: Collective
+            files_path: ./HDF5_files/
+      write: 
+        int_values:
+          dataset: int_values
+          position: ['0']
+      log:
+        rotation_size: 5
+        log_level: info
+        flush: true
+)";
 
 int main(int argc, char* argv[])
 {
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s <config_file>\n", argv[0]);
-		exit(1);
-	}
 	MPI_Init(&argc, &argv);
 
 	MPI_Comm main_comm = MPI_COMM_WORLD;
 	int world_size;
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 	if (world_size != 2) {
-		fprintf(stderr, "Please use at least 2 mpi processes\n");
+		fprintf(stderr, "Please use 2 mpi processes\n");
 		exit(1);
 	}
 
 	// get specification tree
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 
 	// initialize pdi
 	PDI_init(PC_get(conf, ".pdi"));
@@ -88,64 +119,26 @@ int main(int argc, char* argv[])
 		int size = nn_first_call;
 		int int_values[IMX];
 		int nb_calls = 0;
+
 		for (int ii = 0; ii < size; ++ii) {
 			int_values[ii] = 100 + ii;
 		}
-		PDI_expose("nn", &size, PDI_INOUT);
-		PDI_multi_expose("write", "nn", &size, PDI_INOUT, "nbcalls", &nb_calls, PDI_INOUT, "int_values", int_values, PDI_OUT, NULL);
+		PDI_multi_expose("write", "nn", &size, PDI_OUT, "nbcalls", &nb_calls, PDI_OUT, "int_values", int_values, PDI_OUT, NULL);
 
-		// The value 'nn' can't not be updated (Error in Damaris xml input file ???)
 		// change size of the vector give to pdi for the second call
 		nb_calls = nb_calls + 1;
 		size = IMX;
 
-		for (int ii = size / 2; ii < size; ++ii) {
+		for (int ii = 0; ii < size; ++ii) {
 			int_values[ii] = 300 + ii;
 		}
-		PDI_expose("nn", &size, PDI_INOUT);
-		PDI_multi_expose("write", "nn", &size, PDI_INOUT, "nbcalls", &nb_calls, PDI_INOUT, "int_values", int_values, PDI_OUT, NULL);
+
+		PDI_multi_expose("write", "nn", &size, PDI_OUT, "nbcalls", &nb_calls, PDI_OUT, "int_values", int_values, PDI_OUT, NULL);
 	}
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 
-	// comparison of the results
-
-	// reinitialize pdi for reading results
-	PDI_init(PC_parse_string(CONFIG_FOR_READING_RESULT));
-	int rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	if (rank == 0) {
-		int size_pdi = -20;
-		int damaris_values[IMX];
-		int pdi_values[IMX];
-		int size_expected[2] = {nn_first_call, IMX};
-
-		for (int nb_calls = 0; nb_calls < 2; ++nb_calls) {
-			PDI_expose("nbcalls", &nb_calls, PDI_INOUT);
-			PDI_expose("nn", &size_pdi, PDI_INOUT);
-			if (size_pdi != size_expected[nb_calls]) {
-				printf("For iteration=%d,  error in reading the size of the array, size_pdi=%d\n", nb_calls, size_pdi);
-				exit(EXIT_FAILURE);
-			}
-
-			for (int ii = 0; ii < size_expected[nb_calls]; ++ii) {
-				damaris_values[ii] = 6;
-				pdi_values[ii] = 9;
-			}
-
-			PDI_multi_expose("read_pdi", "nbcalls", &nb_calls, PDI_INOUT, "pdi_values", pdi_values, PDI_INOUT, NULL);
-			PDI_multi_expose("read_damaris", "nbcalls", &nb_calls, PDI_INOUT, "damaris_values", damaris_values, PDI_INOUT, NULL);
-
-			for (int ii = 0; ii < size_expected[nb_calls]; ++ii) {
-				if (pdi_values[ii] != damaris_values[ii]) {
-					printf("For iteration=%d, values pdi %d != %d  damaris\n", nb_calls, pdi_values[ii], damaris_values[ii]);
-					exit(EXIT_FAILURE);
-				}
-			}
-		}
-	}
-	PDI_finalize();
 	MPI_Finalize();
 
 	return EXIT_SUCCESS;
