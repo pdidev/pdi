@@ -92,6 +92,7 @@ void end_restart(PDI::Context& ctx)
 {
 	if (VELOC_Restart_end(1) != VELOC_SUCCESS) {
 		ctx.logger().error("Error when ending restart phase. Restart failed.");
+		exit(2);
 	}
 }
 
@@ -99,6 +100,7 @@ void init_checkpoint(PDI::Context& ctx, const string label, int version)
 {
 	if (VELOC_Checkpoint_begin(label.c_str(), version) != VELOC_SUCCESS) {
 		ctx.logger().error("Error when initiating the checkpoint phase.");
+		exit(2);
 	}
 }
 
@@ -106,6 +108,7 @@ void end_checkpoint(PDI::Context& ctx)
 {
 	if (VELOC_Checkpoint_end(1) != VELOC_SUCCESS) {
 		ctx.logger().error("Error when finalizing the checkpoint phase.");
+		exit(2);
 	}
 }
 
@@ -113,6 +116,7 @@ void route_file(PDI::Context& ctx, const string& input_filename, char* output_fi
 {
 	if (VELOC_Route_file(input_filename.c_str(), output_filename) != VELOC_SUCCESS) {
 		ctx.logger().error("Error when routing file.");
+		exit(2);
 	} else {
 		ctx.logger().info("File routed successfully from {} to {}", input_filename, output_filename);
 	}

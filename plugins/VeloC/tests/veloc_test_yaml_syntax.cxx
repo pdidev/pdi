@@ -22,334 +22,361 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <pdi/testing.h>
 #include <mpi.h>
-#include <stdio.h>
-#include <pdi.h>
 
-static void error_handler(PDI_status_t status, const char* message, void* ctx)
+using testing::Eq;
+using testing::HasSubstr;
+
+class VelocYamlConfig: public ::PDI::PdiTest
+{};
+
+TEST_F(VelocYamlConfig, ValidCustomConfiguration)
 {
-	if (status) {
-		fprintf(stderr, "[PDI error] %s\n", message);
-		*static_cast<int*>(ctx) = 1;
-	}
+	MPI_Init(nullptr, nullptr);
+	InitPdi(PC_parse_string((std::string(R"==(
+metadata:
+  ii: int
+data:
+  var: int
+  veloc_file_buf: {type: array, subtype: char, size: 256}
+plugins:
+  veloc:
+    config_file: )==") + VELOC_CONFIG_FILE + R"==(
+    checkpoint_label: test_0
+    iteration: ii
+    custom_checkpointing:
+      veloc_file : veloc_file_buf
+      custom_checkpoint:
+           filename: my_file.dat
+           start_on_event: start_ckp
+           route_file_on_event: route_ckp
+           end_on_event: end_ckp
+      custom_recover:
+           filename: my_file.dat
+           start_on_event: start_rec
+           route_file_on_event: route_rec
+           end_on_event: end_rec
+)==").c_str()));
+
+	FinalizePdi();
+	MPI_Finalize();
 }
 
-const char CONF_VALID[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "  veloc_file_buf: {type: array, subtype: char, size: 256}\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_0\n"
-	  "    iteration: ii\n"
-	  "    custom_checkpointing:\n"
-	  "      veloc_file : veloc_file_buf \n"
-	  "      custom_checkpoint:\n"
-	  "           filename: my_file.dat\n"
-	  "           start_on_event: start_ckp\n"
-	  "           route_file_on_event: route_ckp\n"
-	  "           end_on_event: end_ckp\n"
-	  "      custom_recover:\n"
-	  "           filename: my_file.dat\n"
-	  "           start_on_event: start_rec\n"
-	  "           route_file_on_event: route_rec\n"
-	  "           end_on_event: end_rec\n";
+/* ---- Top-level required-key errors ---- */
 
-const char CONF_CONFIG_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    checkpoint_label: test_0\n"
-	  "    iteration: ii\n";
-
-const char CONF_LABEL_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    iteration: ii\n";
-
-const char CONF_ITERATION_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_0\n";
-
-const char CONF_ITER_NOT_PROTECTED[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_0\n"
-	  "    iteration: ii\n"
-	  "    managed_checkpointing:\n"
-	  "      protect_data: [var]\n"
-	  "      checkpoint_on_event: ckp\n";
-
-const char CONF_PROTECT_DATA_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_01\n"
-	  "    iteration: ii\n"
-	  "    managed_checkpointing:\n"
-	  "      checkpoint_on_event: ckp\n";
-
-const char CONF_CP_OFILE_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "  veloc_file_buf: {type: array, subtype: char, size: 256}\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_01\n"
-	  "    iteration: ii\n"
-	  "    custom_checkpointing:\n"
-	  "       custom_checkpoint:\n"
-	  "           filename: my_file.dat\n"
-	  "           start_on_event: start_ckp\n"
-	  "           route_file_on_event: route_ckp\n"
-	  "           end_on_event: end_ckp\n";
-
-const char CONF_CP_START_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "  veloc_file_buf: {type: array, subtype: char, size: 256}\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_01\n"
-	  "    iteration: ii\n"
-	  "    custom_checkpointing:\n"
-	  "       veloc_file : veloc_file_buf\n"
-	  "       custom_checkpoint:\n"
-	  "           filename: my_file.dat\n"
-	  "           route_file_on_event: route_ckp\n"
-	  "           end_on_event: end_ckp\n";
-
-const char CONF_CP_ROUTE_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "  veloc_file_buf: {type: array, subtype: char, size: 256}\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_01\n"
-	  "    iteration: ii\n"
-	  "    custom_checkpointing:\n"
-	  "       veloc_file : veloc_file_buf\n"
-	  "       custom_checkpoint:\n"
-	  "           filename: my_file.dat\n"
-	  "           start_on_event: start_ckp\n"
-	  "           end_on_event: end_ckp\n";
-
-const char CONF_CP_END_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "  veloc_file_buf: {type: array, subtype: char, size: 256}\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_01\n"
-	  "    iteration: ii\n"
-	  "    custom_checkpointing:\n"
-	  "       veloc_file : veloc_file_buf\n"
-	  "       custom_checkpoint:\n"
-	  "           filename: my_file.dat\n"
-	  "           start_on_event: start_ckp\n"
-	  "           route_file_on_event: route_ckp\n";
-
-const char CONF_REC_OFILE_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "  veloc_file_buf: {type: array, subtype: char, size: 256}\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_01\n"
-	  "    iteration: ii\n"
-	  "    custom_checkpointing:\n"
-	  "       veloc_file : veloc_file_buf\n"
-	  "       custom_recover:\n"
-	  "           start_on_event: start_ckp\n"
-	  "           route_file_on_event: route_ckp\n"
-	  "           end_on_event: end_ckp\n";
-
-const char CONF_REC_START_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "  veloc_file_buf: {type: array, subtype: char, size: 256}\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_01\n"
-	  "    iteration: ii\n"
-	  "    custom_checkpointing:\n"
-	  "       veloc_file : veloc_file_buf\n"
-	  "       custom_recover:\n"
-	  "           filename: my_file.dat\n"
-	  "           route_file_on_event: route_ckp\n"
-	  "           end_on_event: end_ckp\n";
-
-const char CONF_REC_ROUTE_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "  veloc_file_buf: {type: array, subtype: char, size: 256}\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_01\n"
-	  "    iteration: ii\n"
-	  "    protect_data: [ii, var]\n"
-	  "    recover_on_event: rec\n"
-	  "    custom_recover:\n"
-	  "      filename: my_file.dat\n"
-	  "      veloc_file: veloc_file_buf\n"
-	  "      start_on_event: start_rec\n"
-	  "      end_on_event: end_rec\n";
-
-const char CONF_REC_END_MISSING[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "  veloc_file_buf: {type: array, subtype: char, size: 256}\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    failure: 1\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_01\n"
-	  "    iteration: ii\n"
-	  "    protect_data: [ii, var]\n"
-	  "    recover_on_event: rec\n"
-	  "    custom_recover:\n"
-	  "      filename: my_file.dat\n"
-	  "      veloc_file: veloc_file_buf\n"
-	  "      start_on_event: start_rec\n"
-	  "      route_file_on_event: route_rec\n";
-
-const char CONF_DUPLICATE_EVENTS[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "data:\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    checkpoint_label: test_0\n"
-	  "    iteration: ii\n"
-	  "    custom_checkpointing:\n"
-	  "      custom_checkpoint:\n"
-	  "           filename: my_file.dat\n"
-	  "           start_on_event: start_ckp\n"
-	  "           route_file_on_event: route_ckp\n"
-	  "           end_on_event: end_ckp\n"
-	  "      custom_recover:\n"
-	  "           filename: my_file.dat\n"
-	  "           start_on_event: start_ckp\n"
-	  "           route_file_on_event: route_ckp\n"
-	  "           end_on_event: end_ckp\n";
-
-int main(int argc, char* argv[])
+TEST_F(VelocYamlConfig, MissingConfigFile)
 {
-	MPI_Init(&argc, &argv);
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("VeloC configuration file is undefined")));
 
-	struct Test {
-		const char* name;
-		const char* yaml;
-		int expect_error;
-	};
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+data:
+  var: int
+plugins:
+  veloc:
+    checkpoint_label: test_0
+    iteration: ii
+)=="));
+}
 
-	const Test tests[] = {
-		{"valid custom configuration", CONF_VALID, 0},
+TEST_F(VelocYamlConfig, MissingCheckpointLabel)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("checkpoint label is undefined")));
 
-		{"missing config_file", CONF_CONFIG_MISSING, 1},
-		{"missing checkpoint_label", CONF_LABEL_MISSING, 1},
-		{"missing iteration", CONF_ITERATION_MISSING, 1},
-		{"iteration not in protect_data", CONF_ITER_NOT_PROTECTED, 1},
-		{"missing protect_data", CONF_PROTECT_DATA_MISSING, 1},
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    iteration: ii
+)=="));
+}
 
-		{"custom_checkpoint: missing veloc_file", CONF_CP_OFILE_MISSING, 1},
-		{"custom_checkpoint: missing start_on_event", CONF_CP_START_MISSING, 1},
-		{"custom_checkpoint: missing route_file_on_event", CONF_CP_ROUTE_MISSING, 1},
-		{"custom_checkpoint: missing end_on_event", CONF_CP_END_MISSING, 1},
+TEST_F(VelocYamlConfig, MissingIteration)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("iteration number in the PDI data store is undefined")));
 
-		{"custom_recover: missing filename", CONF_REC_OFILE_MISSING, 1},
-		{"custom_recover: missing start_on_event", CONF_REC_START_MISSING, 1},
-		{"custom_recover: missing route_file_on_event", CONF_REC_ROUTE_MISSING, 1},
-		{"custom_recover: missing end_on_event", CONF_REC_END_MISSING, 1},
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_0
+)=="));
+}
 
-		{"missing config_file", CONF_DUPLICATE_EVENTS, 1},
-	};
+TEST_F(VelocYamlConfig, IterationNotInProtectData)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("is not included in `protect_data'")));
 
-	int passed = 0, failed = 0;
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_0
+    iteration: ii
+    managed_checkpointing:
+      protect_data: [var]
+      checkpoint_on_event: ckp
+)=="));
+}
 
-	for (auto& t: tests) {
-		int has_errored = 0;
+TEST_F(VelocYamlConfig, MissingProtectData)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("'protect_data' is undefined")));
 
-		PDI_errhandler_t custom_handler;
-		custom_handler.func = error_handler;
-		custom_handler.context = &has_errored;
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_01
+    iteration: ii
+    managed_checkpointing:
+      checkpoint_on_event: ckp
+)=="));
+}
 
-		PC_tree_t conf = PC_parse_string(t.yaml);
+/* ---- custom_checkpoint sub-key errors ---- */
 
-		PDI_errhandler_t prev_handler = PDI_errhandler(custom_handler);
+TEST_F(VelocYamlConfig, CustomCheckpointMissingVelocFile)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("'veloc_file' is undefined")));
 
-		PDI_init(conf);
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+  veloc_file_buf: {type: array, subtype: char, size: 256}
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_01
+    iteration: ii
+    custom_checkpointing:
+       custom_checkpoint:
+           filename: my_file.dat
+           start_on_event: start_ckp
+           route_file_on_event: route_ckp
+           end_on_event: end_ckp
+)=="));
+}
 
-		PDI_errhandler(prev_handler);
+TEST_F(VelocYamlConfig, CustomCheckpointMissingStartOnEvent)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("'start_on_event' is undefined")));
 
-		if (!has_errored) {
-			PDI_finalize();
-			PC_tree_destroy(&conf);
-		}
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+  veloc_file_buf: {type: array, subtype: char, size: 256}
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_01
+    iteration: ii
+    custom_checkpointing:
+       veloc_file : veloc_file_buf
+       custom_checkpoint:
+           filename: my_file.dat
+           route_file_on_event: route_ckp
+           end_on_event: end_ckp
+)=="));
+}
 
-		bool ok = (has_errored == t.expect_error);
-		printf("%s %s\n", ok ? "[PASS]" : "[FAIL]\n", t.name);
-		ok ? ++passed : ++failed;
-	}
+TEST_F(VelocYamlConfig, CustomCheckpointMissingRouteFileOnEvent)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("'route_file_on_event' is undefined")));
 
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+  veloc_file_buf: {type: array, subtype: char, size: 256}
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_01
+    iteration: ii
+    custom_checkpointing:
+       veloc_file : veloc_file_buf
+       custom_checkpoint:
+           filename: my_file.dat
+           start_on_event: start_ckp
+           end_on_event: end_ckp
+)=="));
+}
 
-	printf("%d passed, %d failed.\n", passed, failed);
+TEST_F(VelocYamlConfig, CustomCheckpointMissingEndOnEvent)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("'end_on_event' is undefined")));
 
-	if (failed == 0) {
-		printf("veloc_test_yaml PASSED\n");
-	}
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+  veloc_file_buf: {type: array, subtype: char, size: 256}
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_01
+    iteration: ii
+    custom_checkpointing:
+       veloc_file : veloc_file_buf
+       custom_checkpoint:
+           filename: my_file.dat
+           start_on_event: start_ckp
+           route_file_on_event: route_ckp
+)=="));
+}
 
-	MPI_Finalize();
-	return (failed == 0) ? 0 : 1;
+/* ---- custom_recover sub-key errors ---- */
+
+TEST_F(VelocYamlConfig, CustomRecoverMissingFilename)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("'filename' is undefined")));
+
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+  veloc_file_buf: {type: array, subtype: char, size: 256}
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_01
+    iteration: ii
+    custom_checkpointing:
+       veloc_file : veloc_file_buf
+       custom_recover:
+           start_on_event: start_ckp
+           route_file_on_event: route_ckp
+           end_on_event: end_ckp
+)=="));
+}
+
+TEST_F(VelocYamlConfig, CustomRecoverMissingStartOnEvent)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("'start_on_event' is undefined")));
+
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+  veloc_file_buf: {type: array, subtype: char, size: 256}
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_01
+    iteration: ii
+    custom_checkpointing:
+       veloc_file : veloc_file_buf
+       custom_recover:
+           filename: my_file.dat
+           route_file_on_event: route_ckp
+           end_on_event: end_ckp
+)=="));
+}
+
+TEST_F(VelocYamlConfig, CustomRecoverMissingRouteFileOnEvent)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("'route_file_on_event' is undefined")));
+
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+  veloc_file_buf: {type: array, subtype: char, size: 256}
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_01
+    iteration: ii
+    custom_checkpointing:
+      veloc_file: veloc_file_buf
+      custom_recover:
+        filename: my_file.dat
+        start_on_event: start_rec
+        end_on_event: end_rec
+)=="));
+}
+
+TEST_F(VelocYamlConfig, CustomRecoverMissingEndOnEvent)
+{
+	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("'end_on_event' is undefined")));
+
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+  veloc_file_buf: {type: array, subtype: char, size: 256}
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_01
+    iteration: ii
+    custom_checkpointing:
+      veloc_file: veloc_file_buf
+      custom_recover:
+        filename: my_file.dat
+        start_on_event: start_rec
+        route_file_on_event: route_rec
+)=="));
+}
+
+/* ---- Duplicate event names between checkpoint and recover ---- */
+
+TEST_F(VelocYamlConfig, DuplicateEvents)
+{
+	EXPECT_CALL(
+		*this,
+		PdiError(Eq(PDI_ERR_CONFIG), HasSubstr("Duplicate event name"))
+	);
+
+	InitPdi(PC_parse_string(R"==(
+metadata:
+  ii: int
+data:
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    checkpoint_label: test_0
+    iteration: ii
+    custom_checkpointing:
+      custom_checkpoint:
+           filename: my_file.dat
+           start_on_event: start_ckp
+           route_file_on_event: route_ckp
+           end_on_event: end_ckp
+      custom_recover:
+           filename: my_file.dat
+           start_on_event: start_ckp
+           route_file_on_event: route_ckp
+           end_on_event: end_ckp
+)=="));
 }

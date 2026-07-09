@@ -65,6 +65,7 @@ class veloc_plugin: public Plugin
 	int recovered_iter;
 	int status;
 	int cp_counter;
+	int partial_counter; 
 
 	template <typename RefType>
 	void protect_all()
@@ -223,6 +224,7 @@ public:
 						Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 						auto new_iter = new_iter_r.scalar_value<int>();
 						init_checkpoint(context(), m_config.label(), new_iter);
+						partial_counter++; 
 					},
 					event.first
 				);
@@ -260,7 +262,13 @@ public:
 				);
 			} break;
 			case Event_type::END_CHECKPOINT: {
-				context().callbacks().add_event_callback([this](const string& event_name) { end_checkpoint(context()); }, event.first);
+				context().callbacks().add_event_callback([this](const string& event_name) { 
+					end_checkpoint(context()); 
+					if(partial_counter==1){
+						cp_counter++;
+						partial_counter--;
+					}
+				}, event.first);
 			} break;
 			case Event_type::END_RECOVERY: {
 				context().callbacks().add_event_callback([this](const string& event_name) { end_restart(context()); }, event.first);
@@ -273,7 +281,7 @@ public:
 
 	~veloc_plugin()
 	{
-		context().logger().info("{} checkpoints were written", cp_counter);
+		context().logger().info("{} checkpoints were written or tracked", cp_counter);
 		context().logger().info("Closing plugin");
 		finalize(context());
 	}

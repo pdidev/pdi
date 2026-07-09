@@ -24,6 +24,12 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
+if(NOT TARGET GTest::gtest)
+	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+	add_subdirectory("../../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+include(GoogleTest)
+
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 # Add the plugin path to PDI_PLUGIN_PATH
@@ -46,104 +52,68 @@ find_package(HDF5 REQUIRED COMPONENTS C)
 if("${HDF5_VERSION}" VERSION_LESS 1.10)
     message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 endif()
-set(HDF5_DEPS hdf5::hdf5)
 
-# Create persistent shared workdirs and pre-copy config at configure time
+# Shared workdirs 
 set(VELOC_TEST_MANAGED_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/workdir_managed_tests")
-set(VELOC_TEST_MANUAL_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/workdir_manual_tests")
+set(VELOC_TEST_CUSTOM_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/workdir_custom_tests")
 file(MAKE_DIRECTORY "${VELOC_TEST_MANAGED_WORKDIR}")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/veloc_config.cfg" DESTINATION "${VELOC_TEST_MANAGED_WORKDIR}")
-file(MAKE_DIRECTORY "${VELOC_TEST_MANUAL_WORKDIR}")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/veloc_config.cfg" DESTINATION "${VELOC_TEST_MANUAL_WORKDIR}")
+file(MAKE_DIRECTORY "${VELOC_TEST_CUSTOM_WORKDIR}")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/veloc_config.cfg" DESTINATION "${VELOC_TEST_CUSTOM_WORKDIR}")
 
 
-# test_0 - standalone, uses runtest-dir for isolated temp dir
+# test_yaml_syntax
 add_executable(veloc_test_yaml_syntax veloc_test_yaml_syntax.cxx)
-target_link_libraries(veloc_test_yaml_syntax PDI::PDI_C MPI::MPI_C)
-add_test(NAME veloc_test_yaml_syntax
-    COMMAND "${RUNTEST_DIR}"
-        --runtest-dir-copy-file "${CMAKE_CURRENT_SOURCE_DIR}/veloc_config.cfg"
-        "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
-        "$<TARGET_FILE:veloc_test_yaml_syntax>" ${MPIEXEC_POSTFLAGS})
-set_property(TEST veloc_test_yaml_syntax PROPERTY TIMEOUT 15)
-set_property(TEST veloc_test_yaml_syntax PROPERTY PROCESSORS 1)
+target_link_libraries(veloc_test_yaml_syntax PDI::PDI_C MPI::MPI_C GTest::gmock GTest::gtest GTest::gtest_main)
+target_compile_definitions(veloc_test_yaml_syntax PRIVATE
+    VELOC_CONFIG_FILE="${VELOC_TEST_MANAGED_WORKDIR}/veloc_config.cfg")
+gtest_discover_tests(veloc_test_yaml_syntax
+    WORKING_DIRECTORY ${VELOC_TEST_MANAGED_WORKDIR}
+    TEST_PREFIX veloc_test_yaml_syntax.
+    PROPERTIES
+        TIMEOUT 15
+)
 
-
-# managed tests series - shared workdir so checkpoint files persist between tests
-add_executable(veloc_test_managed_1_1 veloc_test_managed_1_1.cxx)
-target_link_libraries(veloc_test_managed_1_1 PDI::PDI_C MPI::MPI_C)
-add_test(NAME veloc_test_managed_1_1
+# veloc_test_managed_1
+add_executable(veloc_test_managed_1 veloc_test_managed_1.cxx)
+target_link_libraries(veloc_test_managed_1 PDI::PDI_C MPI::MPI_C)
+add_test(NAME veloc_test_managed_1
     COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
-        "$<TARGET_FILE:veloc_test_managed_1_1>" ${MPIEXEC_POSTFLAGS})
-set_property(TEST veloc_test_managed_1_1 PROPERTY WORKING_DIRECTORY "${VELOC_TEST_MANAGED_WORKDIR}")
-set_property(TEST veloc_test_managed_1_1 PROPERTY TIMEOUT 15)
-set_property(TEST veloc_test_managed_1_1 PROPERTY PROCESSORS 1)
-set_property(TEST veloc_test_managed_1_1 PROPERTY FIXTURES_SETUP managed_ckpt)
+        "$<TARGET_FILE:veloc_test_managed_1>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST veloc_test_managed_1 PROPERTY WORKING_DIRECTORY "${VELOC_TEST_MANAGED_WORKDIR}")
+set_property(TEST veloc_test_managed_1 PROPERTY TIMEOUT 15)
+set_property(TEST veloc_test_managed_1 PROPERTY PROCESSORS 3)
+set_property(TEST veloc_test_managed_1 PROPERTY FIXTURES_SETUP managed_ckpt)
 
-
-add_executable(veloc_test_managed_1_2 veloc_test_managed_1_2.cxx)
-target_link_libraries(veloc_test_managed_1_2 PDI::PDI_C MPI::MPI_C)
-add_test(NAME veloc_test_managed_1_2
-    COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
-        "$<TARGET_FILE:veloc_test_managed_1_2>" ${MPIEXEC_POSTFLAGS})
-set_property(TEST veloc_test_managed_1_2 PROPERTY WORKING_DIRECTORY "${VELOC_TEST_MANAGED_WORKDIR}")
-set_property(TEST veloc_test_managed_1_2 PROPERTY TIMEOUT 15)
-set_property(TEST veloc_test_managed_1_2 PROPERTY PROCESSORS 1)
-set_property(TEST veloc_test_managed_1_2 PROPERTY FIXTURES_REQUIRED managed_ckpt)
-
-
-add_executable(veloc_test_managed_1_3 veloc_test_managed_1_3.cxx)
-target_link_libraries(veloc_test_managed_1_3 PDI::PDI_C MPI::MPI_C)
-add_test(NAME veloc_test_managed_1_3
-    COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
-        "$<TARGET_FILE:veloc_test_managed_1_3>" ${MPIEXEC_POSTFLAGS})
-set_property(TEST veloc_test_managed_1_3 PROPERTY WORKING_DIRECTORY "${VELOC_TEST_MANAGED_WORKDIR}")
-set_property(TEST veloc_test_managed_1_3 PROPERTY TIMEOUT 15)
-set_property(TEST veloc_test_managed_1_3 PROPERTY PROCESSORS 1)
-set_property(TEST veloc_test_managed_1_3 PROPERTY FIXTURES_REQUIRED managed_ckpt)
-
-
-# managed_2 - standalone, uses runtest-dir for isolated temp dir
+# veloc_test_managed_2
 add_executable(veloc_test_managed_2 veloc_test_managed_2.cxx)
 target_link_libraries(veloc_test_managed_2 PDI::PDI_C MPI::MPI_C)
 add_test(NAME veloc_test_managed_2
+    COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
+        "$<TARGET_FILE:veloc_test_managed_2>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST veloc_test_managed_2 PROPERTY WORKING_DIRECTORY "${VELOC_TEST_MANAGED_WORKDIR}")
+set_property(TEST veloc_test_managed_2 PROPERTY TIMEOUT 15)
+set_property(TEST veloc_test_managed_2 PROPERTY PROCESSORS 3)
+set_property(TEST veloc_test_managed_2 PROPERTY FIXTURES_REQUIRED managed_ckpt)
+
+# veloc_test_managed_3 
+add_executable(veloc_test_managed_3 veloc_test_managed_3.cxx)
+target_link_libraries(veloc_test_managed_3 PDI::PDI_C MPI::MPI_C)
+add_test(NAME veloc_test_managed_3
     COMMAND "${RUNTEST_DIR}"
         --runtest-dir-copy-file "${CMAKE_CURRENT_SOURCE_DIR}/veloc_config.cfg"
         "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
-        "$<TARGET_FILE:veloc_test_managed_2>" ${MPIEXEC_POSTFLAGS})
-set_property(TEST veloc_test_managed_2 PROPERTY TIMEOUT 15)
-set_property(TEST veloc_test_managed_2 PROPERTY PROCESSORS 1)
+        "$<TARGET_FILE:veloc_test_managed_3>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST veloc_test_managed_3 PROPERTY TIMEOUT 15)
+set_property(TEST veloc_test_managed_3 PROPERTY PROCESSORS 3)
 
-
-# manual tests series - shared workdir so HDF5 checkpoint files persist between tests
-add_executable(veloc_test_manual_1 veloc_test_manual_1.cxx)
-target_link_libraries(veloc_test_manual_1 PDI::PDI_C MPI::MPI_C ${HDF5_DEPS})
-add_test(NAME veloc_test_manual_1
-    COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
-        "$<TARGET_FILE:veloc_test_manual_1>" ${MPIEXEC_POSTFLAGS})
-set_property(TEST veloc_test_manual_1 PROPERTY WORKING_DIRECTORY "${VELOC_TEST_MANUAL_WORKDIR}")
-set_property(TEST veloc_test_manual_1 PROPERTY TIMEOUT 15)
-set_property(TEST veloc_test_manual_1 PROPERTY PROCESSORS 1)
-set_property(TEST veloc_test_manual_1 PROPERTY FIXTURES_SETUP manual_ckpt)
-
-
-add_executable(veloc_test_manual_2 veloc_test_manual_2.cxx)
-target_link_libraries(veloc_test_manual_2 PDI::PDI_C MPI::MPI_C ${HDF5_DEPS})
-add_test(NAME veloc_test_manual_2
-    COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
-        "$<TARGET_FILE:veloc_test_manual_2>" ${MPIEXEC_POSTFLAGS})
-set_property(TEST veloc_test_manual_2 PROPERTY WORKING_DIRECTORY "${VELOC_TEST_MANUAL_WORKDIR}")
-set_property(TEST veloc_test_manual_2 PROPERTY TIMEOUT 15)
-set_property(TEST veloc_test_manual_2 PROPERTY PROCESSORS 1)
-set_property(TEST veloc_test_manual_2 PROPERTY FIXTURES_REQUIRED manual_ckpt)
-
-
-add_executable(veloc_test_manual_3 veloc_test_manual_3.cxx)
-target_link_libraries(veloc_test_manual_3 PDI::PDI_C MPI::MPI_C ${HDF5_DEPS})
-add_test(NAME veloc_test_manual_3
-    COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
-        "$<TARGET_FILE:veloc_test_manual_3>" ${MPIEXEC_POSTFLAGS})
-set_property(TEST veloc_test_manual_3 PROPERTY WORKING_DIRECTORY "${VELOC_TEST_MANUAL_WORKDIR}")
-set_property(TEST veloc_test_manual_3 PROPERTY TIMEOUT 15)
-set_property(TEST veloc_test_manual_3 PROPERTY PROCESSORS 1)
-set_property(TEST veloc_test_manual_3 PROPERTY FIXTURES_REQUIRED manual_ckpt)
+# veloc_test_custom
+add_executable(veloc_test_custom veloc_test_custom.cxx)
+target_link_libraries(veloc_test_custom PDI::PDI_C hdf5::hdf5 MPI::MPI_C GTest::gmock GTest::gtest GTest::gtest_main)
+target_compile_definitions(veloc_test_custom PRIVATE
+    VELOC_CONFIG_FILE="${VELOC_TEST_CUSTOM_WORKDIR}/veloc_config.cfg")
+gtest_add_tests(TARGET veloc_test_custom
+    TEST_PREFIX veloc_test_custom.
+    WORKING_DIRECTORY ${VELOC_TEST_CUSTOM_WORKDIR}
+    TEST_LIST customTests)
+set_tests_properties(${customTests} PROPERTIES TIMEOUT 15)

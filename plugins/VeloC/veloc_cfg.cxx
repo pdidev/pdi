@@ -135,12 +135,12 @@ bool validate_manual_op(PC_tree_t tree, const unordered_map<string, Event_type>&
 		bool defined = std::any_of(events.begin(), events.end(), [event_type](const auto& event) { return event.second == event_type; });
 
 		if (!defined) {
-			throw Spectree_error{tree,"VeloC Specification Tree: '{}' must be defined in manual checkpoint/recover", event_names.at(event_type)};
+			throw Spectree_error{tree,"VeloC Specification Tree: '{}' is undefined in manual checkpoint/recover", event_names.at(event_type)};
 		}
 	}
 
 	if (original_file.empty()) {
-		throw Spectree_error{tree,"VeloC Specification Tree: 'filename' must be defined in manual checkpoint/recover"};
+		throw Spectree_error{tree,"VeloC Specification Tree: 'filename' is undefined in manual checkpoint/recover"};
 	}
 
 	return true;
@@ -149,7 +149,7 @@ bool validate_manual_op(PC_tree_t tree, const unordered_map<string, Event_type>&
 bool validate_custom_config(PC_tree_t tree, CustomCheckpointingCfg cfg)
 {
 	if (cfg.routed_file.empty()) {
-		throw Spectree_error{tree,"VeloC Specification Tree: 'veloc_file' must be defined in 'custom_checkpointing' "};
+		throw Spectree_error{tree,"VeloC Specification Tree: 'veloc_file' is undefined defined in 'custom_checkpointing' "};
 	}
 	return true;
 }
@@ -157,7 +157,7 @@ bool validate_custom_config(PC_tree_t tree, CustomCheckpointingCfg cfg)
 bool validate_managed_config(PC_tree_t tree,ManagedCheckpointingCfg cfg)
 {
 	if (cfg.protected_data.size() == 0) {
-		throw Spectree_error{tree,"VeloC Specification Tree: 'protected data' must be defined in 'managed_checkpointing' "};
+		throw Spectree_error{tree,"VeloC Specification Tree: 'protect_data' is undefined defined in 'managed_checkpointing' "};
 	}
 	return true;
 }
@@ -310,15 +310,15 @@ void Veloc_cfg::check_conformity(Context& ctx)
 	// --- mandatory fields ---
 
 	if (m_config_file.empty()) {
-		throw Spectree_error{m_tree,"VeloC Plugin Spectree: The VeloC configuration file is undefined"};
+		throw Spectree_error{m_tree,"VeloC Plugin Spectree: The path to VeloC configuration file is undefined"};
 	}
 
 	if (m_cp_label.empty()) {
-		throw Spectree_error{m_tree,"VeloC Plugin Spectree: The name of the checkpoint label must be defined"};
+		throw Spectree_error{m_tree,"VeloC Plugin Spectree: The name of the checkpoint label is undefined"};
 	}
 
 	if (m_iter_name.empty()) {
-		throw Spectree_error{m_tree,"VeloC Plugin Spectree: The name of the iteration number in the PDI data store must be defined"};
+		throw Spectree_error{m_tree,"VeloC Plugin Spectree: The name of the iteration number in the PDI data store is undefined"};
 	}
 
 	if (m_managed.is_valid && m_custom.is_valid) {
@@ -339,14 +339,14 @@ void Veloc_cfg::check_conformity(Context& ctx)
     ------------------------------------------------ */
 
 	if (m_managed.is_valid) {
-		// iteration must be in protect_data
+		// iteration must be included in protect_data
 		bool iter_protected = std::any_of(m_managed.protected_data.begin(), m_managed.protected_data.end(), [this](const auto& data) {
 			return data.second == m_iter_name;
 		});
 		if (!iter_protected) {
 			throw Spectree_error{
 				m_tree,
-				"VeloC plugin Spectree: The iteration variable `{}' must be included in "
+				"VeloC plugin Spectree: The iteration variable `{}' is not included in "
 				"`protect_data'",
 				m_iter_name
 			};
@@ -370,7 +370,7 @@ void Veloc_cfg::check_conformity(Context& ctx)
 			}
 		}
 
-		// Warn : "checkpoint_nr" defined without recovery events
+		// Warn : "recover_from_iteration" defined without recovery events
 		if (!rec_events_defined && m_managed.requested_checkpoint != -1) {
 			ctx.logger().warn("VeloC Plugin Spectree: No recovery events have been defined "
 			                  "inside `managed_checkpointing'. Ignoring `recover_from_iteration' key");
