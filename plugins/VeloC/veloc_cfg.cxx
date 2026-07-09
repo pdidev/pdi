@@ -168,6 +168,8 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 {
 	//  STEP 1
 	PC_tree_t m_tree = tree; 
+	
+	bool status_key_defined = false;
 
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 		string key = to_string(key_tree);
@@ -180,6 +182,7 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 			m_iter_name = to_string(value);
 		} else if (key == "status") {
 			load_desc(m_descs, ctx, to_string(value), Desc_type::STATUS);
+			status_key_defined = 1; 
 		} else if (key == "counter") {
 			load_desc(m_descs, ctx, to_string(value), Desc_type::COUNTER_CP);
 		} else if (key == "managed_checkpointing") {
@@ -240,12 +243,15 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 			} else if (key == "custom_recover") {
 				// parsed in step 5
 			}
+			else {
+				throw Spectree_error{custom_tree, "VeloC config: unknown key `{}' in `custom_checkpointing', ignoring.", key};
+			}
 		});
 
 		// Step 4
-		PC_tree_t manual_cp_tree = PC_get(custom_tree, ".custom_checkpoint");
-		if (!PC_status(manual_cp_tree)) {
-			each(manual_cp_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
+		PC_tree_t custom_cp_tree = PC_get(custom_tree, ".custom_checkpoint");
+		if (!PC_status(custom_cp_tree)) {
+			each(custom_cp_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 				string key = to_string(key_tree);
 				if (key == "filename") {
 					m_custom.manual_cp.original_file = to_string(value);
@@ -256,13 +262,13 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 				} else if (key == "route_file_on_event") {
 					load_events(m_events, ctx, value, Event_type::ROUTE_FILE_FOR_CP);
 				} else {
-					ctx.logger().warn("VeloC config: unknown key `{}' in `custom_checkpoint', ignoring.", key);
+					throw Spectree_error{custom_cp_tree, "VeloC config: unknown key `{}' in `custom_checkpoint', ignoring.", key};
 				}
 			});
 
 			manual_cp().is_valid
 				= validate_manual_op<Event_type::START_CHECKPOINT, Event_type::ROUTE_FILE_FOR_CP, Event_type::END_CHECKPOINT>(
-					  manual_cp_tree,
+					  custom_cp_tree,
 					  m_events,
 					  manual_cp().original_file
 				  )
@@ -271,9 +277,9 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 		}
 
 		// Step 5
-		PC_tree_t manual_rec_tree = PC_get(custom_tree, ".custom_recover");
-		if (!PC_status(manual_rec_tree)) {
-			each(manual_rec_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
+		PC_tree_t custom_rec_tree = PC_get(custom_tree, ".custom_recover");
+		if (!PC_status(custom_rec_tree)) {
+			each(custom_rec_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 				string key = to_string(key_tree);
 				if (key == "filename") {
 					m_custom.manual_rec.original_file = to_string(value);
@@ -286,12 +292,12 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 				} else if (key == "recover_from_iteration") {
 					m_custom.manual_rec.requested_checkpoint = to_long(value);
 				} else {
-					ctx.logger().warn("VeloC config: unknown key `{}' in `custom_recover', ignoring.", key);
+					throw Spectree_error{custom_cp_tree, "VeloC config: unknown key `{}' in `custom_recover', ignoring.", key};
 				}
 			});
 			manual_rec().is_valid
 				= validate_manual_op<Event_type::START_RECOVERY, Event_type::ROUTE_FILE_FOR_REC, Event_type::END_RECOVERY>(
-					  manual_rec_tree,
+					  custom_rec_tree,
 					  m_events,
 					  manual_rec().original_file
 				  )
@@ -302,10 +308,10 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 		m_custom.is_valid = validate_custom_config(custom_tree, m_custom) ? true : false;
 	}
  
-	check_conformity(ctx);
+	check_conformity(ctx, status_key_defined);
 }
 
-void Veloc_cfg::check_conformity(Context& ctx)
+void Veloc_cfg::check_conformity(Context& ctx, bool status_key_defined)
 {
 	// --- mandatory fields ---
 
@@ -375,6 +381,12 @@ void Veloc_cfg::check_conformity(Context& ctx)
 			ctx.logger().warn("VeloC Plugin Spectree: No recovery events have been defined "
 			                  "inside `managed_checkpointing'. Ignoring `recover_from_iteration' key");
 		}
+
+		// Warn : "recover_from_iteration" defined without recovery events
+		if (rec_events_defined && !status_key_defined) {
+			ctx.logger().warn("VeloC Plugin Spectree: Recovery events have been defined "
+			                  "inside `managed_checkpointing' but no 'status' key has been defined. ");
+		}
 	}
 
 	/* ---------------------------------------------
@@ -385,5 +397,10 @@ void Veloc_cfg::check_conformity(Context& ctx)
 			ctx.logger().warn("VeloC Plugin Spectree: `custom_checkpointing' is defined but "
 			                  "neither `custom_checkpoint' nor `custom_recover' have been configured");
 		}
+	}
+
+	if(manual_rec().is_valid && !status_key_defined){
+		ctx.logger().warn("VeloC Plugin Spectree: Recovery events have been defined "
+			            "inside `managed_checkpointing' but no 'status' key has been defined. ");
 	}
 }

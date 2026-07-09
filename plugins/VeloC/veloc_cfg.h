@@ -135,7 +135,7 @@ class Veloc_cfg
 	 * 
 	 * @param ctx the context from which to access the logger
 	 */
-	void check_conformity(PDI::Context& ctx);
+	void check_conformity(PDI::Context& ctx, bool status_key_defined);
 
 public:
 	Veloc_cfg(PDI::Context& ctx, PC_tree_t tree);
