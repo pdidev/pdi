@@ -31,6 +31,8 @@ endif()
 include(GoogleTest)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
+set(VELOC_CONFIG_FILE_NAME "veloc_config.cfg")
+set(VELOC_TEST_NPROC 3)
 
 # Add the plugin path to PDI_PLUGIN_PATH
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
@@ -47,73 +49,91 @@ endif()
 
 # HDF5
 set(HDF5_USE_STATIC_LIBRARIES OFF)
-set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
 find_package(HDF5 REQUIRED COMPONENTS C)
 if("${HDF5_VERSION}" VERSION_LESS 1.10)
     message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 endif()
 
-# Shared workdirs 
+set(VELOC_TEST_YAML_WORKDIR    "${CMAKE_CURRENT_BINARY_DIR}/workdir_yaml_tests")
 set(VELOC_TEST_MANAGED_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/workdir_managed_tests")
-set(VELOC_TEST_CUSTOM_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/workdir_custom_tests")
-file(MAKE_DIRECTORY "${VELOC_TEST_MANAGED_WORKDIR}")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/veloc_config.cfg" DESTINATION "${VELOC_TEST_MANAGED_WORKDIR}")
-file(MAKE_DIRECTORY "${VELOC_TEST_CUSTOM_WORKDIR}")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/veloc_config.cfg" DESTINATION "${VELOC_TEST_CUSTOM_WORKDIR}")
+set(VELOC_TEST_CUSTOM_WORKDIR  "${CMAKE_CURRENT_BINARY_DIR}/workdir_custom_tests")
+foreach(workdir IN ITEMS
+        "${VELOC_TEST_YAML_WORKDIR}"
+        "${VELOC_TEST_MANAGED_WORKDIR}"
+        "${VELOC_TEST_CUSTOM_WORKDIR}")
+	file(MAKE_DIRECTORY "${workdir}")
+	file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${VELOC_CONFIG_FILE_NAME}" DESTINATION "${workdir}")
+endforeach()
 
-
-# test_yaml_syntax
+# veloc_test_yaml_syntax
 add_executable(veloc_test_yaml_syntax veloc_test_yaml_syntax.cxx)
 target_link_libraries(veloc_test_yaml_syntax PDI::PDI_C MPI::MPI_C GTest::gmock GTest::gtest GTest::gtest_main)
 target_compile_definitions(veloc_test_yaml_syntax PRIVATE
-    VELOC_CONFIG_FILE="${VELOC_TEST_MANAGED_WORKDIR}/veloc_config.cfg")
+    VELOC_CONFIG_FILE="${VELOC_TEST_YAML_WORKDIR}/${VELOC_CONFIG_FILE_NAME}")
 gtest_discover_tests(veloc_test_yaml_syntax
-    WORKING_DIRECTORY ${VELOC_TEST_MANAGED_WORKDIR}
+    WORKING_DIRECTORY "${VELOC_TEST_YAML_WORKDIR}"
     TEST_PREFIX veloc_test_yaml_syntax.
     PROPERTIES
         TIMEOUT 15
 )
 
+# Erases checkpoints from previous ctest runs
+add_test(NAME veloc_managed_prepare
+    COMMAND "${CMAKE_COMMAND}" -E rm -rf
+        "${VELOC_TEST_MANAGED_WORKDIR}/scratchdir"
+        "${VELOC_TEST_MANAGED_WORKDIR}/persdir")
+set_property(TEST veloc_managed_prepare PROPERTY TIMEOUT 15)
+set_property(TEST veloc_managed_prepare PROPERTY FIXTURES_SETUP managed_prepare)
+
 # veloc_test_managed_1
 add_executable(veloc_test_managed_1 veloc_test_managed_1.cxx)
 target_link_libraries(veloc_test_managed_1 PDI::PDI_C MPI::MPI_C)
 add_test(NAME veloc_test_managed_1
-    COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
+    COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" ${VELOC_TEST_NPROC} ${MPIEXEC_PREFLAGS}
         "$<TARGET_FILE:veloc_test_managed_1>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST veloc_test_managed_1 PROPERTY WORKING_DIRECTORY "${VELOC_TEST_MANAGED_WORKDIR}")
 set_property(TEST veloc_test_managed_1 PROPERTY TIMEOUT 15)
-set_property(TEST veloc_test_managed_1 PROPERTY PROCESSORS 3)
+set_property(TEST veloc_test_managed_1 PROPERTY PROCESSORS ${VELOC_TEST_NPROC})
+set_property(TEST veloc_test_managed_1 PROPERTY FIXTURES_REQUIRED managed_prepare)
 set_property(TEST veloc_test_managed_1 PROPERTY FIXTURES_SETUP managed_ckpt)
 
 # veloc_test_managed_2
 add_executable(veloc_test_managed_2 veloc_test_managed_2.cxx)
 target_link_libraries(veloc_test_managed_2 PDI::PDI_C MPI::MPI_C)
 add_test(NAME veloc_test_managed_2
-    COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
-        "$<TARGET_FILE:veloc_test_managed_2>" ${MPIEXEC_POSTFLAGS})
+    COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" ${VELOC_TEST_NPROC} ${MPIEXEC_PREFLAGS}
+        "$<TARGET_FILE:veloc_test_managed_1>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST veloc_test_managed_2 PROPERTY WORKING_DIRECTORY "${VELOC_TEST_MANAGED_WORKDIR}")
 set_property(TEST veloc_test_managed_2 PROPERTY TIMEOUT 15)
-set_property(TEST veloc_test_managed_2 PROPERTY PROCESSORS 3)
+set_property(TEST veloc_test_managed_2 PROPERTY PROCESSORS ${VELOC_TEST_NPROC})
 set_property(TEST veloc_test_managed_2 PROPERTY FIXTURES_REQUIRED managed_ckpt)
+
+add_test(NAME veloc_managed_cleanup
+    COMMAND "${CMAKE_COMMAND}" -E rm -rf
+        "${VELOC_TEST_MANAGED_WORKDIR}/scratchdir"
+        "${VELOC_TEST_MANAGED_WORKDIR}/persdir")
+set_property(TEST veloc_managed_cleanup PROPERTY TIMEOUT 15)
+set_property(TEST veloc_managed_cleanup PROPERTY FIXTURES_CLEANUP managed_ckpt)
 
 # veloc_test_managed_3 
 add_executable(veloc_test_managed_3 veloc_test_managed_3.cxx)
 target_link_libraries(veloc_test_managed_3 PDI::PDI_C MPI::MPI_C)
 add_test(NAME veloc_test_managed_3
     COMMAND "${RUNTEST_DIR}"
-        --runtest-dir-copy-file "${CMAKE_CURRENT_SOURCE_DIR}/veloc_config.cfg"
-        "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS}
+        --runtest-dir-copy-file "${CMAKE_CURRENT_SOURCE_DIR}/${VELOC_CONFIG_FILE_NAME}"
+        "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" ${VELOC_TEST_NPROC} ${MPIEXEC_PREFLAGS}
         "$<TARGET_FILE:veloc_test_managed_3>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST veloc_test_managed_3 PROPERTY TIMEOUT 15)
-set_property(TEST veloc_test_managed_3 PROPERTY PROCESSORS 3)
+set_property(TEST veloc_test_managed_3 PROPERTY PROCESSORS ${VELOC_TEST_NPROC})
 
 # veloc_test_custom
 add_executable(veloc_test_custom veloc_test_custom.cxx)
 target_link_libraries(veloc_test_custom PDI::PDI_C hdf5::hdf5 MPI::MPI_C GTest::gmock GTest::gtest GTest::gtest_main)
 target_compile_definitions(veloc_test_custom PRIVATE
-    VELOC_CONFIG_FILE="${VELOC_TEST_CUSTOM_WORKDIR}/veloc_config.cfg")
-gtest_add_tests(TARGET veloc_test_custom
+    VELOC_CONFIG_FILE="${VELOC_TEST_CUSTOM_WORKDIR}/${VELOC_CONFIG_FILE_NAME}")
+gtest_discover_tests(veloc_test_custom
+    WORKING_DIRECTORY "${VELOC_TEST_CUSTOM_WORKDIR}"
     TEST_PREFIX veloc_test_custom.
-    WORKING_DIRECTORY ${VELOC_TEST_CUSTOM_WORKDIR}
-    TEST_LIST customTests)
-set_tests_properties(${customTests} PROPERTIES TIMEOUT 15)
+    PROPERTIES
+        TIMEOUT 15
+)
