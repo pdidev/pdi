@@ -4,6 +4,9 @@ duration: 0.75
 datasize: [60, 12]
 # degree of parallelism
 parallelism: { height: 3, width: 1 }
+# status for checkpoint (irrelevant for the decl_hdf5 plugin example)
+cp_status : 1
+
 
 # only the following config is passed to PDI
 pdi:
