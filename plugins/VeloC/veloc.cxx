@@ -281,7 +281,7 @@ public:
 
 	~veloc_plugin()
 	{
-		context().logger().info("{} checkpoints were written or tracked", cp_counter);
+		context().logger().info("{} checkpoints were written", cp_counter);
 		context().logger().info("Closing plugin");
 		finalize(context());
 	}

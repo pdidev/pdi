@@ -102,7 +102,7 @@ add_executable(veloc_test_managed_2 veloc_test_managed_2.cxx)
 target_link_libraries(veloc_test_managed_2 PDI::PDI_C MPI::MPI_C)
 add_test(NAME veloc_test_managed_2
     COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" ${VELOC_TEST_NPROC} ${MPIEXEC_PREFLAGS}
-        "$<TARGET_FILE:veloc_test_managed_1>" ${MPIEXEC_POSTFLAGS})
+        "$<TARGET_FILE:veloc_test_managed_2>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST veloc_test_managed_2 PROPERTY WORKING_DIRECTORY "${VELOC_TEST_MANAGED_WORKDIR}")
 set_property(TEST veloc_test_managed_2 PROPERTY TIMEOUT 15)
 set_property(TEST veloc_test_managed_2 PROPERTY PROCESSORS ${VELOC_TEST_NPROC})
