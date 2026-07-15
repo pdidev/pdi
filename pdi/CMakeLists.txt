@@ -368,7 +368,7 @@ install(FILES
 configure_file(cmake/PDIConfig.cmake.in PDIConfig.cmake @ONLY)
 write_basic_package_version_file("${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
 		VERSION "${PDI_VERSION}"
-		COMPATIBILITY AnyNewerVersion
+		COMPATIBILITY SameMinorVersion
 )
 install(FILES
 		"${PDI_BINARY_DIR}/PDIConfig.cmake"
