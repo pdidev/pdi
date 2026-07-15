@@ -80,8 +80,8 @@ int main(int argc, char* argv[])
 	MPI_Comm comm2D;
 	periodic[0] = 0;
 	periodic[1] = 0;
-	dims[0] = 1;
-	dims[1] = 1;
+	dims[0] = 2;
+	dims[1] = 2;
 
 	int provided;
 	MPI_Init(&argc, &argv);

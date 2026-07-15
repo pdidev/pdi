@@ -27,4 +27,4 @@ The timer plugin configuration contains a list of timer names (e.g. `- timer_A`,
 
 It is also possible to have different names for start and stop events such as `timer_D`. 
 
-To measure the time used by PDI between `PDI_init` and `PDI_finalize`, one can define a timer as shown by `timer_E` with timer prefix "pdi".
+To measure the wall time used spent between `PDI_init` and `PDI_finalize`, one can define a timer as shown by `timer_E` with timer prefix "pdi". Please notie that, this timer include time spent on the simulation as well.
