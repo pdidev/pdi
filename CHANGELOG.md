@@ -38,7 +38,8 @@ and this project adheres to
 #### Fixed
 * Migrate from `TYPED_TEST_CASE` to `TYPED_TEST_SUITE`, from `INSTANTIATE_TEST_CASE_P`
   to `INSTANTIATE_TEST_SUITE_P` to resolve deprecation warnings.
-* Fix for PR [#711](https://github.com/pdidev/pdi/pull/711) of issue [#500](https://github.com/pdidev/pdi/issues/500).
+* Fix for incomplete PR [#711](https://github.com/pdidev/pdi/pull/711) not accounting for
+  the value `AUTO` of `${USE_HDF5}` (c.f. issue [#500](https://github.com/pdidev/pdi/issues/500)).
 
 #### Security
 
