@@ -64,7 +64,7 @@ if("${BUILD_NETCDF_PARALLEL}")
 endif()
 
 add_executable(decl_netcdf_08_C decl_netcdf_test_08.cxx)
-target_link_libraries(decl_netcdf_08_C PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest GTest::gtest_main)
+target_link_libraries(decl_netcdf_08_C PDI::PDI_C GTest::gmock_main)
 target_compile_features(decl_netcdf_08_C PUBLIC cxx_std_20)
 gtest_discover_tests(decl_netcdf_08_C PROPERTIES TIMEOUT 15)
 
