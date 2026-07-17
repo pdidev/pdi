@@ -27,8 +27,6 @@
 #include <numeric>
 #include <ranges>
 
-#include <hdf5.h>
-
 #include <pdi/testing.h>
 
 using PDI::make_random;
