@@ -23,7 +23,11 @@
  ******************************************************************************/
 
 #include <chrono>
+#include <fcntl.h>
+#include <fstream>
 #include <string>
+#include <sys/file.h>
+#include <unistd.h>
 #include <unordered_map>
 
 #include <pdi/context.h>
@@ -78,6 +82,7 @@ public:
 		for (const auto& [name, duration]: accumulated_times) {
 			context().logger().info("Total time spent for {} : {} seconds", name, duration);
 		}
+		save_timer_to_csv();
 		context().logger().info("Closing plugin");
 	}
 
@@ -98,19 +103,19 @@ private:
 
 		for (int i = 0; i < len(spec_tree, 0); i++) {
 			PC_tree_t timer_item = PC_get(spec_tree, "[%d]", i);
-			std::string timer_name = to_string(PC_get(timer_item, "{0}"));
+			std::string timer_name = PDI::to_string(PC_get(timer_item, "{0}"));
 
 			PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
 			if (is_map(val)) {
 				ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
-				auto start_ev = to_string(PC_get(val, ".start"));
-				auto stop_ev = to_string(PC_get(val, ".stop"));
+				auto start_ev = PDI::to_string(PC_get(val, ".start"));
+				auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
 				register_timer(start_ev, stop_ev, timer_name);
 			} else {
 				ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
 				opt_each(val, [&](PC_tree_t sub_elem) {
-					auto start_ev = to_string(sub_elem) + "_start_timer";
-					auto stop_ev = to_string(sub_elem) + "_stop_timer";
+					auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
+					auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
 					register_timer(start_ev, stop_ev, timer_name);
 				});
 			}
@@ -180,6 +185,29 @@ private:
 
 		accumulated_times[name] += elapsed.count();
 		start_times.erase(it);
+	}
+
+	void save_timer_to_csv()
+	{
+		auto filename = "timer.csv";
+		std::ofstream file(filename, std::ios::app);
+
+		if (!file.is_open()) {
+			context().logger().error("Could not open file to write timer results to {}", filename);
+			return;
+		}
+		int fd = open(filename, O_WRONLY);
+		flock(fd, LOCK_EX);
+
+		// Write Data
+		for (const auto& [name, duration]: accumulated_times) {
+			file << name << "," << duration << "\n";
+		}
+		file.flush();
+		flock(fd, LOCK_UN);
+		close(fd);
+		file.close();
+		context().logger().info("Successfully saved results to {}", filename);
 	}
 };
 

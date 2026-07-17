@@ -24,6 +24,12 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
+if(NOT TARGET GTest::gtest)
+	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+	add_subdirectory("../../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+include(GoogleTest)
+
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 # Add the plugin path to PDI_PLUGIN_PATH
@@ -47,3 +53,7 @@ target_compile_features(timer_test PRIVATE cxx_std_17)
 add_test(NAME timer_test COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:timer_test>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST timer_test PROPERTY TIMEOUT 15)
 set_property(TEST timer_test PROPERTY PROCESSORS 4)
+
+add_executable(timer_unit_tests timer_unit_tests.cxx)
+target_link_libraries(timer_unit_tests PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest ${HDF5_DEPS})
+gtest_discover_tests(timer_unit_tests)
