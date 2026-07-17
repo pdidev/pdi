@@ -26,15 +26,15 @@
 
 extern "C" {
 
-void add_ten_in(void)
+void onData_add_ten(void)
 {
 	int* buffer = NULL;
-	PDI_access("var_in", (void**)&buffer, PDI_IN);
+	PDI_access("var_inout", (void**)&buffer, PDI_IN);
 	(*buffer) += 10;
-	PDI_release("var_in");
+	PDI_release("var_inout");
 }
 
-void add_ten_inout(void)
+void onEvent_add_ten(void)
 {
 	int* buffer = NULL;
 	PDI_access("var_in", (void**)&buffer, PDI_IN); // Read something from input
@@ -45,52 +45,32 @@ void add_ten_inout(void)
 	PDI_release("var_out");
 }
 
+void onEvent_add_one(void)
+{
+	int* buffer = NULL;
+	PDI_access("var_in", (void**)&buffer, PDI_IN); // Read something from input
+	PDI_release("var_in");
+    
+	PDI_access("var_out", (void**)&buffer, PDI_OUT);
+	(*buffer) += 1; // Write something to output
+	PDI_release("var_out");
+}
+
+void onEvent_add_two(void)
+{
+	int* buffer = NULL;
+	PDI_access("var_in", (void**)&buffer, PDI_IN); // Read something from input
+	PDI_release("var_in");
+    
+	PDI_access("var_out", (void**)&buffer, PDI_OUT);
+	(*buffer) += 2; // Write something to output
+	PDI_release("var_out");
+}
+
 }
 
 class UserCode: public ::PDI::PdiTest
 {};
-
-TEST_F(UserCode, OnEvent)
-{
-    InitPdi(PC_parse_string(R"==(
-logging: trace
-data:
-  input: int
-  output: int
-plugins:
-  user_code:
-    on_event:
-      testing:
-        add_ten_inout: {var_in: $input, var_out: $output }
-)=="));
-
-	int in = 0;
-	int out = 0;
-	PDI_multi_expose("testing", "input", &in, PDI_OUT, "output", &out, PDI_IN, NULL);
-	EXPECT_EQ(in, 0);
-    EXPECT_EQ(out, 10);
-}
-
-TEST_F(UserCode, OnEventInOut)
-{
-    InitPdi(PC_parse_string(R"==(
-logging: trace
-data:
-  input: int
-  output: int
-plugins:
-  user_code:
-    on_event:
-      testing:
-        add_ten_inout: {var_in: $input, var_out: $output }
-)=="));
-
-	int in = 0;
-	int out = 0;
-	PDI_multi_expose("testing", "input", &in, PDI_OUT, "output", &out, PDI_IN, NULL);
-	EXPECT_EQ(in, 0);
-    EXPECT_EQ(out, 10);
-}
 
 TEST_F(UserCode, OnEventWhen)
 {
@@ -106,7 +86,7 @@ plugins:
     on_event:
       testing:
         when: $cond
-        add_ten_inout: {var_in: $input, var_out: $output }
+        onEvent_add_ten: {var_in: $input, var_out: $output }
 )=="));
 
 	int cond = 0;
@@ -142,7 +122,7 @@ plugins:
     on_data:
       test_var:
         when: $cond=1
-        add_ten_in: {var_in: $test_var}
+        onData_add_ten: {var_inout: $test_var}
 )=="));
 
 	int cond = 0;
@@ -159,3 +139,95 @@ plugins:
 	PDI_expose("test_var", &test_var, PDI_OUT);
 	EXPECT_EQ(test_var, 109);
 }
+
+TEST_F(UserCode, OnEventListWhen)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata:
+  cond: int
+data:
+  input: int
+  outputA: int
+  outputB: int
+  outputC: int
+plugins:
+  user_code:
+    on_event:
+      - testing:
+          when: $cond
+          onEvent_add_one: {var_in: $input, var_out: $outputA }
+          onEvent_add_two: {var_in: $input, var_out: $outputB }
+      - testing:
+          onEvent_add_ten: {var_in: $input, var_out: $outputC }
+)=="));
+
+	int cond = 0;
+	PDI_expose("cond", &cond, PDI_OUT);
+
+	int in = 0;
+	int outA = 0;
+	int outB = 0;
+	int outC = 0;
+	PDI_multi_expose("testing", "input", &in, PDI_OUT, 
+		                        "outputA", &outA, PDI_IN, 
+								"outputB", &outB, PDI_IN, 
+								"outputC", &outC, PDI_IN, 
+								NULL);
+	EXPECT_EQ(in, 0);
+    EXPECT_EQ(outA, 0);
+	EXPECT_EQ(outB, 0);
+	EXPECT_EQ(outC, 10);
+
+	// Function will be called because cond = 1
+	cond = 1;
+	PDI_expose("cond", &cond, PDI_OUT);
+
+	in = 0;
+	outA = 0;
+	outB = 0;
+	outC = 0;
+	PDI_multi_expose("testing", "input", &in, PDI_OUT, 
+		                        "outputA", &outA, PDI_IN, 
+								"outputB", &outB, PDI_IN, 
+								"outputC", &outC, PDI_IN, 
+								NULL);
+	EXPECT_EQ(in, 0);
+    EXPECT_EQ(outA, 1);
+	EXPECT_EQ(outB, 2);
+	EXPECT_EQ(outC, 10);
+}
+
+TEST_F(UserCode, OnDataListWhen)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata:
+  cond: int
+data:
+  test_var: int
+plugins:
+  user_code:
+    on_data:
+      - test_var:
+          when: $cond=1
+          onData_add_ten: {var_inout: $test_var}
+      - test_var:
+          onData_add_ten: {var_inout: $test_var}
+)=="));
+
+	int cond = 0;
+	PDI_expose("cond", &cond, PDI_OUT);
+
+	int test_var = 99;
+	PDI_expose("test_var", &test_var, PDI_OUT);
+	EXPECT_EQ(test_var, 109);
+
+	// Function will be called because cond = 1
+	cond = 1;
+	PDI_expose("cond", &cond, PDI_OUT);
+
+	PDI_expose("test_var", &test_var, PDI_OUT);
+	EXPECT_EQ(test_var, 129);
+}
+
