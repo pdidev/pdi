@@ -39,7 +39,7 @@ void onEvent_add_ten(void)
 	int* buffer = NULL;
 	PDI_access("var_in", (void**)&buffer, PDI_IN); // Read something from input
 	PDI_release("var_in");
-    
+
 	PDI_access("var_out", (void**)&buffer, PDI_OUT);
 	(*buffer) += 10; // Write something to output
 	PDI_release("var_out");
@@ -50,7 +50,7 @@ void onEvent_add_one(void)
 	int* buffer = NULL;
 	PDI_access("var_in", (void**)&buffer, PDI_IN); // Read something from input
 	PDI_release("var_in");
-    
+
 	PDI_access("var_out", (void**)&buffer, PDI_OUT);
 	(*buffer) += 1; // Write something to output
 	PDI_release("var_out");
@@ -61,12 +61,11 @@ void onEvent_add_two(void)
 	int* buffer = NULL;
 	PDI_access("var_in", (void**)&buffer, PDI_IN); // Read something from input
 	PDI_release("var_in");
-    
+
 	PDI_access("var_out", (void**)&buffer, PDI_OUT);
 	(*buffer) += 2; // Write something to output
 	PDI_release("var_out");
 }
-
 }
 
 class UserCode: public ::PDI::PdiTest
@@ -96,7 +95,7 @@ plugins:
 	int out = 0;
 	PDI_multi_expose("testing", "input", &in, PDI_OUT, "output", &out, PDI_IN, NULL);
 	EXPECT_EQ(in, 0);
-    EXPECT_EQ(out, 0);
+	EXPECT_EQ(out, 0);
 
 	// Function will be called because cond = 1
 	cond = 1;
@@ -106,7 +105,7 @@ plugins:
 	out = 0;
 	PDI_multi_expose("testing", "input", &in, PDI_OUT, "output", &out, PDI_IN, NULL);
 	EXPECT_EQ(in, 0);
-    EXPECT_EQ(out, 10);
+	EXPECT_EQ(out, 10);
 }
 
 TEST_F(UserCode, OnDataWhen)
@@ -169,13 +168,9 @@ plugins:
 	int outA = 0;
 	int outB = 0;
 	int outC = 0;
-	PDI_multi_expose("testing", "input", &in, PDI_OUT, 
-		                        "outputA", &outA, PDI_IN, 
-								"outputB", &outB, PDI_IN, 
-								"outputC", &outC, PDI_IN, 
-								NULL);
+	PDI_multi_expose("testing", "input", &in, PDI_OUT, "outputA", &outA, PDI_IN, "outputB", &outB, PDI_IN, "outputC", &outC, PDI_IN, NULL);
 	EXPECT_EQ(in, 0);
-    EXPECT_EQ(outA, 0);
+	EXPECT_EQ(outA, 0);
 	EXPECT_EQ(outB, 0);
 	EXPECT_EQ(outC, 10);
 
@@ -187,13 +182,9 @@ plugins:
 	outA = 0;
 	outB = 0;
 	outC = 0;
-	PDI_multi_expose("testing", "input", &in, PDI_OUT, 
-		                        "outputA", &outA, PDI_IN, 
-								"outputB", &outB, PDI_IN, 
-								"outputC", &outC, PDI_IN, 
-								NULL);
+	PDI_multi_expose("testing", "input", &in, PDI_OUT, "outputA", &outA, PDI_IN, "outputB", &outB, PDI_IN, "outputC", &outC, PDI_IN, NULL);
 	EXPECT_EQ(in, 0);
-    EXPECT_EQ(outA, 1);
+	EXPECT_EQ(outA, 1);
 	EXPECT_EQ(outB, 2);
 	EXPECT_EQ(outC, 10);
 }
@@ -230,4 +221,3 @@ plugins:
 	PDI_expose("test_var", &test_var, PDI_OUT);
 	EXPECT_EQ(test_var, 129);
 }
-
