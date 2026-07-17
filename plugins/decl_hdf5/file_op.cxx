@@ -281,7 +281,6 @@ void File_op::execute(Context& ctx)
 			ctx.logger().warn("Unable to evaluate \"when\" close while executing transfer for {}: `{}'", one_dset_op.value(), e.what());
 		}
 	}
-
 	vector<Attribute_op> attr_reads;
 	vector<Attribute_op> attr_writes;
 
@@ -300,7 +299,10 @@ void File_op::execute(Context& ctx)
 		}
 	}
 	// nothing to do if no op is selected
-	if (dset_reads.empty() && dset_writes.empty() && attr_reads.empty() && attr_writes.empty() && m_dset_size_ops.empty()) return;
+	if (dset_reads.empty() && dset_writes.empty() && attr_reads.empty() && attr_writes.empty() && m_dset_size_ops.empty()) {
+		ctx.event("decl_hdf5_stop_timer");
+		return;
+	}
 	std::string filename = m_file.to_string(ctx);
 
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
@@ -354,7 +356,6 @@ void File_op::execute(Context& ctx)
 		}
 	}
 #endif
-
 	hid_t h5_file_raw = -1;
 	if ((!dset_writes.empty() || !attr_writes.empty()) && (!dset_reads.empty() || !attr_reads.empty())) {
 		ctx.logger().trace("Opening `{}' file to read and write", filename);
@@ -379,6 +380,7 @@ void File_op::execute(Context& ctx)
 			if (m_collision_policy & Collision_policy::SKIP) {
 				notify("Skipping", filename);
 				H5Fclose(h5_file_raw);
+				ctx.event("decl_hdf5_stop_timer");
 				return;
 			} else if (m_collision_policy & Collision_policy::REPLACE) {
 				notify("Deleting old file and creating a new one", filename);
@@ -416,6 +418,7 @@ void File_op::execute(Context& ctx)
 		Ref_w ref_w = ctx[one_dset_size_op.first].ref();
 		if (!ref_w) {
 			ctx.logger().warn("Data `{}' to read size of dataset not available", one_dset_size_op.first);
+			ctx.event("decl_hdf5_stop_timer");
 			return;
 		}
 
