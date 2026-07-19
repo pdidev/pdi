@@ -106,7 +106,7 @@ public:
 	 */
 	const std::string& ypath() const { return m_ypath; }
 
-    // define the operator '<', '=' and '>'
+	// define the operator '<', '=' and '>'
 	auto operator<=> (const Include_path&) const = default;
 
 	/** Converts the path to a string representation
@@ -201,21 +201,10 @@ void get_includes(
  */
 std::vector<PC_tree_t> get_includes(Logger& logger, PC_tree_t conf)
 {
-	std::unordered_set<Include_path> in_progress;
+	std::unordered_set<Include_path> parents;
 	std::unordered_set<Include_path> result_path;
 	std::vector<PC_tree_t> result;
-	PC_tree_t inc_tree = PC_get(conf, ".include");
-	if (!PC_status(inc_tree))
-		opt_each(inc_tree, [&](PC_tree_t include_directive) {
-			Include_path subconf_path{include_directive};
-			try {
-				get_includes(logger, subconf_path.pc_tree(), in_progress, result_path, result);
-				logger.trace("Including {}", subconf_path.to_string());
-			} catch (const Spectree_error& e) {
-				rethrow_with_context(std::current_exception(), "included from ({}){}", subconf_path.file_path().string(), subconf_path.ypath());
-			}
-		});
-	result.emplace_back(conf);
+	get_includes(logger, conf, parents, result_path, result);
 	return result;
 }
 
