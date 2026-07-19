@@ -131,7 +131,7 @@ call PC_parse_path("example.yaml", yaml_tree)
 call PDI_init(yaml_tree)
 ```
 
-If one wants to store additional information unrelated to %PDI in the the same
+If one wants to store additional information unrelated to %PDI in the same
 file, it is possible to pass only the subtree to %PDI:
 ```yaml
 duration: 0.75
