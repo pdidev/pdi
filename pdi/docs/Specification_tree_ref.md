@@ -19,7 +19,11 @@ The *specification tree root* is a **mapping** that contains the following keys:
 |`".*"` (*optional*)| *anything* |
 
 * the `include` section specify other YAML configuration part of a same
-  Paraconf tree
+  Paraconf tree. The configuration it contains should have the same format as
+  the main file (with `include`, `types`,  `metadata`,  `data`,  `plugin_path`,
+  and`plugins` sections. But the keys under these sections should not be
+  repeated. The same file can be included twice (diamond include) but recursive
+  inclusion is an error.
 * the `logging` section specify logger properties
 * the `metadata` and `data` sections specify the type of the data in buffers
   exposed by the application; for `metadata`, %PDI keeps a copy while it only
@@ -454,7 +458,13 @@ A *include_with_subtree* is a **mapping** that contains the following keys:
 |`"subtree"` | a **scalar** representing the ypath of a subtree in the file |
 
 The path is interpreted relative to the working directory of the execution.
-The subtree ypath is expanded according to 
+The subtree ypath is expanded according to the ypath specification of paraconf:
+* access to a mapping element using the dot syntax: *e.g.* `.map.key`
+* access to a sequence element using square brackets (indices are 0-based):
+  *e.g.* `.seq[1]`
+* access to a mapping element key using braces (indices are 0-based):
+  *e.g.* `.map{1}`
+* access to a mapping element value by index using chevrons: *e.g.* `.map<1>`
 
 ### Example:
 ```yaml
@@ -467,6 +477,7 @@ file: "relative_file.yaml"
 subtree: "[1]"
 ```
 
+It references a subtree in another file.
 
 ## int_type {#int_type_node}
 
