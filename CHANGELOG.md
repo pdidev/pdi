@@ -35,9 +35,6 @@ and this project adheres to
   requested in [#500](https://github.com/pdidev/pdi/issues/500)
 
 #### Changed
-* Improved the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
-  and documented the cmake option to override 'NetCDF_FIND_STRATEGIES' as
-  requested in [#500](https://github.com/pdidev/pdi/issues/500)
 
 #### Deprecated
 
@@ -175,8 +172,6 @@ and this project adheres to
 
 #### Added
 * Added tests for using an installed PDI
-* Support an include mechanism for PDI config,
-  to include other YAML files into root YAML document.
 
 #### Fixed
 * Support multiple consecutive calls to `find_package(PDI)`
