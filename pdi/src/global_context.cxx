@@ -82,10 +82,6 @@ public:
 	 * \param file_path the path of the file
 	 * \param ypath the subtree path as a valid paraconf ypath
 	 */
-	// Include_path(fs::path file_path, std::string ypath)
-	// 	: m_file_path(std::move(file_path))
-	// 	, m_ypath(ypath)
-	// {}
 
 	/** Builds an Include_path from a PC_tree_t
 	 * \param include_directive either a scalar file path or a mapping with `file` and `subtree` keys
@@ -96,7 +92,7 @@ public:
 			m_file_path = PDI::to_string(PC_get(include_directive, ".file"));
 			m_ypath = PDI::to_string(PC_get(include_directive, ".subtree"));
 		} else {
-			m_file_path = PDI::to_string(include_directive, ".file");
+			m_file_path = PDI::to_string(include_directive);
 		}
 	}
 
@@ -110,6 +106,7 @@ public:
 	 */
 	const std::string& ypath() const { return m_ypath; }
 
+    // define the operator '<', '=' and '>'
 	auto operator<=> (const Include_path&) const = default;
 
 	/** Converts the path to a string representation
