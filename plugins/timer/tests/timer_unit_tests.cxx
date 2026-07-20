@@ -125,4 +125,3 @@ plugins:
 	PDI_expose("test_var", &test_var, PDI_OUT);
 	EXPECT_TRUE(std::filesystem::exists("file1.nc"));
 }
-
