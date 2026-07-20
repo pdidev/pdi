@@ -141,7 +141,7 @@ class PDI_EXPORT TimerEventHandler
 {
 private:
 	Context& m_ctx;
-	const std::string& m_plugin_name;
+	const std::string m_plugin_name;
 
 public:
 	TimerEventHandler(Context& ctx, const std::string& plugin_name)
