@@ -25,12 +25,7 @@
 #include <pdi/context.h>
 #include <pdi/paraconf_wrapper.h>
 
-#include <iostream>
-#include <map>
-#include <set>
-#include <tuple>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "veloc_cfg.h"
 
@@ -43,26 +38,18 @@ using PDI::Spectree_error;
 using PDI::to_long;
 using PDI::to_string;
 
-using std::function;
-using std::map;
-using std::set;
-using std::string;
-using std::tuple;
-using std::unordered_map;
-using std::unordered_set;
-
 namespace {
 
 // Used to register event names of a given type into the events map (m_events)
 bool load_events(
-	unordered_map<string, Event_type>& events,
+	std::unordered_map<std::string, Event_type>& events,
 	Context& ctx,
 	PC_tree_t tree,
 	Event_type event_type,
-	function<void(const string&)> on_load_func = function<void(const string&)>()
+	std::function<void(const std::string&)> on_load_func = std::function<void(const std::string&)>()
 )
 {
-	const map<Event_type, string> event_names
+	const std::map<Event_type, std::string> event_names
 		= {{Event_type::CHECKPOINT, "checkpoint_on_event"},
 	       {Event_type::RECOVER, "recover_on_event"},
 	       {Event_type::STATE_SYNC, "synchronize_on_event"},
@@ -100,9 +87,9 @@ bool load_events(
 }
 
 // Used to register a descriptor name (status / counter) into the descs map.
-bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const string& name, Desc_type desc_type)
+bool load_desc(std::unordered_map<std::string, Desc_type>& descs, Context& ctx, const std::string& name, Desc_type desc_type)
 {
-	const map<Desc_type, string> desc_names = {
+	const std::map<Desc_type, std::string> desc_names = {
 		{Desc_type::STATUS, "status"},
 		{Desc_type::COUNTER_CP, "counter"},
 	};
@@ -119,9 +106,9 @@ bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const stri
 }
 
 template <Event_type... RequiredEvents>
-bool validate_manual_op(PC_tree_t tree, const unordered_map<string, Event_type>& events, std::string original_file)
+bool validate_manual_op(PC_tree_t tree, const std::unordered_map<std::string, Event_type>& events, std::string original_file)
 {
-	const map<Event_type, string> event_names
+	const std::map<Event_type, std::string> event_names
 		= {{Event_type::START_CHECKPOINT, "start_on_event"},
 	       {Event_type::END_CHECKPOINT, "end_on_event"},
 	       {Event_type::ROUTE_FILE_FOR_CP, "route_file_on_event"},
@@ -172,7 +159,7 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 	bool status_key_defined = false;
 
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
-		string key = to_string(key_tree);
+		std::string key = to_string(key_tree);
 
 		if (key == "config_file") {
 			m_config_file = to_string(value);
@@ -198,14 +185,14 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 	PC_tree_t managed_tree = PC_get(tree, ".managed_checkpointing");
 	if (!PC_status(managed_tree)) {
 		each(managed_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
-			string key = to_string(key_tree);
+			std::string key = to_string(key_tree);
 
 			if (key == "protect_data") {
 				// list of data names; position in the list becomes the id
 				if (!PC_status(PC_get(value, "[0]"))) {
 					int data_id = 0;
 					each(value, [&](PC_tree_t item) {
-						string data_name = to_string(item);
+						std::string data_name = to_string(item);
 						if (!m_managed.protected_data.emplace(data_id, data_name).second) {
 							ctx.logger().warn("Duplicate data id (`{}')", data_id);
 						}
@@ -235,7 +222,7 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 
 	if (!PC_status(custom_tree)) {
 		each(custom_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
-			string key = to_string(key_tree);
+			std::string key = to_string(key_tree);
 			if (key == "veloc_file") {
 				m_custom.routed_file = to_string(value);
 			} else if (key == "custom_checkpoint") {
@@ -252,7 +239,7 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 		PC_tree_t custom_cp_tree = PC_get(custom_tree, ".custom_checkpoint");
 		if (!PC_status(custom_cp_tree)) {
 			each(custom_cp_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
-				string key = to_string(key_tree);
+				std::string key = to_string(key_tree);
 				if (key == "filename") {
 					m_custom.manual_cp.original_file = to_string(value);
 				} else if (key == "start_on_event") {
@@ -280,7 +267,7 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 		PC_tree_t custom_rec_tree = PC_get(custom_tree, ".custom_recover");
 		if (!PC_status(custom_rec_tree)) {
 			each(custom_rec_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
-				string key = to_string(key_tree);
+				std::string key = to_string(key_tree);
 				if (key == "filename") {
 					m_custom.manual_rec.original_file = to_string(value);
 				} else if (key == "start_on_event") {

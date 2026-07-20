@@ -42,7 +42,6 @@ using PDI::Ref;
 using PDI::Ref_r;
 using PDI::Ref_w;
 using PDI::to_long;
-using std::string;
 
 // Same logic as in scalar_datatype.cxx
 namespace {
@@ -127,7 +126,7 @@ public:
 		for (auto&& desc: m_config.descs()) {
 			if (desc.second == Desc_type::STATUS) {
 				context().callbacks().add_data_callback(
-					[this](const string&, Ref ref) {
+					[this](const std::string&, Ref ref) {
 						// if app wants to read the status, therefore plugin writes it 
 						if (Ref_w w_ref = ref) {
 							*static_cast<int*>(w_ref.get()) = status;
@@ -147,7 +146,7 @@ public:
 				);
 			} else if (desc.second == Desc_type::COUNTER_CP) {
 				context().callbacks().add_data_callback(
-					[this](const string&, Ref ref) {
+					[this](const std::string&, Ref ref) {
 						if (Ref_w wref = ref) {
 							*static_cast<int*>(wref.get()) = cp_counter;
 						}
@@ -163,7 +162,7 @@ public:
 			switch (event.second) {
 			case Event_type::CHECKPOINT: {
 				context().callbacks().add_event_callback(
-					[this](const string& event_name) {
+					[this](const std::string& event_name) {
 						if (!status) {
 							context().logger().warn("A checkpoint event was launched before a recovery event");
 						}
@@ -183,7 +182,7 @@ public:
 			} break;
 			case Event_type::RECOVER: {
 				context().callbacks().add_event_callback(
-					[this](const string& event_name) {
+					[this](const std::string& event_name) {
 						protect_all<Ref_w>();
 						int result = read_checkpoint(context(), m_config.label(), m_config.managed().requested_checkpoint);
 						recovered_iter = result;
@@ -195,7 +194,7 @@ public:
 			} break;
 			case Event_type::STATE_SYNC: {
 				context().callbacks().add_event_callback(
-					[this](const string& event_name) {
+					[this](const std::string& event_name) {
 						if (!status) { // recovery needed
 							protect_all<Ref_w>();
 							int result = read_checkpoint(context(), m_config.label(), m_config.managed().requested_checkpoint);
@@ -220,7 +219,7 @@ public:
 			} break;
 			case Event_type::START_CHECKPOINT: {
 				context().callbacks().add_event_callback(
-					[this](const string& event_name) {
+					[this](const std::string& event_name) {
 						Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 						auto new_iter = new_iter_r.scalar_value<int>();
 						init_checkpoint(context(), m_config.label(), new_iter);
@@ -231,7 +230,7 @@ public:
 			} break;
 			case Event_type::START_RECOVERY: {
 				context().callbacks().add_event_callback(
-					[this](const string& event_name) {
+					[this](const std::string& event_name) {
 						init_restart(context(), m_config.label(), m_config.custom().manual_rec.requested_checkpoint);
 					},
 					event.first
@@ -239,7 +238,7 @@ public:
 			} break;
 			case Event_type::ROUTE_FILE_FOR_CP: {
 				context().callbacks().add_event_callback(
-					[this](const string& event_name) {
+					[this](const std::string& event_name) {
 						Ref_w wref = context().desc(m_config.custom().routed_file).ref();
 						if (wref) {
 							char* routed_chars = static_cast<char*>(wref.get());
@@ -251,7 +250,7 @@ public:
 			} break;
 			case Event_type::ROUTE_FILE_FOR_REC: {
 				context().callbacks().add_event_callback(
-					[this](const string& event_name) {
+					[this](const std::string& event_name) {
 						Ref_w wref = context().desc(m_config.custom().routed_file).ref();
 						if (wref) {
 							char* routed_chars = static_cast<char*>(wref.get());
@@ -262,7 +261,7 @@ public:
 				);
 			} break;
 			case Event_type::END_CHECKPOINT: {
-				context().callbacks().add_event_callback([this](const string& event_name) { 
+				context().callbacks().add_event_callback([this](const std::string& event_name) { 
 					end_checkpoint(context()); 
 					if(partial_counter==1){
 						cp_counter++;
@@ -271,7 +270,7 @@ public:
 				}, event.first);
 			} break;
 			case Event_type::END_RECOVERY: {
-				context().callbacks().add_event_callback([this](const string& event_name) { end_restart(context()); }, event.first);
+				context().callbacks().add_event_callback([this](const std::string& event_name) { end_restart(context()); }, event.first);
 			} break;
 			default:
 				throw Type_error{"Unexpected event type"};

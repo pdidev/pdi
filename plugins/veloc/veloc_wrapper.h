@@ -31,12 +31,7 @@
 #include <pdi/expression.h>
 #include <pdi/plugin.h>
 
-#include <algorithm>
-#include <iostream>
-#include <optional>
 #include <string>
-#include <unordered_map>
-#include <vector>
 
 /**
  * @brief initializes VeloC 

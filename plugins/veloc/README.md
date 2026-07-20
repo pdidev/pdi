@@ -1,4 +1,4 @@
-# The VeloC plugin
+# The VeloC plugin {#veloc_plugin}
 
 The VeloC plugin enables  
 

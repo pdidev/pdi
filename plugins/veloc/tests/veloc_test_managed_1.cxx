@@ -26,24 +26,25 @@
 #include <stdio.h>
 #include <pdi.h>
 
-const char CONF_YAML[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "data:\n"
-	  "  cp_status: int\n"
-	  "  cp_counter: int\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    status: cp_status\n"
-	  "    counter: cp_counter\n"
-	  "    checkpoint_label: managed_test_series\n"
-	  "    iteration: ii\n"
-	  "    managed_checkpointing:\n"
-	  "      protect_data: [ii, var]\n"
-	  "      checkpoint_on_event : ckp\n"
-	  "      recover_on_event: recover\n";
+constexpr char CONF_YAML[] = R"(
+metadata: 
+  ii: int
+data:
+  cp_status: int
+  cp_counter: int
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    status: cp_status
+    counter: cp_counter
+    checkpoint_label: managed_test_series
+    iteration: ii
+    managed_checkpointing:
+      protect_data: [ii, var]
+      checkpoint_on_event : ckp
+      recover_on_event: recover
+)";
 	  
 
 int main(int argc, char* argv[])

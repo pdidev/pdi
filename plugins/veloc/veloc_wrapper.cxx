@@ -24,9 +24,7 @@
 
 #include "veloc_wrapper.h"
 
-using std::string;
-
-void init(PDI::Context& ctx, MPI_Comm comm, const string veloc_file)
+void init(PDI::Context& ctx, MPI_Comm comm, const std::string veloc_file)
 {
 	if (VELOC_Init(comm, veloc_file.c_str()) != VELOC_SUCCESS) {
 		ctx.logger().error("Error initializing VELOC. Aborting.");
@@ -50,7 +48,7 @@ void unprotect_data(PDI::Context& ctx, int id)
 	}
 }
 
-void write_checkpoint(PDI::Context& ctx, const string label, int version)
+void write_checkpoint(PDI::Context& ctx, const std::string label, int version)
 {
 	if (VELOC_Checkpoint(label.c_str(), version) != VELOC_SUCCESS) {
 		ctx.logger().error("Error during checkpointing. Aborting.");
@@ -58,7 +56,7 @@ void write_checkpoint(PDI::Context& ctx, const string label, int version)
 	}
 }
 
-int read_checkpoint(PDI::Context& ctx, const string label, int version)
+int read_checkpoint(PDI::Context& ctx, const std::string label, int version)
 {
 	int target = (version >= 0) ? version : VELOC_Restart_test(label.c_str(), 0);
 	if (target >= 0) {
@@ -74,7 +72,7 @@ int read_checkpoint(PDI::Context& ctx, const string label, int version)
 	return target;
 }
 
-void init_restart(PDI::Context& ctx, const string label, int version)
+void init_restart(PDI::Context& ctx, const std::string label, int version)
 {
 	int target = (version >= 0) ? version : VELOC_Restart_test(label.c_str(), 0);
 	if (target >= 0) {
@@ -96,7 +94,7 @@ void end_restart(PDI::Context& ctx)
 	}
 }
 
-void init_checkpoint(PDI::Context& ctx, const string label, int version)
+void init_checkpoint(PDI::Context& ctx, const std::string label, int version)
 {
 	if (VELOC_Checkpoint_begin(label.c_str(), version) != VELOC_SUCCESS) {
 		ctx.logger().error("Error when initiating the checkpoint phase.");
@@ -112,7 +110,7 @@ void end_checkpoint(PDI::Context& ctx)
 	}
 }
 
-void route_file(PDI::Context& ctx, const string& input_filename, char* output_filename)
+void route_file(PDI::Context& ctx, const std::string& input_filename, char* output_filename)
 {
 	if (VELOC_Route_file(input_filename.c_str(), output_filename) != VELOC_SUCCESS) {
 		ctx.logger().error("Error when routing file.");

@@ -25,12 +25,7 @@
 #ifndef VELOC_CFG_H_
 #define VELOC_CFG_H_
 
-#include <map>
-#include <set>
-#include <tuple>
 #include <unordered_map>
-#include <unordered_set>
-#include <vector>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/expression.h>

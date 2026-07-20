@@ -26,24 +26,27 @@
 #include <stdio.h>
 #include <pdi.h>
 
-const char CONF_YAML[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "data:\n"
-	  "  cp_status: int\n"
-	  "  cp_counter: int\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    status: cp_status\n"
-	  "    counter: cp_counter\n"
-	  "    checkpoint_label: managed_test_series\n"
-	  "    iteration: ii\n"
-	  "    managed_checkpointing:\n"
-	  "      protect_data: [ii, var]\n"
-	  "      recover_on_event: recover\n"
-	  "      recover_from_iteration : 0\n";
+constexpr char CONF_YAML[] = R"(
+metadata: 
+  ii: int
+  arr_size: int
+data:
+  cp_status: int
+  cp_counter: int
+  arr:  {type: array, size: '$arr_size', subtype: double}
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    status: cp_status
+    counter: cp_counter
+    checkpoint_label: managed_test_sync
+    iteration: ii
+    managed_checkpointing:
+      protect_data: [ii, arr]
+      synchronize_on_event : sync
+      when: '$ii % 2 = 0 '
+)";
+	  
 
 int main(int argc, char* argv[])
 {
@@ -54,27 +57,45 @@ int main(int argc, char* argv[])
 	PC_tree_t conf = PC_parse_string(CONF_YAML);
 	PDI_init(conf);
 
-	int cp_status = 0 ;
-	// write status to "recovery needed"
-	PDI_expose("cp_status", &cp_status, PDI_OUT);
- 
-	int rec_ii = -1;
-	int rec_var = -1;
-	// recover the second to last checkpoint
-	PDI_multi_expose("recover", "ii", &rec_ii, PDI_INOUT, "var", &rec_var, PDI_INOUT, NULL);
+	int cp_counter;
+	int cp_status;
 
-	if (rec_ii != 0) {
-		fprintf(stderr, "Rank %d : veloc_test_managed_2 FAILED recovered iter value  %d does not match expected value %d\n", rank, rec_ii, 0);
-		exit(1);
+	int ii = 0;
+	int arr_size = 20;
+	
+	PDI_expose("arr_size", &arr_size, PDI_OUT);
+
+	double* arr = new double[arr_size];
+	for (int i = 0; i < arr_size; i++){
+		arr[i] = 0.0;
 	}
 
-	if (rec_var != 51) {
-		fprintf(stderr, "Rank %d : veloc_test_managed_2 FAILED recovered var value  %d does not match expected value %d\n", rank, rec_var, 51);
-		exit(1);
+	// write checkpoints 
+	for (; ii < 5; ++ii) {	
+		arr[ii] = ii * 2;
+		PDI_multi_expose("sync", "ii", &ii, PDI_INOUT, "arr", arr, PDI_INOUT, NULL);
+	}
+
+	cp_status = 0; 
+	// write status to "recovery needed"
+	PDI_expose("cp_status", &cp_status, PDI_OUT);
+
+	// recover and keep writing checkpoints 
+	for (; ii < 10 ; ++ii) {	
+		arr[ii] = ii * 2;
+		PDI_multi_expose("sync", "ii", &ii, PDI_INOUT, "arr", arr, PDI_INOUT, NULL);
+	}
+
+	// read checkpoint counter 
+	PDI_expose("cp_counter", &cp_counter, PDI_IN);
+
+	if (cp_counter != 5) {
+			fprintf(stderr, "Rank %d veloc_test_managed_3:: counter value  %d does not match expected value %d\n", rank, cp_counter, 5);
+			exit(1);
 	}
 
 	if(rank == 0){
-		printf("veloc_test_managed_2 PASSED\n");
+		printf("veloc_test_managed_3 PASSED\n");
 	}
 
 	PDI_finalize();
