@@ -272,7 +272,7 @@ struct serialize_plugin: PDI::Plugin {
 	 */
 	void share_serialized(const std::string& desc_name, PDI::Ref ref)
 	{
-		context().event("serialize_start_timer");
+		PDI::TimerEventHandler serialize_timer(context(), "serialize");
 		std::string serialized_name = m_desc_to_serialize[desc_name];
 		context().logger().debug("Serializing `{}` as `{}`", desc_name, serialized_name);
 		PDI::Datatype_sptr serialized_type = serialize_type(ref.type());
@@ -334,7 +334,6 @@ struct serialize_plugin: PDI::Plugin {
 			);
 			m_serialized_remove_callback.emplace_back(serialized_name, remove_callback, PDI_IN);
 		}
-		context().event("serialize_stop_timer");
 	}
 
 	void release_serialized(const std::string& desc_name, PDI::Ref ref)
