@@ -5,8 +5,8 @@
 cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_catalyst_plugin LANGUAGES C CXX)
 
-option(BUILD_CATALYST_PLUGIN   "Build Catalyst plugin" ON)
-option(BUILD_FORTRAN           "Enable Fortran support" OFF)
+option(BUILD_CATALYST_PLUGIN   "Build Catalyst plugin"          ON)
+option(BUILD_FORTRAN           "Enable Fortran support"         OFF)
 option(BUILD_CATALYST_PARALLEL "Enable Catalyst parallel build" ON)
 
 include(CTest)

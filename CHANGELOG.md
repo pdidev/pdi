@@ -9,8 +9,7 @@ and this project adheres to
 
 ## [Unreleased]
 
-### Added
-* Add Catalyst plugin from Kitware [#496](https://github.com/pdidev/pdi/pull/496)
+### For users
 
 #### Added
 * Add test for HDF5 precision conversion [#708](https://github.com/pdidev/pdi/issues/708)
@@ -29,6 +28,7 @@ and this project adheres to
 * Update the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
   and document the cmake option to override 'NetCDF_FIND_STRATEGIES' as
   requested in [#500](https://github.com/pdidev/pdi/issues/500)
+* Add Catalyst plugin from Kitware [#496](https://github.com/pdidev/pdi/pull/496)
 
 #### Changed
 

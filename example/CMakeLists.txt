@@ -42,7 +42,7 @@ option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in"       OFF)
 option(BUILD_PYTHON             "Build with Python support"  OFF)
 option(BUILD_JSON_PLUGIN        "Build JSON plug-in"         OFF)
 option(DISABLE_PDI              "Disable the use of both PDI and Paraconf in the project" OFF)
-option(BUILD_CATALYST_PLUGIN    "Build Catalyst plug-in" OFF)
+option(BUILD_CATALYST_PLUGIN    "Build Catalyst plug-in"     OFF)
 
 if("${BUILD_FORTRAN}")
 	enable_language(Fortran)

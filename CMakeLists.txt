@@ -35,27 +35,6 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 project(PDI_DIST LANGUAGES C CXX)
 
-### Doxygen path protection wrapper
-
-find_program(SYSTEM_DOXYGEN_EXECUTABLE NAMES doxygen)
-
-if(SYSTEM_DOXYGEN_EXECUTABLE)
-	set(DOXYGEN_WRAPPER "${CMAKE_BINARY_DIR}/doxygen_wrapper.sh")
-
-	if(NOT EXISTS "${DOXYGEN_WRAPPER}")
-		file(WRITE "${DOXYGEN_WRAPPER}"
-			"#!/bin/sh\n"
-			"unset LD_LIBRARY_PATH\n"
-			"exec \"${SYSTEM_DOXYGEN_EXECUTABLE}\" \"$@\"\n"
-		)
-		execute_process(COMMAND chmod +x "${DOXYGEN_WRAPPER}")
-	endif()
-
-	set(DOXYGEN_EXECUTABLE "${DOXYGEN_WRAPPER}" CACHE FILEPATH "Path to doxygen wrapper" FORCE)
-else()
-	message(STATUS " Warning: Doxygen binary was not found on the system. Skipping wrapper creation.")
-endif()
-
 ### Build options
 
 ## Global options
@@ -96,6 +75,7 @@ option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones"
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
+option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 option(BUILD_CATALYST_PLUGIN    "Build Catalyst plugin" "${BUILD_UNSTABLE}")
 
 
