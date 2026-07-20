@@ -245,7 +245,12 @@ int main(int argc, char* argv[])
 	double elapsed_offset = 0.0;
 	long cp_status;
 	int first_iter=1;
+
+#ifndef WITHOUT_PARACONF
 	PC_int(PC_get(conf, ".cp_status"), &cp_status);
+#else
+	cp_status = 1; 
+#endif
 
 	PDI_expose("cp_status", &cp_status, PDI_OUT);
 
