@@ -261,7 +261,7 @@ File_op::File_op(Expression&& file, Collision_policy collision_policy)
 
 void File_op::execute(Context& ctx)
 {
-	PDI::TimerEventHandler hdf5_timer(ctx, "decl_hdf5");
+	// PDI::TimerEventHandler hdf5_timer(ctx, "decl_hdf5");
 	// first gather the ops we actually want to do
 	vector<Dataset_op> dset_reads;
 	vector<Dataset_op> dset_writes;
