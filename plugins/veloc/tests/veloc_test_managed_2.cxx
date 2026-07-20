@@ -26,63 +26,58 @@
 #include <stdio.h>
 #include <pdi.h>
 
-const char CONF_YAML[]
-	= "metadata:\n"
-	  "  ii: int\n"
-	  "data:\n"
-	  "  cp_status: int\n"
-	  "  cp_counter: int\n"
-	  "  var: int\n"
-	  "plugins:\n"
-	  "  veloc:\n"
-	  "    failure: 1\n"
-	  "    config_file: veloc_config.cfg\n"
-	  "    status: cp_status\n"
-	  "    counter: cp_counter\n"
-	  "    checkpoint_label: test_01\n"
-	  "    iteration: ii\n"
-	  "    managed_checkpointing:\n"
-	  "      protect_data: [ii, var]\n"
-	  "      recover_on: recover\n";
+constexpr char CONF_YAML[] = R"(
+metadata: 
+  ii: int
+data:
+  cp_status: int
+  cp_counter: int
+  var: int
+plugins:
+  veloc:
+    config_file: veloc_config.cfg
+    status: cp_status
+    counter: cp_counter
+    checkpoint_label: managed_test_series
+    iteration: ii
+    managed_checkpointing:
+      protect_data: [ii, var]
+      recover_on_event: recover
+      recover_from_iteration : 0 
+)";
+	  
 
 int main(int argc, char* argv[])
 {
 	MPI_Init(&argc, &argv);
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	PC_tree_t conf = PC_parse_string(CONF_YAML);
 	PDI_init(conf);
 
-	int cp_status;
-	int cp_counter;
-	int rec_ii = 0;
-	int rec_var = 0;
-
-	PDI_expose("cp_status", &cp_status, PDI_IN);
-
-	if (cp_status != 0) {
-		fprintf(stderr, "TEST_01_2 FAILED: status value %d does not match expected value %d\n", cp_status, 0);
-		exit(1);
-	}
-
+	int cp_status = 0 ;
+	// write status to "recovery needed"
+	PDI_expose("cp_status", &cp_status, PDI_OUT);
+ 
+	int rec_ii = -1;
+	int rec_var = -1;
+	// recover the second to last checkpoint
 	PDI_multi_expose("recover", "ii", &rec_ii, PDI_INOUT, "var", &rec_var, PDI_INOUT, NULL);
 
-	PDI_expose("cp_status", &cp_status, PDI_IN);
-
-	if (cp_status != 1) {
-		fprintf(stderr, "TEST_01_2 FAILED: status value %d does not match expected value %d\n", cp_status, 1);
+	if (rec_ii != 0) {
+		fprintf(stderr, "Rank %d : veloc_test_managed_2 FAILED recovered iter value  %d does not match expected value %d\n", rank, rec_ii, 0);
 		exit(1);
 	}
 
-	if (rec_ii != 1) {
-		fprintf(stderr, "TEST_01_2 FAILED: recovered iter value %d does not match expected value %d\n", rec_ii, 1);
+	if (rec_var != 51) {
+		fprintf(stderr, "Rank %d : veloc_test_managed_2 FAILED recovered var value  %d does not match expected value %d\n", rank, rec_var, 51);
 		exit(1);
 	}
 
-	if (rec_var != 52) {
-		fprintf(stderr, "TEST_01_2 FAILED: recovered var value %d does not match expected value %d\n", rec_var, 52);
-		exit(1);
+	if(rank == 0){
+		printf("veloc_test_managed_2 PASSED\n");
 	}
-
-	printf("TEST 01_2 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();

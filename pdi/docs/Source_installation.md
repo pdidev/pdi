@@ -16,8 +16,8 @@ The %PDI source distribution includes:
 To download the sources, have a look at the list of all releases at 
 https://github.com/pdidev/pdi/releases/
 
-For example, release 1.11.1 can be downloaded from
-https://github.com/pdidev/pdi/archive/refs/tags/1.11.1.tar.gz
+For example, release 1.11.2 can be downloaded from
+https://github.com/pdidev/pdi/archive/refs/tags/1.11.2.tar.gz
 
 ## Default installation {#default_installation}
 
@@ -42,15 +42,15 @@ external dependencies are:
 This list of dependencies can be further reduced or extended by changing the
 set of features compiled.
 
-For example, release 1.11.1 can be installed by following these instructions (but
+For example, release 1.11.2 can be installed by following these instructions (but
 look for the latest release at
 https://github.com/pdidev/pdi/releases ):
 
 ```bash
-wget https://github.com/pdidev/pdi/archive/refs/tags/1.11.1.tar.gz
-tar -xjf 1.11.1.tar.gz
-mkdir 1.11.1/build
-cd 1.11.1/build
+wget https://github.com/pdidev/pdi/archive/refs/tags/1.11.2.tar.gz
+tar -xjf 1.11.2.tar.gz
+mkdir 1.11.2/build
+cd 1.11.2/build
 cmake -DCMAKE_INSTALL_PREFIX="${HOME}/.local/" ..   # configuration
 make install   # compilation and installation
 ```
@@ -205,7 +205,7 @@ Dependencies of **the VeloC plugin**:
 * the [VeloC](https://veloc.readthedocs.io/en/latest/userguide.html) library version 1.8 or above (not provided),
 * **a MPI implementation**, such as
   - [openmpi](https://www.open-mpi.org/) 4.1 or above,
-  - [mpich](https://www.mpich.org/) 4.0 or above.
+  - [mpich](https://www.mpich.org/) 4.3.2 or above with --with-ch4-shmmods configure options to enable shared memory support. Please note the [debian mpich package](https://tracker.debian.org/pkg/mpich) for versions above 4.3.2 does not build mpich with shared memory support and is therefore not suitable for the use of the plug
 
 Dependencies of **the JSON plugin**:
 

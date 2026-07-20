@@ -32,9 +32,6 @@ add_compile_definitions(OMPI_SKIP_MPICXX=1)
 find_package(spdlog 1.9 REQUIRED)
 find_package(PDI    REQUIRED plugins)
 find_package(MPI    REQUIRED COMPONENTS C CXX)
-find_package(er     REQUIRED)
-find_package(axl    REQUIRED)
-find_package(OpenSSL REQUIRED)
 find_package(veloc  REQUIRED)
 
 add_library(pdi_veloc_plugin MODULE
