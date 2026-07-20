@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 #ifndef WITHOUT_PARACONF
 	PC_double(PC_get(conf, ".duration"), &duration);
 #else
-	duration = 1.75;
+	duration = 0.1;
 #endif
 
 	// get local & add ghosts to sizes
