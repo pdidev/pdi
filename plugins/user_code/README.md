@@ -308,9 +308,25 @@ A \ref on_data_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
+|`"when"` (*optional*)|a $-expression defines a condition for executing the function|
 |`".*"` (*optional*)|a \ref function_list_node|
 
 * each key identifies the name of a descriptor, which will trigger specified functions when it becomes available.
+
+If a data is used to trigger multiple functions and some functions should be executed  only if the `when` condition is satisfied, then we can use the list-styled syntex of the yaml:
+```yaml
+plugins:                       
+    user_code:                   
+        on_data:                   
+            - my_data:                 
+                when: `$cond>1`
+                fun1: {in: $desc2, out: $desc3}
+            - my_data:
+                fun2: {}
+                fun3: {out: $desc2}
+```
+
+In this exmaple, `fun2` and `fun3` will be executed when `my_data` is shared to PDI. However, `fun1` will only be executed when `my_data` is shared and also `$cond>1`.
 
 ### on_event {#on_event_node}
 
@@ -323,13 +339,27 @@ A \ref on_event_node is a dictionary that contains the following keys:
 
 * each key identifies the name of an event, which will trigger specified functions when it occurs.
 
+If an event is used to trigger multiple functions and some functions should be executed  only if the `when` condition is satisfied, then we can use the list-styled syntex of the yaml:
+```yaml
+plugins:                       
+    user_code:                   
+        on_event:                   
+            - my_event:                 
+                when: `$cond>1`
+                fun1: {in: $desc2, out: $desc3}
+            - my_event:
+                fun2: {}
+                fun3: {out: $desc2}
+```
+
+In this exmaple, `fun2` and `fun3` will be executed when `my_event` is issued. However, `fun1` will only be executed when `my_evnet` is issued and also `$cond>1`.
+
 ### function_list {#function_list_node}
 
 A \ref function_list_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
-|`"when"` (*optional*)|a $-expression defines a condition for executing the function|
 |`".*"` (*optional*)|a \ref function_param_list_node|
 
 * each key identifies the name of a function, which will be called on specified event or data,
@@ -347,7 +377,7 @@ A \ref function_param_list_node is a dictionary that contains the following keys
 
 ## Specification tree example {#full_spec_tree_example_node}
 
-```yaml                   
+```yaml
 metadata:
     cond: int
 data:
