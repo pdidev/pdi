@@ -46,14 +46,6 @@ endif()
 )
 find_package(MPI REQUIRED)
 
-add_executable(timer_test timer_test.cxx )
-target_link_libraries(timer_test PDI::PDI_C MPI::MPI_CXX)
-target_compile_features(timer_test PRIVATE cxx_std_17)
-
-add_test(NAME timer_test COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:timer_test>" ${MPIEXEC_POSTFLAGS})
-set_property(TEST timer_test PROPERTY TIMEOUT 15)
-set_property(TEST timer_test PROPERTY PROCESSORS 4)
-
 add_executable(timer_unit_tests timer_unit_tests.cxx)
 target_link_libraries(timer_unit_tests PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest ${HDF5_DEPS})
 gtest_discover_tests(timer_unit_tests)

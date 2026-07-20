@@ -78,7 +78,7 @@ class Timer: public ::PDI::PdiTest
 
 /* Metatadata use in filename expression & write on data
  */
-TEST_F(Timer, Sequetial)
+TEST_F(Timer, hdf5)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
@@ -99,4 +99,52 @@ plugins:
 	auto const test_var = make_a<double>();
 	PDI_expose("test_var", &test_var, PDI_OUT);
 	EXPECT_TRUE(std::filesystem::exists("file1.h5"));
+}
+
+TEST_F(Timer, netcdf)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata: { meta_var: int }
+data: { test_var: double }
+plugins:
+  timer:
+    - timer_netcdf:
+        start: "decl_netcdf_start_timer"
+        stop: "decl_netcdf_stop_timer"
+    - timer_pdi: "pdi"
+  decl_netcdf:
+    file: "file${meta_var}.nc"
+    write: [ test_var ]
+)=="));
+
+	int const meta_var = 1;
+	PDI_expose("meta_var", &meta_var, PDI_OUT);
+
+	auto const test_var = make_a<double>();
+	PDI_expose("test_var", &test_var, PDI_OUT);
+	EXPECT_TRUE(std::filesystem::exists("file1.nc"));
+}
+
+TEST_F(Timer, json)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata: { meta_var: int }
+data: { test_var: double }
+plugins:
+  timer:
+    - timer_json: {start: "json_start_timer", stop: "json_stop_timer"}
+    - timer_pdi: "pdi"
+  json:
+    file: "file${meta_var}.json"
+    write: [ test_var ]
+)=="));
+
+	int const meta_var = 1;
+	PDI_expose("meta_var", &meta_var, PDI_OUT);
+
+	auto const test_var = make_a<double>();
+	PDI_expose("test_var", &test_var, PDI_OUT);
+	EXPECT_TRUE(std::filesystem::exists("file1.json"));
 }
