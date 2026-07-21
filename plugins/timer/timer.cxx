@@ -61,12 +61,12 @@ public:
 		read_config_tree(ctx, spec_tree);
 
 		ctx.callbacks().add_event_callback([this](const std::string& name) {
-			if (auto search=start_events.find(name); search != start_events.end()) {
+			if (auto search = start_events.find(name); search != start_events.end()) {
 				for (const auto& event_name: search->second) {
 					startTimer(event_name);
 				}
 			}
-			if (auto search=stop_events.find(name); search != stop_events.end()) {
+			if (auto search = stop_events.find(name); search != stop_events.end()) {
 				for (const auto& event_name: search->second) {
 					stopTimer(event_name);
 				}
