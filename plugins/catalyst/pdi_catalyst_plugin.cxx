@@ -420,7 +420,7 @@ void catalyst_plugin::run_catalyst_execute()
 
 	context().logger().debug("Read Ghost layers for creating vtk_ghost_type");
 	// read information to create the vtkGhostType for paraview (read "ghost_layers" node in the yaml file)
-	//create_node_for_mask_ghost( node_pointer, execute_spec, list_vtkGhostType_to_create);
+	// create_node_for_mask_ghost( node_pointer, execute_spec, list_vtkGhostType_to_create);
 	read_info_for_creating_vtk_ghost(node_pointer, execute_spec, list_vtkGhostType_to_create);
 
 	// creation vtkGhostType vector
@@ -568,11 +568,13 @@ void catalyst_plugin::get_conduit_index_t_value(PC_tree_t& spec, const std::stri
 			throw PDI::Spectree_error{spec, "Supported only YAML_SCALAR_NODE for variable `{}'", name};
 		}
 
-		// return value in conduit_index_t
-		if (std::is_same<conduit_index_t, long>::value) {
+		if (sizeof(conduit_index_t) == sizeof(long)) {
+			// case long = int32 = conduit_index_t (sizeof = 4)
+			// case long = int64 = conduit_index_t (sizeof = 8)
 			value = tmp_value;
 		} else {
-			// case conduit_index_t is 32-bits
+			// case int64=long > conduit_index_t=int32
+			// case int32=long < conduit_index_t=int64
 			value = static_cast<conduit_index_t>(tmp_value);
 			if (value != tmp_value) {
 				throw PDI::System_error{"Error in cast of a type conduit_index_t in long. `{}' != `{}'", value, tmp_value};
