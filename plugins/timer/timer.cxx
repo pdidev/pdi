@@ -51,7 +51,7 @@ class timer_plugin: public PDI::Plugin
 	// Map of start event, and different timers to be started
 	std::unordered_map<std::string, std::vector<std::string> > start_events;
 
-	// Map of start event, and different timers to be stopped
+	// Map of stop event, and different timers to be stopped
 	std::unordered_map<std::string, std::vector<std::string> > stop_events;
 
 public:
@@ -60,15 +60,15 @@ public:
 	{
 		read_config_tree(ctx, spec_tree);
 
-		ctx.callbacks().add_event_callback([this](const std::string& name) {
-			if (auto search = start_events.find(name); search != start_events.end()) {
-				for (const auto& event_name: search->second) {
-					startTimer(event_name);
+		ctx.callbacks().add_event_callback([this](const std::string& event) {
+			if (auto search = start_events.find(event); search != start_events.end()) {
+				for (const auto& timer: search->second) {
+					startTimer(timer);
 				}
 			}
-			if (auto search = stop_events.find(name); search != stop_events.end()) {
-				for (const auto& event_name: search->second) {
-					stopTimer(event_name);
+			if (auto search = stop_events.find(event); search != stop_events.end()) {
+				for (const auto& timer: search->second) {
+					stopTimer(timer);
 				}
 			}
 		});
