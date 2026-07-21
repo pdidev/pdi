@@ -22,53 +22,71 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <pdi.h>
+#include <filesystem>
+#include <iostream>
+#include <numeric>
+#include <ranges>
 
-typedef struct Record {
+#include <pdi/testing.h>
+
+
+using PDI::make_random;
+using PDI::random_init;
+
+struct Record_t {
 	int int_scalar;
-	double double_array[32];
-} Record_t;
+	std::array<double, 32> double_array;
+
+	bool operator== (const Record_t&) const = default;
+
+	void init_from(std::uniform_random_bit_generator auto& gen)
+	{
+		random_init(gen, int_scalar);
+		random_init(gen, double_array);
+	}
+};
+
+class DeclNetcdf: public ::PDI::PdiTest
+{};
 
 // Tests simple write and read of scalar and array depending on event
-int main(int argc, char* argv[])
+TEST_F(DeclNetcdf, RecordScalarAndArray)
 {
-	PDI_init(PC_parse_path(argv[1]));
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  record:
+    type: struct
+    +decl_netcdf.type: record_type
+    members:
+      - int_scalar: int
+      - double_array:
+          type: array
+          subtype: double
+          size: 32
+plugins:
+  decl_netcdf:
+    - file: "test_08.nc"
+      on_event: "write"
+      write:
+        record:
+          variable: /data/record
+    - file: "test_08.nc"
+      on_event: "read"
+      read:
+        record:
+          variable: /data/record
+)=="));
 
-	// init data
-	Record_t record_data;
-	record_data.int_scalar = 42;
-	for (int i = 0; i < 32; i++) {
-		record_data.double_array[i] = 42.4242;
-	}
+	auto const write_record_data = make_a<Record_t>();
 
 	// write data
-	PDI_multi_expose("write", "record", &record_data, PDI_OUT, NULL);
+	PDI_multi_expose("write", "record", &write_record_data, PDI_OUT, NULL);
 
-	// zero data
-	record_data.int_scalar = 0;
-	for (int i = 0; i < 32; i++) {
-		record_data.double_array[i] = 0.0;
-	}
-
+	Record_t read_record_data;
 
 	// read data
-	PDI_multi_expose("read", "record", &record_data, PDI_IN, NULL);
+	PDI_multi_expose("read", "record", &read_record_data, PDI_IN, NULL);
 
-	// verify
-	int status = 0;
-	if (record_data.int_scalar != 42) {
-		printf("record_data.int_scalar = %d != %d\n", record_data.int_scalar, 42);
-		status = 1;
-	}
-	for (int i = 0; i < 32; i++) {
-		if (record_data.double_array[i] != 42.4242) {
-			printf("record_data.double_array = %d != %d\n", record_data.double_array[i], 42.4242);
-			status = 1;
-		}
-	}
-
-
-
-	PDI_finalize();
-	return status;
+	EXPECT_EQ(read_record_data, write_record_data);
 }
