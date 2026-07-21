@@ -66,6 +66,11 @@ public:
 					startTimer(event_name);
 				}
 			}
+			if (auto search=stop_events.find(name); search != stop_events.end()) {
+				for (const auto& event_name: search->second) {
+					stopTimer(event_name);
+				}
+			}
 		});
 
 		ctx.logger().info("Plugin loaded successfully");
