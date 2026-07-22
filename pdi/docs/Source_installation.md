@@ -95,18 +95,19 @@ The following flags define which features of the distribution to enable or not.
 |Flag                       |Default|Description|
 |:--------------------------|:------|:----------|
 |`BUILD_BENCHMARKING`       |`ON`   |Build the benchmarks.|
-|`BUILD_DECL_HDF5_PLUGIN`   |`ON`   |Build the Decl'HDF5 plug-in.|
-|`BUILD_DECL_NETCDF_PLUGIN` |`ON`   |Build the Decl'NetCDF plug-in.|
+|`BUILD_DECL_HDF5_PLUGIN`   |`ON`   |Build the Decl'HDF5 plugin.|
+|`BUILD_DECL_NETCDF_PLUGIN` |`ON`   |Build the Decl'NetCDF plugin.|
 |`BUILD_FORTRAN`            |`ON`   |Build the Fortran interface.|
-|`BUILD_HDF5_PARALLEL`      |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|
-|`BUILD_JSON_PLUGIN`        |`OFF`  |Build the Json plug-in.|
-|`BUILD_MPI_PLUGIN`         |`ON`   |Build the MPI plug-in.|
+|`BUILD_HDF5_PARALLEL`      |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|            
+|`BUILD_VELOC_PLUGIN`       |`OFF`  |Build the VeloC plugin. (unstable)|
+|`BUILD_JSON_PLUGIN`        |`OFF`  |Build the Json plugin.|
+|`BUILD_MPI_PLUGIN`         |`ON`   |Build the MPI plugin.|
 |`BUILD_NETCDF_PARALLEL`    |`ON`   |Build the parallel version of the Decl'NetCDF plugin instead of the sequential one.|
 |`BUILD_TESTING`            |`ON`   |Build the tests.|
-|`BUILD_TRACE_PLUGIN`       |`ON`   |Build the Trace plug-in.|
-|`BUILD_USER_CODE_PLUGIN`   |`ON`   |Build the User-code plug-in.|
+|`BUILD_TRACE_PLUGIN`       |`ON`   |Build the Trace plugin.|
+|`BUILD_USER_CODE_PLUGIN`   |`ON`   |Build the User-code plugin.|
 |`BUILD_DOCUMENTATION`      |`OFF`  |Build the documentation website. (devel profile)|
-|`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
+|`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plugin. (unstable)|
 |`BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
 |`ENABLE_BENCHMARKING`      |`OFF`  |Run benchmarks as part of the test suite.|
 
@@ -198,6 +199,13 @@ Dependencies of **the Decl'NetCDF plugin**:
 * **a MPI implementation for the parallel version of the plugin (not provided)**, such as
   - [openmpi](https://www.open-mpi.org/) 4.1 or above,
   - [mpich](https://www.mpich.org/) 4.0 or above.
+
+Dependencies of **the VeloC plugin**:
+* the PDI library,
+* the [VeloC](https://veloc.readthedocs.io/en/latest/userguide.html) library version 1.8 or above (not provided),
+* **a MPI implementation**, such as
+  - [openmpi](https://www.open-mpi.org/) 4.1 or above,
+  - [mpich](https://www.mpich.org/) 4.3.2 or above with --with-ch4-shmmods configure options to enable shared memory support. Please note the [debian mpich package](https://tracker.debian.org/pkg/mpich) for versions above 4.3.2 does not build mpich with shared memory support and is therefore not suitable for the use of the plug
 
 Dependencies of **the JSON plugin**:
 

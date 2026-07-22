@@ -242,11 +242,40 @@ int main(int argc, char* argv[])
 
 	init(dsize, pcoord, cur);
 
-	PDI_event("main_loop");
+	double elapsed_offset = 0.0;
+	long cp_status;
+	int first_iter=1;
+
+#ifndef WITHOUT_PARACONF
+	PC_errhandler_t old_handler = PC_errhandler(PC_NULL_HANDLER); 
+	PC_tree_t status_tree = PC_get(conf, ".cp_status");
+	PC_errhandler(old_handler);  
+
+	if (!PC_status(status_tree)) {
+		PC_int(status_tree, &cp_status);
+	} 
+	else{
+		cp_status = 1; 
+	}
+#else
+	cp_status = 1; 
+#endif
+
+	PDI_expose("cp_status", &cp_status, PDI_OUT);
+
 	double start = MPI_Wtime();
 	int next_reduce = 0;
+
+	PDI_event("main_loop");
 	for (ii = 0;; ++ii) {
-		PDI_multi_expose("newiter", "iter", &ii, PDI_INOUT, "main_field", cur, PDI_INOUT, NULL);
+		elapsed_offset = MPI_Wtime() - start;
+
+		PDI_multi_expose("newiter", "iter", &ii, PDI_INOUT, "main_field", cur, PDI_INOUT, "elapsed_offset", &elapsed_offset, PDI_INOUT, NULL);
+		
+		if (first_iter) {
+			start = MPI_Wtime() - elapsed_offset;
+			first_iter=0; 
+		}
 
 		iter(dsize, cur, next);
 		exchange(cart_com, dsize, next);
