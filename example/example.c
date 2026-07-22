@@ -247,7 +247,16 @@ int main(int argc, char* argv[])
 	int first_iter=1;
 
 #ifndef WITHOUT_PARACONF
-	PC_int(PC_get(conf, ".cp_status"), &cp_status);
+	PC_errhandler_t old_handler = PC_errhandler(PC_NULL_HANDLER); 
+	PC_tree_t status_tree = PC_get(conf, ".cp_status");
+	PC_errhandler(old_handler);  
+
+	if (!PC_status(status_tree)) {
+		PC_int(status_tree, &cp_status);
+	} 
+	else{
+		cp_status = 1; 
+	}
 #else
 	cp_status = 1; 
 #endif

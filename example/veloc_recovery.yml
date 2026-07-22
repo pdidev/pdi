@@ -7,7 +7,6 @@ parallelism: { height: 3, width: 1 }
 # status for recovery 
 cp_status : 0 
 
-
 pdi:
   metadata: # type of small values for which PDI keeps a copy
     iter:   int                                            # current iteration id
