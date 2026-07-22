@@ -49,6 +49,8 @@ and this project adheres to
   [#702](https://github.com/pdidev/pdi/issues/702)
 
 #### Changed
+* Merged `Callbacks` into `Global_context` and renamed the callback functions,
+  as per [#720](https://github.com/pdidev/pdi/issues/720)
 
 #### Deprecated
 

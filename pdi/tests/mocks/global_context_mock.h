@@ -27,7 +27,6 @@
 #define PDI_GLOBAL_CONTEXT_MOCK_H_
 
 #include <gmock/gmock.h>
-#include <pdi/callbacks.h>
 #include <pdi/datatype_template.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>

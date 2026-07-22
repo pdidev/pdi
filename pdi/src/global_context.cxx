@@ -46,8 +46,10 @@
 #include "global_context.h"
 
 
+using std::cref;
 using std::exception;
 using std::forward_as_tuple;
+using std::function;
 using std::map;
 using std::pair;
 using std::piecewise_construct;
@@ -102,10 +104,120 @@ void Global_context::finalize()
 	s_context.reset();
 }
 
+void Global_context::notify_init() const
+{
+	for (auto&& init_callback: m_init_callbacks) {
+		init_callback();
+	}
+}
+
+void Global_context::notify_data(const string& name, Ref ref)
+{
+	std::vector<std::reference_wrapper<const std::function<void(const std::string&, Ref)>>> data_callbacks;
+	// add named callbacks
+	auto callback_it_pair = m_named_data_callbacks.equal_range(name);
+	for (auto it = callback_it_pair.first; it != callback_it_pair.second; it++) {
+		data_callbacks.emplace_back(std::cref(it->second));
+	}
+	// add the unnamed callbacks
+	for (auto it = m_data_callbacks.begin(); it != m_data_callbacks.end(); it++) {
+		data_callbacks.emplace_back(std::cref(*it));
+	}
+	logger().trace("Calling `{}' share. Callbacks to call: {}", name, data_callbacks.size());
+	// call gathered callbacks
+	vector<std::exception_ptr> errors;
+	for (const std::function<void(const std::string&, Ref)>& callback: data_callbacks) {
+		try {
+			callback(name, ref);
+			//TODO: remove the faulty plugin in case of error?
+		} catch (...) {
+			errors.emplace_back(std::current_exception());
+		}
+	}
+	rethrow_with_context(errors, "while sharing `{}', ", name);
+}
+
+void Global_context::notify_data_remove(const string& name, Ref ref)
+{
+	std::vector<std::reference_wrapper<const std::function<void(const std::string&, Ref)>>> data_remove_callbacks;
+	//add named callbacks
+	auto callback_it_pair = m_named_data_remove_callbacks.equal_range(name);
+	for (auto it = callback_it_pair.first; it != callback_it_pair.second; it++) {
+		data_remove_callbacks.emplace_back(std::cref(it->second));
+	}
+	//add the unnamed callbacks
+	for (auto it = m_data_remove_callbacks.begin(); it != m_data_remove_callbacks.end(); it++) {
+		data_remove_callbacks.emplace_back(std::cref(*it));
+	}
+	logger().trace("Calling `{}' data remove. Callbacks to call: {}", name, data_remove_callbacks.size());
+	//call gathered callbacks
+	vector<std::exception_ptr> errors;
+	for (const std::function<void(const std::string&, Ref)>& callback: data_remove_callbacks) {
+		try {
+			callback(name, ref);
+			//TODO: remove the faulty plugin in case of error?
+		} catch (...) {
+			errors.emplace_back(std::current_exception());
+		}
+	}
+	rethrow_with_context(errors, "while removing `{}', ", name);
+}
+
+void Global_context::notify_event(const string& name)
+{
+	vector<std::reference_wrapper<const function<void(const string&)>>> event_callbacks;
+	//add named callbacks
+	auto callback_it_pair = m_named_event_callbacks.equal_range(name);
+	for (auto it = callback_it_pair.first; it != callback_it_pair.second; it++) {
+		event_callbacks.emplace_back(cref(it->second));
+	}
+	//add the unnamed callbacks
+	for (auto it = m_event_callbacks.begin(); it != m_event_callbacks.end(); it++) {
+		event_callbacks.emplace_back(cref(*it));
+	}
+	logger().trace("Calling `{}' event. Callbacks to call: {}", name, event_callbacks.size());
+	//call gathered callbacks
+	vector<std::exception_ptr> errors;
+	for (const function<void(const string&)>& callback: event_callbacks) {
+		try {
+			callback(name);
+			//TODO: remove the faulty plugin in case of error?
+		} catch (...) {
+			errors.emplace_back(std::current_exception());
+		}
+	}
+	rethrow_with_context(errors, "while triggering `{}', ", name);
+}
+
+void Global_context::notify_missing_data(const string& name)
+{
+	std::vector<std::reference_wrapper<const std::function<void(const std::string&)>>> empty_desc_callbacks;
+	//add named callbacks
+	auto callback_it_pair = m_named_empty_desc_access_callbacks.equal_range(name);
+	for (auto it = callback_it_pair.first; it != callback_it_pair.second; it++) {
+		empty_desc_callbacks.emplace_back(std::cref(it->second));
+	}
+	//add the unnamed callbacks
+	for (auto it = m_empty_desc_access_callbacks.begin(); it != m_empty_desc_access_callbacks.end(); it++) {
+		empty_desc_callbacks.emplace_back(std::cref(*it));
+	}
+	logger().trace("Calling `{}' empty desc access. Callbacks to call: {}", name, empty_desc_callbacks.size());
+	//call gathered callbacks
+	vector<std::exception_ptr> errors;
+	for (const std::function<void(const std::string&)>& callback: empty_desc_callbacks) {
+		try {
+			callback(name);
+			//TODO: remove the faulty plugin in case of error?
+		} catch (...) {
+			errors.emplace_back(std::current_exception());
+		}
+	}
+	rethrow_with_context(errors, "while populating `{}', ", name);
+}
+
 Global_context::Global_context(PC_tree_t conf)
 	: m_logger{"PDI", PC_get(conf, ".logging")}
 	, m_plugins{*this, conf}
-	, m_callbacks{*this}
 {
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);
@@ -134,8 +246,13 @@ Global_context::Global_context(PC_tree_t conf)
 	}
 
 
-	m_callbacks.call_init_callbacks();
+	notify_init();
 	m_logger.info("Initialization successful");
+}
+
+Global_context::~Global_context()
+{
+	m_logger.info("Finalization");
 }
 
 Data_descriptor& Global_context::desc(const char* name)
@@ -175,7 +292,7 @@ PDI::Context::Iterator Global_context::find(const string& name)
 
 void Global_context::event(const char* name)
 {
-	m_callbacks.call_event_callbacks(name);
+	notify_event(name);
 }
 
 Logger& Global_context::logger()
@@ -217,20 +334,78 @@ void Global_context::add_datatype(const string& name, Datatype_template_parser p
 	}
 }
 
-Callbacks& Global_context::callbacks()
+function<void()> Global_context::on_init(const function<void()>& callback)
 {
-	return m_callbacks;
+	m_init_callbacks.emplace_back(callback);
+	auto it = --m_init_callbacks.end();
+	return [it, this]() {
+		this->m_init_callbacks.erase(it);
+	};
 }
 
-void Global_context::finalize_and_exit()
+function<void()> Global_context::on_data(const function<void(const string&, Ref)>& callback, const string& name)
 {
-	Global_context::finalize();
-	exit(0);
+	if (name.empty()) {
+		m_data_callbacks.emplace_back(callback);
+		auto it = --m_data_callbacks.end();
+		return [it, this]() {
+			this->m_data_callbacks.erase(it);
+		};
+	} else {
+		auto it = m_named_data_callbacks.emplace(name, callback);
+		return [it, this]() {
+			this->m_named_data_callbacks.erase(it);
+		};
+	}
 }
 
-Global_context::~Global_context()
+function<void()> Global_context::on_data_remove(const function<void(const string&, Ref)>& callback, const string& name)
 {
-	m_logger.info("Finalization");
+	if (name.empty()) {
+		m_data_remove_callbacks.emplace_back(callback);
+		auto it = --m_data_remove_callbacks.end();
+		return [it, this]() {
+			this->m_data_remove_callbacks.erase(it);
+		};
+	} else {
+		auto it = m_named_data_remove_callbacks.emplace(name, callback);
+		return [it, this]() {
+			this->m_named_data_remove_callbacks.erase(it);
+		};
+	}
 }
+
+function<void()> Global_context::on_event(const function<void(const string&)>& callback, const string& name)
+{
+	if (name.empty()) {
+		m_event_callbacks.emplace_back(callback);
+		auto it = --m_event_callbacks.end();
+		return [it, this]() {
+			this->m_event_callbacks.erase(it);
+		};
+	} else {
+		auto it = m_named_event_callbacks.emplace(name, callback);
+		return [it, this]() {
+			this->m_named_event_callbacks.erase(it);
+		};
+	}
+}
+
+function<void()> Global_context::on_missing_data(const function<void(const string&)>& callback, const string& name)
+{
+	if (name.empty()) {
+		m_empty_desc_access_callbacks.emplace_back(callback);
+		auto it = --m_empty_desc_access_callbacks.end();
+		return [it, this]() {
+			this->m_empty_desc_access_callbacks.erase(it);
+		};
+	} else {
+		auto it = m_named_empty_desc_access_callbacks.emplace(name, callback);
+		return [it, this]() {
+			this->m_named_empty_desc_access_callbacks.erase(it);
+		};
+	}
+}
+
 
 } // namespace PDI

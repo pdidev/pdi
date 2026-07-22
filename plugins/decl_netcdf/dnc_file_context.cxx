@@ -156,7 +156,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 	}
 
 	for (auto&& event: events) {
-		m_ctx.callbacks().add_event_callback([this](const std::string&) { this->execute(); }, event);
+		m_ctx.on_event([this](const std::string&) { this->execute(); }, event);
 	}
 
 	if (events.empty()) {
@@ -172,7 +172,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 			desc_triggers.emplace(desc_io_pair.first);
 		}
 		for (auto&& desc_trigger: desc_triggers) {
-			m_ctx.callbacks().add_data_callback([this](const std::string& desc_name, PDI::Ref r) { this->execute(desc_name, r); }, desc_trigger);
+			m_ctx.on_data([this](const std::string& desc_name, PDI::Ref r) { this->execute(desc_name, r); }, desc_trigger);
 		}
 	}
 }

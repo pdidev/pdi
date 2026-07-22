@@ -187,7 +187,7 @@ struct pycall_plugin: Plugin {
 				for (int i = 0; i < len; i++) {
 					triggers.emplace_back(to_string(PC_get(event, "[%d].exec", i)), PC_get(event, "[%d].with", i));
 				}
-				ctx.callbacks().add_event_callback(
+				ctx.on_event(
 					[&ctx, triggers](const std::string&) mutable {
 						for (auto&& trigger: triggers) {
 							trigger.call(ctx);
@@ -197,7 +197,7 @@ struct pycall_plugin: Plugin {
 				);
 			} else {
 				Trigger event_trigger{to_string(PC_get(event, ".exec")), PC_get(event, ".with")};
-				ctx.callbacks().add_event_callback(
+				ctx.on_event(
 					[&ctx, event_trigger](const std::string&) mutable { event_trigger.call(ctx); },
 					to_string(PC_get(on_event, "{%d}", map_id))
 				);
@@ -210,7 +210,7 @@ struct pycall_plugin: Plugin {
 		for (int map_id = 0; map_id < nb_data; map_id++) {
 			string data_name = to_string(PC_get(on_data, "{%d}", map_id));
 			Trigger data_trigger{to_string(PC_get(on_data, "<%d>", map_id)), data_name};
-			ctx.callbacks().add_data_callback([&ctx, data_trigger](const std::string&, Ref) mutable { data_trigger.call(ctx); }, data_name);
+			ctx.on_data([&ctx, data_trigger](const std::string&, Ref) mutable { data_trigger.call(ctx); }, data_name);
 		}
 	}
 
