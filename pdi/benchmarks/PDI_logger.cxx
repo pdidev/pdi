@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 #include <paraconf.h>
-#include <pdi/callbacks.h>
+
 #include "global_context.h"
 
 struct Turn_off_stdout {

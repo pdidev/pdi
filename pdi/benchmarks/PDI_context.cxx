@@ -28,7 +28,6 @@
 #include <benchmark/benchmark.h>
 
 #include <paraconf.h>
-#include <pdi/callbacks.h>
 #include <pdi/scalar_datatype.h>
 #include "global_context.h"
 

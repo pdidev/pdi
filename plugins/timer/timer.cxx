@@ -74,22 +74,22 @@ public:
 					ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
 
 					auto start_ev = PDI::to_string(PC_get(val, ".start"));
-					ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
+					ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
 					context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
 
 					auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
-					ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
+					ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
 					context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
 				} else {
 					ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
 
 					opt_each(val, [&](PC_tree_t sub_elem) {
 						auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
-						ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
+						ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
 						context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
 
 						auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
-						ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
+						ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
 						context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
 					});
 				}
@@ -106,25 +106,22 @@ public:
 							ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
 
 							auto start_ev = PDI::to_string(PC_get(val, ".start"));
-							ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
+							ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
 							context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
 
 							auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
-							ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
+							ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
 							context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
 						} else {
 							ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
 
 							opt_each(val, [&](PC_tree_t sub_elem) {
 								auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
-								ctx.callbacks().add_event_callback(
-									[this, timer_name](const std::string& event) { startTimer(timer_name); },
-									start_ev
-								);
+								ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
 								context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
 
 								auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
-								ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
+								ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
 								context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
 							});
 						}

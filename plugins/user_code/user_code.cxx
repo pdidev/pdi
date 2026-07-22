@@ -214,10 +214,7 @@ struct user_code_plugin: Plugin {
 							PC_tree_t parameters = PC_get(one_event, ".%s", to_string(function_name).c_str());
 
 							Trigger event_trigger{to_string(function_name), parameters, when_exp};
-							ctx.callbacks().add_event_callback(
-								[&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); },
-								to_string(events_name)
-							);
+							ctx.on_event([&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); }, to_string(events_name));
 							ctx.logger().debug(
 								"User_code setup: event `{}' calls function `{}', under condition `{}'",
 								to_string(events_name),
@@ -246,10 +243,7 @@ struct user_code_plugin: Plugin {
 							PC_tree_t parameters = PC_get(one_event, ".%s", to_string(function_name).c_str());
 
 							Trigger event_trigger{to_string(function_name), parameters, when_exp};
-							ctx.callbacks().add_event_callback(
-								[&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); },
-								to_string(event_name)
-							);
+							ctx.on_event([&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); }, to_string(event_name));
 							ctx.logger().debug(
 								"User_code setup: event `{}' calls function `{}', under condition `{}'",
 								to_string(event_name),
@@ -290,7 +284,7 @@ struct user_code_plugin: Plugin {
 							PC_tree_t parameters = PC_get(one_data, ".%s", to_string(function_name).c_str());
 
 							Trigger data_trigger{to_string(function_name), parameters, when_exp};
-							ctx.callbacks().add_data_callback(
+							ctx.on_data(
 								[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
 								to_string(data_name)
 							);
@@ -322,7 +316,7 @@ struct user_code_plugin: Plugin {
 							PC_tree_t parameters = PC_get(one_data, ".%s", to_string(function_name).c_str());
 
 							Trigger data_trigger{to_string(function_name), parameters, when_exp};
-							ctx.callbacks().add_data_callback(
+							ctx.on_data(
 								[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
 								to_string(data_name)
 							);
