@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -27,7 +27,6 @@
 #define PDI_CONTEXT_PROXY_H_
 
 #include <pdi/pdi_fwd.h>
-#include <pdi/callbacks.h>
 #include <pdi/context.h>
 #include <pdi/logger.h>
 
@@ -63,42 +62,22 @@ public:
 	 */
 	void setup_logger(const std::string& logger_name, PC_tree_t logging_tree);
 
-	/** Context::desc proxy for plugins
-	 */
 	Data_descriptor& desc(const std::string& name) override;
 
-	/** Context::desc proxy for plugins
-	 */
 	Data_descriptor& desc(const char* name) override;
 
-	/** Context::operator[] proxy for plugins
-	 */
 	Data_descriptor& operator[] (const std::string& name) override;
 
-	/** Context::operator[] proxy for plugins
-	 */
 	Data_descriptor& operator[] (const char* name) override;
 
-	/** Context::begin proxy for plugins
-	 */
 	Iterator begin() override;
 
-	/** Context::end proxy for plugins
-	 */
 	Iterator end() override;
 
 	Iterator find(const std::string& name) override;
 
-	/** Context::event proxy for plugins
-	 *
-	 *  \param[in] name name of the event
-	 */
 	void event(const char* name) override;
 
-	/** Returns plugin logger
-	 *
-	 *  \return plugin logger
-	 */
 	Logger& logger() override;
 
 	/** Returns pdi core logger
@@ -107,19 +86,19 @@ public:
 	 */
 	Logger& pdi_core_logger();
 
-	/** Context::datatype proxy for plugins
-	 */
 	Datatype_template_sptr datatype(PC_tree_t node) override;
 
-	/** Context::add_datatype proxy for plugins
-	 */
 	void add_datatype(const std::string& name, Datatype_template_parser parser) override;
 
-	/** Context::callbacks proxy for plugins
-	 */
-	Callbacks& callbacks() override;
+	std::function<void()> on_init(const std::function<void()>& callback) override;
 
-	void finalize_and_exit() override;
+	std::function<void()> on_data(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {}) override;
+
+	std::function<void()> on_data_remove(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {}) override;
+
+	std::function<void()> on_event(const std::function<void(const std::string&)>& callback, const std::string& name = {}) override;
+
+	std::function<void()> on_missing_data(const std::function<void(const std::string&)>& callback, const std::string& name = {}) override;
 };
 
 } //namespace PDI
