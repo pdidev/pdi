@@ -217,7 +217,7 @@ struct user_code_plugin: Plugin {
 								[&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); },
 								to_string(events_name)
 							);
-							ctx.logger().info(
+							ctx.logger().debug(
 								"User_code setup: event `{}' calls function `{}', under condition `{}'",
 								to_string(events_name),
 								to_string(function_name),

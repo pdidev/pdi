@@ -18,7 +18,7 @@ when a specified event occur or certain data becomes available.
 To ensure proper work of the `user-code` plugin, there are several conventions to follow in the application 
 code and the specification tree.
 
-First, each function name in specification tree must be a valid function name (watch out for [name mangling](https://en.wikipedia.org/wiki/Name_mangling)).
+First, each function name in specification tree must be a valid function name (watch out for [name mangling](https://en.wikipedia.org/wiki/Name_mangling)). Please do not use any PDI yaml key for the function name. (e.g., `when`, `file`, etc.)
 
 Second, these functions **can not** take any arguments or return any value (i.e. their type must be `void(void)`). Use descriptors for passing input/output variables instead.
 
@@ -313,7 +313,7 @@ A \ref on_data_node is a dictionary that contains the following keys:
 
 * each key identifies the name of a descriptor, which will trigger specified functions when it becomes available.
 
-If a data is used to trigger multiple functions and some functions should be executed  only if the `when` condition is satisfied, then we can use the list-styled syntex of the yaml:
+If a data is used to trigger multiple functions and some functions should be executed only if the `when` condition is satisfied, then we can use the list-styled syntex of the yaml:
 ```yaml
 plugins:                       
     user_code:                   
@@ -339,7 +339,7 @@ A \ref on_event_node is a dictionary that contains the following keys:
 
 * each key identifies the name of an event, which will trigger specified functions when it occurs.
 
-If an event is used to trigger multiple functions and some functions should be executed  only if the `when` condition is satisfied, then we can use the list-styled syntex of the yaml:
+If an event is used to trigger multiple functions and some functions should be executed only if the `when` condition is satisfied, then we can use the list-styled syntex of the yaml:
 ```yaml
 plugins:                       
     user_code:                   
