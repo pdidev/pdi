@@ -51,6 +51,7 @@ and this project adheres to
 #### Added
 * Support conversion of `Yaml_region` to a `string`
   [#702](https://github.com/pdidev/pdi/issues/702)
+* CMake options documentation for HDF5 and NetCDF.
 
 #### Changed
 
