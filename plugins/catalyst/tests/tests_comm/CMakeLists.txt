@@ -30,41 +30,24 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
-if(NOT TARGET GTest::gtest)
-	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
-	add_subdirectory("../../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
+if(${CATALYST_USE_MPI})
+  set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/runtest-dir")
+  # MPI
+  find_package(MPI COMPONENTS C CXX REQUIRED)
+
+  # Creation of executable
+  add_executable(TestPDICatalystComm
+  example.c)
+
+  target_link_libraries(TestPDICatalystComm
+    PRIVATE PDI::PDI_C MPI::MPI_C MPI::MPI_CXX)
+
+  set(CATALYST_SCRIPT_FOLDER ${CMAKE_SOURCE_DIR}/tests/tests_comm)
+  configure_file(catalyst_comm.yml.in pdi.yml)
+
+  find_package(Python3 COMPONENTS Interpreter)
+
+  add_test(NAME TestPDICatalystComm COMMAND "${RUNTEST_DIR}" ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests/tests_comm/run_test_mpi.py" "${CMAKE_BINARY_DIR}/tests/tests_comm/" "${CMAKE_SOURCE_DIR}/tests/tests_comm/" "${MPIEXEC_EXECUTABLE}") 
+  set_property(TEST TestPDICatalystComm PROPERTY TIMEOUT 3)
+
 endif()
-include(GoogleTest)
-
-set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/runtest-dir")
-
-# Catalyst
-find_package(catalyst REQUIRED)
-if("${BUILD_CATALYST_PARALLEL}" AND NOT "${CATALYST_USE_MPI}")
-	message(FATAL_ERROR "Catalyst with MPI support required, sequential catalyst only found. Please set -DBUILD_CATALYST_PARALLEL=OFF to disable parallel Catalyst")
-endif()
-
-# MPI
-if("${CATALYST_USE_MPI}")
-	find_package(MPI REQUIRED COMPONENTS C CXX)
-	set(CATALYST_DEPS catalyst::catalyst MPI::MPI_C MPI::MPI_CXX)
-endif()
-
-
-
-# Creation of executable
-add_executable(TestPDICatalyst_rectilinear rectilinear_mesh.cpp)
-
-# MPI
-find_package(MPI COMPONENTS C CXX REQUIRED)
-
-target_link_libraries(TestPDICatalyst_rectilinear
-  PRIVATE PDI::PDI_C catalyst::catalyst GTest::gmock GTest::gmock_main GTest::gtest GTest::gtest_main)
-
-set(CATALYST_SCRIPT_FOLDER ${CMAKE_SOURCE_DIR}/tests_rectilinear)
-configure_file(catalyst_serial_rectilinear.yml.in pdi.yml)
-
-find_package(Python3 COMPONENTS Interpreter)
-
-add_test(NAME TestPDICatalystRectilinear COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:TestPDICatalyst_rectilinear>")
-set_property(TEST TestPDICatalystRectilinear PROPERTY ENVIRONMENT CATALYST_IMPLEMENTATION_NAME=stub  CATALYST_DATA_DUMP_DIRECTORY=./catalyst_output)
