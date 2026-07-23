@@ -110,7 +110,7 @@ Summary:
 
 This repository is under the Apache 2.0 license, see NOTICE and LICENSE file.
 
-The test case (in '/plugins/catalyst/test_CxxFullExample') is a modification of the Catalyst2 CxxFullExample code from the ParaView source code, licenced under BSD-3-Clauses.
+The test case (in '/plugins/catalyst/tests/test_CxxFullExample') is a modification of the Catalyst2 CxxFullExample code from the ParaView source code, licenced under BSD-3-Clauses.
 
 Developed by Kitware SAS (Kitware Europe), motivated by the [NumPEx](https://numpex.org/) program.
 
