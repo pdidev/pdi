@@ -1,6 +1,6 @@
 #=============================================================================
-# Copyright (C) 2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,6 @@ if("x${BENCHMARK_RESULT_PATH}" STREQUAL "x")
 endif()
 
 set(PDI_benchmark_SRC
-          PDI_callbacks.cxx
           PDI_context.cxx
           PDI_datatype_template.cxx
           PDI_example.cxx

@@ -59,10 +59,7 @@ public:
 		read_config_tree(ctx.logger(), spec_tree);
 
 		for (const auto& data_path_pair: m_data_to_path_map) {
-			ctx.callbacks().add_data_callback(
-				[&](const std::string& data_name, Ref&& ref) { write_data(data_name, std::move(ref)); },
-				data_path_pair.first
-			);
+			ctx.callbacks().on_data([&](const std::string& data_name, Ref&& ref) { write_data(data_name, std::move(ref)); }, data_path_pair.first);
 		}
 		ctx.logger().info("Plugin loaded successfully");
 	}

@@ -324,7 +324,7 @@ struct mpi_plugin: Plugin {
 	{
 		Datatype_sptr const & mpi_comm_f_type = m_mpi_comm_f_datatype;
 
-		ctx.callbacks().add_data_callback(
+		ctx.on_data(
 			[&ctx, fortran_comm_desc, mpi_comm_f_type](const string& c_comm_desc, Ref ref) {
 				ctx.logger().debug("Transtype `{}' to `{}' (C->F)", c_comm_desc, fortran_comm_desc);
 				Ref fortran_comm_ref{new MPI_Fint, [](void* p) { delete static_cast<MPI_Fint*>(p); }, std::move(mpi_comm_f_type), true, true};
@@ -338,7 +338,7 @@ struct mpi_plugin: Plugin {
 			c_comm_desc
 		);
 
-		ctx.callbacks().add_data_remove_callback(
+		ctx.on_data_remove(
 			[&ctx, fortran_comm_desc](const std::string& c_comm_desc, Ref c_comm_ref) {
 				ctx.logger().debug("`{}' no longer available, reclaim transtyped `{}'", fortran_comm_desc, c_comm_desc);
 				if (Ref_w c_comm_ref_w{c_comm_ref}) {
@@ -365,7 +365,7 @@ struct mpi_plugin: Plugin {
 	{
 		Datatype_sptr mpi_comm_type = m_mpi_comm_datatype;
 
-		ctx.callbacks().add_data_callback(
+		ctx.on_data(
 			[&ctx, c_comm_desc, mpi_comm_type](const string& fortran_comm_desc, Ref ref) {
 				ctx.logger().debug("Transtype `{}' to `{}` (F->C)", fortran_comm_desc, c_comm_desc);
 				Ref c_comm_ref{new MPI_Comm, [](void* p) { delete static_cast<MPI_Comm*>(p); }, std::move(mpi_comm_type), true, true};
@@ -382,7 +382,7 @@ struct mpi_plugin: Plugin {
 		);
 
 
-		ctx.callbacks().add_data_remove_callback(
+		ctx.on_data_remove(
 			[&ctx, c_comm_desc](const string& fortran_comm_desc, Ref fortran_comm_ref) {
 				ctx.logger().debug("`{}' no longer available, reclaim transtyped `{}'", fortran_comm_desc, c_comm_desc);
 				if (Ref_w fortran_comm_ref_w{fortran_comm_ref}) {

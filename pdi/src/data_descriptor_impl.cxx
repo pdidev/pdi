@@ -135,7 +135,7 @@ Ref Data_descriptor_impl::ref()
 {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	if (m_refs.empty()) {
-		m_context.callbacks().call_empty_desc_access_callbacks(m_name);
+		m_context.notify_missing_data(m_name);
 
 		//at least one plugin should share a Ref
 		if (m_refs.empty()) {
@@ -203,7 +203,7 @@ try {
 	}
 
 	try {
-		m_context.callbacks().call_data_callbacks(m_name, ref());
+		m_context.notify_data(m_name, ref());
 	} catch (...) {
 		m_refs.pop();
 		throw;
@@ -221,7 +221,7 @@ try {
 	// move reference out of the store
 	if (m_refs.empty() || (m_refs.size() == 1 && metadata())) throw State_error{"Cannot release a non shared value: `{}'", m_name};
 
-	m_context.callbacks().call_data_remove_callbacks(m_name, ref());
+	m_context.notify_data_remove(m_name, ref());
 
 	Ref oldref = ref();
 	m_refs.pop();
@@ -241,7 +241,7 @@ try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	if (m_refs.empty() || (m_refs.size() == 1 && metadata())) throw State_error{"Cannot reclaim a non shared value: `{}'", m_name};
 
-	m_context.callbacks().call_data_remove_callbacks(m_name, ref());
+	m_context.notify_data_remove(m_name, ref());
 
 	Ref oldref = ref();
 	m_refs.pop();
