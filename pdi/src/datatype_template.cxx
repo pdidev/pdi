@@ -412,12 +412,12 @@ void validate_array(PC_tree_t node, vector<Expression>& size, vector<Expression>
 	}
 }
 
-Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_array_datatype_template(Logger& logger, Context& ctx, PC_tree_t node)
 {
 	{
 		string order_str = to_string(PC_get(node, ".order"), "");
 		if (order_str == "c" && order_str == "C") {
-			ctx.logger().warn("`order: C' for array is the only supported order and its specification is deprecated");
+			logger.warn("`order: C' for array is the only supported order and its specification is deprecated");
 		} else if (order_str != "") {
 			throw Spectree_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};
 		}
@@ -485,7 +485,7 @@ vector<Tuple_template::Element> get_tuple_elements(Context& ctx, PC_tree_t eleme
 	return result;
 }
 
-Datatype_template_sptr to_tuple_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_tuple_datatype_template(Logger& logger, Context& ctx, PC_tree_t node)
 {
 	PC_tree_t buffersize_conf = PC_get(node, ".buffersize");
 	Expression tuple_buffersize;
@@ -526,7 +526,7 @@ vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_
 	return members;
 }
 
-Datatype_template_sptr to_record_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_record_datatype_template(Logger& logger, Context& ctx, PC_tree_t node)
 {
 	PC_tree_t buffersize_conf = PC_get(node, ".buffersize");
 	if (PC_status(buffersize_conf)) {
@@ -539,7 +539,7 @@ Datatype_template_sptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 	return unique_ptr<Record_template>{new Record_template{get_members(ctx, member_list_node), std::move(record_buffersize), node}};
 }
 
-Datatype_template_sptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_struct_datatype_template(Logger&, Context& ctx, PC_tree_t node)
 {
 	vector<Struct_template::Member> members;
 	each_in_omap(PC_get(node, ".members"), [&](PC_tree_t member_name, PC_tree_t member_value_node) {
@@ -548,7 +548,7 @@ Datatype_template_sptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
 	return unique_ptr<Struct_template>{new Struct_template{std::move(members), node}};
 }
 
-Datatype_template_sptr to_pointer_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_pointer_datatype_template(Logger&, Context& ctx, PC_tree_t node)
 {
 	PC_tree_t subtype_conf = PC_get(node, ".subtype");
 	if (PC_status(subtype_conf)) {
@@ -596,7 +596,7 @@ Datatype_template::~Datatype_template() {}
 
 void add_scalar_datatype(Context& ctx, const string& name, Scalar_kind kind, size_t size)
 {
-	ctx.add_datatype(name, [kind, size](Context&, PC_tree_t tree) {
+	ctx.add_datatype(name, [kind, size](Logger&, Context&, PC_tree_t tree) {
 		return Datatype_template_sptr{new Scalar_template{kind, static_cast<long>(size), tree}};
 	});
 }
@@ -604,7 +604,7 @@ void add_scalar_datatype(Context& ctx, const string& name, Scalar_kind kind, siz
 template <class S, S s>
 void add_scalar_datatype_T(Context& ctx, const string& name, size_t size)
 {
-	ctx.add_datatype(name, [&, size](Context&, PC_tree_t tree) {
+	ctx.add_datatype(name, [&, size](Logger&, Context&, PC_tree_t tree) {
 		return Datatype_template_sptr{new Scalar_template{s, static_cast<long>(size), tree}};
 	});
 }
@@ -722,7 +722,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 
 	// Fortran basic types
 #ifdef BUILD_FORTRAN
-	ctx.add_datatype("character", [](Context&, PC_tree_t tree) {
+	ctx.add_datatype("character", [](Logger&, Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_CHARACTER_DEFAULT_KIND);
 		if (kind == 0)
 			kind = PDI_CHARACTER_DEFAULT_KIND;
@@ -730,7 +730,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::UNSIGNED, kind, tree}};
 	});
-	ctx.add_datatype("integer", [](Context&, PC_tree_t tree) {
+	ctx.add_datatype("integer", [](Logger&, Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_INTEGER_DEFAULT_KIND);
 		if (kind == 0)
 			kind = PDI_INTEGER_DEFAULT_KIND;
@@ -738,7 +738,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::SIGNED, kind, tree}};
 	});
-	ctx.add_datatype("logical", [](Context&, PC_tree_t tree) {
+	ctx.add_datatype("logical", [](Logger&, Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_LOGICAL_DEFAULT_KIND);
 		if (kind == 0)
 			kind = PDI_LOGICAL_DEFAULT_KIND;
@@ -746,7 +746,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::UNSIGNED, kind, tree}};
 	});
-	ctx.add_datatype("real", [](Context&, PC_tree_t tree) {
+	ctx.add_datatype("real", [](Logger&, Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_REAL_DEFAULT_KIND);
 		if (kind == 0)
 			kind = PDI_REAL_DEFAULT_KIND;
@@ -763,7 +763,7 @@ void Datatype_template::load_user_datatypes(Context& ctx, PC_tree_t types_tree)
 		int types_len;
 		PC_len(types_tree, &types_len);
 		for (int i = 0; i < types_len; i++) {
-			ctx.add_datatype(to_string(PC_get(types_tree, "{%d}", i)), [datatype_tree = PC_get(types_tree, "<%d>", i)](Context& ctx, PC_tree_t tree) {
+			ctx.add_datatype(to_string(PC_get(types_tree, "{%d}", i)), [datatype_tree = PC_get(types_tree, "<%d>", i)](Logger&, Context& ctx, PC_tree_t tree) {
 				return ctx.datatype(datatype_tree);
 			});
 		}

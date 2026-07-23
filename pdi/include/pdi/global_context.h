@@ -35,13 +35,10 @@
 
 #include "pdi/pdi_fwd.h"
 #include "pdi/context.h"
-#include "pdi/context_proxy.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/logger.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
-
-#include "plugin_store.h"
 
 namespace PDI {
 
@@ -50,20 +47,14 @@ class PDI_EXPORT Global_context: public Context
 private:
 	friend class Data_descriptor_impl;
 
-	/// The singleton Context instance
-	static std::unique_ptr<Global_context> s_context;
-
 	/// Global logger of PDI, should be constructed first, destroyed last
-	Logger m_logger;
+	Logger& m_logger;
 
 	/// Datatype_template constructors available in PDI
 	std::unordered_map<std::string, Datatype_template_parser> m_datatype_parsers;
 
 	/// Descriptors of the data
 	std::unordered_map<std::string, std::unique_ptr<Data_descriptor>> m_descriptors;
-
-	/// The plugins, this should be late in the list to be destroyed early
-	Plugin_store m_plugins;
 
 	/**
 	 *  Callbacks called after init
@@ -156,19 +147,13 @@ private:
 	 *  \param name name of the accessed descriptor
 	 */
 	void notify_missing_data(const std::string& name);
-
+	
 public:
-	static void init(PC_tree_t conf);
-
-	static bool initialized();
-
-	static Global_context& context();
-
-	static void finalize();
-
-	Global_context(PC_tree_t conf);
+	Global_context(Logger& logger);
 
 	~Global_context() override;
+	
+	void configure(std::vector<PC_tree_t> confs);
 
 	Data_descriptor& desc(const std::string& name) override;
 
@@ -185,8 +170,6 @@ public:
 	Iterator find(const std::string& name) override;
 
 	void event(const char* name) override;
-
-	Logger& logger() override;
 
 	Datatype_template_sptr datatype(PC_tree_t node) override;
 

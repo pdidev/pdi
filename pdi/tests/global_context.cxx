@@ -1,6 +1,6 @@
 /*******************************************************************************
- * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,47 +23,68 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
-#include <map>
-#include <memory>
-#include <sstream>
-#include <utility>
-#include <vector>
-
 #include <gtest/gtest.h>
 
-#include <pdi/array_datatype.h>
-#include <pdi/datatype.h>
-#include <pdi/datatype_template.h>
+#include <pdi/context.h>
+#include <pdi/global_context.h>
 #include <pdi/paraconf_wrapper.h>
-#include <pdi/pointer_datatype.h>
-#include <pdi/record_datatype.h>
+#include <pdi/plugin.h>
 #include <pdi/scalar_datatype.h>
-#include <pdi/tuple_datatype.h>
 
-#include "global_context.h"
+#include "data_descriptor_impl.h"
 
-
-using PDI::Array_datatype;
-using PDI::Datatype;
-using PDI::Datatype_template;
-using PDI::Global_context;
-using PDI::Paraconf_wrapper;
-using PDI::Pointer_datatype;
-using PDI::Record_datatype;
-using PDI::Scalar_datatype;
-using PDI::Scalar_kind;
-using PDI::Tuple_datatype;
-
-using std::map;
-using std::pair;
-using std::shared_ptr;
-using std::string;
-using std::unique_ptr;
-using std::vector;
+using namespace PDI;
+using namespace std;
 
 using param_pair = pair<string, shared_ptr<Datatype>>;
+
+namespace PDI {
+
+//handler to private fields of Descriptor
+class Descriptor_test_handler {
+public:
+	static unique_ptr<Data_descriptor> default_desc(Global_context& global_ctx)
+	{
+		return unique_ptr<Data_descriptor>{new Data_descriptor_impl{global_ctx, "default_desc"}};
+	}
+
+	static Datatype_sptr desc_get_type(unique_ptr<Data_descriptor>& desc, Global_context& global_ctx)
+	{
+		Datatype_template_sptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc.get())->m_type;
+		return desc_template->evaluate(global_ctx);
+	}
+
+	static int desc_get_refs_number(unique_ptr<Data_descriptor>& desc) { return dynamic_cast<Data_descriptor_impl*>(desc.get())->m_refs.size(); }
+};
+
+} // namespace PDI
+
+/*
+ * Struct prepared for DataDescTest
+ */
+struct DataDescTest: public ::testing::Test {
+	int array[10];
+	PC_tree_t array_config{PC_parse_string("{ size: 10, type: array, subtype: int }")};
+	shared_ptr<Array_datatype> array_datatype{Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 10)};
+	PDI::Paraconf_wrapper fw;
+	Global_context global_ctx{PC_parse_string("")};
+	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(global_ctx);
+};
+
+/*
+ * Struct prepared for ContextTest.
+ */
+struct ContextTest: public ::testing::Test {
+	ContextTest()
+		: test_conf{PC_parse_string("logging: trace")}
+	{}
+
+	void SetUp() override { test_context.reset(new Global_context{test_conf}); }
+
+	Paraconf_wrapper fw;
+	PC_tree_t test_conf;
+	unique_ptr<Context> test_context;
+};
 
 /*
  * Struct prepared for PositiveTypeParseTest.
@@ -72,6 +93,1118 @@ struct PositiveTypeParseTest: public ::testing::TestWithParam<param_pair> {
 	PC_tree_t conf = PC_parse_string("logging: trace");
 	Paraconf_wrapper _;
 };
+
+/*
+ * Name:                ContextTest.desc_string_uninitialized
+ *
+ * Tested functions:    PDI::Context::desc(string)
+ *
+ * Description:         Checks if accessesing uninitialzied descriptor
+ *                      creates a new one.
+ */
+TEST_F(ContextTest, desc_string_uninitialized)
+{
+	string desc_name{"test_desc"};
+	Data_descriptor& desc = this->test_context->desc(desc_name);
+	ASSERT_EQ(desc_name, desc.name());
+}
+
+/*
+ * Name:                ContextTest.desc_string_initialized
+ *
+ * Tested functions:    PDI::Context::desc(string)
+ *
+ * Description:         Checks if accessesing a descriptor
+ *                      returns correct one.
+ */
+TEST_F(ContextTest, desc_string_initialized)
+{
+	string desc_name{"desc1"};
+	//put desc1 first to check if the same desc is returned later
+	Data_descriptor& desc1 = this->test_context->desc(desc_name);
+
+	Data_descriptor& desc = this->test_context->desc(desc_name);
+	ASSERT_EQ(desc_name, desc.name());
+	//desc1 and desc should have the same address if they are the same desc
+	ASSERT_EQ(&desc1, &desc);
+}
+
+/*
+ * Name:                ContextTest.desc_cstring_uninitialized
+ *
+ * Tested functions:    PDI::Context::desc(const char*)
+ *
+ * Description:         Checks if accessesing uninitialzied descriptor
+ *                      creates a new one.
+ */
+TEST_F(ContextTest, desc_cstring_uninitialized)
+{
+	const char* desc_name = "test_desc";
+	Data_descriptor& desc = this->test_context->desc(desc_name);
+	ASSERT_STREQ(desc_name, desc.name().c_str());
+}
+
+/*
+ * Name:                ContextTest.desc_cstring_initialized
+ *
+ * Tested functions:    PDI::Context::desc(const char*)
+ *
+ * Description:         Checks if accessesing a descriptor
+ *                      returns correct one.
+ */
+TEST_F(ContextTest, desc_cstring_initialized)
+{
+	const char* desc_name = "desc1";
+	//put desc1 first to check if the same desc is returned later
+	Data_descriptor& desc1 = this->test_context->desc(desc_name);
+
+	Data_descriptor& desc = this->test_context->desc(desc_name);
+	ASSERT_STREQ(desc_name, desc.name().c_str());
+	//desc1 and desc should have the same address if they are the same desc
+	ASSERT_EQ(&desc1, &desc);
+}
+
+/*
+ * Name:                ContextTest.operator_string_uninitialized
+ *
+ * Tested functions:    PDI::Context::operator[](string)
+ *
+ * Description:         Checks if accessesing uninitialzied descriptor
+ *                      creates a new one.
+ */
+TEST_F(ContextTest, operator_string_uninitialized)
+{
+	string desc_name{"test_desc"};
+	Data_descriptor& desc = (*this->test_context)[desc_name];
+	ASSERT_EQ(desc_name, desc.name());
+}
+
+/*
+ * Name:                ContextTest.operator_string_initialized
+ *
+ * Tested functions:    PDI::Context::operator[](string)
+ *
+ * Description:         Checks if accessesing a descriptor
+ *                      returns correct one.
+ */
+TEST_F(ContextTest, operator_string_initialized)
+{
+	string desc_name{"desc1"};
+	//put desc1 first to check if the same desc is returned later
+	Data_descriptor& desc1 = this->test_context->desc(desc_name);
+
+	Data_descriptor& desc = (*this->test_context)[desc_name];
+	ASSERT_EQ(desc_name, desc.name());
+	//desc1 and desc should have the same address if they are the same desc
+	ASSERT_EQ(&desc1, &desc);
+}
+
+/*
+ * Name:                ContextTest.operator_cstring_uninitialized
+ *
+ * Tested functions:    PDI::Context::operator[](const char*)
+ *
+ * Description:         Checks if accessesing uninitialzied descriptor
+ *                      creates a new one.
+ */
+TEST_F(ContextTest, operator_cstring_uninitialized)
+{
+	const char* desc_name = "test_desc";
+	Data_descriptor& desc = (*this->test_context)[desc_name];
+	ASSERT_STREQ(desc_name, desc.name().c_str());
+}
+
+/*
+ * Name:                ContextTest.operator_cstring_initialized
+ *
+ * Tested functions:    PDI::Context::operator[](const char*)
+ *
+ * Description:         Checks if accessesing a descriptor
+ *                      returns correct one.
+ */
+TEST_F(ContextTest, operator_cstring_initialized)
+{
+	const char* desc_name = "desc1";
+	//put desc1 first to check if the same desc is returned later
+	Data_descriptor& desc1 = this->test_context->desc(desc_name);
+
+	Data_descriptor& desc = (*this->test_context)[desc_name];
+	ASSERT_STREQ(desc_name, desc.name().c_str());
+	//desc1 and desc should have the same address if they are the same desc
+	ASSERT_EQ(&desc1, &desc);
+}
+
+/*
+ * Name:                ContextTest.iterator
+ *
+ * Tested functions:    PDI::Context::begin(),
+ *                      PDI::Context::end()
+ *
+ * Description:         Checks if tested functions
+ *                      return correct iterators.
+ */
+TEST_F(ContextTest, iterator)
+{
+	//put some descriptors inside context
+	set<string> desc_names{"desc1", "desc2", "desc3"};
+	for (auto& desc_name: desc_names) {
+		this->test_context->desc(desc_name);
+	}
+	auto begin = this->test_context->begin();
+	auto end = this->test_context->end();
+
+	for (auto it = begin; it != end; ++it) {
+		auto name = desc_names.find((*it).name());
+		ASSERT_EQ(it->name(), (*it).name());
+		ASSERT_TRUE(name != desc_names.end());
+	}
+}
+
+/*
+ * Name:                ContextTest.iterator
+ *
+ * Tested functions:    PDI::Context::find(),
+ *                      PDI::Context::end(),
+ *
+ * Description:         Checks if tested functions
+ *                      return correct iterators.
+ */
+TEST_F(ContextTest, iterator_find)
+{
+	// Put some descriptors inside context
+	set<string> desc_names{"desc1", "desc2", "desc3"};
+	for (auto& desc_name: desc_names) {
+		this->test_context->desc(desc_name);
+	}
+
+	// Iterating through the descriptors to ensure we can find() them
+	for (set<string>::iterator it = desc_names.begin(); it != desc_names.end(); ++it) {
+		Context::Iterator descriptor = this->test_context->find(*it);
+		ASSERT_EQ(descriptor->name(), (*it));
+		ASSERT_TRUE(descriptor != this->test_context->end());
+	}
+
+	// test case where search key is not found
+	ASSERT_FALSE(this->test_context->find("desc4") != this->test_context->end());
+	ASSERT_TRUE(this->test_context->find("desc5") == this->test_context->end());
+}
+
+/*
+ * Name:                ContextTest.iterator
+ *
+ * Tested functions:    operator==,
+ *                      operator!=
+ *
+ * Description:         Checks if tested functions
+ *                      return correct iterators.
+ */
+TEST_F(ContextTest, iterator_operator_equal_equal)
+{
+	//put some descriptors inside context
+	set<string> desc_names{"desc1", "desc2", "desc3"};
+	for (auto& desc_name: desc_names) {
+		this->test_context->desc(desc_name);
+	}
+	auto begin = this->test_context->begin();
+	auto end = this->test_context->end();
+
+	// test operator==
+	for (set<string>::iterator it2 = desc_names.begin(); it2 != desc_names.end(); ++it2) {
+		Context::Iterator descriptor = this->test_context->find(*it2);
+
+		int counter_ok = 0;
+
+		for (auto it = begin; it != end; ++it) {
+			if (it == descriptor) {
+				counter_ok++;
+				ASSERT_FALSE(it != descriptor);
+			}
+		}
+		ASSERT_EQ(counter_ok, 1);
+	}
+
+	// test operator!=
+	for (set<string>::iterator it2 = desc_names.begin(); it2 != desc_names.end(); ++it2) {
+		Context::Iterator descriptor = this->test_context->find(*it2);
+
+		int counter_false = 0;
+
+		for (auto it = begin; it != end; ++it) {
+			if (it != descriptor) {
+				counter_false++;
+				ASSERT_FALSE(it == descriptor);
+			}
+		}
+
+		ASSERT_EQ(counter_false, 2);
+	}
+}
+
+/*
+ * Name:                ContextTest.add_event
+ *
+ * Tested functions:    PDI::Context::on_event
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on event.
+ *
+ */
+TEST_F(ContextTest, add_event)
+{
+	int x = 0;
+	this->test_context->on_event([&x](const std::string&) { x += 42; }, "event");
+	ASSERT_EQ(x, 0);
+	this->test_context->event("event");
+	ASSERT_EQ(x, 42);
+	this->test_context->event("event");
+	ASSERT_EQ(x, 84);
+}
+
+/*
+ * Name:                ContextTest.remove_event
+ *
+ * Tested functions:    PDI::Context::on_event
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on event
+ *                      and removes it.
+ *
+ */
+TEST_F(ContextTest, remove_event)
+{
+	int x = 0;
+	auto erase_f = this->test_context->on_event([&x](const std::string&) { x += 42; }, "event");
+	ASSERT_EQ(x, 0);
+	this->test_context->event("event");
+	ASSERT_EQ(x, 42);
+	erase_f();
+	this->test_context->event("event");
+	ASSERT_EQ(x, 42);
+}
+
+/*
+ * Name:                ContextTest.add_remove_event
+ *
+ * Tested functions:    PDI::Context::on_event
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on event
+ *                      and removes it several times.
+ *
+ */
+TEST_F(ContextTest, add_remove_event)
+{
+	int x = 0;
+	int y = 0;
+	auto erase_x = this->test_context->on_event([&x](const std::string&) { x += 42; }, "event_x");
+	auto erase_y = this->test_context->on_event([&y](const std::string&) { y += 53; }, "event_y");
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->event("event_x");
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+	this->test_context->event("event_y");
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 53);
+	erase_x();
+	this->test_context->event("event_x");
+	this->test_context->event("event_y");
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 106);
+	auto erase_x_2 = this->test_context->on_event([&x](const std::string&) { x += 42; }, "event_x_2");
+	this->test_context->event("event_x_2");
+	this->test_context->event("event_y");
+	ASSERT_EQ(x, 84);
+	ASSERT_EQ(y, 159);
+	erase_y();
+	this->test_context->event("event_x_2");
+	this->test_context->event("event_y");
+	ASSERT_EQ(x, 126);
+	ASSERT_EQ(y, 159);
+	erase_x_2();
+	ASSERT_EQ(x, 126);
+	ASSERT_EQ(y, 159);
+}
+
+/*
+ * Name:                ContextTest.on_data
+ *
+ * Tested functions:    PDI::Context::on_data
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data share.
+ *
+ */
+TEST_F(ContextTest, on_data)
+{
+	string data_x{"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	this->test_context->on_data([](const std::string& name, Ref ref) {
+		Ref_w ref_write{ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	ASSERT_EQ(x, 0);
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+}
+
+/*
+ * Name:                ContextTest.add_named_data_callback
+ *
+ * Tested functions:    PDI::Context::on_data
+ *
+ *
+ * Description:         Checks if named callback is
+ *                      correctly called on data share.
+ *
+ */
+TEST_F(ContextTest, add_named_data_callback)
+{
+	string data_x{"data_x"};
+	string data_y{"data_y"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	int y = 0;
+	this->test_context->on_data(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* x = static_cast<int*>(ref_write.get());
+			*x += 42;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+}
+
+/*
+ * Name:                ContextTest.remove_data_callback
+ *
+ * Tested functions:    PDI::Context::on_data
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on share
+ *                      and removes it.
+ */
+TEST_F(ContextTest, remove_data_callback)
+{
+	string data_x{"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	auto erase_x = this->test_context->on_data([](const std::string& name, Ref ref) {
+		Ref_w ref_write{ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	ASSERT_EQ(x, 0);
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	erase_x();
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+}
+
+/*
+ * Name:                ContextTest.remove_named_data_callback
+ *
+ * Tested functions:    PDI::Context::on_data
+ *
+ *
+ * Description:         Checks if named callback is
+ *                      correctly called on data share.
+ *
+ */
+TEST_F(ContextTest, remove_named_data_callback)
+{
+	string data_x{"data_x"};
+	string data_y{"data_y"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	int y = 0;
+	auto erase_x = this->test_context->on_data(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* x = static_cast<int*>(ref_write.get());
+			*x += 42;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+	erase_x();
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+}
+
+/*
+ * Name:                ContextTest.add_remove_data_callback
+ *
+ * Tested functions:    PDI::Context::on_data
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on share
+ *                      and removes it several times.
+ *
+ */
+TEST_F(ContextTest, add_remove_data_callback)
+{
+	string data_x{"data_x"};
+	string data_y{"data_y"};
+	Data_descriptor& desc_x = this->test_context->desc(data_x);
+	Data_descriptor& desc_y = this->test_context->desc(data_y);
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	int y = 0;
+	auto erase_x = this->test_context->on_data([](const std::string& name, Ref ref) {
+		Ref_w ref_write{ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += std::stoi(name);
+	});
+	auto erase_y = this->test_context->on_data([](const std::string& name, Ref ref) {
+		Ref_w ref_write{ref};
+		int* y = static_cast<int*>(ref_write.get());
+		*y += std::stoi(name) + 1;
+	});
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("1").share(&x, true, true);
+	this->test_context->desc("1").reclaim();
+	ASSERT_EQ(x, 3);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("2").share(&y, true, true);
+	this->test_context->desc("2").reclaim();
+	ASSERT_EQ(x, 3);
+	ASSERT_EQ(y, 5);
+	erase_x();
+	this->test_context->desc("3").share(&x, true, true);
+	this->test_context->desc("3").reclaim();
+	ASSERT_EQ(x, 7);
+	ASSERT_EQ(y, 5);
+	this->test_context->desc("4").share(&y, true, true);
+	this->test_context->desc("4").reclaim();
+	ASSERT_EQ(x, 7);
+	ASSERT_EQ(y, 10);
+	erase_y();
+	this->test_context->desc("5").share(&x, true, true);
+	this->test_context->desc("6").share(&y, true, true);
+	this->test_context->desc("5").reclaim();
+	this->test_context->desc("6").reclaim();
+	ASSERT_EQ(x, 7);
+	ASSERT_EQ(y, 10);
+}
+
+/*
+ * Name:                ContextTest.add_remove_named_data_callback
+ *
+ * Tested functions:    PDI::Context::on_data
+ *
+ *
+ * Description:         Checks if named callback is
+ *                      correctly called on share
+ *                      and removes it several times.
+ *
+ */
+TEST_F(ContextTest, add_remove_named_data_callback)
+{
+	string data_x{"data_x"};
+	string data_y{"data_y"};
+	Data_descriptor& desc_x = this->test_context->desc(data_x);
+	Data_descriptor& desc_y = this->test_context->desc(data_y);
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	int y = 0;
+	auto erase_x = this->test_context->on_data(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* x = static_cast<int*>(ref_write.get());
+			*x += 42;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
+	auto erase_y = this->test_context->on_data(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* y = static_cast<int*>(ref_write.get());
+			*y += 53;
+			ASSERT_STREQ(name.c_str(), "data_y");
+		},
+		"data_y"
+	);
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_y").share(&y, true, true);
+	this->test_context->desc("data_y").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 53);
+	erase_x();
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 53);
+	this->test_context->desc("data_y").share(&y, true, true);
+	this->test_context->desc("data_y").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 106);
+	erase_y();
+	this->test_context->desc("data_y").share(&y, true, true);
+	this->test_context->desc("data_y").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 106);
+}
+
+/*
+ * Name:                ContextTest.add_empty_desc_callback
+ *
+ * Tested functions:    PDI::Context::on_missing_data
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on empty desc access.
+ */
+TEST_F(ContextTest, add_empty_desc_callback)
+{
+	string data_x{"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->on_missing_data([this](const std::string& name) {
+		int* x = new int;
+		*x = 42;
+		this->test_context->desc(name).share(x, true, true);
+	});
+	Ref_r ref_read{this->test_context->desc(data_x).ref()};
+	int x = *static_cast<const int*>(ref_read.get());
+	ASSERT_EQ(x, 42);
+	int* data = static_cast<int*>(this->test_context->desc(data_x).reclaim());
+	delete data;
+}
+
+/*
+ * Name:                ContextTest.remove_empty_desc_callback
+ *
+ * Tested functions:    PDI::Context::on_missing_data
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on empty desc access
+ *                      and removes it.
+ */
+TEST_F(ContextTest, remove_empty_desc_callback)
+{
+	string data_x{"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	auto erase_x = this->test_context->on_missing_data([this](const std::string& name) {
+		int* x = new int;
+		*x = 42;
+		this->test_context->desc(name).share(x, true, true);
+	});
+	Ref_r ref_read{this->test_context->desc(data_x).ref()};
+	int x = *static_cast<const int*>(ref_read.get());
+	ASSERT_EQ(x, 42);
+	int* data = static_cast<int*>(this->test_context->desc(data_x).reclaim());
+	delete data;
+	erase_x();
+	try {
+		Ref ref_x{this->test_context->desc(data_x).ref()};
+		FAIL();
+	} catch (Value_error& e) {
+		ASSERT_EQ(e.status(), PDI_ERR_VALUE);
+	}
+}
+
+/*
+ * Name:                ContextTest.add_data_remove_callback_reclaim
+ *
+ * Tested functions:    PDI::Context::add_data_remove_callback_reclaim
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data reclaim.
+ *
+ */
+TEST_F(ContextTest, add_data_remove_callback_reclaim)
+{
+	string data_x{"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	this->test_context->on_data_remove([](const std::string& name, Ref ref) {
+		Ref_w ref_write{ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	this->test_context->desc("data_x").share(&x, true, true);
+	ASSERT_EQ(x, 0);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+}
+
+/*
+ * Name:                ContextTest.add_data_remove_callback_release
+ *
+ * Tested functions:    PDI::Context::add_data_remove_callback_release
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data release.
+ *
+ */
+TEST_F(ContextTest, add_data_remove_callback_release)
+{
+	string data_x{"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	this->test_context->on_data_remove([&x](const std::string& name, Ref ref) {
+		x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	void* memory_to_free = malloc(sizeof(int));
+	this->test_context->desc("data_x").share(memory_to_free, true, true);
+	ASSERT_EQ(x, 0);
+	this->test_context->desc("data_x").release();
+	ASSERT_EQ(x, 42);
+}
+
+/*
+ * Name:                ContextTest.add_named_data_remove_callback_reclaim
+ *
+ * Tested functions:    PDI::Context::add_named_data_remove_callback_reclaim
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data reclaim.
+ *
+ */
+TEST_F(ContextTest, add_named_data_remove_callback_reclaim)
+{
+	string data_x{"data_x"};
+	string data_y{"data_y"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	int y = 0;
+	this->test_context->on_data_remove(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* x = static_cast<int*>(ref_write.get());
+			*x += 42;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
+	this->test_context->on_data_remove(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* y = static_cast<int*>(ref_write.get());
+			*y += 42;
+			ASSERT_STREQ(name.c_str(), "data_y");
+		},
+		"data_y"
+	);
+	this->test_context->desc("data_x").share(&x, true, true);
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+}
+
+/*
+ * Name:                ContextTest.add_named_data_remove_callback_release
+ *
+ * Tested functions:    PDI::Context::add_named_data_remove_callback_release
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data release.
+ *
+ */
+TEST_F(ContextTest, add_named_data_remove_callback_release)
+{
+	string data_x{"data_x"};
+	string data_y{"data_y"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	void* memory_to_free = malloc(sizeof(int));
+	int y = 0;
+	this->test_context->on_data_remove(
+		[&x](const std::string& name, Ref ref) {
+			x += 42;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
+	this->test_context->on_data_remove(
+		[&y](const std::string& name, Ref ref) {
+			y += 42;
+			ASSERT_STREQ(name.c_str(), "data_y");
+		},
+		"data_y"
+	);
+	this->test_context->desc("data_x").share(memory_to_free, true, true);
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_x").release();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+}
+
+/*
+ * Name:                ContextTest.add_data_remove_callback_reclaim_remove
+ *
+ * Tested functions:    PDI::Context::add_data_remove_callback_reclaim_remove
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data reclaim.
+ *
+ */
+TEST_F(ContextTest, add_data_remove_callback_reclaim_remove)
+{
+	string data_x{"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	auto remove_callback = this->test_context->on_data_remove([](const std::string& name, Ref ref) {
+		Ref_w ref_write{ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	this->test_context->desc("data_x").share(&x, true, true);
+	ASSERT_EQ(x, 0);
+	remove_callback();
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 0);
+}
+
+/*
+ * Name:                ContextTest.add_data_remove_callback_release_remove
+ *
+ * Tested functions:    PDI::Context::add_data_remove_callback_release_remove
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data release.
+ *
+ */
+TEST_F(ContextTest, add_data_remove_callback_release_remove)
+{
+	string data_x{"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	auto remove_callback = this->test_context->on_data_remove([&x](const std::string& name, Ref ref) {
+		x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	void* memory_to_free = malloc(sizeof(int));
+	this->test_context->desc("data_x").share(memory_to_free, true, true);
+	ASSERT_EQ(x, 0);
+	remove_callback();
+	this->test_context->desc("data_x").release();
+	ASSERT_EQ(x, 0);
+}
+
+/*
+ * Name:                DataDescTest.check_default_fields
+ *
+ * Tested functions:    PDI::Data_descriptor::Data_descriptor(Context, const char*)
+ *
+ * Description:         Checks if default values are correct.
+ */
+TEST_F(DataDescTest, check_default_fields)
+{
+	Datatype_sptr desc_type = Descriptor_test_handler::desc_get_type(this->m_desc_default, global_ctx);
+	shared_ptr<const Scalar_datatype> default_scalar = static_pointer_cast<const Scalar_datatype>(desc_type);
+	ASSERT_EQ(Scalar_kind::UNKNOWN, default_scalar->kind());
+	ASSERT_EQ(0, desc_type->datasize());
+	ASSERT_STREQ("default_desc", this->m_desc_default->name().c_str());
+	ASSERT_FALSE(this->m_desc_default->metadata());
+}
+
+/*
+ * Name:                DataDescTest.check_metadata_update
+ *
+ * Tested functions:    PDI::Data_descriptor::metadata()
+ *                      PDI::Data_descriptor::metadata(bool)
+ *
+ * Description:         Checks if can change metadata flag.
+ */
+TEST_F(DataDescTest, check_metadata_update)
+{
+	ASSERT_FALSE(this->m_desc_default->metadata());
+	this->m_desc_default->metadata(true);
+	ASSERT_TRUE(this->m_desc_default->metadata());
+}
+
+/*
+ * Name:                DataDescTest.default_type
+ *
+ * Tested functions:    PDI::Data_descriptor::default_type(PC_tree_t)
+ *
+ * Description:         Check if config is parsed and type is correctly read by PDI.
+ */
+TEST_F(DataDescTest, default_type)
+{
+	Paraconf_wrapper fw;
+	this->m_desc_default->default_type(array_datatype);
+	Datatype_sptr datatype = Descriptor_test_handler::desc_get_type(this->m_desc_default, global_ctx);
+	ASSERT_EQ(10 * sizeof(int), datatype->datasize());
+	ASSERT_EQ(10 * sizeof(int), datatype->buffersize());
+}
+
+/*
+ * Name:                DataDescTest.catch_empty_exception
+ *
+ * Tested functions:    PDI::Data_descriptor::ref()
+ *
+ * Description:         Checks if exception is thrown when accessing empty ref.
+ */
+TEST_F(DataDescTest, catch_empty_exception)
+{
+	try {
+		this->m_desc_default->ref();
+		FAIL();
+	} catch (const Value_error& err) {
+		ASSERT_EQ(PDI_status_t::PDI_ERR_VALUE, err.status());
+	}
+}
+
+/*
+ * Name:                DataDescTest.simply_share_data
+ *
+ * Tested functions:    PDI::Data_descriptor::share(void*, bool, bool)
+ *
+ * Description:         Shares data and checks if good privilege was granted.
+ */
+TEST_F(DataDescTest, simply_share_data)
+{
+	this->m_desc_default->share(this->array, false, true);
+
+	Ref created_ref = this->m_desc_default->ref();
+	void* ptr = Ref_w{created_ref}.get();
+	ASSERT_EQ(this->array, ptr);
+
+	this->m_desc_default->reclaim();
+}
+
+/*
+ * Name:                DataDescTest.multi_read_share_data
+ *
+ * Tested functions:    PDI::Data_descriptor::share(void*, bool, bool)
+ *                      PDI::Data_descriptor::share(Ref, bool, bool)
+ *                      PDI::Data_descriptor::ref()
+ *                      PDI::Data_descriptor::release()
+ *                      PDI::Data_descriptor::reclaim()
+ *
+ * Description:         Shares multiple times same data ref and checks
+ *                      if correct numbers of ref owners is returned.
+ */
+TEST_F(DataDescTest, multi_read_share_data)
+{
+	this->m_desc_default->share(this->array, true, false);
+	void* ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
+	ASSERT_EQ(this->array, ptr);
+	ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
+	ASSERT_EQ(this->array, ptr);
+
+	int refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
+
+	ASSERT_EQ(3, refs_number);
+
+	this->m_desc_default->reclaim();
+	ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
+	ASSERT_EQ(nullptr, ptr);
+	this->m_desc_default->release();
+
+	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
+	ASSERT_EQ(2, refs_number);
+
+	this->m_desc_default->release();
+	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
+	ASSERT_EQ(1, refs_number);
+
+	this->m_desc_default->release();
+	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
+	ASSERT_EQ(0, refs_number);
+}
+
+/*
+ * Name:                DataDescTest.multi_write_share_data
+ *
+ * Tested functions:    PDI::Data_descriptor::share(void*, bool, bool)
+ *                      PDI::Data_descriptor::share(Ref, bool, bool)
+ *                      PDI::Data_descriptor::ref()
+ *
+ * Description:         Expect exception while tring to get write access
+ *                      second time.
+ */
+TEST_F(DataDescTest, multi_write_share_data)
+{
+	this->m_desc_default->share(this->array, false, true);
+	this->m_desc_default->share(this->m_desc_default->ref(), false, true);
+	try {
+		this->m_desc_default->share(this->m_desc_default->ref(), false, true);
+		FAIL();
+	} catch (const Error& err) {
+		ASSERT_EQ(PDI_status_t::PDI_ERR_PERMISSION, err.status());
+	}
+
+	this->m_desc_default->reclaim();
+}
+
+/*
+ * Name:                DataDescTest.read_write_share_data
+ *
+ * Tested functions:    PDI::Data_descriptor::share(void*, bool, bool)
+ *                      PDI::Data_descriptor::share(Ref, bool, bool)
+ *                      PDI::Data_descriptor::ref()
+ *                      PDI::Data_descriptor::release()
+ *                      PDI::Data_descriptor::reclaim()
+ *
+ * Description:         Expect exception while tring to get write access
+ *                      after granted read access.
+ */
+TEST_F(DataDescTest, read_write_share_data)
+{
+	this->m_desc_default->share(this->array, true, true);
+	this->m_desc_default->share(this->m_desc_default->ref(), true, false);
+	try {
+		this->m_desc_default->share(this->m_desc_default->ref(), false, true);
+		FAIL();
+	} catch (const Error& err) {
+		ASSERT_EQ(PDI_status_t::PDI_ERR_PERMISSION, err.status());
+	}
+	this->m_desc_default->release();
+
+	void* ptr = this->m_desc_default->share(this->m_desc_default->ref(), false, true);
+	ASSERT_EQ(this->array, ptr);
+	try {
+		this->m_desc_default->share(this->m_desc_default->ref(), true, false);
+		FAIL();
+	} catch (const Error& err) {
+		ASSERT_EQ(PDI_status_t::PDI_ERR_PERMISSION, err.status());
+	}
+	this->m_desc_default->reclaim();
+}
+
+/*
+ * Name:                DataDescTest.simply_share_meta
+ *
+ * Tested functions:    PDI::Data_descriptor::share(void*, bool, bool)
+ *                      PDI::Data_descriptor::ref()
+ *
+ * Description:         Shares metadata and checks if good privilege was granted.
+ */
+TEST_F(DataDescTest, simply_share_meta)
+{
+	this->m_desc_default->share(this->array, true, false);
+
+	Ref created_ref = this->m_desc_default->ref();
+	ASSERT_TRUE(created_ref);
+	ASSERT_FALSE(Ref_w{created_ref});
+
+	this->m_desc_default->reclaim();
+}
+
+/*
+ * Name:                DataDescTest.share_meta_without_read
+ *
+ * Tested functions:    PDI::Data_descriptor::share(void*, bool, bool)
+ *
+ * Description:         Expects exception while sharing metadata without
+ *                      read privilege.
+ */
+TEST_F(DataDescTest, share_meta_without_read)
+{
+	this->m_desc_default->metadata(true);
+	try {
+		this->m_desc_default->share(this->array, false, true);
+		FAIL();
+	} catch (const Error& err) {
+		ASSERT_EQ(PDI_status_t::PDI_ERR_PERMISSION, err.status());
+	}
+}
+
+/*
+ * Name:                DataDescTest.multi_read_share_meta
+ *
+ * Tested functions:    PDI::Data_descriptor::share(void*, bool, bool)
+ *                      PDI::Data_descriptor::ref()
+ *
+ * Description:         Shares multiple times same metadata ref and checks
+ *                      if correct numbers of ref owners is returned.
+ */
+TEST_F(DataDescTest, multi_read_share_meta)
+{
+	this->m_desc_default->default_type(array_datatype);
+	ASSERT_EQ(0, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
+	this->m_desc_default->metadata(true);
+	ASSERT_EQ(1, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
+
+	this->m_desc_default->share(this->array, true, false);
+	ASSERT_EQ(2, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
+
+	const void* ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
+	ASSERT_EQ(3, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
+	ASSERT_EQ(this->array, ptr);
+
+	ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
+	ASSERT_EQ(4, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
+	ASSERT_EQ(this->array, ptr);
+
+	this->m_desc_default->release();
+	ASSERT_EQ(3, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
+
+	ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
+	ASSERT_EQ(4, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
+	ASSERT_EQ(this->array, ptr);
+
+	this->m_desc_default->release();
+	ASSERT_EQ(3, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
+
+	this->m_desc_default->release();
+	ASSERT_EQ(2, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
+
+	ptr = this->m_desc_default->reclaim();
+	ASSERT_EQ(1, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
+	ASSERT_EQ(this->array, ptr);
+
+	ptr = Ref_r{this->m_desc_default->ref()}.get();
+	ASSERT_NE(this->array, ptr);
+}
 
 /*
  * Name:                PositiveTypeParseTest.parse
@@ -752,3 +1885,4 @@ INSTANTIATE_TEST_SUITE_P(TupleTypes, PositiveTypeParseTest, testing::ValuesIn(tu
 INSTANTIATE_TEST_SUITE_P(PointerTypes, PositiveTypeParseTest, testing::ValuesIn(pointer_types));
 
 INSTANTIATE_TEST_SUITE_P(, NegativeTypeParseTest, testing::ValuesIn(invalid_data));
+

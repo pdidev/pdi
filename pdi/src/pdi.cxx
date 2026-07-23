@@ -44,7 +44,7 @@
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
 
-#include "global_context.h"
+#include "pdi_instance.h"
 
 static_assert(std::size(PDI_STATUS_MSG) == PDI_NB_STATUSES_DEFINED, "The signification of each error code should be listed in PDI_STATUS_MSG");
 
@@ -145,8 +145,8 @@ PDI_inout_t operator& (PDI_inout_t a, PDI_inout_t b)
 void assert_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
-		if (Global_context::initialized()) {
-			Global_context::context().logger().error("{}", message);
+		if (Pdi_instance::initialized()) {
+			Pdi_instance::instance().logger().error("{}", message);
 		} else {
 			cerr << "[PDI][NOINIT] *** Fatal error: " << message << endl;
 		}
@@ -158,8 +158,8 @@ void assert_status(PDI_status_t status, const char* message, void*)
  */
 void warn_status(PDI_status_t status, const char* message, void*)
 {
-	if (status && Global_context::initialized()) {
-		Global_context::context().logger().warn("{}", message);
+	if (status && Pdi_instance::initialized()) {
+		Pdi_instance::instance().logger().warn("{}", message);
 	}
 }
 
@@ -190,8 +190,8 @@ try {
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
-	Global_context::init(conf);
-	Global_context::context().event("pdi_start_timer");
+	Pdi_instance::init(conf);
+	Pdi_instance::instance().data_store().event("pdi_start_timer");
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -206,8 +206,8 @@ try {
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
-	Global_context::context().event("pdi_stop_timer");
-	Global_context::finalize();
+	Pdi_instance::instance().data_store().event("pdi_stop_timer");
+	Pdi_instance::finalize();
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -238,7 +238,7 @@ try {
 			PDI_VERSION_PATCH
 		};
 	}
-	Global_context::context().logger().trace("PDI API version: {}.{}.{}", PDI_VERSION_MAJOR, PDI_VERSION_MINOR, PDI_VERSION_PATCH);
+	Pdi_instance::instance().logger().trace("PDI API version: {}.{}.{}", PDI_VERSION_MAJOR, PDI_VERSION_MINOR, PDI_VERSION_PATCH);
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -251,7 +251,7 @@ try {
 PDI_status_t PDI_event(const char* name)
 try {
 	Paraconf_wrapper fw;
-	Global_context::context().event(name);
+	Pdi_instance::instance().data_store().event(name);
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -264,7 +264,7 @@ try {
 PDI_status_t PDI_share(const char* name, const void* buffer, PDI_inout_t access)
 try {
 	Paraconf_wrapper fw;
-	Global_context::context()[name].share(const_cast<void*>(buffer), access & PDI_OUT, access & PDI_IN);
+	Pdi_instance::instance().data_store()[name].share(const_cast<void*>(buffer), access & PDI_OUT, access & PDI_IN);
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -277,7 +277,7 @@ try {
 PDI_status_t PDI_access(const char* name, void** buffer, PDI_inout_t inout)
 try {
 	Paraconf_wrapper fw;
-	Data_descriptor& desc = Global_context::context()[name];
+	Data_descriptor& desc = Pdi_instance::instance().data_store()[name];
 	*buffer = desc.share(desc.ref(), inout & PDI_IN, inout & PDI_OUT);
 	return PDI_OK;
 } catch (const Error& e) {
@@ -291,7 +291,7 @@ try {
 PDI_status_t PDI_release(const char* name)
 try {
 	Paraconf_wrapper fw;
-	Global_context::context()[name].release();
+	Pdi_instance::instance().data_store()[name].release();
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -304,7 +304,7 @@ try {
 PDI_status_t PDI_reclaim(const char* name)
 try {
 	Paraconf_wrapper fw;
-	Global_context::context()[name].reclaim();
+	Pdi_instance::instance().data_store()[name].reclaim();
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -356,7 +356,7 @@ try {
 	while (const char* v_name = va_arg(ap, const char*)) {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
-		Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, transaction_data.size());
+		Pdi_instance::instance().logger().trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, transaction_data.size());
 		if ((status = PDI_share(v_name, v_data, v_access))) {
 			break;
 		}
@@ -365,13 +365,13 @@ try {
 	va_end(ap);
 
 	if (!status) { //trigger event only when all data is available
-		Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);
+		Pdi_instance::instance().logger().trace("Multi expose: Calling event `{}'", event_name);
 		status = PDI_event(event_name);
 	}
 
 	i = 0;
 	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
-		Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
+		Pdi_instance::instance().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
 		PDI_status_t r_status = PDI_reclaim(it->c_str());
 		status = !status ? r_status : status; //if it is first error, save its status (try to reclaim other desc anyway)
 	}

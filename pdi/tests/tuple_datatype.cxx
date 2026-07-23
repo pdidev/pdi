@@ -29,7 +29,7 @@
 #include <pdi/pointer_datatype.h>
 #include <pdi/tuple_datatype.h>
 
-#include "PDI_tuple_datatype_cases.h"
+#include "tuple_datatype_cases.h"
 
 using namespace PDI;
 using namespace std;

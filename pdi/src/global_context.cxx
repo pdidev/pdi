@@ -47,7 +47,7 @@
 
 #include "data_descriptor_impl.h"
 
-#include "global_context.h"
+#include "pdi/global_context.h"
 
 namespace fs = std::filesystem;
 
@@ -68,170 +68,13 @@ namespace PDI {
 
 namespace {
 
-/** A class that represents a path to include a yaml subtree, i.e. both the path of the file itself and the subtree in
- * the file.
- */
-class Include_path
-{
-	/// The path of the file
-	fs::path m_file_path;
-
-	/// The path of the subtree inside the file
-	std::string m_ypath;
-
-public:
-	/** Builds an Include_path from a PC_tree_t
-	 * \param include_directive either a scalar file path or a mapping with `file` and `subtree` keys
-	 */
-	Include_path(PC_tree_t include_directive)
-	{
-		if (is_map(include_directive)) {
-			bool found_file = false;
-			bool found_subtree = false;
-			each(include_directive, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
-				std::string key = PDI::to_string(key_tree);
-				std::string value = PDI::to_string(value_tree);
-				if (key == "file") {
-					m_file_path = value;
-					found_file = true;
-				} else if (key == "subtree") {
-					m_ypath = value;
-					found_subtree = true;
-				} else {
-					throw Spectree_error(key_tree, "unexpected key in include directive: `{}', only `file' and `subtree' allowed", key);
-				}
-			});
-			if (!found_file) {
-				throw Spectree_error(include_directive, "missing `'file` key in include directive");
-			}
-			if (!found_subtree) {
-				throw Spectree_error(include_directive, "missing `'subtree` key in include directive");
-			}
-		} else {
-			m_file_path = PDI::to_string(include_directive);
-		}
-	}
-
-	/** Returns the path of the file
-	 * \returns the path of the file
-	 */
-	const fs::path& file_path() const { return m_file_path; }
-
-	/** Returns the path of the subtree inside the file
-	 * \returns the path of the subtree inside the file
-	 */
-	const std::string& ypath() const { return m_ypath; }
-
-	// define the operator '<', '=' and '>'
-	auto operator<=> (const Include_path&) const = default;
-
-	/** Converts the path to a string representation
-	 * \returns a string representation of the path
-	 */
-	std::string to_string() const { return fmt::format("yaml://{}{}{}", file_path().string(), ((ypath() != "") ? "#" : ""), ypath()); }
-
-	/** Loads the subtree identified by this path
-	*/
-	PC_tree_t pc_tree() const
-	{
-		PC_tree_t result = PC_parse_path(file_path().string().c_str());
-		if (PC_status(result)) {
-			throw System_error("Unable to include file `{}': {}", file_path().string(), PC_errmsg());
-		}
-		result = PC_get(result, ypath().c_str());
-		if (PC_status(result)) {
-			throw System_error("Unable to include subtree `{}' from file `{}': {}", ypath(), file_path().string(), PC_errmsg());
-		}
-		return result;
-	}
-};
-
-
-} // namespace
-} // namespace PDI
-
-namespace std {
-template <>
-struct hash<PDI::Include_path> {
-	std::size_t operator() (const PDI::Include_path& path) const
-	{
-		// Computes the hash of an inc_path using boost strategy
-		std::size_t result = std::hash<fs::path>()(path.file_path());
-		result ^= std::hash<std::string>()(path.ypath()) + 0x9e3779b9 + (result << 6) + (result >> 2);
-		return result;
-	}
-};
-} // namespace std
-
-namespace PDI {
-namespace {
-
-/** Gather the files included by the provided configuration.
- * 
- * The result is as an ordered list where elements at the end of the list can depend on those coming before.
- * 
- * \param logger a logger
- * \param conf the configuration where to look for included files
- * \param parents the set of subtree path that are in the include chain of conf (including conf)
- * \param result_path the path of all files already in result
- * \param result the ordered list of (transitively) included files to which conf and its requirements will be added
- */
-void get_includes(
-	Logger& logger,
-	PC_tree_t conf,
-	std::unordered_set<Include_path>& parents,
-	std::unordered_set<Include_path>& result_path,
-	std::vector<PC_tree_t>& result
-)
-{
-	PC_tree_t inc_tree = PC_get(conf, ".include");
-	if (!PC_status(inc_tree)) {
-		opt_each(inc_tree, [&](PC_tree_t include_directive) {
-			Include_path subconf_path{include_directive};
-			if (parents.contains(subconf_path)) {
-				// if we are in the include chain, this is a recursive include and an error
-				throw Spectree_error(include_directive, "Circular include of `({}){}'", subconf_path.file_path().string(), subconf_path.ypath());
-			}
-			if (result_path.contains(subconf_path)) return; // if we were already included, nothing to do
-			parents.emplace(subconf_path);
-			try {
-				logger.trace("Including {}", subconf_path.to_string());
-				get_includes(logger, subconf_path.pc_tree(), parents, result_path, result);
-			} catch (const Spectree_error& e) {
-				rethrow_with_context(std::current_exception(), "included from ({}){}", subconf_path.file_path().string(), subconf_path.ypath());
-			}
-			parents.erase(subconf_path);
-			result_path.emplace(subconf_path);
-		});
-	}
-	result.emplace_back(conf);
-}
-
-/** Gather the files included by the provided configuration.
- * 
- * Returns the result as an ordered list where elements at the end of the list can depend on those coming before.
- * 
- * \param logger a logger
- * \param conf the configuration where to look for included files
- *
- * \returns the ordered list of (transitively) included confs, including `conf`
- */
-std::vector<PC_tree_t> get_includes(Logger& logger, PC_tree_t conf)
-{
-	std::unordered_set<Include_path> parents;
-	std::unordered_set<Include_path> result_path;
-	std::vector<PC_tree_t> result;
-	get_includes(logger, conf, parents, result_path, result);
-	return result;
-}
-
 /** Loads the data (or metadata) from a yaml tree
  * \param ctx the context in which to load
  * \param node the tree from where to load
  * \param is_metadata whether this is a metadata subtree instead of a data one
  * \param def_location the location of all loaded data/metadata for duplicate detection
  */
-void load_data(Context& ctx, PC_tree_t node, bool is_metadata, std::map<std::string, std::optional<Yaml_region>>& def_location)
+void load_data(Logger& logger, Global_context& ctx, PC_tree_t node, bool is_metadata, std::map<std::string, std::optional<Yaml_region>>& def_location)
 {
 	int nb_desc = 0;
 	each(node, [&](PC_tree_t key_node, PC_tree_t value_node) {
@@ -253,34 +96,11 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata, std::map<std::str
 		++nb_desc;
 	});
 	auto&& region = Yaml_region::make(node);
-	ctx.logger()
+	logger
 		.trace("Loaded {} {}{}{}{}", nb_desc, (is_metadata ? "metadata" : "data"), (region ? " from `" : ""), to_string(region), (region ? "'" : ""));
 }
 
 } // namespace
-
-unique_ptr<Global_context> Global_context::s_context;
-
-void Global_context::init(PC_tree_t conf)
-{
-	s_context.reset(new Global_context(conf));
-}
-
-bool Global_context::initialized()
-{
-	return static_cast<bool>(s_context);
-}
-
-Global_context& Global_context::context()
-{
-	if (!s_context) throw State_error{"PDI not initialized"};
-	return *s_context;
-}
-
-void Global_context::finalize()
-{
-	s_context.reset();
-}
 
 void Global_context::notify_init() const
 {
@@ -301,7 +121,7 @@ void Global_context::notify_data(const string& name, Ref ref)
 	for (auto it = m_data_callbacks.begin(); it != m_data_callbacks.end(); it++) {
 		data_callbacks.emplace_back(std::cref(*it));
 	}
-	logger().trace("Calling `{}' share. Callbacks to call: {}", name, data_callbacks.size());
+	m_logger.trace("Calling `{}' share. Callbacks to call: {}", name, data_callbacks.size());
 	// call gathered callbacks
 	vector<std::exception_ptr> errors;
 	for (const std::function<void(const std::string&, Ref)>& callback: data_callbacks) {
@@ -327,7 +147,7 @@ void Global_context::notify_data_remove(const string& name, Ref ref)
 	for (auto it = m_data_remove_callbacks.begin(); it != m_data_remove_callbacks.end(); it++) {
 		data_remove_callbacks.emplace_back(std::cref(*it));
 	}
-	logger().trace("Calling `{}' data remove. Callbacks to call: {}", name, data_remove_callbacks.size());
+	m_logger.trace("Calling `{}' data remove. Callbacks to call: {}", name, data_remove_callbacks.size());
 	//call gathered callbacks
 	vector<std::exception_ptr> errors;
 	for (const std::function<void(const std::string&, Ref)>& callback: data_remove_callbacks) {
@@ -353,7 +173,7 @@ void Global_context::notify_event(const string& name)
 	for (auto it = m_event_callbacks.begin(); it != m_event_callbacks.end(); it++) {
 		event_callbacks.emplace_back(cref(*it));
 	}
-	logger().trace("Calling `{}' event. Callbacks to call: {}", name, event_callbacks.size());
+	m_logger.trace("Calling `{}' event. Callbacks to call: {}", name, event_callbacks.size());
 	//call gathered callbacks
 	vector<std::exception_ptr> errors;
 	for (const function<void(const string&)>& callback: event_callbacks) {
@@ -379,7 +199,7 @@ void Global_context::notify_missing_data(const string& name)
 	for (auto it = m_empty_desc_access_callbacks.begin(); it != m_empty_desc_access_callbacks.end(); it++) {
 		empty_desc_callbacks.emplace_back(std::cref(*it));
 	}
-	logger().trace("Calling `{}' empty desc access. Callbacks to call: {}", name, empty_desc_callbacks.size());
+	m_logger.trace("Calling `{}' empty desc access. Callbacks to call: {}", name, empty_desc_callbacks.size());
 	//call gathered callbacks
 	vector<std::exception_ptr> errors;
 	for (const std::function<void(const std::string&)>& callback: empty_desc_callbacks) {
@@ -393,38 +213,27 @@ void Global_context::notify_missing_data(const string& name)
 	rethrow_with_context(errors, "while populating `{}', ", name);
 }
 
-Global_context::Global_context(PC_tree_t conf)
-	: m_logger{"PDI", PC_get(conf, ".logging")}
-	, m_plugins{*this}
+Global_context::Global_context(Logger& logger)
+	: m_logger(logger)
+{}
+
+Global_context::~Global_context() = default;
+
+void Global_context::configure(std::vector<PC_tree_t> confs)
 {
-	// Handle includes and gather all files
-	std::vector<PC_tree_t> confs = get_includes(logger(), conf);
-
-	// load basic datatypes
-	Datatype_template::load_basic_datatypes(*this);
-	// load user datatypes
-	for (auto&& conf: confs) {
-		Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
-	}
-
-	m_plugins.load_plugins(confs);
-
-	// evaluate pattern after loading plugins
-	m_logger.evaluate_pattern(*this);
-
 	std::map<std::string, std::optional<Yaml_region>> data_definition_location;
 
 	for (auto&& conf: confs) {
 		PC_tree_t metadata = PC_get(conf, ".metadata");
 		if (!PC_status(metadata)) {
-			load_data(*this, metadata, true, data_definition_location);
+			load_data(m_logger, *this, metadata, true, data_definition_location);
 		}
 	}
 
 	for (auto&& conf: confs) {
 		PC_tree_t data = PC_get(conf, ".data");
 		if (!PC_status(data)) {
-			load_data(*this, data, false, data_definition_location);
+			load_data(m_logger, *this, data, false, data_definition_location);
 		}
 	}
 	// no data is spurious, but not an error
@@ -432,14 +241,7 @@ Global_context::Global_context(PC_tree_t conf)
 		m_logger.warn("No data (or metadata) defined in specification tree");
 	}
 
-
 	notify_init();
-	m_logger.info("Initialization successful");
-}
-
-Global_context::~Global_context()
-{
-	m_logger.info("Finalization");
 }
 
 Data_descriptor& Global_context::desc(const char* name)
@@ -482,11 +284,6 @@ void Global_context::event(const char* name)
 	notify_event(name);
 }
 
-Logger& Global_context::logger()
-{
-	return m_logger;
-}
-
 Datatype_template_sptr Global_context::datatype(PC_tree_t node)
 {
 	string type;
@@ -499,16 +296,16 @@ Datatype_template_sptr Global_context::datatype(PC_tree_t node)
 	// check if someone didn't mean to create an array with the old syntax
 	if (type != "array") {
 		if (!PC_status(PC_get(node, ".size"))) {
-			logger().warn("In line {}: Non-array type with a `size' property", node.node->start_mark.line);
+			m_logger.warn("In line {}: Non-array type with a `size' property", node.node->start_mark.line);
 		}
 		if (!PC_status(PC_get(node, ".sizes"))) {
-			logger().warn("In line {}: Non-array type with a `sizes' property", node.node->start_mark.line);
+			m_logger.warn("In line {}: Non-array type with a `sizes' property", node.node->start_mark.line);
 		}
 	}
 
 	auto&& func_it = m_datatype_parsers.find(type);
 	if (func_it != m_datatype_parsers.end()) {
-		return (func_it->second)(*this, node);
+		return (func_it->second)(m_logger, *this, node);
 	}
 	throw Spectree_error{node, "Unknown data type: `{}'", type};
 }
