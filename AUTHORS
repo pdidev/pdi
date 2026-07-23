@@ -6,6 +6,7 @@ Julian Auriac - CEA (julian.auriac@cea.fr)
 * Fix CI bug where tests.xml file could not be written
 * Improvement of a Decl'HDF5 test to work on OSX
 * Addition of API tests
+* Add local CI
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Initial design and implementation

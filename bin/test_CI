@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 #=============================================================================
-# Copyright (c) 2024-2025 Centre national de la recherche scientifique (CNRS)
-# Copyright (c) 2024-2026 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
-# Copyright (c) 2024-2025 Institut national de recherche en informatique et en automatique (Inria)
-# Copyright (c) 2024-2025 Université Paris-Saclay
-# Copyright (c) 2024-2025 Université de Versailles Saint-Quentin-en-Yvelines
+# Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -32,40 +28,25 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-
-# Use "./test_indent" to run check
-# Use "./test_indent -i" to apply fix
+# Use "./test_CI" to run CI locally from a container
 
 set -euo pipefail
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "$REPO_ROOT"
 
-IMAGE="ghcr.io/pdidev/run_clang_format:v4"
-CONTAINER_OPTS=(run --rm)
+# ----------- Config ------------------
+IMAGE="ghcr.io/pdidev/ubuntu/rolling/openmpi/all:v4"
+TMP_DIR="/tmp_dir_test"
+BINARY_PATH="bin/build_and_run_all_tests"
+# ------------------------------------
 
-CLANG_FORMAT_ARGS=()
-if [ $# -gt 0 ]; then
-    case "$1" in
-        -i|--apply)
-            CLANG_FORMAT_ARGS+=("-i")
-            ;;
-        -q|--quiet)
-            CLANG_FORMAT_ARGS+=("-q")
-            ;;
-        -h|--help)
-            echo "Usage: $0 [-i|--apply] [-q|--quiet]" >&2
-            echo "  Checks (or with -i/--apply, enforces) the indentation of C/C++ files" >&2
-            echo "  With -q/--quiet, only the return code provides info" >&2
-            exit 0
-            ;;
-        *)
-            echo "Error: Unknown option '$1'" >&2
-            echo "Usage: $0 [-i|--apply] [-q|--quiet]" >&2
-            exit 1
-            ;;
-    esac
+if [[ ! -f "$BINARY_PATH" ]]; then
+    echo "Error: Test runner script not found at $REPO_ROOT/$BINARY_PATH" >&2
+    exit 1
 fi
+
+CONTAINER_OPTS=(run --rm)
 
 if command -v docker &>/dev/null; then
     CONTAINER_CMD="docker"
@@ -78,11 +59,18 @@ else
     exit 127
 fi
 
-echo "Collecting files and running clang-format via $CONTAINER_CMD"
+echo "Running CI tests via $CONTAINER_CMD"
+echo ""
 
-git ls-files -z --full-name \
-    | grep -zZv '^vendor/' \
-    | grep -zZE '\.(c|h|cc|hh|cpp|hpp|cxx|hxx)$' \
-    | xargs -0 "$CONTAINER_CMD" "${CONTAINER_OPTS[@]}" -v "$REPO_ROOT":/src -w /src "$IMAGE" "${CLANG_FORMAT_ARGS[@]}"
+"$CONTAINER_CMD" "${CONTAINER_OPTS[@]}" \
+    -v "$REPO_ROOT":/src \
+    -w /src \
+    --tmpfs "${TMP_DIR}:exec" \
+    -e MAKEFLAGS="-j 4" \
+    -e TEST_DIR="$TMP_DIR" \
+    -e CMAKE_FLAGS="-DBUILD_DOCUMENTATION=OFF" \
+    "$IMAGE" \
+    "/src/$BINARY_PATH"
 
+echo ""
 echo "Done"
