@@ -153,6 +153,7 @@ public:
 			alias.expose(ctx, pyscope);
 		}
 		try {
+			PDI::TimerEventHandler pycall_timer(ctx, "pycall");
 			pybind11::exec(m_code, pyscope);
 		} catch (const std::exception& e) {
 			ctx.logger().error("while calling python, caught exception: {}", e.what());

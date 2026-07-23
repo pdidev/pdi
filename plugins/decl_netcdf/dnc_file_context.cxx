@@ -212,6 +212,7 @@ Dnc_variable* Dnc_file_context::variable(const std::string& desc_name, const std
 
 void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 {
+	PDI::TimerEventHandler netcdf_timer(m_ctx, "decl_netcdf");
 	if (m_when.to_long(m_ctx)) {
 		std::list<Dnc_variable> variables_holder; // memory for Variables created from descriptor
 
@@ -280,6 +281,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 
 void Dnc_file_context::execute()
 {
+	PDI::TimerEventHandler netcdf_timer(m_ctx, "decl_netcdf");
 	if (m_when.to_long(m_ctx)) {
 		std::list<Dnc_variable> variables_holder;
 		std::vector<Dnc_variable*> variables_to_get;
