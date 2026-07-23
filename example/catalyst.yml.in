@@ -1,0 +1,56 @@
+# duration in seconds
+duration: 1.75
+# global [height, width] (excluding boundary conditions or ghosts)
+datasize: [60, 12]
+# degree of parallelism
+parallelism: { height: 3, width: 1 }
+
+# only the following config is passed to PDI
+pdi:
+  metadata: # type of small values for which PDI keeps a copy
+    iter:   int                    # current iteration id
+    dsize:  { size: 2, type: array, subtype: int } # local data size including ghosts/boundary
+    psize:  { size: 2, type: array, subtype: int } # number of processes in each dimension
+    pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
+  data: # type of values for which PDI does not keep a copy
+    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
+
+  plugins:
+    mpi:
+    catalyst:
+      scripts:
+        script1: "@CATALYST_SCRIPT_FOLDER@/catalyst_pipeline_with_rendering.py"
+      on_event: "newiter"
+      execute:
+        state:
+          timestep: '$iter'
+          time: '1.0*$iter'
+          multiblock: 0
+        channels:
+          grid:
+            type: "mesh"
+            data:
+              coordsets:
+                my_coords:
+                  type: "uniform"
+                  dims: { i: '1+$dsize[1]', j: '1+$dsize[0]' }
+                  origin: 
+                    x: '1.0*$pcoord[1]*($dsize[1]-2.0)-1.0'
+                    y: '1.0*$pcoord[0]*($dsize[0]-2.0)-1.0'
+                  spacing: { dx: 1.0, dy: 1.0 }
+              topologies:
+                my_mesh:
+                  type: "uniform"
+                  coordset: "my_coords"
+#                  elements:
+#                    dims: {offsets: [] strides: []}
+              fields:
+                temperature:
+                  association: "element"
+                  topology: "my_mesh"
+                  volume_dependent: "false"
+                  values:
+                    PDI_data_array: "main_field"
+                    size: '$dsize[0]*$dsize[1]'
+              ghost_layers:
+                my_mesh: { association: "element", start: ['1', '1'], size: ['$dsize[1]-2', '$dsize[0]-2'] }

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+WKDIR="$(mktemp -p "${PWD}" -d run-XXXXXXXXXX)"
+## need to define CATALYST_DATA_DUMP_DIRECTORY to write the result
+export CATALYST_DATA_DUMP_DIRECTORY="${WKDIR}/data_catalyst"
+function finish {
+  rm -rf "${WKDIR}"
+}
+trap finish EXIT
+
+while [ '--runtest-dir-copy-file' = "$1" ]
+do
+	shift
+	cp "$1" "${WKDIR}/"
+	shift
+done
+
+cd "${WKDIR}"
+
+"$@"
