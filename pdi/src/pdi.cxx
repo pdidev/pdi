@@ -191,6 +191,7 @@ try {
 	g_transaction.clear();
 	g_transaction_data.clear();
 	Global_context::init(conf);
+	Global_context::context().event("pdi_start_timer");
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -205,6 +206,7 @@ try {
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
+	Global_context::context().event("pdi_stop_timer");
 	Global_context::finalize();
 	return PDI_OK;
 } catch (const Error& e) {

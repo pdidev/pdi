@@ -161,6 +161,7 @@ public:
 	/// call the function that has been registered
 	void call(Context& ctx)
 	{
+		PDI::TimerEventHandler uc_timer(ctx, "user_code");
 		// all exposed aliases that will be unexposed on destroy
 		vector<ExposedAlias> exposed_aliases;
 		for (auto&& alias: m_aliases) {
