@@ -26,9 +26,13 @@
 #include "config.h"
 
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <map>
 #include <memory>
+#include <stdexcept>
+#include <unordered_set>
 #include <vector>
 
 #include <dlfcn.h>
@@ -45,6 +49,7 @@
 
 #include "global_context.h"
 
+namespace fs = std::filesystem;
 
 using std::exception;
 using std::forward_as_tuple;
@@ -61,20 +66,178 @@ namespace PDI {
 
 namespace {
 
-void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
+/** A class that represents a path to include a yaml subtree, i.e. both the path of the file itself and the subtree in
+ * the file.
+ */
+class Include_path
 {
-	int map_len = len(node);
+	/// The path of the file
+	fs::path m_file_path;
 
-	for (int map_id = 0; map_id < map_len; ++map_id) {
-		Data_descriptor& dsc = ctx.desc(to_string(PC_get(node, "{%d}", map_id)).c_str());
-		dsc.metadata(is_metadata);
-		dsc.default_type(ctx.datatype(PC_get(node, "<%d>", map_id)));
+	/// The path of the subtree inside the file
+	std::string m_ypath;
+
+public:
+	/** Builds an Include_path from a know file and subtree path
+	 * \param file_path the path of the file
+	 * \param ypath the subtree path as a valid paraconf ypath
+	 */
+
+	/** Builds an Include_path from a PC_tree_t
+	 * \param include_directive either a scalar file path or a mapping with `file` and `subtree` keys
+	 */
+	Include_path(PC_tree_t include_directive)
+	{
+		if (is_map(include_directive)) {
+			m_file_path = PDI::to_string(PC_get(include_directive, ".file"));
+			m_ypath = PDI::to_string(PC_get(include_directive, ".subtree"));
+		} else {
+			m_file_path = PDI::to_string(include_directive);
+		}
 	}
-	if (is_metadata) {
-		ctx.logger().trace("Loaded {} metadata", map_len);
-	} else {
-		ctx.logger().trace("Loaded {} data", map_len);
+
+	/** Returns the path of the file
+	 * \returns the path of the file
+	 */
+	const fs::path& file_path() const { return m_file_path; }
+
+	/** Returns the path of the subtree inside the file
+	 * \returns the path of the subtree inside the file
+	 */
+	const std::string& ypath() const { return m_ypath; }
+
+	// define the operator '<', '=' and '>'
+	auto operator<=> (const Include_path&) const = default;
+
+	/** Converts the path to a string representation
+	 * \returns a string representation of the path
+	 */
+	std::string to_string() const { return fmt::format("yaml://{}{}{}", file_path().string(), ((ypath() != "") ? "#" : ""), ypath()); }
+
+	/** Loads the subtree identified by this path
+	*/
+	PC_tree_t pc_tree() const
+	{
+		PC_tree_t result = PC_parse_path(file_path().string().c_str());
+		if (PC_status(result)) {
+			throw System_error("Unable to include file `{}': {}", file_path().string(), PC_errmsg());
+		}
+		result = PC_get(result, ypath().c_str());
+		if (PC_status(result)) {
+			throw System_error("Unable to include subtree `{}' from file `{}': {}", ypath(), file_path().string(), PC_errmsg());
+		}
+		return result;
 	}
+};
+
+
+} // namespace
+} // namespace PDI
+
+namespace std {
+template <>
+struct hash<PDI::Include_path> {
+	std::size_t operator() (const PDI::Include_path& path) const
+	{
+		// Computes the hash of an inc_path using boost strategy
+		std::size_t result = std::hash<fs::path>()(path.file_path());
+		result ^= std::hash<std::string>()(path.ypath()) + 0x9e3779b9 + (result << 6) + (result >> 2);
+		return result;
+	}
+};
+} // namespace std
+
+namespace PDI {
+namespace {
+
+/** Gather the files included by the provided configuration.
+ * 
+ * The result is as an ordered list where elements at the end of the list can depend on those coming before.
+ * 
+ * \param logger a logger
+ * \param conf the configuration where to look for included files
+ * \param parents the set of subtree path that are in the include chain of conf (including conf)
+ * \param result_path the path of all files already in result
+ * \param result the ordered list of (transitively) included files to which conf and its requirements will be added
+ */
+void get_includes(
+	Logger& logger,
+	PC_tree_t conf,
+	std::unordered_set<Include_path>& parents,
+	std::unordered_set<Include_path>& result_path,
+	std::vector<PC_tree_t>& result
+)
+{
+	PC_tree_t inc_tree = PC_get(conf, ".include");
+	if (!PC_status(inc_tree))
+		opt_each(inc_tree, [&](PC_tree_t include_directive) {
+			Include_path subconf_path{include_directive};
+			if (parents.contains(subconf_path)) {
+				// if we are in the include chain, this is a recursive include and an error
+				throw Spectree_error(include_directive, "Circular include of `({}){}'", subconf_path.file_path().string(), subconf_path.ypath());
+			}
+			if (result_path.contains(subconf_path)) return; // if we were already included, nothing to do
+			parents.emplace(subconf_path);
+			try {
+				logger.trace("Including {}", subconf_path.to_string());
+				get_includes(logger, subconf_path.pc_tree(), parents, result_path, result);
+			} catch (const Spectree_error& e) {
+				rethrow_with_context(std::current_exception(), "included from ({}){}", subconf_path.file_path().string(), subconf_path.ypath());
+			}
+			parents.erase(subconf_path);
+			result_path.emplace(subconf_path);
+		});
+	result.emplace_back(conf);
+}
+
+/** Gather the files included by the provided configuration.
+ * 
+ * Returns the result as an ordered list where elements at the end of the list can depend on those coming before.
+ * 
+ * \param logger a logger
+ * \param conf the configuration where to look for included files
+ *
+ * \returns the ordered list of (transitively) included confs, including `conf`
+ */
+std::vector<PC_tree_t> get_includes(Logger& logger, PC_tree_t conf)
+{
+	std::unordered_set<Include_path> parents;
+	std::unordered_set<Include_path> result_path;
+	std::vector<PC_tree_t> result;
+	get_includes(logger, conf, parents, result_path, result);
+	return result;
+}
+
+/** Loads the data (or metadata) from a yaml tree
+ * \param ctx the context in which to load
+ * \param node the tree from where to load
+ * \param is_metadata whether this is a metadata subtree instead of a data one
+ * \param def_location the location of all loaded data/metadata for duplicate detection
+ */
+void load_data(Context& ctx, PC_tree_t node, bool is_metadata, std::map<std::string, std::optional<Yaml_region>>& def_location)
+{
+	int nb_desc = 0;
+	each(node, [&](PC_tree_t key_node, PC_tree_t value_node) {
+		auto&& [location_it, is_new] = def_location.emplace(to_string(key_node), Yaml_region::make(value_node));
+		auto&& [data_name, region] = *location_it;
+		if (!is_new) {
+			throw Spectree_error(
+				key_node,
+				"redefinition of '{}'{}{}",
+				data_name,
+				(region ? " previously defined in `" : ""),
+				to_string(region),
+				(region ? "'" : "")
+			);
+		}
+		auto&& descriptor = ctx[data_name];
+		descriptor.metadata(is_metadata);
+		descriptor.default_type(ctx.datatype(value_node));
+		++nb_desc;
+	});
+	auto&& region = Yaml_region::make(node);
+	ctx.logger()
+		.trace("Loaded {} {}{}{}{}", nb_desc, (is_metadata ? "metadata" : "data"), (region ? " from `" : ""), to_string(region), (region ? "'" : ""));
 }
 
 } // namespace
@@ -104,33 +267,42 @@ void Global_context::finalize()
 
 Global_context::Global_context(PC_tree_t conf)
 	: m_logger{"PDI", PC_get(conf, ".logging")}
-	, m_plugins{*this, conf}
+	, m_plugins{*this}
 	, m_callbacks{*this}
 {
+	// Handle includes and gather all files
+	std::vector<PC_tree_t> confs = get_includes(logger(), conf);
+
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);
 	// load user datatypes
-	Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
+	for (auto&& conf: confs) {
+		Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
+	}
 
-	m_plugins.load_plugins();
+	m_plugins.load_plugins(confs);
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
 
-	// no metadata is not an error
-	PC_tree_t metadata = PC_get(conf, ".metadata");
-	if (!PC_status(metadata)) {
-		load_data(*this, metadata, true);
-	} else {
-		m_logger.debug("Metadata is not defined in specification tree");
+	std::map<std::string, std::optional<Yaml_region>> data_definition_location;
+
+	for (auto&& conf: confs) {
+		PC_tree_t metadata = PC_get(conf, ".metadata");
+		if (!PC_status(metadata)) {
+			load_data(*this, metadata, true, data_definition_location);
+		}
 	}
 
+	for (auto&& conf: confs) {
+		PC_tree_t data = PC_get(conf, ".data");
+		if (!PC_status(data)) {
+			load_data(*this, data, false, data_definition_location);
+		}
+	}
 	// no data is spurious, but not an error
-	PC_tree_t data = PC_get(conf, ".data");
-	if (!PC_status(data)) {
-		load_data(*this, data, false);
-	} else {
-		m_logger.warn("Data is not defined in specification tree");
+	if (data_definition_location.empty()) {
+		m_logger.warn("No data (or metadata) defined in specification tree");
 	}
 
 
