@@ -29,7 +29,7 @@
 #include <pdi/pointer_datatype.h>
 #include <pdi/record_datatype.h>
 
-#include "PDI_record_datatype_cases.h"
+#include "record_datatype_cases.h"
 
 using namespace PDI;
 using namespace std;

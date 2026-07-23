@@ -62,7 +62,7 @@ public:
 
 	/** A function that parses a PC_tree_t to create a datatype_template
 	 */
-	typedef std::function<Datatype_template_sptr(Context&, PC_tree_t)> Datatype_template_parser;
+	typedef std::function<Datatype_template_sptr(Logger&, Context&, PC_tree_t)> Datatype_template_parser;
 
 protected:
 	Iterator get_iterator(const std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator& data);
@@ -107,11 +107,6 @@ public:
 	 * \param[in] name the event name
 	 */
 	virtual void event(const char* name) = 0;
-
-	/** Logger getter
-	 * \return logger
-	 */
-	virtual Logger& logger() = 0;
 
 	/** Creates a new datatype template from a paraconf-style config
 	 * \param[in] node the configuration to read

@@ -28,10 +28,11 @@
 #include <pdi/expression.h>
 #include <pdi/pointer_datatype.h>
 #include <pdi/record_datatype.h>
+#include <pdi/global_context.h>
 
-#include "global_context.h"
+#include "record_datatype_cases.h"
 
-#include "PDI_record_datatype_cases.h"
+#include "mocks/context_mock.h"
 
 using namespace PDI;
 using namespace std;
@@ -47,7 +48,9 @@ using namespace std;
 TEST(TypeAttrTest, simple_attr)
 {
 	PDI::Paraconf_wrapper fw;
-	Global_context global_ctx{PC_parse_string("types: {attr_array: {type: array, subtype: int, size: 10, +attr: test } }")};
+	Logger logger;
+	Cont global_ctx{logger};
+	global_ctx.configure({PC_parse_string("types: {attr_array: {type: array, subtype: int, size: 10, +attr: test } }")});
 	Datatype_template_sptr result = global_ctx.datatype(PC_parse_string("attr_array"));
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test"));
 

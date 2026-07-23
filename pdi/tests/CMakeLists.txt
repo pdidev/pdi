@@ -48,31 +48,29 @@ if("${BUILD_PYTHON}")
 	add_test(NAME PDI_test_04 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_04.py")
 	add_test(NAME PDI_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_05.py")
 
-	add_executable(PDI_python_tools_unit_tests PDI_python_tools.cxx)
+	add_executable(PDI_python_tools_unit_tests python_tools.cxx)
 	target_link_libraries(PDI_python_tools_unit_tests PDI::PDI_pysupport pybind11::embed Python3::Python Threads::Threads GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 	target_include_directories(PDI_python_tools_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 	gtest_discover_tests(PDI_python_tools_unit_tests)
 endif()
 
 add_executable(PDI_unit_tests
+		array_datatype.cxx
+		C_API.cxx
+		global_context.cxx
+		datatype_attributes.cxx
+		error.cxx
+		expression.cxx
+# 		initialize_plugins.cxx
+		member.cxx
 		paraconf_wrapper.cxx
 		parsed_modulo.cxx
-		PDI_array_datatype.cxx
-		PDI_C_API.cxx
-		PDI_context.cxx
-		PDI_data_descriptor.cxx
-		PDI_datatype_attributes.cxx
-		PDI_error.cxx
-		PDI_expression.cxx
-# 		PDI_initialize_plugins.cxx
-		PDI_member.cxx
-		PDI_pointer_datatype.cxx
-		PDI_record_datatype_empty.cxx
-		PDI_record_datatype.cxx
-		PDI_ref_any.cxx
-		PDI_scalar_datatype.cxx
-		PDI_test_parse_types.cxx
-		PDI_tuple_datatype.cxx
+		pointer_datatype.cxx
+		record_datatype_empty.cxx
+		record_datatype.cxx
+		ref_any.cxx
+		scalar_datatype.cxx
+		tuple_datatype.cxx
 		)
 
 set(OPERAND_TYPES uint8_t int64_t float double)

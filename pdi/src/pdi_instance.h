@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -23,55 +23,56 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
+#ifndef PDI_PDI_INSTANCE_H_
+#define PDI_PDI_INSTANCE_H_
 
 #include <memory>
 
-#include <pybind11/embed.h>
+#include "pdi/pdi_fwd.h"
+#include "pdi/logger.h"
 
-#include <gtest/gtest.h>
+#include "plugin_store.h"
+#include "pdi/global_context.h"
 
-#include <pdi/pdi_fwd.h>
-#include <pdi/paraconf_wrapper.h>
-#include <pdi/python/tools.h>
-#include "global_context.h"
-
-using std::unique_ptr;
-
-using PDI::Context;
-using PDI::Datatype_sptr;
-using PDI::Global_context;
-using PDI::Paraconf_wrapper;
-using PDI::Ref;
-
-TEST(Python, ref_to_python)
+namespace PDI {
+// 
+class PDI_EXPORT Pdi_instance
 {
-	pybind11::initialize_interpreter();
+private:
+	/// The singleton Context instance
+	static std::unique_ptr<Pdi_instance, void(*)(Pdi_instance*)> s_instance;
 
-	Paraconf_wrapper _;
-	unique_ptr<Context> ctx{new Global_context{PC_parse_string("logging: off")}};
+	/// Global logger of PDI, should be constructed first, destroyed last
+	Logger m_logger;
 
-	Datatype_sptr type
-		= ctx->datatype(PC_parse_string("{type: array, subtype: int, size: [10, 6, 3], subsize: [3, 2, 1], start: [3, 2, 1]}"))->evaluate(*ctx);
+	Global_context m_data_store;
 
-	int data[10][6][3];
+	/// The plugins, this should be late in the list to be destroyed early
+	Plugin_store m_plugins;
 
-	for (int i = 0; i < 10; i++) {
-		for (int j = 0; j < 6; j++) {
-			for (int k = 0; k < 3; k++) {
-				data[i][j][k] = i * 18 + j * 3 + k;
-			}
-		}
-	}
+	Pdi_instance(const Pdi_instance&) = delete;
 
-	Ref test_ref{data, [](void*) {}, std::move(type), true, true};
-	{
-		pybind11::dict pyscope = pybind11::module::import("__main__").attr("__dict__");
-		pyscope["py_data"] = to_python(test_ref);
+	Pdi_instance(Pdi_instance&&) = delete;
 
-		pybind11::exec("assert py_data[0][0][0] == 61 and  py_data[0][1][0] == 64", pyscope);
-		pybind11::exec("assert py_data[1][0][0] == 79 and  py_data[1][1][0] == 82", pyscope);
-		pybind11::exec("assert py_data[2][0][0] == 97 and  py_data[2][1][0] == 100", pyscope);
-	}
-	pybind11::finalize_interpreter();
-}
+	Pdi_instance(PC_tree_t conf);
+
+	~Pdi_instance();
+
+public:
+	static void init(PC_tree_t conf);
+
+	static bool initialized();
+
+	static Pdi_instance& instance();
+
+	static void finalize();
+
+	Logger& logger();
+
+	Global_context& data_store();
+};
+
+} // namespace PDI
+
+#endif // PDI_PDI_INSTANCE_H_
+
