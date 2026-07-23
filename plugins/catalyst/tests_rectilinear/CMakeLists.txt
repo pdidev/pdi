@@ -53,8 +53,7 @@ endif()
 
 
 # Creation of executable
-add_executable(TestPDICatalyst_rectilinear
- example.cpp)
+add_executable(TestPDICatalyst_rectilinear rectilinear_mesh.cpp)
 
 # MPI
 find_package(MPI COMPONENTS C CXX REQUIRED)
