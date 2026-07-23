@@ -29,6 +29,12 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
+if(NOT TARGET GTest::gtest)
+	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+	add_subdirectory("../../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+include(GoogleTest)
+
 # Add the plugin path to PDI_PLUGIN_PATH
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
 file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake"
@@ -66,3 +72,9 @@ add_executable(user_code_05_c user_code_test_05.c)
 target_link_libraries(user_code_05_c PDI::PDI_C)
 set_target_properties(user_code_05_c PROPERTIES ENABLE_EXPORTS TRUE)
 add_test(NAME user_code_05_c COMMAND user_code_05_c)
+
+add_executable(user_code_tests user_code_tests.cxx)
+target_link_libraries(user_code_tests PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest GTest::gtest_main)
+set_target_properties(user_code_tests PROPERTIES ENABLE_EXPORTS TRUE)
+gtest_discover_tests(user_code_tests)
+

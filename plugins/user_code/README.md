@@ -18,7 +18,7 @@ when a specified event occur or certain data becomes available.
 To ensure proper work of the `user-code` plugin, there are several conventions to follow in the application 
 code and the specification tree.
 
-First, each function name in specification tree must be a valid function name (watch out for [name mangling](https://en.wikipedia.org/wiki/Name_mangling)).
+First, each function name in specification tree must be a valid function name (watch out for [name mangling](https://en.wikipedia.org/wiki/Name_mangling)). Please do not use any PDI yaml key for the function name. (e.g., `when`, `file`, etc.)
 
 Second, these functions **can not** take any arguments or return any value (i.e. their type must be `void(void)`). Use descriptors for passing input/output variables instead.
 
@@ -308,9 +308,25 @@ A \ref on_data_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
+|`"when"` (*optional*)|a $-expression defines a condition for executing the function|
 |`".*"` (*optional*)|a \ref function_list_node|
 
 * each key identifies the name of a descriptor, which will trigger specified functions when it becomes available.
+
+If a data is used to trigger multiple functions and some functions should be executed only if the `when` condition is satisfied, then we can use the list-styled syntex of the yaml:
+```yaml
+plugins:                       
+    user_code:                   
+        on_data:                   
+            - my_data:                 
+                when: `$cond>1`
+                fun1: {in: $desc2, out: $desc3}
+            - my_data:
+                fun2: {}
+                fun3: {out: $desc2}
+```
+
+In this exmaple, `fun2` and `fun3` will be executed when `my_data` is shared to PDI. However, `fun1` will only be executed when `my_data` is shared and also `$cond>1`.
 
 ### on_event {#on_event_node}
 
@@ -318,9 +334,25 @@ A \ref on_event_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
+|`"when"` (*optional*)|a $-expression defines a condition for executing the function|
 |`".*"` (*optional*)|a \ref function_list_node|
 
 * each key identifies the name of an event, which will trigger specified functions when it occurs.
+
+If an event is used to trigger multiple functions and some functions should be executed only if the `when` condition is satisfied, then we can use the list-styled syntex of the yaml:
+```yaml
+plugins:                       
+    user_code:                   
+        on_event:                   
+            - my_event:                 
+                when: `$cond>1`
+                fun1: {in: $desc2, out: $desc3}
+            - my_event:
+                fun2: {}
+                fun3: {out: $desc2}
+```
+
+In this exmaple, `fun2` and `fun3` will be executed when `my_event` is issued. However, `fun1` will only be executed when `my_evnet` is issued and also `$cond>1`.
 
 ### function_list {#function_list_node}
 
@@ -345,7 +377,9 @@ A \ref function_param_list_node is a dictionary that contains the following keys
 
 ## Specification tree example {#full_spec_tree_example_node}
 
-```yaml                   
+```yaml
+metadata:
+    cond: int
 data:
     desc1: int                          
     desc2: float                   
@@ -354,12 +388,14 @@ plugins:
     user_code:                   
         on_data:                   
             desc1:                 
+                when: `$cond>1`
                 fun1: {in: $desc2, out: $desc3}
             desc2:
                 fun2: {}
                 fun3: {out: $desc2}
         on_event:                  
             event1:                 
+                when: `$cond<1`     
                 fun2: {}
             event2:
                 fun4: {param1: $desc2, param2: $desc1, param3: $desc3}
