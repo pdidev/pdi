@@ -190,6 +190,8 @@ int main(int argc, char* argv[])
 
 	// free cur
 	free(cur);
+	free(coords_x);
+	free(coords_y);
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
