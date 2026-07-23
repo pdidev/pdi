@@ -9,7 +9,7 @@ pdi:
   plugins:
     catalyst:
       scripts:
-        script1: "@CATALYST_SCRIPT_FOLDER@/catalyst_pipeline_with_rendering.py"
+        script1: "@CATALYST_SCRIPT_FOLDER@/catalyst_pipeline_save_mesh.py"
       on_event: "newiter"
       execute:
         state:
