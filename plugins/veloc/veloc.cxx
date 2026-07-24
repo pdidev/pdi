@@ -61,10 +61,10 @@ class veloc_plugin: public Plugin
 {
 	Veloc_cfg m_config;
 
-	int recovered_iter;
-	int status;
-	int cp_counter;
-	int partial_counter; 
+	int m_recovered_iter;
+	int m_status;
+	int m_cp_counter;
+	int m_partial_counter; 
 
 	template <typename RefType>
 	void protect_all()
@@ -115,12 +115,10 @@ public:
 	veloc_plugin(Context& ctx, PC_tree_t config)
 		: Plugin(ctx)
 		, m_config{ctx, config}
-		, cp_counter{0}
-		, recovered_iter{-1}
+		, m_cp_counter{0}
+		, m_recovered_iter{-1},
+		m_status{1} // by default, m_status = 1 => recovery is done and app only wants to checkpoint 
 	{
-		// by default, status = 1 => recovery is done and app only wants to checkpoint 
-		status = 1; 
-
 		init(context(), MPI_COMM_WORLD, m_config.config());
 
 		for (auto&& desc: m_config.descs()) {
@@ -129,7 +127,7 @@ public:
 					[this](const std::string&, Ref ref) {
 						// if app wants to read the status, therefore plugin writes it 
 						if (Ref_w w_ref = ref) {
-							*static_cast<int*>(w_ref.get()) = status;
+							*static_cast<int*>(w_ref.get()) = m_status;
 						}
 						// if app wants to write the status, therefore plugin reads it 
 						else if (Ref_r r_ref = ref) {
@@ -139,7 +137,7 @@ public:
 									fmt::format("Invalid status value: {} (expected 0 or 1)", status_value)
 								};
 							}
-							status = status_value;
+							m_status = status_value;
 						}
 					},
 					desc.first
@@ -148,7 +146,7 @@ public:
 				context().callbacks().add_data_callback(
 					[this](const std::string&, Ref ref) {
 						if (Ref_w wref = ref) {
-							*static_cast<int*>(wref.get()) = cp_counter;
+							*static_cast<int*>(wref.get()) = m_cp_counter;
 						}
 					},
 					desc.first
@@ -163,16 +161,16 @@ public:
 			case Event_type::CHECKPOINT: {
 				context().callbacks().add_event_callback(
 					[this](const std::string& event_name) {
-						if (!status) {
+						if (!m_status) {
 							context().logger().warn("A checkpoint event was launched before a recovery event");
 						}
 						if (m_config.managed().when.to_long(context())) {
 							protect_all<Ref_r>();
 							Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 							auto new_iter = new_iter_r.scalar_value<int>();
-							if (new_iter != recovered_iter) {
+							if (new_iter != m_recovered_iter) {
 								write_checkpoint(context(), m_config.label(), new_iter);
-								cp_counter++;
+								m_cp_counter++;
 							}
 							unprotect_all();
 						}
@@ -185,8 +183,8 @@ public:
 					[this](const std::string& event_name) {
 						protect_all<Ref_w>();
 						int result = read_checkpoint(context(), m_config.label(), m_config.managed().requested_checkpoint);
-						recovered_iter = result;
-						status = 1;
+						m_recovered_iter = result;
+						m_status = 1;
 						unprotect_all();
 					},
 					event.first
@@ -195,20 +193,20 @@ public:
 			case Event_type::STATE_SYNC: {
 				context().callbacks().add_event_callback(
 					[this](const std::string& event_name) {
-						if (!status) { // recovery needed
+						if (!m_status) { // recovery needed
 							protect_all<Ref_w>();
 							int result = read_checkpoint(context(), m_config.label(), m_config.managed().requested_checkpoint);
-							recovered_iter = result;
-							status = 1;
+							m_recovered_iter = result;
+							m_status = 1;
 							unprotect_all();
-						} else if (status) { // recovery not needed
+						} else if (m_status) { // recovery not needed
 							if (m_config.managed().when.to_long(context())) {
 								protect_all<Ref_r>();
 								Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 								auto new_iter = new_iter_r.scalar_value<int>();
-								if (new_iter != recovered_iter) {
+								if (new_iter != m_recovered_iter) {
 									write_checkpoint(context(), m_config.label(), new_iter);
-									cp_counter++;
+									m_cp_counter++;
 								}
 								unprotect_all();
 							}
@@ -223,7 +221,7 @@ public:
 						Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 						auto new_iter = new_iter_r.scalar_value<int>();
 						init_checkpoint(context(), m_config.label(), new_iter);
-						partial_counter++; 
+						m_partial_counter++; 
 					},
 					event.first
 				);
@@ -263,9 +261,9 @@ public:
 			case Event_type::END_CHECKPOINT: {
 				context().callbacks().add_event_callback([this](const std::string& event_name) { 
 					end_checkpoint(context()); 
-					if(partial_counter==1){
-						cp_counter++;
-						partial_counter--;
+					if(m_partial_counter==1){
+						m_cp_counter++;
+						m_partial_counter--;
 					}
 				}, event.first);
 			} break;
@@ -280,7 +278,7 @@ public:
 
 	~veloc_plugin()
 	{
-		context().logger().info("{} checkpoints were written", cp_counter);
+		context().logger().info("{} checkpoints were written", m_cp_counter);
 		context().logger().info("Closing plugin");
 		finalize(context());
 	}
