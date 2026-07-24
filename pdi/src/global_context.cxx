@@ -169,7 +169,7 @@ void get_includes(
 )
 {
 	PC_tree_t inc_tree = PC_get(conf, ".include");
-	if (!PC_status(inc_tree))
+	if (!PC_status(inc_tree)) {
 		opt_each(inc_tree, [&](PC_tree_t include_directive) {
 			Include_path subconf_path{include_directive};
 			if (parents.contains(subconf_path)) {
@@ -187,6 +187,7 @@ void get_includes(
 			parents.erase(subconf_path);
 			result_path.emplace(subconf_path);
 		});
+	}
 	result.emplace_back(conf);
 }
 
