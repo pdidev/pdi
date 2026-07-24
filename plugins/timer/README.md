@@ -15,6 +15,7 @@ plugins:
         start: "begin_timing"
         stop: "end_timing"
     - timer_E: ["pdi"]
+    - output_to: cout
 ```
 
 The timer plugin configuration contains a list of timer names (e.g. `- timer_A`, `- timer_B`, etc.). Each timer will record the time spent between the `start` and `stop` events.
@@ -28,3 +29,5 @@ The timer plugin configuration contains a list of timer names (e.g. `- timer_A`,
 It is also possible to have different names for start and stop events such as `timer_D`. 
 
 To measure the wall time used spent between `PDI_init` and `PDI_finalize`, one can define a timer as shown by `timer_E` with timer prefix "pdi". Please notie that, this timer include time spent on the simulation as well.
+
+`output_to` key allows directing the timer results to either standard output or a file (e.g. `- output_to: timer.csv`). The default value is `cout`.
