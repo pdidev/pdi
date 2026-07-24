@@ -4,7 +4,6 @@
 |:----------------------------------------------------|:------------------------------------------------------------------|
 |\subpage Decl_HDF5_plugin "Decl'HDF5 plugin"         |Read and write data from HDF5 files in a declarative way.          |
 |\subpage Decl_NetCDF_plugin "Decl'NetCDF plugin"     |Read and write data from NetCDF files in a declarative way.        |
-|\subpage veloc_plugin "VeloC plugin"                 |Checkpoint and recover data using VeloC.                            |
 |\subpage mpi_plugin "MPI plugin"                     |Enables MPI support in %PDI and plugins.                           |
 |\subpage pycall_plugin "Pycall plugin"               |Call python scripts from C application                             |
 |\subpage JSON_plugin "JSON plugin"                   |Export data in JSON format.                                        |
@@ -12,5 +11,6 @@
 |\subpage set_value_plugin "Set Value plugin"         |Set values to data and metadata from yaml file.                    |
 |\subpage trace_plugin "Trace plugin"                 |Generate a trace of what happens in %PDI data store.               |
 |\subpage user_code_plugin "user-code plugin"         |Call your function on event or when data becomes available.        |
+|\subpage veloc_plugin "VeloC plugin"                 |Checkpoint and recover data using VeloC.                            |
 
 To learn how to create your own plugin see: \ref how_to_create_plugin "How to create a plugin"
