@@ -49,7 +49,8 @@ struct TimerInfo {
 class timer_plugin: public PDI::Plugin
 {
 	// Map of timer's name and info including start time and accumulated time
-	std::unordered_map<std::string, TimerInfo> timers;
+	std::unordered_map<std::string, TimerInfo> m_timers;
+	std::string m_output_path = "cout";
 
 public:
 	timer_plugin(Context& ctx, PC_tree_t spec_tree)
@@ -63,6 +64,10 @@ public:
 		for (int i = 0; i < len(spec_tree, 0); i++) {
 			PC_tree_t timer_item = PC_get(spec_tree, "[%d]", i);
 			std::string timer_name = PDI::to_string(PC_get(timer_item, "{0}"));
+			if (timer_name == "output_to") {
+				m_output_path = PDI::to_string(PC_get(timer_item, ".%s", "output_to"));
+				continue;
+			}
 
 			PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
 			if (is_map(val)) {
@@ -90,14 +95,12 @@ public:
 			}
 		}
 		ctx.logger().info("Plugin loaded successfully");
+		ctx.logger().debug("Timer output to {}", m_output_path);
 	}
 
 	~timer_plugin()
 	{
-		for (const auto& [name, info]: timers) {
-			context().logger().info("Total time spent for {} : {} seconds", name, info.accumulated_time);
-		}
-		save_timer_to_csv();
+		output_timer();
 		context().logger().info("Closing plugin");
 	}
 
@@ -110,7 +113,7 @@ private:
 	 */
 	void startTimer(const std::string& name)
 	{
-		auto& timer = timers[name];
+		auto& timer = m_timers[name];
 		if (timer.start_time.has_value()) {
 			context().logger().error("Timer for {} is already running. Ignoring the start", name);
 		} else {
@@ -124,8 +127,8 @@ private:
 	 */
 	void stopTimer(const std::string& name)
 	{
-		auto it = timers.find(name);
-		if (it == timers.end() || !it->second.start_time.has_value()) {
+		auto it = m_timers.find(name);
+		if (it == m_timers.end() || !it->second.start_time.has_value()) {
 			context().logger().error("Cannot end timer for {}  because it was never started.", name);
 		} else {
 			auto end_time = std::chrono::high_resolution_clock::now();
@@ -135,27 +138,33 @@ private:
 		}
 	}
 
-	void save_timer_to_csv()
+	void output_timer()
 	{
-		auto filename = "timer.csv";
-		std::ofstream file(filename, std::ios::app);
+		if (m_output_path == "cout") {
+			for (const auto& [name, info]: m_timers) {
+				context().logger().info("Total time spent for {} : {} seconds", name, info.accumulated_time);
+			}
+		} else {
+			auto filename = m_output_path.c_str();
+			std::ofstream file(filename, std::ios::app);
 
-		if (!file.is_open()) {
-			context().logger().error("Could not open file to write timer results to {}", filename);
-			return;
+			if (!file.is_open()) {
+				context().logger().error("Could not open file to write timer results to {}", filename);
+				return;
+			}
+			int fd = open(filename, O_WRONLY);
+			flock(fd, LOCK_EX);
+
+			for (const auto& [name, info]: m_timers) {
+				file << name << "," << info.accumulated_time << "\n";
+			}
+
+			file.flush();
+			flock(fd, LOCK_UN);
+			close(fd);
+			file.close();
+			context().logger().info("Successfully saved results to {}", filename);
 		}
-		int fd = open(filename, O_WRONLY);
-		flock(fd, LOCK_EX);
-
-		for (const auto& [name, info]: timers) {
-			file << name << "," << info.accumulated_time << "\n";
-		}
-
-		file.flush();
-		flock(fd, LOCK_UN);
-		close(fd);
-		file.close();
-		context().logger().info("Successfully saved results to {}", filename);
 	}
 };
 
