@@ -47,6 +47,7 @@ using PDI::Data_descriptor;
 using PDI::each;
 using PDI::Error;
 using PDI::Expression;
+using PDI::len;
 using PDI::opt_each;
 using PDI::Plugin;
 using PDI::Ref;
@@ -136,9 +137,12 @@ class Trigger
 	/// all the aliases to setup
 	vector<Alias> m_aliases;
 
+	Expression m_when;
+
 public:
 	/// parse tree to initialiaze this instance
-	Trigger(string funcname, PC_tree_t params)
+	Trigger(string funcname, PC_tree_t params, Expression when_exp)
+		: m_when(when_exp)
 	{
 		void* fct_uncast = dlsym(RTLD_DEFAULT, funcname.c_str());
 		if (!fct_uncast) { // force loading from the main exe
@@ -169,7 +173,9 @@ public:
 			exposed_aliases.emplace_back(alias.expose(ctx));
 		}
 		try {
-			m_fct();
+			if (m_when.to_long(ctx)) {
+				m_fct();
+			}
 		} catch (const std::exception& e) {
 			ctx.logger().error("While calling user code, caught exception: {}", e.what());
 		} catch (...) {
@@ -185,34 +191,154 @@ struct user_code_plugin: Plugin {
 	{
 		// Loading configuration for events
 		PC_tree_t on_event = PC_get(conf, ".on_event");
-		if (!PC_status(on_event))
-			each(on_event, [&](PC_tree_t event_name, PC_tree_t events) {
-				opt_each(events, [&](PC_tree_t one_event) {
-					each(one_event, [&](PC_tree_t function_name, PC_tree_t parameters) {
-						Trigger event_trigger{to_string(function_name), parameters};
-						ctx.callbacks().add_event_callback(
-							[&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); },
-							to_string(event_name)
-						);
+		if (!PC_status(on_event)) {
+			if (PDI::is_list(on_event)) {
+				for (int i = 0; i < len(on_event, 0); i++) {
+					PC_tree_t events_item = PC_get(on_event, "[%d]", i);
+					PC_tree_t events_name = PC_get(events_item, "{0}");
+					PC_tree_t events = PC_get(events_item, ".%s", to_string(events_name).c_str());
+					opt_each(events, [&](PC_tree_t one_event) {
+						Expression when_exp = 1L;
+						std::string when_string = "true";
+
+						if (!PC_status(PC_get(one_event, ".when"))) {
+							when_exp = Expression(PC_get(one_event, ".when"));
+							when_string = to_string(PC_get(one_event, ".when"));
+						}
+
+						for (int i = 0; i < PDI::len(one_event, 0); i++) {
+							PC_tree_t function_name = PC_get(one_event, "{%d}", i);
+
+							if (to_string(function_name) == "when") continue;
+
+							PC_tree_t parameters = PC_get(one_event, ".%s", to_string(function_name).c_str());
+
+							Trigger event_trigger{to_string(function_name), parameters, when_exp};
+							ctx.callbacks().add_event_callback(
+								[&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); },
+								to_string(events_name)
+							);
+							ctx.logger().debug(
+								"User_code setup: event `{}' calls function `{}', under condition `{}'",
+								to_string(events_name),
+								to_string(function_name),
+								when_string
+							);
+						}
+					});
+				}
+			} else if (PDI::is_map(on_event)) {
+				each(on_event, [&](PC_tree_t event_name, PC_tree_t events) {
+					opt_each(events, [&](PC_tree_t one_event) {
+						Expression when_exp = 1L;
+						std::string when_string = "true";
+
+						if (!PC_status(PC_get(one_event, ".when"))) {
+							when_exp = Expression(PC_get(one_event, ".when"));
+							when_string = to_string(PC_get(one_event, ".when"));
+						}
+
+						for (int i = 0; i < PDI::len(one_event, 0); i++) {
+							PC_tree_t function_name = PC_get(one_event, "{%d}", i);
+
+							if (to_string(function_name) == "when") continue;
+
+							PC_tree_t parameters = PC_get(one_event, ".%s", to_string(function_name).c_str());
+
+							Trigger event_trigger{to_string(function_name), parameters, when_exp};
+							ctx.callbacks().add_event_callback(
+								[&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); },
+								to_string(event_name)
+							);
+							ctx.logger().debug(
+								"User_code setup: event `{}' calls function `{}', under condition `{}'",
+								to_string(event_name),
+								to_string(function_name),
+								when_string
+							);
+						}
 					});
 				});
-			});
+
+			} else {
+				ctx.logger().error("Must be a map or sequence");
+			}
+		}
 
 		// Loading configuration for data
 		PC_tree_t on_data = PC_get(conf, ".on_data");
-		if (!PC_status(on_data))
-			each(on_data, [&](PC_tree_t data_name, PC_tree_t datas) {
-				opt_each(datas, [&](PC_tree_t one_data) {
-					each(one_data, [&](PC_tree_t function_name, PC_tree_t parameters) {
-						Trigger data_trigger{to_string(function_name), parameters};
-						ctx.callbacks().add_data_callback(
-							[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
-							to_string(data_name)
-						);
+		if (!PC_status(on_data)) {
+			if (PDI::is_list(on_data)) {
+				for (int i = 0; i < len(on_data, 0); i++) {
+					PC_tree_t data_item = PC_get(on_data, "[%d]", i);
+					PC_tree_t data_name = PC_get(data_item, "{0}");
+					PC_tree_t datas = PC_get(data_item, ".%s", to_string(data_name).c_str());
+					opt_each(datas, [&](PC_tree_t one_data) {
+						Expression when_exp = 1L;
+						std::string when_string = "true";
+
+						if (!PC_status(PC_get(one_data, ".when"))) {
+							when_exp = Expression(PC_get(one_data, ".when"));
+							when_string = to_string(PC_get(one_data, ".when"));
+						}
+
+						for (int i = 0; i < PDI::len(one_data, 0); i++) {
+							PC_tree_t function_name = PC_get(one_data, "{%d}", i);
+
+							if (to_string(function_name) == "when") continue;
+
+							PC_tree_t parameters = PC_get(one_data, ".%s", to_string(function_name).c_str());
+
+							Trigger data_trigger{to_string(function_name), parameters, when_exp};
+							ctx.callbacks().add_data_callback(
+								[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
+								to_string(data_name)
+							);
+							ctx.logger().debug(
+								"User_code setup: data `{}' calls function `{}', under condition `{}'",
+								to_string(data_name),
+								to_string(function_name),
+								when_string
+							);
+						}
+					});
+				}
+			} else if (PDI::is_map(on_data)) {
+				each(on_data, [&](PC_tree_t data_name, PC_tree_t datas) {
+					opt_each(datas, [&](PC_tree_t one_data) {
+						Expression when_exp = 1L;
+						std::string when_string = "true";
+
+						if (!PC_status(PC_get(one_data, ".when"))) {
+							when_exp = Expression(PC_get(one_data, ".when"));
+							when_string = to_string(PC_get(one_data, ".when"));
+						}
+
+						for (int i = 0; i < PDI::len(one_data, 0); i++) {
+							PC_tree_t function_name = PC_get(one_data, "{%d}", i);
+
+							if (to_string(function_name) == "when") continue;
+
+							PC_tree_t parameters = PC_get(one_data, ".%s", to_string(function_name).c_str());
+
+							Trigger data_trigger{to_string(function_name), parameters, when_exp};
+							ctx.callbacks().add_data_callback(
+								[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
+								to_string(data_name)
+							);
+							ctx.logger().debug(
+								"User_code setup: data `{}' calls function `{}', under condition `{}'",
+								to_string(data_name),
+								to_string(function_name),
+								when_string
+							);
+						}
 					});
 				});
-			});
-
+			} else {
+				ctx.logger().error("Must be a map or sequence");
+			}
+		}
 		ctx.logger().info("Plugin loaded successfully");
 	}
 

@@ -27,6 +27,7 @@ and this project adheres to
   codes.
 * Added support for MacOS and fixed all CI issues on MacOS, fix
   [#688](https://github.com/pdidev/pdi/issues/688)
+* Add `when` keyword for user_code plugin, fix [#698](https://github.com/pdidev/pdi/issues/698)
 * Update the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
   and document the cmake option to override 'NetCDF_FIND_STRATEGIES' as
   requested in [#500](https://github.com/pdidev/pdi/issues/500)
