@@ -78,19 +78,33 @@ class Include_path
 	std::string m_ypath;
 
 public:
-	/** Builds an Include_path from a know file and subtree path
-	 * \param file_path the path of the file
-	 * \param ypath the subtree path as a valid paraconf ypath
-	 */
-
 	/** Builds an Include_path from a PC_tree_t
 	 * \param include_directive either a scalar file path or a mapping with `file` and `subtree` keys
 	 */
 	Include_path(PC_tree_t include_directive)
 	{
 		if (is_map(include_directive)) {
-			m_file_path = PDI::to_string(PC_get(include_directive, ".file"));
-			m_ypath = PDI::to_string(PC_get(include_directive, ".subtree"));
+			bool found_file = false;
+			bool found_subtree = false;
+			each(include_directive, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
+				std::string key = PDI::to_string(key_tree);
+				std::string value = PDI::to_string(value_tree);
+				if (key == "file") {
+					m_file_path = value;
+					found_file = true;
+				} else if (key == "subtree") {
+					m_ypath = value;
+					found_subtree = true;
+				} else {
+					throw Spectree_error(key_tree, "unexpected key in include directive: `{}', only `file' and `subtree' allowed", key);
+				}
+			});
+			if (!found_file) {
+				throw Spectree_error(include_directive, "missing `'file` key in include directive");
+			}
+			if (!found_subtree) {
+				throw Spectree_error(include_directive, "missing `'subtree` key in include directive");
+			}
 		} else {
 			m_file_path = PDI::to_string(include_directive);
 		}
