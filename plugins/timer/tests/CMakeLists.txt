@@ -44,8 +44,21 @@ set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_timer_plugin>:\${PDI_PLUGIN_PA
 endif()
 "
 )
-find_package(MPI REQUIRED)
 
-add_executable(timer_unit_tests timer_unit_tests.cxx)
-target_link_libraries(timer_unit_tests PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest ${HDF5_DEPS})
-gtest_discover_tests(timer_unit_tests)
+if("${BUILD_DECL_HDF5_PLUGIN}")
+add_executable(timer_unit_tests_h5 timer_unit_tests_h5.cxx)
+target_link_libraries(timer_unit_tests_h5 PDI::PDI_C PDI::PDI_plugins GTest::gmock GTest::gmock_main GTest::gtest)
+gtest_discover_tests(timer_unit_tests_h5)
+endif("${BUILD_DECL_HDF5_PLUGIN}")
+
+if("${BUILD_DECL_NETCDF_PLUGIN}")
+add_executable(timer_unit_tests_nc timer_unit_tests_nc.cxx)
+target_link_libraries(timer_unit_tests_nc PDI::PDI_C PDI::PDI_plugins GTest::gmock GTest::gmock_main GTest::gtest)
+gtest_discover_tests(timer_unit_tests_nc)
+endif("${BUILD_DECL_NETCDF_PLUGIN}")
+
+if("${BUILD_JSON_PLUGIN}")
+add_executable(timer_unit_tests_json timer_unit_tests_json.cxx)
+target_link_libraries(timer_unit_tests_json PDI::PDI_C PDI::PDI_plugins GTest::gmock GTest::gmock_main GTest::gtest)
+gtest_discover_tests(timer_unit_tests_json)
+endif("${BUILD_JSON_PLUGIN}")
