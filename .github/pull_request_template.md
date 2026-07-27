@@ -6,6 +6,7 @@ Before merging your code, please check the following:
 * [ ] you have added unit tests for any new or improved feature;
 * [ ] in case you updated dependencies, you have checked pdi/docs/CheckList.md;
 * [ ] in case of a change in pdi.h, this same change must be reflected in mock_pdi/pdi.h;
+* [ ] in case of a new plugin, make sure the plugin issues the corresponding timer events;
 * you have checked your code format:
   - [ ] you have checked that you respect all conventions specified in CONTRIBUTING.md;
   - [ ] you have checked that the indentation and formatting conforms to the `.clang-format`;

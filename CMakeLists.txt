@@ -74,6 +74,7 @@ option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plugin" ON)
 option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plugin" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
+option(BUILD_TIMER_PLUGIN       "Build Timer plugin" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_VELOC_PLUGIN   	"Build VeloC plugin" "${BUILD_UNSTABLE}")
@@ -492,7 +493,7 @@ sbuild_add_module(JSON_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_JSON_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json"
 	DEPENDS PDI JSON
-	SUBSTEPS indent test
+	SUBSTEPS test
 )
 
 
@@ -560,5 +561,12 @@ sbuild_add_module(PDI_API_TESTS
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/api_tests"
 	DEPENDS PDI
 	INSTALL_COMMAND ""
+	SUBSTEPS test
+)
+
+sbuild_add_module(TIMER_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_TIMER_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/timer"
+	DEPENDS PDI
 	SUBSTEPS test
 )

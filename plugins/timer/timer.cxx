@@ -1,0 +1,214 @@
+/*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ * * Neither the name of CEA nor the names of its contributors may be used to
+ *   endorse or promote products derived from this software without specific
+ *   prior written permission.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ ******************************************************************************/
+
+#include <chrono>
+#include <fstream>
+#include <string>
+#include <unordered_map>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <unistd.h>
+
+#include <pdi/context.h>
+#include <pdi/logger.h>
+#include <pdi/plugin.h>
+
+namespace {
+
+using namespace PDI;
+
+/** The timer plugin 
+*/
+class timer_plugin: public PDI::Plugin
+{
+	// Map of timer's name and timer's starting point
+	std::unordered_map<std::string, std::chrono::high_resolution_clock::time_point> start_times;
+
+	// Map of timer's name and timer's duration
+	std::unordered_map<std::string, double> accumulated_times;
+
+	// Map of start event, and different timers to be started
+	std::unordered_map<std::string, std::vector<std::string> > start_events;
+
+	// Map of stop event, and different timers to be stopped
+	std::unordered_map<std::string, std::vector<std::string> > stop_events;
+
+public:
+	timer_plugin(Context& ctx, PC_tree_t spec_tree)
+		: Plugin{ctx}
+	{
+		read_config_tree(ctx, spec_tree);
+
+		ctx.callbacks().add_event_callback([this](const std::string& event) {
+			if (auto search = start_events.find(event); search != start_events.end()) {
+				for (const auto& timer: search->second) {
+					startTimer(timer);
+				}
+			}
+			if (auto search = stop_events.find(event); search != stop_events.end()) {
+				for (const auto& timer: search->second) {
+					stopTimer(timer);
+				}
+			}
+		});
+
+		ctx.logger().info("Plugin loaded successfully");
+	}
+
+	~timer_plugin()
+	{
+		for (const auto& [name, duration]: accumulated_times) {
+			context().logger().info("Total time spent for {} : {} seconds", name, duration);
+		}
+		save_timer_to_csv();
+		context().logger().info("Closing plugin");
+	}
+
+	static std::string pretty_name() { return "Timer"; }
+
+private:
+	/** Read the configuration file
+	 *
+	 * \param logger PDI's logger instance
+	 * \param spec_tree the yaml tree
+	 */
+	void read_config_tree(Context& ctx, PC_tree_t spec_tree)
+	{
+		if (PC_status(spec_tree)) {
+			ctx.logger().error("Error in read_config_tree");
+			return;
+		}
+
+		for (int i = 0; i < len(spec_tree, 0); i++) {
+			PC_tree_t timer_item = PC_get(spec_tree, "[%d]", i);
+			std::string timer_name = PDI::to_string(PC_get(timer_item, "{0}"));
+
+			PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
+			if (is_map(val)) {
+				ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
+				auto start_ev = PDI::to_string(PC_get(val, ".start"));
+				auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
+				register_timer(start_ev, stop_ev, timer_name);
+			} else {
+				ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
+				opt_each(val, [&](PC_tree_t sub_elem) {
+					auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
+					auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
+					register_timer(start_ev, stop_ev, timer_name);
+				});
+			}
+		}
+		print_timer_property();
+	}
+
+	/** Register the start and stop events for a timer with given name
+	 *
+	 * \param start_event name of the event to start the timer
+	 * \param stop_event name of the event to stop the timer
+	 * \param timer_name name of the timer
+	 */
+	void register_timer(std::string& start_event, std::string& stop_event, std::string& timer_name)
+	{
+		start_events[start_event].push_back(timer_name);
+		stop_events[stop_event].push_back(timer_name);
+	}
+
+	/** Print all timer setup information to the debug log
+	 *
+	 */
+	void print_timer_property()
+	{
+		context().logger().debug("All registered timers: ");
+		for (const auto& [key, value]: start_events) {
+			context().logger().debug("event [{}] starts timer ", key);
+			for (auto n: value) {
+				context().logger().debug(" \t\t {} ", n);
+			}
+		}
+		for (const auto& [key, value]: stop_events) {
+			context().logger().debug("event [{}] stops timer ", key);
+			for (auto n: value) {
+				context().logger().debug(" \t\t {} ", n);
+			}
+		}
+	}
+
+	/** Start a timer with given name
+	 *
+	 * \param name name of the timer to start
+	 */
+	void startTimer(const std::string& name)
+	{
+		if (start_times.find(name) != start_times.end()) {
+			context().logger().error("Timer for {} is already running. Ignoring the start", name);
+			return;
+		}
+		start_times[name] = std::chrono::high_resolution_clock::now();
+	}
+
+	/** Stop a timer with given name and accumulate the duration of the timer
+	 *
+	 * \param name name of the timer to stop
+	 */
+	void stopTimer(const std::string& name)
+	{
+		auto it = start_times.find(name);
+		if (it == start_times.end()) {
+			context().logger().error("Cannot end timer for {}  because it was never started.", name);
+			return;
+		}
+
+		auto end_time = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = end_time - start_times[name];
+
+		accumulated_times[name] += elapsed.count();
+		start_times.erase(it);
+	}
+
+	void save_timer_to_csv()
+	{
+		auto filename = "timer.csv";
+		std::ofstream file(filename, std::ios::app);
+
+		if (!file.is_open()) {
+			context().logger().error("Could not open file to write timer results to {}", filename);
+			return;
+		}
+		int fd = open(filename, O_WRONLY);
+		flock(fd, LOCK_EX);
+
+		// Write Data
+		for (const auto& [name, duration]: accumulated_times) {
+			file << name << "," << duration << "\n";
+		}
+		file.flush();
+		flock(fd, LOCK_UN);
+		close(fd);
+		file.close();
+		context().logger().info("Successfully saved results to {}", filename);
+	}
+};
+
+} // namespace
+PDI_PLUGIN(timer)
