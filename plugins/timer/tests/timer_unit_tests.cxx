@@ -103,7 +103,6 @@ plugins:
 	auto const test_var = make_a<double>();
 	PDI_expose("test_var", &test_var, PDI_OUT);
 	EXPECT_TRUE(std::filesystem::exists("file1.nc"));
-	FinalizePdi(); 
+	FinalizePdi();
 	EXPECT_TRUE(std::filesystem::exists("timer.csv"));
-
 }
