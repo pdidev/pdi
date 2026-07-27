@@ -144,25 +144,25 @@ private:
 			for (const auto& [name, info]: m_timers) {
 				context().logger().info("Total time spent for {} : {} seconds", name, info.accumulated_time);
 			}
+			context().logger().info("Successfully output results to standard output");
 		} else {
 			auto filename = m_output_path.c_str();
-			std::ofstream file(filename, std::ios::app);
-
-			if (!file.is_open()) {
-				context().logger().error("Could not open file to write timer results to {}", filename);
+			int fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
+			if (fd == -1) {
+				context().logger().error("Could not open file {}", filename);
 				return;
 			}
-			int fd = open(filename, O_WRONLY);
-			flock(fd, LOCK_EX);
 
-			for (const auto& [name, info]: m_timers) {
-				file << name << "," << info.accumulated_time << "\n";
+			if (flock(fd, LOCK_EX) == 0) {
+				for (const auto& [name, info]: m_timers) {
+					dprintf(fd, "%s,%f\n", name.c_str(), info.accumulated_time);
+				}
+
+				fsync(fd);
+				flock(fd, LOCK_UN);
 			}
 
-			file.flush();
-			flock(fd, LOCK_UN);
 			close(fd);
-			file.close();
 			context().logger().info("Successfully saved results to {}", filename);
 		}
 	}
