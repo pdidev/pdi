@@ -199,7 +199,7 @@ public:
 							m_recovered_iter = result;
 							m_status = 1;
 							unprotect_all();
-						} else if (m_status) { // recovery not needed
+						} else { // recovery not needed
 							if (m_config.managed().when.to_long(context())) {
 								protect_all<Ref_r>();
 								Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
