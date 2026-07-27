@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <iostream>
 #include <gtest/gtest.h>
 #include <pdi.h>
 
@@ -1107,6 +1108,149 @@ TEST(decl_netcdf_test, float_read)
 	// read data
 	double var_out = -1.0;
 	EXPECT_NE(PDI_OK, PDI_multi_expose("read_data", "var_out", &var_out, PDI_IN, NULL));
+
+	PDI_finalize();
+}
+
+/*
+ * Name:                decl_netcdf_test.read
+ *
+ * Description:         Tests write and read of float that type match
+ */
+TEST(decl_netcdf_test, float_read_array)
+{
+	constexpr char CONFIG_YAML[] = R"(
+    logging: trace
+    metadata:
+      nn: int
+    data:
+      var_in: {type: array, subtype: float, size: ['$nn']}
+      var_out: {type: array, subtype: float, size: ['$nn']}
+    plugins:
+      decl_netcdf:
+      - file: 'test_float22_read.nc'
+        variables:
+          nc_var: {type: array, subtype: float, size: ['$nn']}
+        on_event: write_data
+        write:
+          var_in:
+            variable: nc_var
+      - file: 'test_float22_read.nc'
+        variables:
+          nc_var:  {type: array, subtype: float, size: ['$nn']}
+        on_event: read_data
+        read:
+          var_out:
+            variable: nc_var)";
+
+	EXPECT_EQ(PDI_OK, PDI_init(PC_parse_string(CONFIG_YAML)));
+
+	int nn = 3;
+	// write data
+	PDI_expose("nn", &nn, PDI_INOUT);
+	float var_in[3] = {12.34, 1.1, 1.2};
+	PDI_multi_expose("write_data", "var_in", var_in, PDI_OUT, NULL);
+
+	// read data
+	float var_out[3] = {-1.0, -1.0, -1.0};
+	EXPECT_EQ(PDI_OK, PDI_multi_expose("read_data", "var_out", var_out, PDI_IN, NULL));
+	for (int ii = 0; ii < nn; ++ii) {
+		EXPECT_EQ(var_out[ii], var_in[ii]);
+	}
+	PDI_finalize();
+}
+
+/*
+ * Name:                decl_netcdf_test.double_read_array
+ *
+ * Description:         Tests write and read of double that type match
+ */
+TEST(decl_netcdf_test, double_read_array)
+{
+	constexpr char CONFIG_YAML[] = R"(
+    logging: trace
+    metadata:
+      nn: int
+    data:
+      var_in: {type: array, subtype: double, size: ['$nn']}
+      var_out: {type: array, subtype: double, size: ['$nn']}
+    plugins:
+      decl_netcdf:
+      - file: 'test_double22_read.nc'
+        variables:
+          nc_var: {type: array, subtype: double, size: ['$nn']}
+        on_event: write_data
+        write:
+          var_in:
+            variable: nc_var
+      - file: 'test_double22_read.nc'
+        variables:
+          nc_var:  {type: array, subtype: double, size: ['$nn']}
+        on_event: read_data
+        read:
+          var_out:
+            variable: nc_var)";
+
+	EXPECT_EQ(PDI_OK, PDI_init(PC_parse_string(CONFIG_YAML)));
+
+	int nn = 3;
+	// write data
+	PDI_expose("nn", &nn, PDI_INOUT);
+	double var_in[3] = {12.34, 1.1, 1.2};
+	PDI_multi_expose("write_data", "var_in", var_in, PDI_OUT, NULL);
+
+	// read data
+	double var_out[3] = {-1.0, -1.0, -1.0};
+	EXPECT_EQ(PDI_OK, PDI_multi_expose("read_data", "var_out", var_out, PDI_IN, NULL));
+	for (int ii = 0; ii < nn; ++ii) {
+		EXPECT_EQ(var_out[ii], var_in[ii]);
+	}
+	PDI_finalize();
+}
+
+/*
+ * Name:                decl_netcdf_test.read
+ *
+ * Description:         Tests write and read of double that type mismatch
+ */
+TEST(decl_netcdf_test, float_read_array_mismatch)
+{
+	constexpr char CONFIG_YAML[] = R"(
+    logging: trace
+    metadata:
+      nn: int
+    data:
+      var_in: {type: array, subtype: float, size: ['$nn']}
+      var_out: {type: array, subtype: double, size: ['$nn']}
+    plugins:
+      decl_netcdf:
+      - file: 'test_float22_read.nc'
+        variables:
+          nc_var: {type: array, subtype: float, size: ['$nn']}
+        on_event: write_data
+        write:
+          var_in:
+            variable: nc_var
+      - file: 'test_float22_read.nc'
+        variables:
+          nc_var:  {type: array, subtype: double, size: ['$nn']}
+        on_event: read_data
+        read:
+          var_out:
+            variable: nc_var)";
+
+	EXPECT_EQ(PDI_OK, PDI_init(PC_parse_string(CONFIG_YAML)));
+	PDI_errhandler(PDI_NULL_HANDLER);
+
+	int nn = 3;
+	// write data
+	PDI_expose("nn", &nn, PDI_INOUT);
+	float var_in[3] = {12.34, 1.1, 1.2};
+	PDI_multi_expose("write_data", "var_in", var_in, PDI_OUT, NULL);
+
+	// read data
+	double var_out[3] = {-1.0, -1.0, -1.0};
+	EXPECT_NE(PDI_OK, PDI_multi_expose("read_data", "var_out", var_out, PDI_IN, NULL));
 
 	PDI_finalize();
 }
