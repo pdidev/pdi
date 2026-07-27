@@ -117,7 +117,7 @@ public:
 		, m_config{ctx, config}
 		, m_cp_counter{0}
 		, m_recovered_iter{-1},
-		m_status{1} // by default, m_status = 1 => recovery is done and app only wants to checkpoint 
+		m_status{1} // by default, m_status = 1 => recovery is not needed, app only wants to checkpoint 
 	{
 		init(context(), MPI_COMM_WORLD, m_config.config());
 
@@ -161,9 +161,6 @@ public:
 			case Event_type::CHECKPOINT: {
 				context().callbacks().add_event_callback(
 					[this](const std::string& event_name) {
-						if (!m_status) {
-							context().logger().warn("A checkpoint event was launched before a recovery event");
-						}
 						if (m_config.managed().when.to_long(context())) {
 							protect_all<Ref_r>();
 							Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();

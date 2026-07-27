@@ -45,9 +45,7 @@ bool load_events(
 	std::unordered_map<std::string, Event_type>& events,
 	Context& ctx,
 	PC_tree_t tree,
-	Event_type event_type,
-	std::function<void(const std::string&)> on_load_func = std::function<void(const std::string&)>()
-)
+	Event_type event_type)
 {
 	const std::map<Event_type, std::string> event_names
 		= {{Event_type::CHECKPOINT, "checkpoint_on_event"},
@@ -66,7 +64,6 @@ bool load_events(
 		auto&& result = events.emplace(to_string(subtree), event_type);
 		if (result.second) {
 			inserted = true;
-			if (on_load_func) on_load_func(result.first->first);
 		} else {
 			throw Spectree_error{
 				tree,
