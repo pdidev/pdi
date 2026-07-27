@@ -265,10 +265,11 @@ PdiTest::PdiTest()
 inline void PdiTest::InitPdi(PC_tree_t tree)
 {
 	FinalizePdi();
-	m_conf = tree;
-	ASSERT_EQ(PC_OK, PC_status(m_conf));
+	ASSERT_EQ(PC_OK, PC_status(tree));
 	PDI_errhandler({s_pdi_errhandler, this});
-	PDI_init(m_conf);
+	if (!PDI_init(tree)) {
+		m_conf = tree;
+	}
 }
 
 inline void PdiTest::FinalizePdi()
