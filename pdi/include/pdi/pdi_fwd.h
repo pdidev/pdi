@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -83,6 +83,10 @@ using Datatype_sptr = std::shared_ptr<const Datatype>;
  * template that is used when exposing untyped data
  */
 class Data_descriptor;
+
+/** Wrapper for spdlog::logger with additional pattern getter method
+ */
+class Logger;
 
 /** A class used as base for all PDI plugins
  */

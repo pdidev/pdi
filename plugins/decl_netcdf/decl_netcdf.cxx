@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -42,23 +42,23 @@ class decl_netcdf_plugin: public PDI::Plugin
 	std::vector<decl_netcdf::Dnc_file_context> m_files;
 
 public:
-	decl_netcdf_plugin(PDI::Context& ctx, PC_tree_t config)
-		: Plugin(ctx)
+	decl_netcdf_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t config)
+		: Plugin(logger, ctx)
 	{
 		if (PDI::is_list(config)) {
 			int len = PDI::len(config);
 			// allocate memory for all elements, because Dnc_file has callbacks with their pointers
 			m_files.reserve(len);
 			for (int i = 0; i < len; i++) {
-				m_files.emplace_back(context(), PC_get(config, "[%d]", i));
+				m_files.emplace_back(logger, context(), PC_get(config, "[%d]", i));
 			}
 		} else {
-			m_files.emplace_back(context(), config);
+			m_files.emplace_back(logger, context(), config);
 		}
-		context().logger().info("Plugin loaded successfully");
+		logger.info("Plugin loaded successfully");
 	}
 
-	~decl_netcdf_plugin() { context().logger().info("Closing plugin"); }
+	~decl_netcdf_plugin() { logger().info("Closing plugin"); }
 
 	/** Pretty name for the plugin that will be shown in the logger
 	 *

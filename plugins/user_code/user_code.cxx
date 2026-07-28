@@ -48,6 +48,7 @@ using PDI::each;
 using PDI::Error;
 using PDI::Expression;
 using PDI::len;
+using PDI::Logger;
 using PDI::opt_each;
 using PDI::Plugin;
 using PDI::Ref;
@@ -163,7 +164,7 @@ public:
 	}
 
 	/// call the function that has been registered
-	void call(Context& ctx)
+	void call(Logger& logger, Context& ctx)
 	{
 		PDI::TimerEventHandler uc_timer(ctx, "user_code");
 		// all exposed aliases that will be unexposed on destroy
@@ -177,17 +178,17 @@ public:
 				m_fct();
 			}
 		} catch (const std::exception& e) {
-			ctx.logger().error("While calling user code, caught exception: {}", e.what());
+			logger.error("While calling user code, caught exception: {}", e.what());
 		} catch (...) {
-			ctx.logger().error("While calling user code, caught exception");
+			logger.error("While calling user code, caught exception");
 		}
 	}
 
 }; // class Trigger
 
 struct user_code_plugin: Plugin {
-	user_code_plugin(Context& ctx, PC_tree_t conf)
-		: Plugin{ctx}
+	user_code_plugin(Logger& logger, Context& ctx, PC_tree_t conf)
+		: Plugin{logger, ctx}
 	{
 		// Loading configuration for events
 		PC_tree_t on_event = PC_get(conf, ".on_event");
@@ -214,8 +215,11 @@ struct user_code_plugin: Plugin {
 							PC_tree_t parameters = PC_get(one_event, ".%s", to_string(function_name).c_str());
 
 							Trigger event_trigger{to_string(function_name), parameters, when_exp};
-							ctx.on_event([&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); }, to_string(events_name));
-							ctx.logger().debug(
+							ctx.on_event(
+								[&logger, &ctx, event_trigger](const std::string& name) mutable { event_trigger.call(logger, ctx); },
+								to_string(events_name)
+							);
+							logger.debug(
 								"User_code setup: event `{}' calls function `{}', under condition `{}'",
 								to_string(events_name),
 								to_string(function_name),
@@ -243,8 +247,11 @@ struct user_code_plugin: Plugin {
 							PC_tree_t parameters = PC_get(one_event, ".%s", to_string(function_name).c_str());
 
 							Trigger event_trigger{to_string(function_name), parameters, when_exp};
-							ctx.on_event([&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); }, to_string(event_name));
-							ctx.logger().debug(
+							ctx.on_event(
+								[&logger, &ctx, event_trigger](const std::string& name) mutable { event_trigger.call(logger, ctx); },
+								to_string(event_name)
+							);
+							logger.debug(
 								"User_code setup: event `{}' calls function `{}', under condition `{}'",
 								to_string(event_name),
 								to_string(function_name),
@@ -255,7 +262,7 @@ struct user_code_plugin: Plugin {
 				});
 
 			} else {
-				ctx.logger().error("Must be a map or sequence");
+				logger.error("Must be a map or sequence");
 			}
 		}
 
@@ -285,10 +292,10 @@ struct user_code_plugin: Plugin {
 
 							Trigger data_trigger{to_string(function_name), parameters, when_exp};
 							ctx.on_data(
-								[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
+								[&logger, &ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(logger, ctx); },
 								to_string(data_name)
 							);
-							ctx.logger().debug(
+							logger.debug(
 								"User_code setup: data `{}' calls function `{}', under condition `{}'",
 								to_string(data_name),
 								to_string(function_name),
@@ -317,10 +324,10 @@ struct user_code_plugin: Plugin {
 
 							Trigger data_trigger{to_string(function_name), parameters, when_exp};
 							ctx.on_data(
-								[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
+								[&logger, &ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(logger, ctx); },
 								to_string(data_name)
 							);
-							ctx.logger().debug(
+							logger.debug(
 								"User_code setup: data `{}' calls function `{}', under condition `{}'",
 								to_string(data_name),
 								to_string(function_name),
@@ -330,13 +337,13 @@ struct user_code_plugin: Plugin {
 					});
 				});
 			} else {
-				ctx.logger().error("Must be a map or sequence");
+				logger.error("Must be a map or sequence");
 			}
 		}
-		ctx.logger().info("Plugin loaded successfully");
+		logger.info("Plugin loaded successfully");
 	}
 
-	~user_code_plugin() { context().logger().info("Closing plugin"); }
+	~user_code_plugin() { logger().info("Closing plugin"); }
 
 	/** Pretty name for the plugin that will be shown in the logger
 	 *

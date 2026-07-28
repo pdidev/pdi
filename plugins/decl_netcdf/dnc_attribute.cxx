@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -26,12 +27,12 @@
 
 namespace decl_netcdf {
 
-Dnc_attribute::Dnc_attribute(PDI::Context& ctx, const std::string& name, PC_tree_t config)
+Dnc_attribute::Dnc_attribute(PDI::Logger& logger, PDI::Context& ctx, const std::string& name, PC_tree_t config)
 	: m_ctx{ctx}
 	, m_name{name}
 {
 	m_value = PDI::Expression{PDI::to_string(config)};
-	m_ctx.logger().trace("`{}' attribute created", name);
+	logger.trace("`{}' attribute created", name);
 }
 
 const std::string& Dnc_attribute::name() const

@@ -35,7 +35,6 @@
 
 #include "pdi/pdi_fwd.h"
 #include "pdi/context.h"
-#include "pdi/context_proxy.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/logger.h"
 #include "pdi/plugin.h"
@@ -186,7 +185,7 @@ public:
 
 	void event(const char* name) override;
 
-	Logger& logger() override;
+	Logger& logger();
 
 	Datatype_template_sptr datatype(PC_tree_t node) override;
 

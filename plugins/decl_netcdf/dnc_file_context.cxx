@@ -32,20 +32,21 @@
 
 namespace decl_netcdf {
 
-Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
-	: m_ctx{ctx}
+Dnc_file_context::Dnc_file_context(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t config)
+	: m_logger{logger}
+	, m_ctx{ctx}
 {
 	PC_tree_t file_node = PC_get(config, ".file");
 	if (PC_status(file_node)) {
 		throw PDI::Spectree_error{file_node, "Decl_netcdf plugin: `file' node is mandatory"};
 	}
 	m_file_path = PDI::Expression{PDI::to_string(file_node)};
-	m_ctx.logger().trace("Creating file info");
+	m_logger.trace("Creating file info");
 
 	PC_tree_t comm_node = PC_get(config, ".communicator");
 	if (!PC_status(comm_node)) {
 		m_communicator = PDI::Expression{PDI::to_string(comm_node)};
-		m_ctx.logger().trace("Communicator defined");
+		m_logger.trace("Communicator defined");
 	}
 
 	std::vector<std::string> events;
@@ -56,19 +57,19 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 			for (int i = 0; i < len; i++) {
 				std::string event_name = PDI::to_string(PC_get(on_event_node, "[%d]", i));
 				events.emplace_back(event_name);
-				m_ctx.logger().trace("Adding to trigger list a new event: {}", event_name);
+				m_logger.trace("Adding to trigger list a new event: {}", event_name);
 			}
 		} else {
 			std::string event_name = PDI::to_string(on_event_node);
 			events.emplace_back(event_name);
-			m_ctx.logger().trace("Adding to trigger list a new event: {}", event_name);
+			m_logger.trace("Adding to trigger list a new event: {}", event_name);
 		}
 	}
 
 	PC_tree_t when_node = PC_get(config, ".when");
 	if (!PC_status(when_node)) {
 		m_when = PDI::Expression{PDI::to_string(when_node)};
-		m_ctx.logger().trace("When defined");
+		m_logger.trace("When defined");
 	} else {
 		m_when = PDI::Expression{1L}; // if when not defined -> always true
 	}
@@ -83,49 +84,49 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 	if (!PC_status(groups_node)) {
 		PDI::each(groups_node, [this](PC_tree_t group_path_node, PC_tree_t group_value) {
 			std::string group_path = PDI::to_string(group_path_node);
-			this->m_ctx.logger().trace("Creating new group info: {}", group_path);
-			this->m_groups.emplace(group_path, Dnc_group{this->m_ctx, group_path, group_value});
+			this->m_logger.trace("Creating new group info: {}", group_path);
+			this->m_groups.emplace(group_path, Dnc_group{this->m_logger, this->m_ctx, group_path, group_value});
 		});
 	} else {
-		m_ctx.logger().debug("No group defined");
+		m_logger.debug("No group defined");
 	}
 
 	PC_tree_t variables_node = PC_get(config, ".variables");
 	if (!PC_status(variables_node)) {
 		PDI::each(variables_node, [&](PC_tree_t variable_path_node, PC_tree_t variable_value) {
 			std::string variable_path = PDI::to_string(variable_path_node);
-			this->m_ctx.logger().trace("Creating new variable info: {}", variable_path);
-			this->m_variables.emplace(variable_path, Dnc_variable{this->m_ctx, variable_path, variable_value, file_deflate});
+			this->m_logger.trace("Creating new variable info: {}", variable_path);
+			this->m_variables.emplace(variable_path, Dnc_variable{this->m_logger, this->m_ctx, variable_path, variable_value, file_deflate});
 		});
 	} else {
-		m_ctx.logger().trace("No variable defined");
+		m_logger.trace("No variable defined");
 	}
 
 	PC_tree_t read_node = PC_get(config, ".read");
 	if (!PC_status(read_node)) {
 		if (PDI::is_scalar(read_node)) {
 			std::string read_desc = PDI::to_string(read_node);
-			m_ctx.logger().trace("Creating new empty read info for: {}", read_desc);
-			m_read.emplace(read_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
+			m_logger.trace("Creating new empty read info for: {}", read_desc);
+			m_read.emplace(read_desc, Dnc_io{this->m_logger, this->m_ctx, PC_tree_t{}});
 		} else if (PDI::is_list(read_node)) {
 			int len = PDI::len(read_node);
 			for (int i = 0; i < len; i++) {
 				std::string read_desc = PDI::to_string(PC_get(read_node, "[%d]", i));
-				m_ctx.logger().trace("Creating new empty read info for: {}", read_desc);
-				m_read.emplace(read_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
+				m_logger.trace("Creating new empty read info for: {}", read_desc);
+				m_read.emplace(read_desc, Dnc_io{this->m_logger, this->m_ctx, PC_tree_t{}});
 			}
 		} else {
 			PDI::each(read_node, [this](PC_tree_t desc_name, PC_tree_t read_value) {
 				std::string read_desc = PDI::to_string(desc_name);
-				m_ctx.logger().trace("Creating new read info for: {}", read_desc);
+				m_logger.trace("Creating new read info for: {}", read_desc);
 				// if we read a variable with "size_of" key
 				if (!PC_status(PC_get(read_value, ".size_of"))) {
-					this->m_sizeof.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
+					this->m_sizeof.emplace(read_desc, Dnc_io{this->m_logger, this->m_ctx, read_value});
 				}
 				// if we read a regular variable
 				else
 				{
-					this->m_read.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
+					this->m_read.emplace(read_desc, Dnc_io{this->m_logger, this->m_ctx, read_value});
 				}
 			});
 		}
@@ -135,20 +136,20 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 	if (!PC_status(write_node)) {
 		if (PDI::is_scalar(write_node)) {
 			std::string write_desc = PDI::to_string(write_node);
-			m_ctx.logger().trace("Creating new empty write info for: {}", write_desc);
-			m_write.emplace(write_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
+			m_logger.trace("Creating new empty write info for: {}", write_desc);
+			m_write.emplace(write_desc, Dnc_io{this->m_logger, this->m_ctx, PC_tree_t{}});
 		} else if (PDI::is_list(write_node)) {
 			int len = PDI::len(write_node);
 			for (int i = 0; i < len; i++) {
 				std::string write_desc = PDI::to_string(PC_get(write_node, "[%d]", i));
-				m_ctx.logger().trace("Creating new empty write info for: {}", write_desc);
-				m_write.emplace(write_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
+				m_logger.trace("Creating new empty write info for: {}", write_desc);
+				m_write.emplace(write_desc, Dnc_io{this->m_logger, this->m_ctx, PC_tree_t{}});
 			}
 		} else if (PDI::is_map(write_node)) {
 			PDI::each(write_node, [this](PC_tree_t desc_name, PC_tree_t write_value) {
 				std::string write_desc = PDI::to_string(desc_name);
-				m_ctx.logger().trace("Creating new write info for: {}", write_desc);
-				this->m_write.emplace(PDI::to_string(desc_name), Dnc_io{this->m_ctx, write_value});
+				m_logger.trace("Creating new write info for: {}", write_desc);
+				this->m_write.emplace(PDI::to_string(desc_name), Dnc_io{this->m_logger, this->m_ctx, write_value});
 			});
 		} else {
 			throw PDI::Spectree_error{write_node, "write node is not parsed correctly"};
@@ -160,7 +161,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 	}
 
 	if (events.empty()) {
-		m_ctx.logger().debug("No on_event event defined, triggering on data share");
+		m_logger.debug("No on_event event defined, triggering on data share");
 		std::set<std::string> desc_triggers;
 		for (auto&& desc_io_pair: m_read) {
 			desc_triggers.emplace(desc_io_pair.first);
@@ -178,7 +179,8 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 }
 
 Dnc_file_context::Dnc_file_context(Dnc_file_context&& other) noexcept
-	: m_ctx{other.m_ctx}
+	: m_logger{other.m_logger}
+	, m_ctx{other.m_ctx}
 	, m_file_path{std::move(other.m_file_path)}
 	, m_communicator{std::move(other.m_communicator)}
 	, m_when{std::move(other.m_when)}
@@ -197,9 +199,9 @@ Dnc_variable* Dnc_file_context::variable(const std::string& desc_name, const std
 		if (it == m_variables.end()) {
 			// variable not defined yet -> create it and add to variables_holder
 			if (variable_path.empty()) {
-				variables_holder.emplace_back(m_ctx, desc_name, PC_tree_t{});
+				variables_holder.emplace_back(m_logger, m_ctx, desc_name, PC_tree_t{});
 			} else {
-				variables_holder.emplace_back(m_ctx, variable_path, PC_tree_t{});
+				variables_holder.emplace_back(m_logger, m_ctx, variable_path, PC_tree_t{});
 			}
 			return &variables_holder.back();
 		} else {
@@ -218,7 +220,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 
 		auto write_it = m_write.find(desc_name);
 		if (write_it != m_write.end() && write_it->second.when()) {
-			Dnc_netcdf_file nc_file{m_ctx, m_file_path.to_string(m_ctx), NC_WRITE, m_communicator};
+			Dnc_netcdf_file nc_file{m_logger, m_ctx, m_file_path.to_string(m_ctx), NC_WRITE, m_communicator};
 
 			// define all groups
 			for (auto&& group: m_groups) {
@@ -246,7 +248,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 
 		auto read_it = m_read.find(desc_name);
 		if (read_it != m_read.end() && read_it->second.when()) {
-			Dnc_netcdf_file nc_file{m_ctx, m_file_path.to_string(m_ctx), NC_NOWRITE, m_communicator};
+			Dnc_netcdf_file nc_file{m_logger, m_ctx, m_file_path.to_string(m_ctx), NC_NOWRITE, m_communicator};
 
 			// read all groups
 			for (auto&& group: m_groups) {
@@ -271,9 +273,9 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 
 		auto size_it = m_sizeof.find(desc_name);
 		if (size_it != m_sizeof.end() && size_it->second.when()) {
-			Dnc_netcdf_file nc_file{m_ctx, m_file_path.to_string(m_ctx), NC_NOWRITE, m_communicator};
+			Dnc_netcdf_file nc_file{m_logger, m_ctx, m_file_path.to_string(m_ctx), NC_NOWRITE, m_communicator};
 			std::string dataset_name = size_it->second.variable_path();
-			m_ctx.logger().trace("Getting size of `{}' dataset", dataset_name);
+			m_logger.trace("Getting size of `{}' dataset", dataset_name);
 			nc_file.get_sizeof_variable(size_it->first, dataset_name, ref);
 		}
 	}
@@ -289,7 +291,7 @@ void Dnc_file_context::execute()
 
 		std::unique_ptr<Dnc_netcdf_file> nc_file;
 		if (m_write.empty()) {
-			nc_file.reset(new Dnc_netcdf_file{m_ctx, m_file_path.to_string(m_ctx), NC_NOWRITE, m_communicator});
+			nc_file.reset(new Dnc_netcdf_file{m_logger, m_ctx, m_file_path.to_string(m_ctx), NC_NOWRITE, m_communicator});
 
 			// read all groups
 			for (auto&& group: m_groups) {
@@ -315,7 +317,7 @@ void Dnc_file_context::execute()
 				nc_file->get_sizeof_variable(size_of.first, size_of.second.variable_path(), m_ctx.desc(size_of.first).ref());
 			}
 		} else {
-			nc_file.reset(new Dnc_netcdf_file{m_ctx, m_file_path.to_string(m_ctx), NC_WRITE, m_communicator});
+			nc_file.reset(new Dnc_netcdf_file{m_logger, m_ctx, m_file_path.to_string(m_ctx), NC_WRITE, m_communicator});
 
 			// define all groups
 			for (auto&& group: m_groups) {
@@ -344,7 +346,7 @@ void Dnc_file_context::execute()
 		int i = 0;
 		for (auto&& write: m_write) {
 			Dnc_variable* variable = variables_to_put[i]; // order of loop iteration is the same as was on define loop
-			m_ctx.logger().trace("{}: Putting desc `{}' to variable `{}'", i, write.first, variables_to_put[i]->path());
+			m_logger.trace("{}: Putting desc `{}' to variable `{}'", i, write.first, variables_to_put[i]->path());
 			nc_file->put_variable(*variable, write.second, m_ctx.desc(write.first).ref());
 			i++;
 		}
