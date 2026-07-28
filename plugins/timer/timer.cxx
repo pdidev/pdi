@@ -60,39 +60,75 @@ public:
 			ctx.logger().error("Error in read_config_tree");
 			return;
 		}
+		if (is_list(spec_tree)) {
+			for (int i = 0; i < len(spec_tree, 0); i++) {
+				PC_tree_t timer_item = PC_get(spec_tree, "[%d]", i);
+				std::string timer_name = PDI::to_string(PC_get(timer_item, "{0}"));
+				if (timer_name == "output_to") {
+					m_output_path = PDI::to_string(PC_get(timer_item, ".%s", "output_to"));
+					continue;
+				}
 
-		for (int i = 0; i < len(spec_tree, 0); i++) {
-			PC_tree_t timer_item = PC_get(spec_tree, "[%d]", i);
-			std::string timer_name = PDI::to_string(PC_get(timer_item, "{0}"));
-			if (timer_name == "output_to") {
-				m_output_path = PDI::to_string(PC_get(timer_item, ".%s", "output_to"));
-				continue;
-			}
+				PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
+				if (is_map(val)) {
+					ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
 
-			PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
-			if (is_map(val)) {
-				ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
-
-				auto start_ev = PDI::to_string(PC_get(val, ".start"));
-				ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
-				context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
-
-				auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
-				ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
-				context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
-			} else {
-				ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
-
-				opt_each(val, [&](PC_tree_t sub_elem) {
-					auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
+					auto start_ev = PDI::to_string(PC_get(val, ".start"));
 					ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
 					context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
 
-					auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
+					auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
 					ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
 					context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
-				});
+				} else {
+					ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
+
+					opt_each(val, [&](PC_tree_t sub_elem) {
+						auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
+						ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
+						context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+
+						auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
+						ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
+						context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+					});
+				}
 			}
+		}
+		else if (is_map(spec_tree)) {
+			opt_each(spec_tree, [&](PC_tree_t timer_item) {
+				for (int i = 0; i < PDI::len(timer_item, 0); i++) {
+					std::string timer_name = PDI::to_string(PC_get(timer_item, "{%d}", i));
+					if (timer_name == "output_to") {
+						m_output_path = PDI::to_string(PC_get(timer_item, ".%s", "output_to"));
+					} else {
+						PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
+						if (is_map(val)) {
+							ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
+
+							auto start_ev = PDI::to_string(PC_get(val, ".start"));
+							ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
+							context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+
+							auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
+							ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
+							context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+						} else {
+							ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
+
+							opt_each(val, [&](PC_tree_t sub_elem) {
+								auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
+								ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
+								context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+
+								auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
+								ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
+								context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+							});
+						}
+					}
+				}
+			});
 		}
 		ctx.logger().info("Plugin loaded successfully");
 		ctx.logger().debug("Timer output to {}", m_output_path);
