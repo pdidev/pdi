@@ -186,7 +186,7 @@ public:
 
 	void event(const char* name) override;
 
-	Logger& logger() override;
+	Logger& logger();
 
 	Datatype_template_sptr datatype(PC_tree_t node) override;
 

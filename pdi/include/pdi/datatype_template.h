@@ -34,6 +34,7 @@
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/expression.h>
+#include <pdi/logger.h>
 
 namespace PDI {
 
@@ -88,7 +89,7 @@ public:
 	 *
 	 * \param[in,out] ctx the context where to add the datatypes
 	 */
-	static void load_basic_datatypes(Context& ctx);
+	static void load_basic_datatypes(Logger& logger, Context& ctx);
 
 	/**
 	 * Adds to the context the user defined datatypes
@@ -96,7 +97,7 @@ public:
 	 * \param[in,out] ctx the context where to add the datatypes
 	 * \param[in] types_tree with defined types
 	 */
-	static void load_user_datatypes(Context& ctx, PC_tree_t types_tree);
+	static void load_user_datatypes(Logger& logger, Context& ctx, PC_tree_t types_tree);
 };
 
 } // namespace PDI

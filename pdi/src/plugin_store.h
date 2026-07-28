@@ -65,9 +65,6 @@ class Plugin_store
 		/// The factory function of the plugin
 		plugin_factory_f m_ctr;
 
-		/// A context for the plugin
-		Context_proxy m_ctx;
-
 		/// The function listing the dependencies of the plugin
 		plugin_deps_f m_deps;
 
@@ -80,6 +77,9 @@ class Plugin_store
 		/// The name of this plugin
 		std::string m_name;
 
+		/// A logger for the plugin
+		Logger m_plugin_logger;
+
 		/// Whether this plugin is loaded or not
 		Init_state m_state;
 
@@ -90,16 +90,17 @@ class Plugin_store
 		 * \param name the name of the plugin
 		 * \param conf the configuration subtree of the plugin
 		 */
-		Stored_plugin(Context& ctx, Plugin_store& store, std::string name, PC_tree_t conf);
+		Stored_plugin(Plugin_store& store, std::string name, PC_tree_t conf);
 
 		/** Loads a plugin if not done yet and its pre-dependencies if required
 		 * \param plugins the list of all plugins (for dependencies)
 		 */
-		void ensure_loaded(std::map<std::string, std::shared_ptr<Stored_plugin>>& plugins);
+		void ensure_loaded(Plugin_store& store, Context& ctx);
 	};
+	friend class Stored_plugin;
 
-	/// The context for logging & co.
-	Context& m_ctx;
+	/// The logger
+	Logger& m_logger;
 
 	/// The list of default path where to load the plugins
 	std::vector<std::string> m_plugin_path;
@@ -120,15 +121,15 @@ class Plugin_store
 
 public:
 	/** Builds a plugin store
-	 * \param ctx the context in which to load the plugins
+	 * \param logger the logger
 	 */
-	Plugin_store(Context& ctx);
+	Plugin_store(Logger& logger);
 
 	/** Actually load the plugins
 	 * 
 	 * \param confs the configurations specifying the list of plugin paths & plugins to load
 	 */
-	void load_plugins(std::vector<PC_tree_t> const & confs);
+	void load_plugins(Context& ctx, std::vector<PC_tree_t> const & confs);
 };
 
 } // namespace PDI

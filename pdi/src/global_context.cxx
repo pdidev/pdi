@@ -231,7 +231,7 @@ std::vector<PC_tree_t> get_includes(Logger& logger, PC_tree_t conf)
  * \param is_metadata whether this is a metadata subtree instead of a data one
  * \param def_location the location of all loaded data/metadata for duplicate detection
  */
-void load_data(Context& ctx, PC_tree_t node, bool is_metadata, std::map<std::string, std::optional<Yaml_region>>& def_location)
+void load_data(Global_context& ctx, PC_tree_t node, bool is_metadata, std::map<std::string, std::optional<Yaml_region>>& def_location)
 {
 	int nb_desc = 0;
 	each(node, [&](PC_tree_t key_node, PC_tree_t value_node) {
@@ -395,19 +395,19 @@ void Global_context::notify_missing_data(const string& name)
 
 Global_context::Global_context(PC_tree_t conf)
 	: m_logger{"PDI", PC_get(conf, ".logging")}
-	, m_plugins{*this}
+	, m_plugins{m_logger}
 {
 	// Handle includes and gather all files
 	std::vector<PC_tree_t> confs = get_includes(logger(), conf);
 
 	// load basic datatypes
-	Datatype_template::load_basic_datatypes(*this);
+	Datatype_template::load_basic_datatypes(m_logger, *this);
 	// load user datatypes
 	for (auto&& conf: confs) {
-		Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
+		Datatype_template::load_user_datatypes(m_logger, *this, PC_get(conf, ".types"));
 	}
 
-	m_plugins.load_plugins(confs);
+	m_plugins.load_plugins(*this, confs);
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
@@ -596,3 +596,4 @@ function<void()> Global_context::on_missing_data(const function<void(const strin
 
 
 } // namespace PDI
+

@@ -32,7 +32,6 @@
 #include <utility>
 
 #include <pdi/pdi_fwd.h>
-#include <pdi/logger.h>
 
 namespace PDI {
 
@@ -43,21 +42,29 @@ class PDI_EXPORT Plugin
 {
 	Context& m_context;
 
+	Logger& m_logger;
+
 public:
 	Plugin(const Plugin&) = delete;
 
 	Plugin(Plugin&&) = delete;
 
 	/** Initialization of the plugin
+	 * \param logger the logger for this plugin instance
 	 * \param ctx the PDI context for this plugin instance
 	 */
-	Plugin(Context& ctx);
+	Plugin(Logger& logger, Context& ctx);
 
+protected:
 	virtual ~Plugin() noexcept(false);
 
 	/** Provides access to the PDI context for this plugin instance
 	 */
 	Context& context();
+
+	/** Provides access to the logger for this plugin instance
+	 */
+	Logger& logger();
 
 }; // class Plugin
 
@@ -171,7 +178,8 @@ typename std::enable_if<!has_pretty_name<T>::value, std::string>::type plugin_pr
 /** Declares a plugin to be used with PDI and its dependencies
  *
  * This should be called after having implemented a class that inherits
- * PDI::Plugin with a constructor taking 2 parameters
+ * PDI::Plugin with a constructor taking 3 parameters
+ * - PDI::Logger& logger: the logger for this plugin (forward it to PDI::Plugin)
  * - PDI::Context& ctx: the context for this plugin (forward it to PDI::Plugin)
  * - PC_tree_t conf: the configuration for this plugin
  *
@@ -187,10 +195,10 @@ typename std::enable_if<!has_pretty_name<T>::value, std::string>::type plugin_pr
  */
 #define PDI_PLUGIN(name)                                                                                                                             \
 	_Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")                                                    \
-		_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\""                                                                               \
-	    ) extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf)                     \
+		_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\"") extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT                       \
+		PDI_plugin_##name##_loader(::PDI::Logger& logger, ::PDI::Context& ctx, PC_tree_t conf)                                                       \
 	{                                                                                                                                                \
-		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf}};                                                                \
+		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{logger, ctx, conf}};                                                        \
 		::PDI::plugin_api_version(PLUGIN_API_VERSION);                                                                                               \
 		return plugin;                                                                                                                               \
 	}                                                                                                                                                \

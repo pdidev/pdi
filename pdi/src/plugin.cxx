@@ -25,14 +25,16 @@
 #include "config.h"
 
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/ref_any.h>
 
 #include "pdi/plugin.h"
 
 namespace PDI {
 
-Plugin::Plugin(Context& ctx)
+Plugin::Plugin(Logger& logger, Context& ctx)
 	: m_context{ctx}
+	, m_logger(logger)
 {}
 
 Plugin::~Plugin() noexcept(false) {}
@@ -40,6 +42,11 @@ Plugin::~Plugin() noexcept(false) {}
 Context& Plugin::context()
 {
 	return m_context;
+}
+
+Logger& Plugin::logger()
+{
+	return m_logger;
 }
 
 unsigned long plugin_api_version(unsigned long expected_version)

@@ -40,9 +40,6 @@ class PDI_EXPORT Context_proxy: public Context
 	/// Real context of this proxy
 	Context& m_real_context;
 
-	/// Logger of the plugin
-	Logger m_plugin_logger;
-
 public:
 	/** Creates Context proxy without plugin logger
 	 * \param[in] ctx context to make a proxy
@@ -55,12 +52,6 @@ public:
 	 * \param[in] logging_tree logging yaml tree of the plugin
 	 */
 	Context_proxy(Context& ctx, const std::string& logger_name, PC_tree_t logging_tree);
-
-	/** Sets up logger
-	 * \param[in] logger_name name of the logger (will be used in logger pattern)
-	 * \param[in] logging_tree logging yaml tree of the plugin
-	 */
-	void setup_logger(const std::string& logger_name, PC_tree_t logging_tree);
 
 	Data_descriptor& desc(const std::string& name) override;
 
@@ -77,14 +68,6 @@ public:
 	Iterator find(const std::string& name) override;
 
 	void event(const char* name) override;
-
-	Logger& logger() override;
-
-	/** Returns pdi core logger
-	 *
-	 * \return pdi core logger
-	 */
-	Logger& pdi_core_logger();
 
 	Datatype_template_sptr datatype(PC_tree_t node) override;
 

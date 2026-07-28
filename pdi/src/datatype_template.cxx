@@ -412,39 +412,52 @@ void validate_array(PC_tree_t node, vector<Expression>& size, vector<Expression>
 	}
 }
 
-Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
+class to_array_datatype_template
 {
+private:
+	Logger& m_logger;
+
+public:
+	to_array_datatype_template(Logger& logger)
+		: m_logger(logger)
+	{}
+
+	Datatype_template_sptr operator() (Context& ctx, PC_tree_t node)
 	{
-		string order_str = to_string(PC_get(node, ".order"), "");
-		if (order_str == "c" && order_str == "C") {
-			ctx.logger().warn("`order: C' for array is the only supported order and its specification is deprecated");
-		} else if (order_str != "") {
-			throw Spectree_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};
+		{
+			string order_str = to_string(PC_get(node, ".order"), "");
+			if (order_str == "c" && order_str == "C") {
+				m_logger.warn("`order: C' for array is the only supported order and its specification is deprecated");
+			} else if (order_str != "") {
+				throw Spectree_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};
+			}
 		}
+
+		vector<Expression> array_size = get_array_property(node, ".size");
+		vector<Expression> array_subsize = get_array_property(node, ".subsize");
+		vector<Expression> array_start = get_array_property(node, ".start");
+
+		validate_array(node, array_size, array_subsize, array_start);
+
+		PC_tree_t config_elem = PC_get(node, ".subtype");
+		if (PC_status(config_elem)) {
+			throw Spectree_error{node, "Array must have `subtype'"};
+		}
+
+		Datatype_template_sptr res_type = ctx.datatype(config_elem);
+
+		for (ssize_t ii = array_size.size() - 1; ii >= 0; --ii) {
+			res_type.reset(
+				new Array_template(std::move(res_type), std::move(array_size[ii]), std::move(array_start[ii]), std::move(array_subsize[ii]), node)
+			);
+		}
+		return res_type;
 	}
+};
 
-	vector<Expression> array_size = get_array_property(node, ".size");
-	vector<Expression> array_subsize = get_array_property(node, ".subsize");
-	vector<Expression> array_start = get_array_property(node, ".start");
+vector<Tuple_template::Element>
+get_tuple_elements(Context& ctx, PC_tree_t elements_node, bool buffersize_defined)
 
-	validate_array(node, array_size, array_subsize, array_start);
-
-	PC_tree_t config_elem = PC_get(node, ".subtype");
-	if (PC_status(config_elem)) {
-		throw Spectree_error{node, "Array must have `subtype'"};
-	}
-
-	Datatype_template_sptr res_type = ctx.datatype(config_elem);
-
-	for (ssize_t ii = array_size.size() - 1; ii >= 0; --ii) {
-		res_type.reset(
-			new Array_template(std::move(res_type), std::move(array_size[ii]), std::move(array_start[ii]), std::move(array_subsize[ii]), node)
-		);
-	}
-	return res_type;
-}
-
-vector<Tuple_template::Element> get_tuple_elements(Context& ctx, PC_tree_t elements_node, bool buffersize_defined)
 {
 	int displacement_counter = 0;
 	vector<Tuple_template::Element> result;
@@ -624,10 +637,10 @@ inline void add_float(Context& ctx, const string& name, size_t size)
 	add_scalar_datatype_T<Scalar_kind, Scalar_kind::FLOAT>(ctx, name, size);
 }
 
-void Datatype_template::load_basic_datatypes(Context& ctx)
+void Datatype_template::load_basic_datatypes(Logger& logger, Context& ctx)
 {
 	// holder types
-	ctx.add_datatype("array", to_array_datatype_template);
+	ctx.add_datatype("array", to_array_datatype_template(logger));
 	ctx.add_datatype("struct", to_struct_datatype_template);
 	ctx.add_datatype("record", to_record_datatype_template);
 	ctx.add_datatype("pointer", to_pointer_datatype_template);
@@ -757,7 +770,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 #endif // BUILD_FORTRAN
 }
 
-void Datatype_template::load_user_datatypes(Context& ctx, PC_tree_t types_tree)
+void Datatype_template::load_user_datatypes(Logger&, Context& ctx, PC_tree_t types_tree)
 {
 	if (!PC_status(types_tree)) {
 		int types_len;

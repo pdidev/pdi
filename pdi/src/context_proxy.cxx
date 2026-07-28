@@ -39,13 +39,7 @@ Context_proxy::Context_proxy(Context& ctx)
 
 Context_proxy::Context_proxy(Context& ctx, const string& logger_name, PC_tree_t logging_tree)
 	: m_real_context{ctx}
-	, m_plugin_logger{m_real_context.logger(), logger_name, logging_tree}
 {}
-
-void Context_proxy::setup_logger(const string& logger_name, PC_tree_t logging_tree)
-{
-	m_plugin_logger.setup(m_real_context.logger(), logger_name, logging_tree);
-}
 
 Data_descriptor& Context_proxy::desc(const string& name)
 {
@@ -85,16 +79,6 @@ Context::Iterator Context_proxy::find(const string& name)
 void Context_proxy::event(const char* name)
 {
 	m_real_context.event(name);
-}
-
-Logger& Context_proxy::logger()
-{
-	return m_plugin_logger;
-}
-
-Logger& Context_proxy::pdi_core_logger()
-{
-	return m_real_context.logger();
 }
 
 Datatype_template_sptr Context_proxy::datatype(PC_tree_t node)
