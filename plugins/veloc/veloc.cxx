@@ -162,6 +162,7 @@ public:
 				context().callbacks().add_event_callback(
 					[this](const std::string& event_name) {
 						if (m_config.managed().when.to_long(context())) {
+							PDI::TimerEventHandler veloc_timer(context(), "veloc");
 							protect_all<Ref_r>();
 							Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 							auto new_iter = new_iter_r.scalar_value<int>();

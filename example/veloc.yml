@@ -8,15 +8,11 @@ parallelism: { height: 3, width: 1 }
 cp_status : 1 
 
 pdi:
-  metadata: # type of small values for which PDI keeps a copy
-    iter:   int                                            # current iteration id
-    dsize:  { size: 2, type: array, subtype: int }         # local data size including ghosts/boundary
-    psize:  { size: 2, type: array, subtype: int }         # number of processes in each dimension
-    pcoord: { size: 2, type: array, subtype: int }         # coordinate of the process
-    elapsed_offset : double
-  data: # type of values for which PDI does not keep a copy
-    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
+  include:
+  - pdi.yml
+  data: 
     cp_status : int
+    elapsed_offset : double
   plugins:
     veloc:
       config_file: veloc_example.cfg # needed for VeloC internal config 
