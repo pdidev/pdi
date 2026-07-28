@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -54,11 +55,12 @@ protected:
 public:
 	/** Creates I/O operation (read or write) on NetCDF file
 	 *
+	 * \param logger Logger to use while creating this I/O
 	 * \param ctx Context of this I/O
 	 * \param file File associated with this I/O operation
 	 * \param config Configuration node of this I/O
 	 */
-	Dnc_io(PDI::Context& ctx, PC_tree_t config);
+	Dnc_io(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t config);
 
 	/** Getter for variable path
 	 *

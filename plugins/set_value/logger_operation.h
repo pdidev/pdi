@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -44,16 +45,16 @@ class Logger_operation: public Operation
 	std::string m_pattern;
 
 	/// evaluate pattern on execute
-	bool m_evaluate = false;
+	PDI::Expression m_evaluate = 0L;
 
 public:
 	/** Creates logger operation
-     * \param[in] ctx context of the operation
+     * \param[in] logger a logger
      * \param[in] logger_node yaml config tree of logger operation
      */
-	Logger_operation(PDI::Context& ctx, PC_tree_t logger_node);
+	Logger_operation(PDI::Logger& logger, PC_tree_t logger_node);
 
-	void execute() override;
+	void execute(PDI::Logger& logger, PDI::Context& ctx) override;
 };
 
 } // namespace set_value

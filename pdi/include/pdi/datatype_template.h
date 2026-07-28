@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -34,6 +34,7 @@
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/expression.h>
+#include <pdi/logger.h>
 
 namespace PDI {
 
@@ -86,17 +87,19 @@ public:
 	/**
 	 * Adds to the context the basic Array, Record, C and Fortran datatypes
 	 *
+	 * \param[in] logger the logger to use
 	 * \param[in,out] ctx the context where to add the datatypes
 	 */
-	static void load_basic_datatypes(Context& ctx);
+	static void load_basic_datatypes(Logger& logger, Context& ctx);
 
 	/**
 	 * Adds to the context the user defined datatypes
 	 *
+	 * \param[in] logger the logger to use
 	 * \param[in,out] ctx the context where to add the datatypes
 	 * \param[in] types_tree with defined types
 	 */
-	static void load_user_datatypes(Context& ctx, PC_tree_t types_tree);
+	static void load_user_datatypes(Logger& logger, Context& ctx, PC_tree_t types_tree);
 };
 
 } // namespace PDI

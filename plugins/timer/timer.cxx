@@ -53,11 +53,11 @@ class timer_plugin: public PDI::Plugin
 	std::string m_output_path = "cout";
 
 public:
-	timer_plugin(Context& ctx, PC_tree_t spec_tree)
-		: Plugin{ctx}
+	timer_plugin(Logger& log, Context& ctx, PC_tree_t spec_tree)
+		: Plugin{log, ctx}
 	{
 		if (PC_status(spec_tree)) {
-			ctx.logger().error("Error in read_config_tree");
+			logger().error("Error in read_config_tree");
 			return;
 		}
 		if (is_list(spec_tree)) {
@@ -71,26 +71,26 @@ public:
 
 				PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
 				if (is_map(val)) {
-					ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
+					logger().debug("Defined timer (map-styled): {}", timer_name);
 
 					auto start_ev = PDI::to_string(PC_get(val, ".start"));
 					ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
-					context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+					logger().debug("event [{}] starts timer {}", start_ev, timer_name);
 
 					auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
 					ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
-					context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+					logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
 				} else {
-					ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
+					logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
 
 					opt_each(val, [&](PC_tree_t sub_elem) {
 						auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
 						ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
-						context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+						logger().debug("event [{}] starts timer {}", start_ev, timer_name);
 
 						auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
 						ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
-						context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+						logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
 					});
 				}
 			}
@@ -103,40 +103,40 @@ public:
 					} else {
 						PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
 						if (is_map(val)) {
-							ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
+							logger().debug("Defined timer (map-styled): {}", timer_name);
 
 							auto start_ev = PDI::to_string(PC_get(val, ".start"));
 							ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
-							context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+							logger().debug("event [{}] starts timer {}", start_ev, timer_name);
 
 							auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
 							ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
-							context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+							logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
 						} else {
-							ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
+							logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
 
 							opt_each(val, [&](PC_tree_t sub_elem) {
 								auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
 								ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
-								context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+								logger().debug("event [{}] starts timer {}", start_ev, timer_name);
 
 								auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
 								ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
-								context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+								logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
 							});
 						}
 					}
 				}
 			});
 		}
-		ctx.logger().info("Plugin loaded successfully");
-		ctx.logger().debug("Timer output to {}", m_output_path);
+		logger().info("Plugin loaded successfully");
+		logger().debug("Timer output to {}", m_output_path);
 	}
 
 	~timer_plugin()
 	{
 		output_timer();
-		context().logger().info("Closing plugin");
+		logger().info("Closing plugin");
 	}
 
 	static std::string pretty_name() { return "Timer"; }
@@ -150,7 +150,7 @@ private:
 	{
 		auto& timer = m_timers[name];
 		if (timer.start_time.has_value()) {
-			context().logger().error("Timer for {} is already running. Ignoring the start", name);
+			logger().error("Timer for {} is already running. Ignoring the start", name);
 		} else {
 			timer.start_time = std::chrono::high_resolution_clock::now();
 		}
@@ -164,7 +164,7 @@ private:
 	{
 		auto it = m_timers.find(name);
 		if (it == m_timers.end() || !it->second.start_time.has_value()) {
-			context().logger().error("Cannot end timer for {}  because it was never started.", name);
+			logger().error("Cannot end timer for {}  because it was never started.", name);
 		} else {
 			auto end_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed = end_time - it->second.start_time.value();
@@ -177,14 +177,14 @@ private:
 	{
 		if (m_output_path == "cout") {
 			for (const auto& [name, info]: m_timers) {
-				context().logger().info("Total time spent for {} : {} seconds", name, info.accumulated_time);
+				logger().info("Total time spent for {} : {} seconds", name, info.accumulated_time);
 			}
-			context().logger().info("Successfully output results to standard output");
+			logger().info("Successfully output results to standard output");
 		} else {
 			auto filename = m_output_path.c_str();
 			int fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
 			if (fd == -1) {
-				context().logger().error("Could not open file {}", filename);
+				logger().error("Could not open file {}", filename);
 				return;
 			}
 
@@ -198,7 +198,7 @@ private:
 			}
 
 			close(fd);
-			context().logger().info("Successfully saved results to {}", filename);
+			logger().info("Successfully saved results to {}", filename);
 		}
 	}
 };

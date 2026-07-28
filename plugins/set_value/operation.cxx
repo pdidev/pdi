@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -28,14 +29,6 @@
 
 namespace set_value {
 
-Operation::Operation(PDI::Context& ctx)
-	: m_ctx{ctx}
-{}
-
-PDI::Context& Operation::context()
-{
-	return m_ctx;
-}
-
+Operation::~Operation() = default;
 
 } // namespace set_value

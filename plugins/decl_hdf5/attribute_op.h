@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -116,25 +117,28 @@ public:
 
 	/** Executes the requested operation.
 	 *
+	 * \param logger the logger to use
 	 * \param ctx the context in which to operate
 	 * \param h5_file the already opened HDF5 file id
 	 */
-	void execute(PDI::Context& ctx, hid_t h5_file) const;
+	void execute(PDI::Logger& logger, PDI::Context& ctx, hid_t h5_file) const;
 
 private:
 	/** Executes write operation.
 	 *
+	 * \param logger the logger to use
 	 * \param ctx the context in which to operate
 	 * \param h5_file the already opened HDF5 file id
 	 */
-	void do_write(PDI::Context& ctx, hid_t h5_file) const;
+	void do_write(PDI::Logger& logger, PDI::Context& ctx, hid_t h5_file) const;
 
 	/** Executes read operation.
 	 *
+	 * \param logger the logger to use
 	 * \param ctx the context in which to operate
 	 * \param h5_file the already opened HDF5 file id
 	 */
-	void do_read(PDI::Context& ctx, hid_t h5_file) const;
+	void do_read(PDI::Logger& logger, PDI::Context& ctx, hid_t h5_file) const;
 };
 
 } // namespace decl_hdf5

@@ -24,6 +24,7 @@
  ******************************************************************************/
 
 #include <pdi/error.h>
+#include <pdi/logger.h>
 
 #include "event_operation.h"
 #include "expose_operation.h"
@@ -36,8 +37,7 @@
 
 namespace set_value {
 
-Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node)
-	: m_ctx{ctx}
+Trigger::Trigger(PDI::Logger& logger, PC_tree_t operation_list_node)
 {
 	if (!PDI::is_list(operation_list_node)) {
 		throw PDI::Spectree_error{operation_list_node, "Operations must be defined as a list"};
@@ -50,27 +50,27 @@ Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node)
 		PC_tree_t operation_value = PC_get(value_map, "<0>");
 
 		if (operation == "set") {
-			m_operations.emplace_back(new Set_operation{m_ctx, operation_value});
+			m_operations.emplace_back(new Set_operation{logger, operation_value});
 		} else if (operation == "share") {
-			m_operations.emplace_back(new Share_operation{m_ctx, operation_value});
+			m_operations.emplace_back(new Share_operation{logger, operation_value});
 		} else if (operation == "expose") {
-			m_operations.emplace_back(new Expose_operation{m_ctx, operation_value});
+			m_operations.emplace_back(new Expose_operation{logger, operation_value});
 		} else if (operation == "event") {
-			m_operations.emplace_back(new Event_operation{m_ctx, operation_value});
+			m_operations.emplace_back(new Event_operation{logger, operation_value});
 		} else if (operation == "release") {
-			m_operations.emplace_back(new Release_operation{m_ctx, operation_value});
+			m_operations.emplace_back(new Release_operation{logger, operation_value});
 		} else if (operation == "logger") {
-			m_operations.emplace_back(new Logger_operation{m_ctx, operation_value});
+			m_operations.emplace_back(new Logger_operation{logger, operation_value});
 		} else {
 			throw PDI::Spectree_error{PC_get(value_map, "{0}"), "Unknown operation: {}", operation};
 		}
 	}
 }
 
-void Trigger::execute()
+void Trigger::execute(PDI::Logger& logger, PDI::Context& ctx)
 {
 	for (auto& operation: m_operations) {
-		operation->execute();
+		operation->execute(logger, ctx);
 	}
 }
 
