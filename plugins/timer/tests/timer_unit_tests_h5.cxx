@@ -135,4 +135,3 @@ plugins:
 	FinalizePdi();
 	EXPECT_TRUE(std::filesystem::exists("timer.csv"));
 }
-

@@ -94,8 +94,7 @@ public:
 					});
 				}
 			}
-		}
-		else if (is_map(spec_tree)) {
+		} else if (is_map(spec_tree)) {
 			opt_each(spec_tree, [&](PC_tree_t timer_item) {
 				for (int i = 0; i < PDI::len(timer_item, 0); i++) {
 					std::string timer_name = PDI::to_string(PC_get(timer_item, "{%d}", i));
@@ -118,7 +117,10 @@ public:
 
 							opt_each(val, [&](PC_tree_t sub_elem) {
 								auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
-								ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
+								ctx.callbacks().add_event_callback(
+									[this, timer_name](const std::string& event) { startTimer(timer_name); },
+									start_ev
+								);
 								context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
 
 								auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
