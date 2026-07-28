@@ -175,7 +175,6 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 			m_ctx.callbacks().add_data_callback([this](const std::string& desc_name, PDI::Ref r) { this->execute(desc_name, r); }, desc_trigger);
 		}
 	}
-	m_ctx.logger().debug("end first write");
 }
 
 Dnc_file_context::Dnc_file_context(Dnc_file_context&& other) noexcept
