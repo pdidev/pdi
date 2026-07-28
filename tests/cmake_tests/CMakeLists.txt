@@ -49,7 +49,6 @@ else()
 	message(FATAL_ERROR "DIST_PROFILE should be set to one of: User, Devel")
 endif()
 
-option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
 option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
 option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
 option(BUILD_FORTRAN            "Build with Fortran support" ON)

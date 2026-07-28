@@ -33,6 +33,10 @@ and this project adheres to
 #### Deprecated
 
 #### Removed
+* Removed performance micro-benchmarks of the core PDI library that were
+  intended as examples but provided only misleading information and prevented
+  refactoring (Decl'HDF5 benchmarks remain for now). This partially answers
+  [#733](https://github.com/pdidev/pdi/issues/733)
 
 #### Fixed
 
