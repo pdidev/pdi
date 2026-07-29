@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2024 National Institute for Research in Digital Science and Technology (Inria)
+ * Copyright (C) 2024-2026 National Institute for Research in Digital Science and Technology (Inria)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -738,13 +738,23 @@ void Damaris_cfg::parse_storages_tree(Context& ctx, PC_tree_t storages_tree_list
 void Damaris_cfg::parse_write_tree(Context& ctx, PC_tree_t write_tree_list)
 {
 	each(write_tree_list, [&](PC_tree_t write_key, PC_tree_t write_ds_tree) { //each dataset to write
-		std::string ds_name = to_string(write_key); //the name of the data to write, if dataset not specified afterward!
+		std::string data_name = PDI::to_string(write_key);
 		Dataset_Write_Info ds_write_info;
+		ds_write_info.dataset_name = data_name;
 
 		//dataset
 		PC_tree_t ds_name_tree = PC_get(write_ds_tree, ".dataset");
 		if (!PC_status(ds_name_tree)) {
-			ds_name = to_string(ds_name_tree);
+			ds_write_info.dataset_name = PDI::to_string(ds_name_tree);
+
+			//Check if the ds exists
+			auto it = m_datasets.find(ds_write_info.dataset_name);
+			if (it != m_datasets.end()) {
+				//modelVarXML& value = it->second;
+			} else {
+				// Key does not exist
+				throw PDI::Spectree_error{write_tree_list, "Specified dataset `{}' to write into doesn't exist.", PDI::to_string(ds_name_tree)};
+			}
 		}
 		//when
 		PC_tree_t ds_when_tree = PC_get(write_ds_tree, ".when");
@@ -763,8 +773,8 @@ void Damaris_cfg::parse_write_tree(Context& ctx, PC_tree_t write_tree_list)
 					ds_write_info.position[pos_idx] = to_string(dim);
 					pos_idx++;
 				});
-			} else { //p0
-				ds_write_info.position[0] = to_string(ds_position_tree);
+			} else { 
+				throw PDI::Spectree_error{write_tree_list, "Write.position must be an array of 1 to 3 values."};
 			}
 		}
 		//block
@@ -773,9 +783,10 @@ void Damaris_cfg::parse_write_tree(Context& ctx, PC_tree_t write_tree_list)
 			ds_write_info.block = to_string(ds_block_tree);
 		}
 
-		m_datasets_to_write.emplace(ds_name, ds_write_info);
+		m_datasets_to_write.emplace(data_name, ds_write_info);
 
-		load_desc(m_descs, ctx, ds_name, Desc_type::DATA_TO_WRITE_WITH_BLOCK);
+		load_desc(m_descs, ctx, data_name, Desc_type::DATA_TO_WRITE_WITH_BLOCK);
+		ctx.logger().info("ds_name = {}, data_name = {}", ds_write_info.dataset_name, data_name);
 	});
 }
 

@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-# Copyright (C) 2024 Institut national de recherche en informatique et en automatique (Inria)
+# Copyright (C) 2024-2026 Institut national de recherche en informatique et en automatique (Inria)
 #
 # All rights reserved.
 #

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2024 National Institute for Research in Digital Science and Technology (Inria)
+ * Copyright (C) 2024-2026 National Institute for Research in Digital Science and Technology (Inria)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -121,6 +121,7 @@ struct Dataset_Write_Info {
 	PDI::Expression when = "1"; //By default, always write as long as there are iteration going on
 	/*int64_t* */ PDI::Expression position[3] = {"0", "0", "0"}; //Max Dim is 3
 	/*int32_t */ PDI::Expression block = "0"; //when domain = 1, which is the default behaviour
+	std::string dataset_name;
 };
 
 struct DamarisXMLGenerators {
