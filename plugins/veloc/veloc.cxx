@@ -179,6 +179,7 @@ public:
 			case Event_type::RECOVER: {
 				context().callbacks().add_event_callback(
 					[this](const std::string& event_name) {
+						PDI::TimerEventHandler veloc_timer(context(), "veloc");
 						protect_all<Ref_w>();
 						int result = read_checkpoint(context(), m_config.label(), m_config.managed().requested_checkpoint);
 						m_recovered_iter = result;
@@ -191,6 +192,7 @@ public:
 			case Event_type::STATE_SYNC: {
 				context().callbacks().add_event_callback(
 					[this](const std::string& event_name) {
+						PDI::TimerEventHandler veloc_timer(context(), "veloc");
 						if (!m_status) { // recovery needed
 							protect_all<Ref_w>();
 							int result = read_checkpoint(context(), m_config.label(), m_config.managed().requested_checkpoint);
@@ -216,6 +218,7 @@ public:
 			case Event_type::START_CHECKPOINT: {
 				context().callbacks().add_event_callback(
 					[this](const std::string& event_name) {
+						PDI::TimerEventHandler veloc_timer(context(), "veloc");
 						Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 						auto new_iter = new_iter_r.scalar_value<int>();
 						init_checkpoint(context(), m_config.label(), new_iter);
@@ -227,6 +230,7 @@ public:
 			case Event_type::START_RECOVERY: {
 				context().callbacks().add_event_callback(
 					[this](const std::string& event_name) {
+						PDI::TimerEventHandler veloc_timer(context(), "veloc");
 						init_restart(context(), m_config.label(), m_config.custom().manual_rec.requested_checkpoint);
 					},
 					event.first
@@ -235,6 +239,7 @@ public:
 			case Event_type::ROUTE_FILE_FOR_CP: {
 				context().callbacks().add_event_callback(
 					[this](const std::string& event_name) {
+						PDI::TimerEventHandler veloc_timer(context(), "veloc");
 						Ref_w wref = context().desc(m_config.custom().routed_file).ref();
 						if (wref) {
 							char* routed_chars = static_cast<char*>(wref.get());
@@ -247,6 +252,7 @@ public:
 			case Event_type::ROUTE_FILE_FOR_REC: {
 				context().callbacks().add_event_callback(
 					[this](const std::string& event_name) {
+						PDI::TimerEventHandler veloc_timer(context(), "veloc");
 						Ref_w wref = context().desc(m_config.custom().routed_file).ref();
 						if (wref) {
 							char* routed_chars = static_cast<char*>(wref.get());
@@ -258,6 +264,7 @@ public:
 			} break;
 			case Event_type::END_CHECKPOINT: {
 				context().callbacks().add_event_callback([this](const std::string& event_name) { 
+					PDI::TimerEventHandler veloc_timer(context(), "veloc");
 					end_checkpoint(context()); 
 					if(m_partial_counter==1){
 						m_cp_counter++;
@@ -266,7 +273,9 @@ public:
 				}, event.first);
 			} break;
 			case Event_type::END_RECOVERY: {
-				context().callbacks().add_event_callback([this](const std::string& event_name) { end_restart(context()); }, event.first);
+				context().callbacks().add_event_callback([this](const std::string& event_name) { 
+					PDI::TimerEventHandler veloc_timer(context(), "veloc");
+					end_restart(context()); }, event.first);
 			} break;
 			default:
 				throw Type_error{"Unexpected event type"};
