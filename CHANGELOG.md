@@ -7,7 +7,7 @@ and this project adheres to
 
 
 
-## [Unreleased]
+## [1.12.0] - 2026-07-29
 
 ### For users
 
