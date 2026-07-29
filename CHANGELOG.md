@@ -34,19 +34,11 @@ and this project adheres to
   and document the cmake option to override 'NetCDF_FIND_STRATEGIES' as
   requested in [#500](https://github.com/pdidev/pdi/issues/500)
 
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
 #### Fixed
 * Migrate from `TYPED_TEST_CASE` to `TYPED_TEST_SUITE`, from `INSTANTIATE_TEST_CASE_P`
   to `INSTANTIATE_TEST_SUITE_P` to resolve deprecation warnings.
 * Resolve compilation warning in `decl_netcdf_test_08`
  [#716](https://github.com/pdidev/pdi/issues/716)
-
-#### Security
 
 
 ### For plugin developers
@@ -55,16 +47,8 @@ and this project adheres to
 * Support conversion of `Yaml_region` to a `string`
   [#702](https://github.com/pdidev/pdi/issues/702)
 
-#### Changed
-
-#### Deprecated
-
 #### Removed
 * `PDI::Error` is now an abstract class and should never be used directly.
-
-#### Fixed
-
-#### Security
 
 
 
