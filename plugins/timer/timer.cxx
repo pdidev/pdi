@@ -24,6 +24,7 @@
 
 #include <chrono>
 #include <fstream>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <fcntl.h>
@@ -38,133 +39,124 @@ namespace {
 
 using namespace PDI;
 
+struct TimerInfo {
+	double accumulated_time{0.0};
+	std::optional<std::chrono::high_resolution_clock::time_point> start_time{std::nullopt};
+};
+
 /** The timer plugin 
 */
 class timer_plugin: public PDI::Plugin
 {
-	// Map of timer's name and timer's starting point
-	std::unordered_map<std::string, std::chrono::high_resolution_clock::time_point> start_times;
-
-	// Map of timer's name and timer's duration
-	std::unordered_map<std::string, double> accumulated_times;
-
-	// Map of start event, and different timers to be started
-	std::unordered_map<std::string, std::vector<std::string> > start_events;
-
-	// Map of stop event, and different timers to be stopped
-	std::unordered_map<std::string, std::vector<std::string> > stop_events;
+	// Map of timer's name and info including start time and accumulated time
+	std::unordered_map<std::string, TimerInfo> m_timers;
+	std::string m_output_path = "cout";
 
 public:
 	timer_plugin(Context& ctx, PC_tree_t spec_tree)
 		: Plugin{ctx}
 	{
-		read_config_tree(ctx, spec_tree);
+		if (PC_status(spec_tree)) {
+			ctx.logger().error("Error in read_config_tree");
+			return;
+		}
+		if (is_list(spec_tree)) {
+			for (int i = 0; i < len(spec_tree, 0); i++) {
+				PC_tree_t timer_item = PC_get(spec_tree, "[%d]", i);
+				std::string timer_name = PDI::to_string(PC_get(timer_item, "{0}"));
+				if (timer_name == "output_to") {
+					m_output_path = PDI::to_string(PC_get(timer_item, ".%s", "output_to"));
+					continue;
+				}
 
-		ctx.callbacks().add_event_callback([this](const std::string& event) {
-			if (auto search = start_events.find(event); search != start_events.end()) {
-				for (const auto& timer: search->second) {
-					startTimer(timer);
+				PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
+				if (is_map(val)) {
+					ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
+
+					auto start_ev = PDI::to_string(PC_get(val, ".start"));
+					ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
+					context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+
+					auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
+					ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
+					context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+				} else {
+					ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
+
+					opt_each(val, [&](PC_tree_t sub_elem) {
+						auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
+						ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
+						context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+
+						auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
+						ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
+						context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+					});
 				}
 			}
-			if (auto search = stop_events.find(event); search != stop_events.end()) {
-				for (const auto& timer: search->second) {
-					stopTimer(timer);
-				}
-			}
-		});
+		} else if (is_map(spec_tree)) {
+			opt_each(spec_tree, [&](PC_tree_t timer_item) {
+				for (int i = 0; i < PDI::len(timer_item, 0); i++) {
+					std::string timer_name = PDI::to_string(PC_get(timer_item, "{%d}", i));
+					if (timer_name == "output_to") {
+						m_output_path = PDI::to_string(PC_get(timer_item, ".%s", "output_to"));
+					} else {
+						PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
+						if (is_map(val)) {
+							ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
 
+							auto start_ev = PDI::to_string(PC_get(val, ".start"));
+							ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
+							context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+
+							auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
+							ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
+							context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+						} else {
+							ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
+
+							opt_each(val, [&](PC_tree_t sub_elem) {
+								auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
+								ctx.callbacks().add_event_callback(
+									[this, timer_name](const std::string& event) { startTimer(timer_name); },
+									start_ev
+								);
+								context().logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+
+								auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
+								ctx.callbacks().add_event_callback([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
+								context().logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+							});
+						}
+					}
+				}
+			});
+		}
 		ctx.logger().info("Plugin loaded successfully");
+		ctx.logger().debug("Timer output to {}", m_output_path);
 	}
 
 	~timer_plugin()
 	{
-		for (const auto& [name, duration]: accumulated_times) {
-			context().logger().info("Total time spent for {} : {} seconds", name, duration);
-		}
-		save_timer_to_csv();
+		output_timer();
 		context().logger().info("Closing plugin");
 	}
 
 	static std::string pretty_name() { return "Timer"; }
 
 private:
-	/** Read the configuration file
-	 *
-	 * \param logger PDI's logger instance
-	 * \param spec_tree the yaml tree
-	 */
-	void read_config_tree(Context& ctx, PC_tree_t spec_tree)
-	{
-		if (PC_status(spec_tree)) {
-			ctx.logger().error("Error in read_config_tree");
-			return;
-		}
-
-		for (int i = 0; i < len(spec_tree, 0); i++) {
-			PC_tree_t timer_item = PC_get(spec_tree, "[%d]", i);
-			std::string timer_name = PDI::to_string(PC_get(timer_item, "{0}"));
-
-			PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
-			if (is_map(val)) {
-				ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
-				auto start_ev = PDI::to_string(PC_get(val, ".start"));
-				auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
-				register_timer(start_ev, stop_ev, timer_name);
-			} else {
-				ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
-				opt_each(val, [&](PC_tree_t sub_elem) {
-					auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
-					auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
-					register_timer(start_ev, stop_ev, timer_name);
-				});
-			}
-		}
-		print_timer_property();
-	}
-
-	/** Register the start and stop events for a timer with given name
-	 *
-	 * \param start_event name of the event to start the timer
-	 * \param stop_event name of the event to stop the timer
-	 * \param timer_name name of the timer
-	 */
-	void register_timer(std::string& start_event, std::string& stop_event, std::string& timer_name)
-	{
-		start_events[start_event].push_back(timer_name);
-		stop_events[stop_event].push_back(timer_name);
-	}
-
-	/** Print all timer setup information to the debug log
-	 *
-	 */
-	void print_timer_property()
-	{
-		context().logger().debug("All registered timers: ");
-		for (const auto& [key, value]: start_events) {
-			context().logger().debug("event [{}] starts timer ", key);
-			for (auto n: value) {
-				context().logger().debug(" \t\t {} ", n);
-			}
-		}
-		for (const auto& [key, value]: stop_events) {
-			context().logger().debug("event [{}] stops timer ", key);
-			for (auto n: value) {
-				context().logger().debug(" \t\t {} ", n);
-			}
-		}
-	}
-
 	/** Start a timer with given name
 	 *
 	 * \param name name of the timer to start
 	 */
 	void startTimer(const std::string& name)
 	{
-		if (start_times.find(name) != start_times.end()) {
+		auto& timer = m_timers[name];
+		if (timer.start_time.has_value()) {
 			context().logger().error("Timer for {} is already running. Ignoring the start", name);
-			return;
+		} else {
+			timer.start_time = std::chrono::high_resolution_clock::now();
 		}
-		start_times[name] = std::chrono::high_resolution_clock::now();
 	}
 
 	/** Stop a timer with given name and accumulate the duration of the timer
@@ -173,40 +165,44 @@ private:
 	 */
 	void stopTimer(const std::string& name)
 	{
-		auto it = start_times.find(name);
-		if (it == start_times.end()) {
+		auto it = m_timers.find(name);
+		if (it == m_timers.end() || !it->second.start_time.has_value()) {
 			context().logger().error("Cannot end timer for {}  because it was never started.", name);
-			return;
+		} else {
+			auto end_time = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> elapsed = end_time - it->second.start_time.value();
+			it->second.accumulated_time += elapsed.count();
+			it->second.start_time = std::nullopt;
 		}
-
-		auto end_time = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double> elapsed = end_time - start_times[name];
-
-		accumulated_times[name] += elapsed.count();
-		start_times.erase(it);
 	}
 
-	void save_timer_to_csv()
+	void output_timer()
 	{
-		auto filename = "timer.csv";
-		std::ofstream file(filename, std::ios::app);
+		if (m_output_path == "cout") {
+			for (const auto& [name, info]: m_timers) {
+				context().logger().info("Total time spent for {} : {} seconds", name, info.accumulated_time);
+			}
+			context().logger().info("Successfully output results to standard output");
+		} else {
+			auto filename = m_output_path.c_str();
+			int fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
+			if (fd == -1) {
+				context().logger().error("Could not open file {}", filename);
+				return;
+			}
 
-		if (!file.is_open()) {
-			context().logger().error("Could not open file to write timer results to {}", filename);
-			return;
-		}
-		int fd = open(filename, O_WRONLY);
-		flock(fd, LOCK_EX);
+			if (flock(fd, LOCK_EX) == 0) {
+				for (const auto& [name, info]: m_timers) {
+					dprintf(fd, "%s,%f\n", name.c_str(), info.accumulated_time);
+				}
 
-		// Write Data
-		for (const auto& [name, duration]: accumulated_times) {
-			file << name << "," << duration << "\n";
+				fsync(fd);
+				flock(fd, LOCK_UN);
+			}
+
+			close(fd);
+			context().logger().info("Successfully saved results to {}", filename);
 		}
-		file.flush();
-		flock(fd, LOCK_UN);
-		close(fd);
-		file.close();
-		context().logger().info("Successfully saved results to {}", filename);
 	}
 };
 

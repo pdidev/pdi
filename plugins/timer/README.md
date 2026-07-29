@@ -8,16 +8,17 @@ Simple plugin build:
 ```yaml
 plugins:
   timer: 
-    - timer_A: {start: "decl_hdf5_start_timer", stop: "decl_hdf5_stop_timer"}
-    - timer_B: "decl_hdf5"
-    - timer_C: ["toto", "titi"]
-    - timer_D: 
-        start: "begin_timing"
-        stop: "end_timing"
-    - timer_E: ["pdi"]
+    timer_A: {start: "decl_hdf5_start_timer", stop: "decl_hdf5_stop_timer"}
+    timer_B: "decl_hdf5"
+    timer_C: ["toto", "titi"]
+    timer_D: 
+      start: "begin_timing"
+      stop: "end_timing"
+    timer_E: ["pdi"]
+    output_to: cout
 ```
 
-The timer plugin configuration contains a list of timer names (e.g. `- timer_A`, `- timer_B`, etc.). Each timer will record the time spent between the `start` and `stop` events.
+The timer plugin configuration contains a list of timer names (e.g. `timer_A`, `timer_B`, etc.). Each timer will record the time spent between the `start` and `stop` events.
 
 `timer_A` uses a map-styled definition where both keys `start` and `stop` are mandatory.
 
@@ -25,6 +26,8 @@ The timer plugin configuration contains a list of timer names (e.g. `- timer_A`,
 
 `timer_C` uses a list-styled definition where a list of prefix is provided. If the name is not one of the PDI plugins' name, then it is the user's responsibility to emit the `prefix_start_timer` and `prefix_stop_timer` events. In this example, `timer_C` will record the time spent between `toto_start_timer`, `toto_stop_timer`, and between `titi_start_timer`, `titi_stop_timer`.
 
-It is also possible to have different names for start and stop events such as `timer_D`. 
+It is also possible to have different names for start and stop events such as `timer_D`.
 
 To measure the wall time used spent between `PDI_init` and `PDI_finalize`, one can define a timer as shown by `timer_E` with timer prefix "pdi". Please notie that, this timer include time spent on the simulation as well.
+
+`output_to` (`cout` by default) key allows directing the timer results to either standard output or a file (e.g. `output_to: timer.csv`). The name `cout` is reserved for standard output so can not be used to name the output file. Please also note that, PDI timer plugin uses the `flock` to perform sequential writing of multiple processes to a single file. This can fail if the underlying filesystem does not support `flock`. We suggest user to use the standard output.
