@@ -12,6 +12,39 @@ and this project adheres to
 ### For users
 
 #### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+
+## [Unreleased]
+
+### For users
+
+#### Added
 * A timer plugin is added to reflect the time consumed by pdi and its plugins.
   [#710](https://github.com/pdidev/pdi/issues/710)
 * Add test for HDF5 precision conversion [#708](https://github.com/pdidev/pdi/issues/708)
