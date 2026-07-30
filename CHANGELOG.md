@@ -29,6 +29,8 @@ and this project adheres to
 #### Added
 
 #### Changed
+* Add random generator framework for testing in a separate file 
+[#719](https://github.com/pdidev/pdi/issues/719)
 
 #### Deprecated
 
