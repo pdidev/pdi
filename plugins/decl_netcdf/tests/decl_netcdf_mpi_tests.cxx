@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
 			}
 		}
 	} else {
-		printf("[MPI %d] the file `test_06.nc' doesn't exists");
+		printf("[MPI %d] the file `test_06.nc' doesn't exists", mpi_rank);
 		MPI_Abort(MPI_COMM_WORLD, -1);
 	}
 
