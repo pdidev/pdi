@@ -23,6 +23,13 @@
  ******************************************************************************/
 
 #include <mpi.h>
+
+#include <filesystem>
+#include <numeric>
+#include <ranges>
+#include <array>
+
+#include <pdi/random_generator.h>
 #include <pdi.h>
 
 // Tests netcdf parallel write and read
@@ -80,37 +87,31 @@ int main(int argc, char* argv[])
 
 	PDI_expose("mpi_rank", &mpi_rank, PDI_OUT);
 
-	// init data
-	int int_matrix[4][4];
+	std::mt19937_64 random_generator_used;
+	random_generator_used.seed(1024+mpi_rank); /// define a seed for each mpi process
 
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			int_matrix[i][j] = 100 * mpi_rank + i * 4 + j;
-		}
-	}
+	auto const int_matrix = PDI::make_random<std::array<std::array<int,4>,4>>(random_generator_used);
 
 	// write data
-	PDI_multi_expose("write", "int_submatrix", int_matrix, PDI_OUT, NULL);
+	PDI_multi_expose("write", "int_submatrix", int_matrix.data(), PDI_OUT, NULL);
 
-	// zero data
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			int_matrix[i][j] = 0;
-		}
-	}
+	std::array< std::array<int, 4>, 4>  int_matrix_read{}; // initialize all elements by zero
 
-	// read data
-	PDI_multi_expose("read", "int_submatrix", int_matrix, PDI_IN, NULL);
-
-	// verify
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			printf("[%d][%d] %d ?= %d\n", i, j, int_matrix[i][j], 100 * mpi_rank + i * 4 + j);
-			if (int_matrix[i][j] != 100 * mpi_rank + i * 4 + j) {
-				printf("[%d][%d] %d != %d\n", i, j, int_matrix[i][j], 100 * mpi_rank + i * 4 + j);
-				MPI_Abort(MPI_COMM_WORLD, -1);
+	if (std::filesystem::exists("test_06.nc")) {
+		// read data
+		PDI_multi_expose("read", "int_submatrix", int_matrix_read.data(), PDI_IN, NULL);
+		// verify
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				if (int_matrix[i][j] != int_matrix_read[i][j]) {
+					printf("[MPI %d] [%d][%d] %d != %d\n", mpi_rank, i, j, int_matrix[i][j], int_matrix_read[i][j]);
+					MPI_Abort(MPI_COMM_WORLD, -1);
+				}
 			}
 		}
+	} else {
+		printf("[MPI %d] the file `test_06.nc' doesn't exists");
+		MPI_Abort(MPI_COMM_WORLD, -1);
 	}
 
 	PDI_finalize();
