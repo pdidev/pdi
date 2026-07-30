@@ -661,7 +661,7 @@ void Dnc_netcdf_file::put_variable(const Dnc_variable& variable, const Dnc_io& w
 	m_ctx.logger().trace("Variable `{}' written", variable_name);
 }
 
-void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w)
+void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w, const std::string& ref_name)
 {
 	if (!ref_w) {
 		throw PDI::Permission_error{"Decl_netcdf plugin: Cannot read `{}'. Need write access to read it from file", variable.path()};
@@ -692,12 +692,12 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 
 	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type())) {
 		if (scalar_type->kind() == PDI::Scalar_kind::UNKNOWN) {
-			throw PDI::Type_error{"Can not read `{}' : The exposed data to PDI has an undefined type.\n Possible reason: The exposed data, used to read the variable `{}', is not defined in yaml (meta)data section.", variable_name, variable_name};
-		}
-		else if (scalar_type->is_nulltype()) {
-			throw PDI::Type_error{"Can not read `{}' : The exposed data to PDI, used to read this variable, has a nulltype.\n The buffer size of this data is not well defined.", variable_name};
-		}
-		else {
+			throw PDI::
+				Type_error{"Can not read `{}' : The exposed data to PDI `{}' has an undefined type.\n Possible reason: The exposed data `{}' is not defined in yaml (meta)data section.", variable_name, ref_name, ref_name};
+		} else if (scalar_type->is_nulltype()) {
+			throw PDI::
+				Type_error{"Can not read `{}' : The exposed data to PDI `{}', used to read this variable, has a nulltype.\n The buffer size of this data is not well defined.", variable_name, ref_name};
+		} else {
 			nc_type var_nc_type;
 			size_t var_nc_type_size;
 			nc_try(nc_inq_vartype(src_id, var_id, &var_nc_type), "cannot get type of `{}' from file", variable.path());
