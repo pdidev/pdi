@@ -24,13 +24,13 @@
 
 #include <mpi.h>
 
+#include <array>
 #include <filesystem>
 #include <numeric>
 #include <ranges>
-#include <array>
 
-#include <pdi/random_generator.h>
 #include <pdi.h>
+#include <pdi/random_generator.h>
 
 // Tests netcdf parallel write and read
 int main(int argc, char* argv[])
@@ -88,14 +88,14 @@ int main(int argc, char* argv[])
 	PDI_expose("mpi_rank", &mpi_rank, PDI_OUT);
 
 	std::mt19937_64 random_generator_used;
-	random_generator_used.seed(1024+mpi_rank); /// define a seed for each mpi process
+	random_generator_used.seed(1024 + mpi_rank); /// define a seed for each mpi process
 
-	auto const int_matrix = PDI::make_random<std::array<std::array<int,4>,4>>(random_generator_used);
+	auto const int_matrix = PDI::make_random<std::array<std::array<int, 4>, 4>>(random_generator_used);
 
 	// write data
 	PDI_multi_expose("write", "int_submatrix", int_matrix.data(), PDI_OUT, NULL);
 
-	std::array< std::array<int, 4>, 4>  int_matrix_read{}; // initialize all elements by zero
+	std::array< std::array<int, 4>, 4> int_matrix_read{}; // initialize all elements by zero
 
 	if (std::filesystem::exists("test_06.nc")) {
 		// read data

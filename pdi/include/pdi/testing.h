@@ -70,8 +70,8 @@
 #include <gtest/gtest.h>
 
 #include <paraconf.h>
-#include <pdi/random_generator.h>
 #include <pdi.h>
+#include <pdi/random_generator.h>
 
 namespace PDI {
 
