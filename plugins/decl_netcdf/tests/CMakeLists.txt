@@ -53,6 +53,11 @@ target_link_libraries(decl_netcdf_tests PDI::PDI_plugins Threads::Threads GTest:
 target_compile_features(decl_netcdf_tests PUBLIC cxx_std_20)
 gtest_discover_tests(decl_netcdf_tests)
 
+add_executable(decl_netcdf_tests_check_type decl_netcdf_tests_check_type.cxx)
+target_link_libraries(decl_netcdf_tests_check_type PDI::PDI_plugins Threads::Threads GTest::gmock GTest::gtest GTest::gtest_main)
+target_compile_features(decl_netcdf_tests_check_type PUBLIC cxx_std_20)
+gtest_discover_tests(decl_netcdf_tests_check_type)
+
 if("${BUILD_NETCDF_PARALLEL}")
      find_package(MPI REQUIRED COMPONENTS C)
      add_executable(netcdf_mpi_tests decl_netcdf_mpi_tests.c)
