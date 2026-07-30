@@ -23,9 +23,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <filesystem>
 #include <iostream>
-#include <gtest/gtest.h>
-#include <pdi.h>
+#include <numeric>
+#include <ranges>
+
+#include <pdi/testing.h>
 
 /*
  * Name:                decl_netcdf_test.01
@@ -1112,145 +1115,202 @@ TEST(decl_netcdf_test, float_read)
 	PDI_finalize();
 }
 
+class DeclNetcdfCheckType: public ::PDI::PdiTest
+{};
+
 /*
- * Name:                decl_netcdf_test.read
+ * Name:                DeclNetcdfCheckType.IntReadMismatch
  *
- * Description:         Tests write and read of float that type match
+ * Description:         Tests write and read of int with type mismatch
  */
-TEST(decl_netcdf_test, float_read_array)
+TEST_F(DeclNetcdfCheckType, IntReadMismatch)
 {
-	constexpr char CONFIG_YAML[] = R"(
-    logging: trace
-    metadata:
-      nn: int
-    data:
-      var_in: {type: array, subtype: float, size: ['$nn']}
-      var_out: {type: array, subtype: float, size: ['$nn']}
-    plugins:
-      decl_netcdf:
-      - file: 'test_float22_read.nc'
-        variables:
-          nc_var: {type: array, subtype: float, size: ['$nn']}
-        on_event: write_data
-        write:
-          var_in:
-            variable: nc_var
-      - file: 'test_float22_read.nc'
-        variables:
-          nc_var:  {type: array, subtype: float, size: ['$nn']}
-        on_event: read_data
-        read:
-          var_out:
-            variable: nc_var)";
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  int_in: int32
+  int_out: int64
+plugins:
+  decl_netcdf:
+    - file: 'test_int_read.nc'
+      on_event: write_data
+      write:
+        int_in:
+          variable: scalar_int32
+    - file: 'test_int_read.nc'
+      on_event: read_data
+      read:
+        int_out:
+          variable:
+            scalar_int32
+)=="));
 
-	EXPECT_EQ(PDI_OK, PDI_init(PC_parse_string(CONFIG_YAML)));
-
-	int nn = 3;
 	// write data
-	PDI_expose("nn", &nn, PDI_INOUT);
-	float var_in[3] = {12.34, 1.1, 1.2};
-	PDI_multi_expose("write_data", "var_in", var_in, PDI_OUT, NULL);
+	int32_t int_in = 42;
+	PDI_multi_expose("write_data", "int_in", &int_in, PDI_OUT, NULL);
+
+	EXPECT_TRUE(std::filesystem::exists("test_int_read.nc"));
 
 	// read data
-	float var_out[3] = {-1.0, -1.0, -1.0};
-	EXPECT_EQ(PDI_OK, PDI_multi_expose("read_data", "var_out", var_out, PDI_IN, NULL));
-	for (int ii = 0; ii < nn; ++ii) {
-		EXPECT_EQ(var_out[ii], var_in[ii]);
-	}
-	PDI_finalize();
+	int64_t int_out = -1;
+
+	EXPECT_CALL(
+		*this,
+		PdiError(
+			testing::Eq(PDI_ERR_TYPE),
+			testing::StrEq("Error while triggering event `read_data': "
+	                       "Type_error: Decl_netcdf plugin: Datatype mismatch (with size): "
+	                       "read 'scalar_int32' of size 4 for a buffer of size 8")
+		)
+	);
+
+	EXPECT_EQ(PDI_ERR_TYPE, PDI_multi_expose("read_data", "int_out", &int_out, PDI_IN, NULL));
 }
 
 /*
- * Name:                decl_netcdf_test.double_read_array
+ * Name:                DeclNetcdfCheckType.FloatReadMismatch
  *
- * Description:         Tests write and read of double that type match
+ * Description:         Tests write and read of float/double with type mismatch
  */
-TEST(decl_netcdf_test, double_read_array)
+TEST_F(DeclNetcdfCheckType, FloatReadMismatch)
 {
-	constexpr char CONFIG_YAML[] = R"(
-    logging: trace
-    metadata:
-      nn: int
-    data:
-      var_in: {type: array, subtype: double, size: ['$nn']}
-      var_out: {type: array, subtype: double, size: ['$nn']}
-    plugins:
-      decl_netcdf:
-      - file: 'test_double22_read.nc'
-        variables:
-          nc_var: {type: array, subtype: double, size: ['$nn']}
-        on_event: write_data
-        write:
-          var_in:
-            variable: nc_var
-      - file: 'test_double22_read.nc'
-        variables:
-          nc_var:  {type: array, subtype: double, size: ['$nn']}
-        on_event: read_data
-        read:
-          var_out:
-            variable: nc_var)";
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  var_in: float
+  var_out: double
+plugins:
+  decl_netcdf:
+    - file: 'test_float_read.nc'
+      on_event: write_data
+      write:
+        var_in:
+          variable: scalar_float
+    - file: 'test_float_read.nc'
+      on_event: read_data
+      read:
+        var_out:
+          variable: scalar_float
+)=="));
 
-	EXPECT_EQ(PDI_OK, PDI_init(PC_parse_string(CONFIG_YAML)));
-
-	int nn = 3;
 	// write data
-	PDI_expose("nn", &nn, PDI_INOUT);
-	double var_in[3] = {12.34, 1.1, 1.2};
-	PDI_multi_expose("write_data", "var_in", var_in, PDI_OUT, NULL);
+	float var_in = 12.34;
+	PDI_multi_expose("write_data", "var_in", &var_in, PDI_OUT, NULL);
+
+	EXPECT_TRUE(std::filesystem::exists("test_float_read.nc"));
+
+	EXPECT_CALL(
+		*this,
+		PdiError(
+			testing::Eq(PDI_ERR_TYPE),
+			testing::StrEq("Error while triggering event `read_data': "
+	                       "Type_error: Decl_netcdf plugin: Datatype mismatch (with size): "
+	                       "read 'scalar_float' of size 4 for a buffer of size 8")
+		)
+	);
 
 	// read data
-	double var_out[3] = {-1.0, -1.0, -1.0};
-	EXPECT_EQ(PDI_OK, PDI_multi_expose("read_data", "var_out", var_out, PDI_IN, NULL));
-	for (int ii = 0; ii < nn; ++ii) {
-		EXPECT_EQ(var_out[ii], var_in[ii]);
-	}
-	PDI_finalize();
+	double var_out = -1.0;
+	EXPECT_EQ(PDI_ERR_TYPE, PDI_multi_expose("read_data", "var_out", &var_out, PDI_IN, NULL));
 }
 
 /*
- * Name:                decl_netcdf_test.read
+ * Name:                DeclNetcdfCheckType.ReadDataNotDefinedInYaml
  *
- * Description:         Tests write and read of double that type mismatch
+ * Description:         Tests write and read of float/double with type mismatch
  */
-TEST(decl_netcdf_test, float_read_array_mismatch)
+TEST_F(DeclNetcdfCheckType, ReadDataNotDefinedInYaml)
 {
-	constexpr char CONFIG_YAML[] = R"(
-    logging: trace
-    metadata:
-      nn: int
-    data:
-      var_in: {type: array, subtype: float, size: ['$nn']}
-      var_out: {type: array, subtype: double, size: ['$nn']}
-    plugins:
-      decl_netcdf:
-      - file: 'test_float22_read.nc'
-        variables:
-          nc_var: {type: array, subtype: float, size: ['$nn']}
-        on_event: write_data
-        write:
-          var_in:
-            variable: nc_var
-      - file: 'test_float22_read.nc'
-        variables:
-          nc_var:  {type: array, subtype: double, size: ['$nn']}
-        on_event: read_data
-        read:
-          var_out:
-            variable: nc_var)";
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  var_in: float
+plugins:
+  decl_netcdf:
+    - file: 'test_float_read_data_not_defined.nc'
+      on_event: write_data
+      write:
+        var_in:
+          variable: scalar_float
+    - file: 'test_float_read_data_not_defined.nc'
+      on_event: read_data
+      read:
+        var_out:
+          variable: scalar_float
+)=="));
 
-	EXPECT_EQ(PDI_OK, PDI_init(PC_parse_string(CONFIG_YAML)));
-	PDI_errhandler(PDI_NULL_HANDLER);
-
-	int nn = 3;
 	// write data
-	PDI_expose("nn", &nn, PDI_INOUT);
-	float var_in[3] = {12.34, 1.1, 1.2};
-	PDI_multi_expose("write_data", "var_in", var_in, PDI_OUT, NULL);
+	float var_in = 15.34;
+	PDI_multi_expose("write_data", "var_in", &var_in, PDI_OUT, NULL);
+
+	EXPECT_TRUE(std::filesystem::exists("test_float_read_data_not_defined.nc"));
+
+	EXPECT_CALL(
+		*this,
+		PdiError(
+			testing::Eq(PDI_ERR_TYPE),
+			testing::AllOf(
+				testing::StartsWith("Error while triggering event `read_data': "
+	                                "Type_error: Can not read `scalar_float' : "),
+				testing::HasSubstr("Invalid type in NetCDF plugin: #`0',"),
+				testing::HasSubstr("Possible reason: The exposed data `var_out' "
+	                               "is not defined in yaml (meta)data section.")
+			)
+		)
+	);
 
 	// read data
-	double var_out[3] = {-1.0, -1.0, -1.0};
-	EXPECT_NE(PDI_OK, PDI_multi_expose("read_data", "var_out", var_out, PDI_IN, NULL));
+	float var_out = -1.0;
+	EXPECT_EQ(PDI_ERR_TYPE, PDI_multi_expose("read_data", "var_out", &var_out, PDI_IN, NULL));
+}
 
-	PDI_finalize();
+/*
+ * Name:                DeclNetcdfCheckType.ReadDataNotDefinedInYamlCaseOnData
+ *
+ * Description:         Tests write and read of float/double with type mismatch
+ */
+TEST_F(DeclNetcdfCheckType, ReadDataNotDefinedInYamlCaseOnData)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  var_in: float
+plugins:
+  decl_netcdf:
+    - file: 'test_float_read_data_not_defined.nc'
+      on_event: write_data
+      write:
+        var_in:
+          variable: scalar_float
+    - file: 'test_float_read_data_not_defined.nc'
+      on_data: var_out
+      read:
+        var_out:
+          variable: scalar_float
+)=="));
+
+	// write data
+	float var_in = 15.34;
+	PDI_multi_expose("write_data", "var_in", &var_in, PDI_OUT, NULL);
+
+	EXPECT_TRUE(std::filesystem::exists("test_float_read_data_not_defined.nc"));
+
+	EXPECT_CALL(
+		*this,
+		PdiError(
+			testing::Eq(PDI_ERR_TYPE),
+			testing::AllOf(
+				testing::StartsWith("Unable to share `var_out'"),
+				testing::HasSubstr("Error while triggering data share `var_out': "
+	                               "Type_error: Can not read `scalar_float' :"),
+				testing::HasSubstr("Invalid type in NetCDF plugin: #`0',"),
+				testing::HasSubstr("Possible reason: The exposed data `var_out' "
+	                               "is not defined in yaml (meta)data section.")
+			)
+		)
+	);
+
+	// read data
+	float var_out = -1.0;
+	EXPECT_EQ(PDI_ERR_TYPE, PDI_expose("var_out", &var_out, PDI_IN));
 }
