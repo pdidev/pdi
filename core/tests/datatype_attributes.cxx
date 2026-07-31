@@ -31,7 +31,7 @@
 
 #include "global_context.h"
 
-#include "PDI_record_datatype_cases.h"
+#include "record_datatype_cases.h"
 
 using namespace PDI;
 using namespace std;

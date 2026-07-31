@@ -105,7 +105,7 @@ endforeach()
 
 list(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
-	"${CMAKE_CURRENT_SOURCE_DIR}/pdi/cmake")
+	"${CMAKE_CURRENT_SOURCE_DIR}/core/cmake")
 if("${BUILD_DECL_NETCDF_PLUGIN}")
 	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
 		# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
@@ -459,7 +459,7 @@ if("${BUILD_PYTHON}")
 	list(APPEND PDI_DEPENDS_LIST pybind11)
 endif()
 sbuild_add_module(PDI
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/pdi"
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/core"
 	DEPENDS ${PDI_DEPENDS_LIST}
 	SUBSTEPS test
 )
@@ -540,9 +540,9 @@ sbuild_add_module(PDI_EXAMPLE
 	SUBSTEPS test
 )
 
-sbuild_add_module(PDI_COMBINATION_TESTS
+sbuild_add_module(PDI_INTEGRATION_TESTS
 	ENABLE_BUILD_FLAG BUILD_TESTING
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/combination_tests"
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests"
 	DEPENDS PDI
 	INSTALL_COMMAND ""
 	SUBSTEPS test

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#*******************************************************************************
+# ******************************************************************************
 # Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -21,27 +21,39 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#*****************************************************************************/
+# ****************************************************************************/
 
 import pdi
 import numpy as np
 
-pdi.init("""logging: trace""")
+pdi.init("logging: trace")
 
-# share
-string = "string example"
-string_np_array = np.copy(np.frombuffer(bytes(string.encode("ascii", "replace")), dtype='uint8')) # needs a copy to be mutable
-pdi.share("string", string_np_array, pdi.OUT)
+x = np.zeros([2, 3, 5])
+for i in range(2):
+    for j in range(3):
+        for k in range(5):
+            x[i][j][k] = k + 10*j + 100*i
 
-# access
-returned_string_in_ascii = pdi.access("string", pdi.IN)
+pdi.share("sh", x, pdi.INOUT)
+y = pdi.access("sh", pdi.INOUT)
 
-# check
-string_as_ascii = np.frombuffer(bytes(string.encode("ascii", "replace")), dtype='uint8')
-assert np.array_equal(string_as_ascii, returned_string_in_ascii)
+print("y:")
+print(y, "\n")
 
-pdi.release("string")
+print(" --- change y ---\n")
+y[0][1][3] = 999
 
-pdi.reclaim("string")
+print("y:")
+print(y, "\n")
 
-pdi.finalize()
+pdi.release("sh")  # y
+
+del y
+
+pdi.reclaim("sh")  # x
+
+print("x:")
+print(x, "\n")
+
+assert x[0][1][3] == 999
+

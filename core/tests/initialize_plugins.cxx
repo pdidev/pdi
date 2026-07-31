@@ -28,8 +28,8 @@
 #include "global_context.cxx"
 #include "logger.cxx"
 
-#include "mocks/context_mock.h"
-#include "mocks/plugin_mock.h"
+#include "mock_context.h"
+#include "mock_plugin.h"
 
 namespace {
 

@@ -28,8 +28,8 @@
 #include <pdi/array_datatype.h>
 #include <pdi/scalar_datatype.h>
 
-#include "mocks/context_mock.h"
-#include "mocks/datatype_mock.h"
+#include "mock_context.h"
+#include "mock_datatype.h"
 
 using namespace PDI;
 using std::make_shared;

@@ -29,7 +29,6 @@
 #include <type_traits>
 
 #include <pdi/context.h>
-#include <pdi/context_proxy.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
@@ -38,7 +37,6 @@
 namespace {
 
 using PDI::Context;
-using PDI::Context_proxy;
 using PDI::Data_descriptor;
 using PDI::Datatype;
 using PDI::Datatype_sptr;

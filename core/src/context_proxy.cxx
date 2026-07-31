@@ -24,8 +24,9 @@
  ******************************************************************************/
 
 #include "pdi/context.h"
-#include "pdi/context_proxy.h"
 #include "pdi/logger.h"
+
+#include "context_proxy.h"
 
 using std::string;
 

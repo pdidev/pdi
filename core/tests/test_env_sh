@@ -36,17 +36,19 @@ script_path="$1"
 
 ERRORS=0
 
+. "$script_path"
+
 for VAR in CPATH LD_LIBRARY_PATH LIBRARY_PATH PATH PDI_DIR PYTHONPATH
 do
-	# source in zsh
-	ZSH_VAL="$(zsh  -d -f               -c ". "$script_path" ; echo \$${VAR}")"
-	BASH_VAL="$(bash --noprofile --norc -c ". "$script_path" ; echo \$${VAR}")"
-	if [[ "$ZSH_VAL" != "$BASH_VAL" ]]
+	# get the value if bash is used
+	BASH_VAR="$(bash --noprofile --norc -c ". "$script_path" ; echo \$${VAR}")"
+	eval "DFLT_VAR=\$$VAR"
+	if [[ "$DFLT_VAR" != "$BASH_VAR" ]]
 	then
-		printf "different value for %b:\n* in bash: \`%b'\n*  in zsh: \`%b'\n" "${VAR}" "${ZSH_VAL}" "${BASH_VAL}"  >&2
+		printf "different value for %b:\n* in bash: \`%b'\n*  in default shell: \`%b'\n" "${VAR}" "${DFLT_VAR}" "${BASH_VAR}"  >&2
 		((ERRORS++))
 	else
-		printf "matching value for %b:\n* \`%b'\n" "${VAR}" "${BASH_VAL}"  >&2
+		printf "matching value for %b:\n* \`%b'\n" "${VAR}" "${DFLT_VAR}"  >&2
 	fi
 done
 

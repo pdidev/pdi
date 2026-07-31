@@ -28,12 +28,12 @@
 #include <spdlog/spdlog.h>
 
 #include <pdi/context.h>
-#include <pdi/context_proxy.h>
 #include <pdi/error.h>
 #include <pdi/expression.h>
 #include <pdi/logger.h>
 #include <pdi/ref_any.h>
 
+#include "context_proxy.h"
 #include "logger_operation.h"
 
 namespace set_value {

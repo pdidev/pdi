@@ -33,7 +33,7 @@
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
 
-#include "mocks/datatype_mock.h"
+#include "mock_datatype.h"
 
 using namespace PDI;
 using namespace std;

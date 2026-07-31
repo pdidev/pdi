@@ -43,8 +43,8 @@
 
 #include "global_context.h"
 
-#include "mocks/context_mock.h"
-#include "mocks/data_descriptor_mock.h"
+#include "mock_context.h"
+#include "mock_data_descriptor.h"
 
 using PDI::Array_datatype;
 using PDI::Context;

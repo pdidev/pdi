@@ -36,12 +36,12 @@
 #include "pdi/pdi_fwd.h"
 #include "pdi/callbacks.h"
 #include "pdi/context.h"
-#include "pdi/context_proxy.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/logger.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
 
+#include "context_proxy.h"
 #include "plugin_store.h"
 
 namespace PDI {

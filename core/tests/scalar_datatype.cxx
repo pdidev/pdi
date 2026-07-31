@@ -27,7 +27,7 @@
 
 #include <pdi/scalar_datatype.h>
 
-#include "mocks/context_mock.h"
+#include "mock_context.h"
 
 using namespace PDI;
 using namespace std;

@@ -29,7 +29,6 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
-find_package(Threads REQUIRED)
 if(NOT TARGET GTest::gtest)
 	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
 	add_subdirectory("../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
@@ -39,49 +38,42 @@ include(GoogleTest)
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 
-if("${BUILD_FORTRAN}")
-	add_subdirectory(fortran/)
-endif()
-
-if("${BUILD_PYTHON}")
-	add_test(NAME PDI_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_03.py")
-	add_test(NAME PDI_test_04 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_04.py")
-	add_test(NAME PDI_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_05.py")
-
-	add_executable(PDI_python_tools_unit_tests PDI_python_tools.cxx)
-	target_link_libraries(PDI_python_tools_unit_tests PDI::PDI_pysupport pybind11::embed Python3::Python Threads::Threads GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
-	target_include_directories(PDI_python_tools_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
-	gtest_discover_tests(PDI_python_tools_unit_tests)
-endif()
-
 add_executable(PDI_unit_tests
 		paraconf_wrapper.cxx
 		parsed_modulo.cxx
-		PDI_array_datatype.cxx
-		PDI_C_API.cxx
-		PDI_callbacks.cxx
-		PDI_context.cxx
-		PDI_data_descriptor.cxx
-		PDI_datatype_attributes.cxx
-		PDI_error.cxx
-		PDI_expression.cxx
-# 		PDI_initialize_plugins.cxx
-		PDI_member.cxx
-		PDI_pointer_datatype.cxx
-		PDI_record_datatype_empty.cxx
-		PDI_record_datatype.cxx
-		PDI_ref_any.cxx
-		PDI_scalar_datatype.cxx
-		PDI_test_parse_types.cxx
-		PDI_tuple_datatype.cxx
-		)
+		array_datatype.cxx
+		C_API.cxx
+		callbacks.cxx
+		context.cxx
+		data_descriptor.cxx
+		datatype_attributes.cxx
+		error.cxx
+		expression.cxx
+# 		initialize_plugins.cxx
+		member.cxx
+		pointer_datatype.cxx
+		record_datatype_empty.cxx
+		record_datatype.cxx
+		ref_any.cxx
+		scalar_datatype.cxx
+		test_parse_types.cxx
+		tuple_datatype.cxx
+)
+target_compile_features(PDI_unit_tests PRIVATE cxx_std_20)
+target_link_libraries(PDI_unit_tests PDI::PDI_plugins GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
+target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
+
+if("${BUILD_PYTHON}")
+	target_sources(PDI_unit_tests PRIVATE python_tools.cxx)
+	target_link_libraries(PDI_unit_tests PDI::PDI_pysupport pybind11::embed Python3::Python)
+endif()
 
 set(OPERAND_TYPES uint8_t int64_t float double)
 foreach(OPERAND1_TYPE IN LISTS OPERAND_TYPES)
 	foreach(OPERAND2_TYPE IN LISTS OPERAND_TYPES)
 		string(REPLACE "_" "U" CASE_NAME "${OPERAND1_TYPE}U${OPERAND2_TYPE}")
-		configure_file(expression.cxx "${CMAKE_CURRENT_BINARY_DIR}/expression_${OPERAND1_TYPE}_${OPERAND2_TYPE}.cxx" @ONLY)
-		target_sources(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/expression_${OPERAND1_TYPE}_${OPERAND2_TYPE}.cxx")
+		configure_file(expression_operations.cxx "${CMAKE_CURRENT_BINARY_DIR}/expression_operations_${OPERAND1_TYPE}_${OPERAND2_TYPE}.cxx" @ONLY)
+		target_sources(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/expression_operations_${OPERAND1_TYPE}_${OPERAND2_TYPE}.cxx")
 	endforeach()
 endforeach()
 
@@ -103,9 +95,6 @@ foreach(OPERAND1_TYPE IN LISTS MODULABLE_OPERAND_TYPES)
 	endforeach()
 endforeach()
 
-target_compile_features(PDI_unit_tests PRIVATE cxx_std_20)
-target_link_libraries(PDI_unit_tests PDI::PDI_plugins Threads::Threads GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
-target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 gtest_discover_tests(PDI_unit_tests)
 
 find_program(ZSH_PROGRAM zsh)
@@ -119,7 +108,4 @@ if("${ENABLE_ZSH}" STREQUAL "AUTO")
 	set(ENABLE_ZSH "${ZSH_PROGRAM_FOUND}")
 endif()
 
-add_test(NAME PDI_test_env_zsh COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/test_env_sh" "${PDI_BINARY_DIR}/env.bash")
-if(NOT "${ENABLE_ZSH}")
-	set_property(TEST PDI_test_env_zsh PROPERTY DISABLED TRUE)
-endif()
+add_test(NAME PDI_test_env COMMAND sh "${CMAKE_CURRENT_SOURCE_DIR}/test_env_sh" "${PDI_BINARY_DIR}/env.sh")

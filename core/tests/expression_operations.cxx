@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -29,10 +29,10 @@
 
 #include <pdi/expression.h>
 
-#include "mocks/context_mock.h"
-#include "mocks/data_descriptor_mock.h"
+#include "mock_context.h"
+#include "mock_data_descriptor.h"
 
-#include "operators.h"
+#include "expression_operators.h"
 
 
 // clang-format off
@@ -51,10 +51,23 @@ using std::remove_reference_t;
 using operand1_type = OPERAND1_TYPE;
 using operand2_type = OPERAND2_TYPE;
 
+
 // clang-format off
-TEST(ModuloU@CASE_NAME@Test, toLong)
+template <class T>
+struct ExpressionU@CASE_NAME@Test: public ::testing::Test{};
+// clang-format on
+
+// clang-format off
+TYPED_TEST_SUITE(ExpressionU@CASE_NAME@Test, OperatorTypes);
+// clang-format on
+
+
+// clang-format off
+TYPED_TEST(ExpressionU@CASE_NAME@Test, toLong)
 // clang-format on
 {
+	using operator_type = TypeParam;
+
 	MockContext ctx;
 
 	MockDataDescriptor o1_desc;
@@ -68,18 +81,20 @@ TEST(ModuloU@CASE_NAME@Test, toLong)
 			EXPECT_CALL(o1_desc, ref()).WillOnce(testing::Return(Ref(&op1, [](void*) {}, Scalar_datatype::type_for_v<decltype(op1)>, true, false)));
 			EXPECT_CALL(o2_desc, ref()).WillOnce(testing::Return(Ref(&op2, [](void*) {}, Scalar_datatype::type_for_v<decltype(op2)>, true, false)));
 
-			auto const & expr = "${o1} % ${o2}";
-			auto const & expected = op1 % op2;
-			auto const & result = PDI::Expression(expr);
-			EXPECT_EQ(static_cast<long>(expected), result.to_long(ctx)) << expr;
+			auto const & expr = fmt::format("${{o1}} {} ${{o2}}", operator_type::sign);
+			auto const & expected = static_cast<long>(operator_type::eval(op1, op2));
+			auto const & result = PDI::Expression(expr).to_long(ctx);
+			EXPECT_EQ(expected, result) << expr;
 		}
 	}
 }
 
 // clang-format off
-TEST(ModuloU@CASE_NAME@Test, toDouble)
+TYPED_TEST(ExpressionU@CASE_NAME@Test, toDouble)
 // clang-format on
 {
+	using operator_type = TypeParam;
+
 	MockContext ctx;
 
 	MockDataDescriptor o1_desc;
@@ -93,8 +108,8 @@ TEST(ModuloU@CASE_NAME@Test, toDouble)
 			EXPECT_CALL(o1_desc, ref()).WillOnce(testing::Return(Ref(&op1, [](void*) {}, Scalar_datatype::type_for_v<decltype(op1)>, true, false)));
 			EXPECT_CALL(o2_desc, ref()).WillOnce(testing::Return(Ref(&op2, [](void*) {}, Scalar_datatype::type_for_v<decltype(op2)>, true, false)));
 
-			auto const & expr = "${o1} % ${o2}";
-			auto const & expected = op1 % op2;
+			auto const & expr = fmt::format("${{o1}} {} ${{o2}}", operator_type::sign);
+			auto const & expected = operator_type::eval(op1, op2);
 			auto const & result = PDI::Expression(expr);
 			EXPECT_EQ(static_cast<double>(expected), result.to_double(ctx)) << expr;
 		}
@@ -102,9 +117,11 @@ TEST(ModuloU@CASE_NAME@Test, toDouble)
 }
 
 // clang-format off
-TEST(ModuloU@CASE_NAME@Test, toRef)
+TYPED_TEST(ExpressionU@CASE_NAME@Test, toRef)
 // clang-format on
 {
+	using operator_type = TypeParam;
+
 	MockContext ctx;
 
 	MockDataDescriptor o1_desc;
@@ -118,8 +135,8 @@ TEST(ModuloU@CASE_NAME@Test, toRef)
 			EXPECT_CALL(o1_desc, ref()).WillOnce(testing::Return(Ref(&op1, [](void*) {}, Scalar_datatype::type_for_v<decltype(op1)>, true, false)));
 			EXPECT_CALL(o2_desc, ref()).WillOnce(testing::Return(Ref(&op2, [](void*) {}, Scalar_datatype::type_for_v<decltype(op2)>, true, false)));
 
-			auto const & expr = "${o1} % ${o2}";
-			auto const & expected = op1 % op2;
+			auto const & expr = fmt::format("${{o1}} {} ${{o2}}", operator_type::sign);
+			auto const & expected = operator_type::eval(op1, op2);
 			auto const & result = Ref_r(PDI::Expression(expr).to_ref(ctx)).scalar_value< remove_cv_t<remove_reference_t<decltype(expected)>>>();
 			EXPECT_EQ(expected, result) << expr;
 		}
