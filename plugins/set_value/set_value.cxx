@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2026 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,7 +72,7 @@ struct set_value_plugin: PDI::Plugin {
 				PC_tree_t value_node = PC_get(on_event, "<%d>", i);
 				m_triggers_list.emplace_back(context(), value_node);
 				set_value::Trigger& trigger = m_triggers_list.back();
-				context().callbacks().add_event_callback([&trigger](const std::string&) { trigger.execute(); }, event_name);
+				context().on_event([&trigger](const std::string&) { trigger.execute(); }, event_name);
 			}
 		}
 
@@ -84,7 +84,7 @@ struct set_value_plugin: PDI::Plugin {
 				PC_tree_t value_node = PC_get(on_data, "<%d>", i);
 				m_triggers_list.emplace_back(context(), value_node);
 				set_value::Trigger& trigger = m_triggers_list.back();
-				context().callbacks().add_data_callback([&trigger](const std::string&, PDI::Ref) { trigger.execute(); }, data_name);
+				context().on_data([&trigger](const std::string&, PDI::Ref) { trigger.execute(); }, data_name);
 			}
 		}
 
@@ -98,7 +98,7 @@ struct set_value_plugin: PDI::Plugin {
 		: PDI::Plugin{ctx}
 	{
 		// initialize after all descriptors are loaded, user can set value on_init
-		context().callbacks().add_init_callback([this, config]() { this->load_config(config); });
+		context().on_init([this, config]() { this->load_config(config); });
 		context().logger().info("Plugin loaded successfully");
 	}
 

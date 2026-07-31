@@ -27,6 +27,7 @@
 #include "pdi/context_proxy.h"
 #include "pdi/logger.h"
 
+using std::function;
 using std::string;
 
 namespace PDI {
@@ -106,14 +107,29 @@ void Context_proxy::add_datatype(const string& name, Datatype_template_parser pa
 	m_real_context.add_datatype(name, std::move(parser));
 }
 
-Callbacks& Context_proxy::callbacks()
+function<void()> Context_proxy::on_init(const function<void()>& callback)
 {
-	return m_real_context.callbacks();
+	return m_real_context.on_init(callback);
 }
 
-void Context_proxy::finalize_and_exit()
+function<void()> Context_proxy::on_data(const function<void(const string&, Ref)>& callback, const string& name)
 {
-	m_real_context.finalize_and_exit();
+	return m_real_context.on_data(callback, name);
+}
+
+function<void()> Context_proxy::on_data_remove(const function<void(const string&, Ref)>& callback, const string& name)
+{
+	return m_real_context.on_data_remove(callback, name);
+}
+
+function<void()> Context_proxy::on_event(const function<void(const string&)>& callback, const string& name)
+{
+	return m_real_context.on_event(callback, name);
+}
+
+function<void()> Context_proxy::on_missing_data(const function<void(const string&)>& callback, const string& name)
+{
+	return m_real_context.on_missing_data(callback, name);
 }
 
 } //namespace PDI
