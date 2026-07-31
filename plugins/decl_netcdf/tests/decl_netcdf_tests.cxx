@@ -30,7 +30,6 @@
 
 #include <pdi/testing.h>
 
-
 /*
  * Name:                decl_netcdf_test.01
  *

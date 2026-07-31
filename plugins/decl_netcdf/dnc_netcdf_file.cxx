@@ -752,14 +752,15 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 		} else {
 			// case scalar_type->kind() == PDI::Scalar_kind::UNKNOWN
 			// or new added case (after 2026.08) in PDI::Scalar_kind not previously checked
-			throw PDI::
-				Type_error{"Can not read `{}' : Invalid type in NetCDF plugin: #`{}', "
-					"Possible reason: The exposed data `{}' "
-					"is not defined in yaml (meta)data section.",
-					variable_name,
-					static_cast<uint8_t>(scalar_type->kind()),
-					ref_name};
-			}
+			throw PDI::Type_error{
+				"Can not read `{}' : Invalid type in NetCDF plugin: #`{}', "
+				"Possible reason: The exposed data `{}' "
+				"is not defined in yaml (meta)data section.",
+				variable_name,
+				static_cast<uint8_t>(scalar_type->kind()),
+				ref_name
+			};
+		}
 	}
 
 	m_ctx.logger().trace("Getting variable `{}'", variable.path());
