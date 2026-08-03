@@ -45,7 +45,7 @@
  * Each test will run in a separate directory that's cleaned up after execution, feel free to create
  * any file you need there.
  * In order to be able to use make_a for your own classes & structures, you'll need to define a
- * matching random_init() function (These function are defined in random_generator.h).
+ * matching random_init() function (These functions are defined in random_generator.h).
  * 
  * Some recommendations:
  * - Follow gtest naming requirements for the tests: valid C++ identifiers without _ (underscores)
@@ -53,7 +53,7 @@
  * - Use standard c++ ::std::filesystem or the plugin underlying library directly to check that what
  *   you expected actually append.
  * - Use C++ types, such as ::std::array<int, N> vs. int[N].
- * - When defining your own type, make them default constructibel, give them a init_from member 
+ * - When defining your own type, make them default constructible, give them a init_from member 
  *   function, a default comparison operator and a stream output operator.
  * - Make the data you expose for writing const as much as possible with the pattern: 
  *   `auto const myvar = make_a<MyType>()`.
