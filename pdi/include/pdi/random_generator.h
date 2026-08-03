@@ -30,7 +30,7 @@
 
 // Have a look at Decl'NetCDF plugin `decl_netcdf_mpi_tests.cxx` for an example of use without the testing framework.
 
-//#include <algorithm>
+#include <algorithm>
 #include <random>
 #include <ranges>
 #include <type_traits>
