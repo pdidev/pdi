@@ -63,7 +63,9 @@
  */
 
 #include <algorithm>
+#include <concepts>
 #include <filesystem>
+#include <limits>
 #include <random>
 #include <ranges>
 #include <type_traits>
@@ -99,11 +101,18 @@ concept buildable_from = std::constructible_from<T, G&> && requires(G& g) {
 	};
 };
 
+/** Bridge the gap between integral and IntType, by disabling bool and char.
+ */
+template <class T>
+concept distribution_safe_integral
+	= std::same_as<T, short> || std::same_as<T, unsigned short> || std::same_as<T, int> || std::same_as<T, unsigned int> || std::same_as<T, long>
+   || std::same_as<T, unsigned long> || std::same_as<T, long long> || std::same_as<T, unsigned long long>;
+
 /** initialize an integral value with uniformly distributed values from the provided generator
  * \param gen the (pseudo)random generator
  * \param t the value to initialize
  */
-static inline void random_init(std::uniform_random_bit_generator auto& gen, std::integral auto& t)
+static inline void random_init(std::uniform_random_bit_generator auto& gen, distribution_safe_integral auto& t)
 {
 	using T = std::remove_reference_t<decltype(t)>;
 	t = std::uniform_int_distribution<T>(std::numeric_limits<T>::min())(gen);
