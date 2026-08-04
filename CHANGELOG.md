@@ -39,6 +39,9 @@ and this project adheres to
   [#733](https://github.com/pdidev/pdi/issues/733)
 
 #### Fixed
+* Fix [#737](https://github.com/pdidev/pdi/issues/737) as random_init
+  from integral did not match IntType used (while bool and char remain
+  intentionally unsupported) 
 
 #### Security
 
