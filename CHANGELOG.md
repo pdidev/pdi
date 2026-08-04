@@ -111,6 +111,9 @@ and this project adheres to
 * Removed an invalid Windows-specific choice of the console log output, which
   could not compile: spdlog now picks the console output for the platform,
   fixing [#816](https://github.com/pdidev/pdi/issues/816)
+* Fix [#737](https://github.com/pdidev/pdi/issues/737) as random_init
+  from integral did not match IntType used (while bool and char remain
+  intentionally unsupported) 
 
 #### Security
 
