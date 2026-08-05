@@ -137,6 +137,23 @@ public:
 	virtual void finalize_and_exit() = 0;
 };
 
+class PDI_EXPORT TimerEventHandler
+{
+private:
+	Context& m_ctx;
+	const std::string m_plugin_name;
+
+public:
+	TimerEventHandler(Context& ctx, const std::string& plugin_name)
+		: m_ctx(ctx)
+		, m_plugin_name(plugin_name)
+	{
+		m_ctx.event((plugin_name + "_start_timer").c_str());
+	}
+
+	~TimerEventHandler() { m_ctx.event((m_plugin_name + "_stop_timer").c_str()); }
+};
+
 } // namespace PDI
 
 #endif // PDI_CONTEXT_H_

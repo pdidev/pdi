@@ -1,27 +1,12 @@
 # Checklists
 
-## New patch release
+## New release
 
-To publish a small fix as a patch release:
-* make your changes based on the version branch (`v${X}.${Y}`)
-* change the version in `pdi/VERSION`
-* change the version in `pdi/docs/Source_installation.md`
-* change the version in `mock_pdi/PDIConfigVersion.cmake`
-* commit (or better, make a MR) in the version branch
-* merge the version branch into main
-* in the merge commit:
-  - keep the content of `pdi/VERSION` from main (next with `-alpha` suffix)
-  - keep the content `pdi/docs/Source_installation.md` from main except
-    with the version updated to the just released one
-* tag the new release: `git tag -m "PDI release ${VERSION}" -s "${VERSION}"`
-* push all that
+To publish a new release:
+* use `bin/release`
 * describe the release https://github.com/pdidev/pdi/releases
 * publish new packages https://github.com/pdidev/pkgs
 * publish new recipes  https://github.com/pdidev/spack
-
-## New minor or major release
-
-To publish a new minor or major release, you should use `bin/release`
 
 ## Dependency change
 

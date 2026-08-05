@@ -12,6 +12,48 @@ and this project adheres to
 ### For users
 
 #### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+* Removed performance micro-benchmarks of the core PDI library that were
+  intended as examples but provided only misleading information and prevented
+  refactoring (Decl'HDF5 benchmarks remain for now). This partially answers
+  [#733](https://github.com/pdidev/pdi/issues/733)
+
+#### Fixed
+
+#### Security
+
+
+
+## [1.12.0] - 2026-07-29
+
+### For users
+
+#### Added
+* A timer plugin is added to reflect the time consumed by pdi and its plugins.
+  [#710](https://github.com/pdidev/pdi/issues/710)
+* Add test for HDF5 precision conversion [#708](https://github.com/pdidev/pdi/issues/708)
+* Added support for `includes` in the specification tree, hence solving the 
+  long-standing issue [#80](https://github.com/pdidev/pdi/issues/80)
 * Improved messages for specification tree errors, with file & line numbers and
   support for file names from Paraconf 1.1,
   [#657](https://github.com/pdidev/pdi/issues/657)
@@ -24,71 +66,61 @@ and this project adheres to
   codes.
 * Added support for MacOS and fixed all CI issues on MacOS, fix
   [#688](https://github.com/pdidev/pdi/issues/688)
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
+* Add `when` keyword for user_code plugin, fix [#698](https://github.com/pdidev/pdi/issues/698)
+* Update the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
+  and document the cmake option to override 'NetCDF_FIND_STRATEGIES' as
+  requested in [#500](https://github.com/pdidev/pdi/issues/500)
 
 #### Fixed
 * Migrate from `TYPED_TEST_CASE` to `TYPED_TEST_SUITE`, from `INSTANTIATE_TEST_CASE_P`
   to `INSTANTIATE_TEST_SUITE_P` to resolve deprecation warnings.
-
-#### Security
+* Resolve compilation warning in `decl_netcdf_test_08`
+ [#716](https://github.com/pdidev/pdi/issues/716)
 
 
 ### For plugin developers
 
 #### Added
-
-#### Changed
-
-#### Deprecated
+* Support conversion of `Yaml_region` to a `string`
+  [#702](https://github.com/pdidev/pdi/issues/702)
 
 #### Removed
 * `PDI::Error` is now an abstract class and should never be used directly.
 
-#### Fixed
-
-#### Security
 
 
-
-## [1.11.1] - Unreleased
+## [1.11.2] - 2026-06-28
 
 ### For users
 
-#### Added
+#### Fixed
+* Fixed the build failure of a test in 1.11.1
 
-#### Changed
 
-#### Deprecated
 
-#### Removed
+## [1.11.1] - 2026-06-23
+
+### For users
 
 #### Fixed
 * Do not fail building the documentation when Fortran support is disabled, to
   fix [#690](https://github.com/pdidev/pdi/issues/690)
 * Updated the embedded version of zpp to fix an issue with Fortran on MacOSX,
   part of [#688](https://github.com/pdidev/pdi/issues/688)
-
-#### Security
+* Fix an issue build and tests script in case of spdlog mismatch between the
+  vendored version and dependency of doxygen,
+  [#712](https://github.com/pdidev/pdi/issues/712)
 
 
 ### For plugin developers
 
 #### Added
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
+* Added ability to require some files in tests running in clean directory to fix
+  [#699](https://github.com/pdidev/pdi/issues/699)
 
 #### Fixed
-
-#### Security
+* Correctly generate test directory name to prevent random failures
+  [#700](https://github.com/pdidev/pdi/issues/700)
 
 
 

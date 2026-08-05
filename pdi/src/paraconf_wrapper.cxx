@@ -81,6 +81,23 @@ Paraconf_wrapper::~Paraconf_wrapper()
 	PC_errhandler(m_handler);
 }
 
+std::string to_string(Yaml_region location)
+{
+	return fmt::format(
+		"{}({}:{} -> {}:{})",
+		location.file(),
+		location.start().line,
+		location.start().column,
+		location.end().line,
+		location.end().column
+	);
+}
+
+std::string to_string(std::optional<Yaml_region> location)
+{
+	return location ? to_string(*location) : "";
+}
+
 int len(PC_tree_t tree)
 {
 	int result;

@@ -24,7 +24,14 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.22...4.2)
-project(pdi_tests LANGUAGES C)
+project(pdi_tests LANGUAGES C CXX)
+
+find_package(Threads REQUIRED)
+if(NOT TARGET GTest::gtest)
+	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+	add_subdirectory("../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+include(GoogleTest)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
@@ -35,6 +42,10 @@ include(CTest)
 
 find_package(paraconf REQUIRED COMPONENTS C)
 find_package(PDI REQUIRED COMPONENTS C)
+
+add_executable(integration_tests include.cxx)
+target_link_libraries(integration_tests PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest GTest::gtest_main)
+gtest_discover_tests(integration_tests)
 
 if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 

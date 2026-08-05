@@ -9,6 +9,7 @@
 |\subpage JSON_plugin "JSON plugin"                   |Export data in JSON format.                                        |
 |\subpage serialize_plugin "Serialize plugin"         |Serializes and deserializes shared data.                           |
 |\subpage set_value_plugin "Set Value plugin"         |Set values to data and metadata from yaml file.                    |
+|\subpage timer_plugin "Timer plugin"                 |Measure the time spent by PDI and its plugins.                     |
 |\subpage trace_plugin "Trace plugin"                 |Generate a trace of what happens in %PDI data store.               |
 |\subpage user_code_plugin "user-code plugin"         |Call your function on event or when data becomes available.        |
 

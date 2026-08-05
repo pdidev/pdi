@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@ struct PDI_EXPORT Paraconf_wrapper {
 
 /** A region in a YAML "file", from start to end
  */
-class Yaml_region
+class PDI_EXPORT Yaml_region
 {
 public:
 	/// a location in a YAML stream
@@ -107,6 +107,20 @@ public:
 	 */
 	static std::optional<Yaml_region> make(PC_tree_t tree);
 };
+
+/** Converts a Yaml region into a string representation for debugging purpose
+ * 
+ * \param location the location to convert
+ * \return the string representation
+ */
+std::string PDI_EXPORT to_string(Yaml_region location);
+
+/** Converts an optional Yaml region into a string representation for debugging purpose
+ * 
+ * \param location the location to convert
+ * \return the string representation
+ */
+std::string PDI_EXPORT to_string(std::optional<Yaml_region> location);
 
 /** Returns the length of a node.
  *

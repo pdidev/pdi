@@ -261,6 +261,7 @@ File_op::File_op(Expression&& file, Collision_policy collision_policy)
 
 void File_op::execute(Context& ctx)
 {
+	PDI::TimerEventHandler hdf5_timer(ctx, "decl_hdf5");
 	// first gather the ops we actually want to do
 	vector<Dataset_op> dset_reads;
 	vector<Dataset_op> dset_writes;
@@ -279,7 +280,6 @@ void File_op::execute(Context& ctx)
 			ctx.logger().warn("Unable to evaluate \"when\" close while executing transfer for {}: `{}'", one_dset_op.value(), e.what());
 		}
 	}
-
 	vector<Attribute_op> attr_reads;
 	vector<Attribute_op> attr_writes;
 
@@ -352,7 +352,6 @@ void File_op::execute(Context& ctx)
 		}
 	}
 #endif
-
 	hid_t h5_file_raw = -1;
 	if ((!dset_writes.empty() || !attr_writes.empty()) && (!dset_reads.empty() || !attr_reads.empty())) {
 		ctx.logger().trace("Opening `{}' file to read and write", filename);
