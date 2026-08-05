@@ -56,8 +56,7 @@ if (Damaris_FOUND)
 
 
     message(STATUS "Embedding RPATH for Damaris: ${Damaris_LIBRARIES_PATH}")
-    set(CMAKE_INSTALL_RPATH "${Damaris_LIBRARIES_PATH}")
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    list( APPEND CMAKE_INSTALL_RPATH "${Damaris_LIBRARIES_PATH}")
 else()
     message(STATUS "The Damaris library was NOT found")
 endif()

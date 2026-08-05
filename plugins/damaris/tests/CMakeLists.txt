@@ -30,6 +30,13 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
+if(NOT TARGET GTest::gtest)
+	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+	add_subdirectory("../../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+include(GoogleTest)
+
+
 ##
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
@@ -71,4 +78,16 @@ add_test(NAME test_damaris_dataset_name
      COMMAND "${RUNTEST_DIR}" "/bin/bash" "-exc"
      "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS} $<TARGET_FILE:damaris_write_dataset> ${MPIEXEC_POSTFLAGS} && $<TARGET_FILE:damaris_read_dataset>")
 
+configure_file(test_write_1_file_2_data.yml test_write_1_file_2_data.yml COPYONLY)
+configure_file(test_write_2_file_1_data.yml test_write_2_file_1_data.yml COPYONLY)
 
+add_executable(damaris_write_multiple_data  test_write_multiple_data.cxx)
+target_link_libraries(damaris_write_multiple_data PDI::PDI_C MPI::MPI_C)
+target_compile_features(damaris_write_multiple_data  PUBLIC cxx_std_17)
+
+add_executable(damaris_read_multiple_data test_read_multiple_data.cxx)
+target_compile_features(damaris_read_multiple_data PUBLIC cxx_std_17)
+target_link_libraries(damaris_read_multiple_data PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest)
+gtest_add_tests(TARGET damaris_read_multiple_data TEST_LIST GDamaris_multidata)
+
+set_tests_properties(${GDamaris_multidata} PROPERTIES TIMEOUT 8)
