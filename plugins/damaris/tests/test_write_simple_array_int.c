@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 	long longval;
 	PC_int(PC_get(conf, ".parallelism"), &longval);
 	if (world_size != longval) {
-		fprintf(stderr, "Please use at least %ld mpi processes\n",longval);
+		fprintf(stderr, "Please use at least %ld mpi processes\n", longval);
 		exit(1);
 	}
 
@@ -74,7 +74,6 @@ int main(int argc, char* argv[])
 
 	printf("value of is_client %d=", is_client);
 	if (is_client) {
-
 		int psize_1d;
 		MPI_Comm_size(main_comm, &psize_1d);
 		int pcoord_1d;
@@ -88,7 +87,7 @@ int main(int argc, char* argv[])
 		int int_values[dsize];
 
 		for (int ii = 0; ii < dsize; ++ii) {
-			int_values[ii] = pcoord_1d*100 + ii;
+			int_values[ii] = pcoord_1d * 100 + ii;
 		}
 
 		PDI_multi_expose("write", "int_values", int_values, PDI_OUT, NULL);

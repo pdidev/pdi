@@ -39,11 +39,6 @@
 #include "damaris_cfg.h"
 #include "damaris_wrapper.h"
 
-using PDI::Context;
-using std::list;
-using std::string;
-using std::unique_ptr;
-
 namespace damaris_pdi {
 
 class Damaris_api_call_handler
@@ -70,10 +65,16 @@ public:
 
 	bool is_damaris_api_call_event(std::string event_name);
 
-	void damaris_api_call_event(Context& ctx, unique_ptr<Damaris_wrapper>& m_damaris, std::string event_name, list<string> expose_dataname, ...);
+	void damaris_api_call_event(
+		PDI::Context& ctx,
+		std::unique_ptr<Damaris_wrapper>& m_damaris,
+		std::string event_name,
+		std::list<std::string> expose_dataname,
+		...
+	);
 
 private:
-	void damaris_pdi_init(Context& ctx, unique_ptr<Damaris_wrapper>& m_damaris, const char* damaris_xml_object);
+	void damaris_pdi_init(PDI::Context& ctx, std::unique_ptr<Damaris_wrapper>& m_damaris, const char* damaris_xml_object);
 }; // class Damaris_api_call_handler
 
 } // namespace damaris_pdi

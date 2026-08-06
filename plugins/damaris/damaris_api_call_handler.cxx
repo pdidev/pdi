@@ -27,17 +27,6 @@
 #include "damaris_api_call_handler.h"
 #include "damaris_cfg.h"
 
-using PDI::Context;
-using PDI::Ref;
-using PDI::Ref_r;
-using PDI::Ref_w;
-using std::list;
-using std::map;
-using std::string;
-using std::unique_ptr;
-using std::unordered_map;
-using std::unordered_set;
-
 namespace damaris_pdi {
 
 Damaris_api_call_handler::Damaris_api_call_handler(std::string cfg_object)
@@ -80,10 +69,10 @@ bool Damaris_api_call_handler::is_damaris_api_call_event(std::string event_name)
 }
 
 void Damaris_api_call_handler::damaris_api_call_event(
-	Context& ctx,
-	unique_ptr<Damaris_wrapper>& m_damaris,
+	PDI::Context& ctx,
+	std::unique_ptr<Damaris_wrapper>& m_damaris,
 	std::string event_name,
-	list<string> expose_dataname,
+	std::list<std::string> expose_dataname,
 	...
 )
 {
@@ -192,7 +181,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 
 		va_list extra_args;
 		va_start(extra_args, expose_dataname);
-		string data_name = va_arg(extra_args, const char*);
+		std::string data_name = va_arg(extra_args, const char*);
 		if (!data_name.empty()) {
 			var_name = (char*)data_name.c_str();
 			buffer = va_arg(extra_args, void*);
@@ -229,7 +218,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 
 		va_list extra_args;
 		va_start(extra_args, expose_dataname);
-		string data_name = va_arg(extra_args, const char*);
+		std::string data_name = va_arg(extra_args, const char*);
 		if (!data_name.empty()) {
 			var_name = (char*)data_name.c_str();
 			buffer = va_arg(extra_args, void*);
@@ -293,7 +282,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 
 		va_list extra_args;
 		va_start(extra_args, expose_dataname);
-		string data_name = va_arg(extra_args, const char*);
+		std::string data_name = va_arg(extra_args, const char*);
 		if (!data_name.empty()) {
 			var_name = (char*)data_name.c_str();
 			position = va_arg(extra_args, int64_t*);
@@ -347,7 +336,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		va_list extra_args;
 		va_start(extra_args, expose_dataname);
 		//if(string data_name = va_arg(extra_args, string)) {
-		string data_name = va_arg(extra_args, const char*);
+		std::string data_name = va_arg(extra_args, const char*);
 		if (!data_name.empty()) {
 			var_name = (char*)data_name.c_str();
 			data = va_arg(extra_args, void*); //const void*
@@ -403,7 +392,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 
 		va_list extra_args;
 		va_start(extra_args, expose_dataname);
-		string data_name = va_arg(extra_args, const char*);
+		std::string data_name = va_arg(extra_args, const char*);
 		if (!data_name.empty()) {
 			var_name = (char*)data_name.c_str();
 			*block = va_arg(extra_args, int32_t);
@@ -468,7 +457,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		va_list extra_args;
 		va_start(extra_args, expose_dataname);
 		//if(string data_name = va_arg(extra_args, string)) {
-		string data_name = va_arg(extra_args, const char*);
+		std::string data_name = va_arg(extra_args, const char*);
 		if (!data_name.empty()) {
 			var_name = (char*)data_name.c_str();
 			*block = va_arg(extra_args, int32_t);
@@ -577,7 +566,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 	}
 }
 
-void Damaris_api_call_handler::damaris_pdi_init(Context& ctx, unique_ptr<Damaris_wrapper>& m_damaris, const char* damaris_xml_object)
+void Damaris_api_call_handler::damaris_pdi_init(PDI::Context& ctx, std::unique_ptr<Damaris_wrapper>& m_damaris, const char* damaris_xml_object)
 {
 	if (!m_damaris) {
 		MPI_Comm comm = MPI_COMM_WORLD;

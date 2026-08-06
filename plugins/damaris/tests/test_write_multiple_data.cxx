@@ -24,9 +24,9 @@
  ******************************************************************************/
 
 #include <mpi.h>
+#include <vector>
 #include <stdio.h>
 #include <unistd.h>
-#include <vector>
 #include <pdi.h>
 
 int main(int argc, char* argv[])
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 
 	if (is_client) {
 		// define the size
-		int dsize=10;
+		int dsize = 10;
 		PDI_expose("nn", &dsize, PDI_INOUT); // get size
 
 		std::vector<int> int_values(dsize);
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 		for (int ii = 0; ii < dsize; ++ii) {
 			int_values[ii] = 100 + ii;
 		}
-		
+
 		for (int ii = 0; ii < dsize; ++ii) {
 			int22_values[ii] = 300 + ii;
 		}

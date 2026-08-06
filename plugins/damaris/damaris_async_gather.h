@@ -44,11 +44,6 @@
 
 #include "damaris_wrapper.h"
 
-using PDI::Context;
-using std::list;
-using std::string;
-using std::unique_ptr;
-
 namespace damaris_pdi {
 
 class Damaris_async_gather

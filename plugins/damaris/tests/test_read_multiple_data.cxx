@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <unistd.h>
 #include <cstdlib>
+#include <unistd.h>
 
 #include <filesystem>
 #include <numeric>
@@ -31,11 +31,10 @@
 
 #include <pdi/testing.h>
 
-
 class Gdamaris: public ::PDI::PdiTest
 {};
 
-TEST_F(Gdamaris, File2Data) 
+TEST_F(Gdamaris, File2Data)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
@@ -60,40 +59,40 @@ plugins:
 
 	std::string exec_name = "damaris_write_multiple_data";
 	std::string yaml_file = "test_write_1_file_2_data.yml";
-	std::string run_command = "mpirun -np 2 ../"+exec_name+" ../"+yaml_file;
+	std::string run_command = "mpirun -np 2 ../" + exec_name + " ../" + yaml_file;
 
 	constexpr int const array_size_0 = 10;
 
-    int result = std::system(run_command.c_str());
-	ASSERT_EQ(result, 0) << "Error in the writing step for input file "+yaml_file;
+	int result = std::system(run_command.c_str());
+	ASSERT_EQ(result, 0) << "Error in the writing step for input file " + yaml_file;
 
 	// dataset: int_values
 	std::string filename = "./HDF5_files/damaris_scalar_type_It0.h5";
 	ASSERT_TRUE(std::filesystem::exists(filename));
 
 	std::string dataset_name = "int_values";
-	std::string run_command1 = "h5dump -d \'"+dataset_name+"\' "+ filename +" > /dev/null 2>&1";
-		
+	std::string run_command1 = "h5dump -d \'" + dataset_name + "\' " + filename + " > /dev/null 2>&1";
+
 	int run_check_dataset = std::system(run_command1.c_str());
-	EXPECT_EQ(run_check_dataset, 0) << "Error: The dataset "+dataset_name+" doesn't exist in "+filename;
+	EXPECT_EQ(run_check_dataset, 0) << "Error: The dataset " + dataset_name + " doesn't exist in " + filename;
 
 	int global_size = 0;
 	PDI_expose("damaris_nn", &global_size, PDI_INOUT); // get global size
-	ASSERT_EQ( global_size, array_size_0);
+	ASSERT_EQ(global_size, array_size_0);
 
 	// dataset: int22_values
 	dataset_name = "int22_values";
-	run_command1 = "h5dump -d \'"+dataset_name+"\' "+ filename +" > /dev/null 2>&1";
-		
+	run_command1 = "h5dump -d \'" + dataset_name + "\' " + filename + " > /dev/null 2>&1";
+
 	run_check_dataset = std::system(run_command1.c_str());
-	EXPECT_EQ(run_check_dataset, 0) << "Error: The dataset "+dataset_name+" doesn't exist in "+filename;
+	EXPECT_EQ(run_check_dataset, 0) << "Error: The dataset " + dataset_name + " doesn't exist in " + filename;
 
 	global_size = 0;
 	PDI_expose("damaris22_nn", &global_size, PDI_INOUT); // get global size
-	ASSERT_EQ( global_size, array_size_0);
+	ASSERT_EQ(global_size, array_size_0);
 }
 
-TEST_F(Gdamaris, TwoFile) 
+TEST_F(Gdamaris, TwoFile)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
@@ -120,38 +119,39 @@ plugins:
 
 	std::string exec_name = "damaris_write_multiple_data";
 	std::string yaml_file = "test_write_2_file_1_data.yml";
-	std::string run_command = "mpirun -np 2 ../"+exec_name+" ../"+yaml_file;
+	std::string run_command = "mpirun -np 2 ../" + exec_name + " ../" + yaml_file;
 
 	constexpr int const array_size_0 = 10;
 
-    int result = std::system(run_command.c_str());
-	ASSERT_EQ(result, 0) << "Error in the writing step for input file "+yaml_file;
+	int result = std::system(run_command.c_str());
+	ASSERT_EQ(result, 0) << "Error in the writing step for input file " + yaml_file;
 
 	// dataset: int_values
 	std::string filename = "./HDF5_files/damaris_scalar_type_It0.h5";
 	ASSERT_TRUE(std::filesystem::exists(filename));
 
 	std::string dataset_name = "int_values";
-	std::string run_command1 = "h5dump -d \'"+dataset_name+"\' "+ filename +" > /dev/null 2>&1";
-		
+	std::string run_command1 = "h5dump -d \'" + dataset_name + "\' " + filename + " > /dev/null 2>&1";
+
 	int run_check_dataset = std::system(run_command1.c_str());
-	EXPECT_EQ(run_check_dataset, 0) << "Error: The dataset "+dataset_name+" doesn't exist in "+filename;
+	EXPECT_EQ(run_check_dataset, 0) << "Error: The dataset " + dataset_name + " doesn't exist in " + filename;
 
 	int global_size = 0;
 	PDI_expose("damaris_nn", &global_size, PDI_INOUT); // get global size
-	ASSERT_EQ( global_size, array_size_0);
+	ASSERT_EQ(global_size, array_size_0);
 
 	// dataset: int22_values
 	filename = "./HDF5_22_files/damaris_scalar_type_It0.h5";
 	ASSERT_TRUE(std::filesystem::exists(filename));
 
 	dataset_name = "int22_values";
-	run_command1 = "h5dump -d \'"+dataset_name+"\' "+ filename; +" > /dev/null 2>&1";
-		
+	run_command1 = "h5dump -d \'" + dataset_name + "\' " + filename;
+	+" > /dev/null 2>&1";
+
 	run_check_dataset = std::system(run_command1.c_str());
-	EXPECT_EQ(run_check_dataset, 0) << "Error: The dataset "+dataset_name+" doesn't exist in "+filename;
+	EXPECT_EQ(run_check_dataset, 0) << "Error: The dataset " + dataset_name + " doesn't exist in " + filename;
 
 	global_size = 0;
 	PDI_expose("damaris22_nn", &global_size, PDI_INOUT); // get global size
-	ASSERT_EQ( global_size, array_size_0);
+	ASSERT_EQ(global_size, array_size_0);
 }

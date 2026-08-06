@@ -39,34 +39,13 @@
 
 #include "damaris_cfg.h"
 
-using PDI::Context;
-using PDI::each;
-using PDI::Expression;
-using PDI::Impl_error;
-using PDI::len;
-using PDI::opt_each;
-using PDI::Ref;
-using PDI::Ref_r;
-using PDI::Ref_w;
-using PDI::Spectree_error;
-using PDI::to_double;
-using PDI::to_long;
-using PDI::to_string;
-using PDI::Value_error;
-using std::function;
-using std::list;
-using std::map;
-using std::string;
-using std::unique_ptr;
-using std::unordered_map;
-
 namespace damaris_pdi {
 
 namespace fs = std::filesystem;
 
 namespace {
 
-bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const string& name, Desc_type desc_type)
+bool load_desc(std::unordered_map<std::string, Desc_type>& descs, PDI::Context& ctx, const std::string& name, Desc_type desc_type)
 {
 	auto&& result = descs.emplace(name, desc_type);
 	if (!result.second) {
@@ -75,7 +54,7 @@ bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const stri
 	return result.second;
 }
 
-bool load_event(unordered_map<string, Event_type>& events, Context& ctx, const string& name, Event_type event_type)
+bool load_event(std::unordered_map<std::string, Event_type>& events, PDI::Context& ctx, const std::string& name, Event_type event_type)
 {
 	auto&& result = events.emplace(name, event_type);
 	if (!result.second) {
@@ -90,7 +69,7 @@ bool load_event(unordered_map<string, Event_type>& events, Context& ctx, const s
 }
 
 // function to create directory for storage
-bool creation_directory_cpp(const string& dir_name)
+bool creation_directory_cpp(const std::string& dir_name)
 {
 	fs::path path_dir{fs::current_path()};
 	const fs::path path_name{"/" + dir_name};
@@ -125,7 +104,7 @@ bool creation_directory_cpp(const string& dir_name)
 /// @brief
 /// @param dir_name
 /// @return true if the directory is created or exists
-bool creation_directory_c_only(Context& ctx, const string& dir_name)
+bool creation_directory_c_only(PDI::Context& ctx, const std::string& dir_name)
 {
 	// Remark: This function doesn't work if dir_name="./dir1/dir2/*"
 	//         because we need to do : mkdir(dir1), mkdir(dir1/dir2), ..
@@ -198,36 +177,36 @@ std::string real_numbers_types[3] = {"float", "real", "double"};
 // This code is a mapping of the Damaris src/model/Model.xsd schema to PDI YAML
 // The mapping should allow us to recreate a Damaris XML object from what is present
 // in the YML file
-Damaris_cfg::Damaris_cfg(Context& ctx, PC_tree_t tree)
+Damaris_cfg::Damaris_cfg(PDI::Context& ctx, PC_tree_t tree)
 	: m_communicator{"MPI_COMM_WORLD"}
 {
 	m_is_client_dataset_name = "";
 	init_xml_config_object();
 
-	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
-		string key = to_string(key_tree);
+	PDI::each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
+		std::string key = PDI::to_string(key_tree);
 		if (key == "architecture") {
-			//default_when = to_string(value);
+			//default_when = PDI::to_string(value);
 			parse_architecture_tree(ctx, value);
 		} else if (key == "communicator") {
-			// m_communicator = to_string(value);
+			// m_communicator = PDI::to_string(value);
 			// if (!m_communicator) {
-			// 	throw Spectree_error{key_tree, "no MPI communicator setted `{}'", key};
+			// 	throw PDI::Spectree_error{key_tree, "no MPI communicator setted `{}'", key};
 			// }
 		} else if (key == "init_on_event" || key == "on_init") {
-			m_init_on_event = to_string(value);
+			m_init_on_event = PDI::to_string(value);
 			load_event(m_events, ctx, m_init_on_event, Event_type::DAMARIS_INITIALIZE);
 		} else if (key == "finalize_on_event" || key == "on_finalize") {
-			m_finalize_on_event = to_string(value);
+			m_finalize_on_event = PDI::to_string(value);
 			load_event(m_events, ctx, m_finalize_on_event, Event_type::DAMARIS_FINALIZE);
 		} else if (key == "start_on_event") {
-			m_start_on_event = to_string(value);
+			m_start_on_event = PDI::to_string(value);
 			load_event(m_events, ctx, m_start_on_event, Event_type::DAMARIS_START);
 		} else if (key == "stop_on_event") {
-			m_stop_on_event = to_string(value);
+			m_stop_on_event = PDI::to_string(value);
 			load_event(m_events, ctx, m_stop_on_event, Event_type::DAMARIS_STOP);
 		} else if (key == "end_iteration_on_event") {
-			m_end_iteration_on_event = to_string(value);
+			m_end_iteration_on_event = PDI::to_string(value);
 			load_event(m_events, ctx, m_end_iteration_on_event, Event_type::DAMARIS_END_ITERATION);
 		} else if (key == "parameters") {
 			parse_parameters_tree(ctx, value);
@@ -258,9 +237,9 @@ Damaris_cfg::Damaris_cfg(Context& ctx, PC_tree_t tree)
 		{
 			if (!PC_status(value)) {
 				if (!PC_status(PC_get(value, "[0]"))) { //Array [ev0,ev1,ev3]
-					each(value, [&](PC_tree_t event_name) { m_after_write_events.emplace_back(to_string(event_name)); });
+					PDI::each(value, [&](PC_tree_t event_name) { m_after_write_events.emplace_back(PDI::to_string(event_name)); });
 				} else { //ev0
-					m_after_write_events.emplace_back(to_string(value));
+					m_after_write_events.emplace_back(PDI::to_string(value));
 				}
 			}
 		}
@@ -268,7 +247,7 @@ Damaris_cfg::Damaris_cfg(Context& ctx, PC_tree_t tree)
 		else if (key == "start" || key == "get_is_client" || key == "is_client_get")
 		{
 			if (!PC_status(value)) {
-				m_is_client_dataset_name = to_string(value);
+				m_is_client_dataset_name = PDI::to_string(value);
 				load_desc(m_descs, ctx, m_is_client_dataset_name, Desc_type::IS_CLIENT_GET);
 			}
 		}
@@ -276,7 +255,7 @@ Damaris_cfg::Damaris_cfg(Context& ctx, PC_tree_t tree)
 		else if (key == "client_comm_get")
 		{
 			if (!PC_status(value)) {
-				m_client_comm_get_dataset_name = to_string(value);
+				m_client_comm_get_dataset_name = PDI::to_string(value);
 				load_desc(m_descs, ctx, m_client_comm_get_dataset_name, Desc_type::CLIENT_COMM_GET);
 			}
 		}
@@ -320,7 +299,7 @@ Damaris_cfg::Damaris_cfg(Context& ctx, PC_tree_t tree)
 	}
 }
 
-void Damaris_cfg::parse_architecture_tree(Context& ctx, PC_tree_t arch_tree)
+void Damaris_cfg::parse_architecture_tree(PDI::Context& ctx, PC_tree_t arch_tree)
 {
 	std::map<std::string, std::string> find_replace_map = {};
 
@@ -328,14 +307,14 @@ void Damaris_cfg::parse_architecture_tree(Context& ctx, PC_tree_t arch_tree)
 	std::string sim_name = "damaris_pdi_simu";
 	PC_tree_t sim_name_tree = PC_get(arch_tree, ".sim_name");
 	if (!PC_status(sim_name_tree)) {
-		sim_name = to_string(sim_name_tree);
+		sim_name = PDI::to_string(sim_name_tree);
 	}
 	//Buffer
 	std::string buffer_name = sim_name + "_buffer";
 	long buffer_size = 67108864;
 	PC_tree_t buffer_size_tree = PC_get(arch_tree, ".buffer_size");
 	if (!PC_status(buffer_size_tree)) {
-		buffer_size = to_long(buffer_size_tree);
+		buffer_size = PDI::to_long(buffer_size_tree);
 	}
 	find_replace_map.insert({{"_SIM_NAME_", sim_name}, {"_SHMEM_BUFFER_BYTES_REGEX_", std::to_string(buffer_size)}, {"_SHMEM_NAME_", buffer_name}});
 
@@ -343,7 +322,7 @@ void Damaris_cfg::parse_architecture_tree(Context& ctx, PC_tree_t arch_tree)
 	int m_arch_domains = 1;
 	PC_tree_t domains_tree = PC_get(arch_tree, ".domains");
 	if (!PC_status(domains_tree)) {
-		m_arch_domains = to_long(domains_tree);
+		m_arch_domains = PDI::to_long(domains_tree);
 	}
 	find_replace_map.insert({"_DOMAINS_REGEX_", std::to_string(m_arch_domains)});
 
@@ -352,15 +331,15 @@ void Damaris_cfg::parse_architecture_tree(Context& ctx, PC_tree_t arch_tree)
 	int m_dc_nodes = 0;
 	PC_tree_t arch_dedicated_tree = PC_get(arch_tree, ".dedicated");
 	if (!PC_status(arch_dedicated_tree)) {
-		int nb_subkey_dc = len(arch_dedicated_tree);
+		int nb_subkey_dc = PDI::len(arch_dedicated_tree);
 
 		for (int subkey_dc_id = 0; subkey_dc_id < nb_subkey_dc; subkey_dc_id++) {
-			string key_str = to_string(PC_get(arch_dedicated_tree, "{%d}", subkey_dc_id));
+			std::string key_str = PDI::to_string(PC_get(arch_dedicated_tree, "{%d}", subkey_dc_id));
 
 			if (key_str == "core") {
-				m_dc_cores_pernode = to_long(PC_get(arch_dedicated_tree, ".core"));
+				m_dc_cores_pernode = PDI::to_long(PC_get(arch_dedicated_tree, ".core"));
 			} else if (key_str == "node") {
-				m_dc_nodes = to_long(PC_get(arch_dedicated_tree, ".node"));
+				m_dc_nodes = PDI::to_long(PC_get(arch_dedicated_tree, ".node"));
 			}
 		}
 	}
@@ -369,19 +348,19 @@ void Damaris_cfg::parse_architecture_tree(Context& ctx, PC_tree_t arch_tree)
 	//placement not yet used
 	PC_tree_t arch_placement_tree = PC_get(arch_tree, ".placement");
 	if (!PC_status(arch_placement_tree)) {
-		int nb_subkey_dc = len(arch_placement_tree);
+		int nb_subkey_dc = PDI::len(arch_placement_tree);
 
 		for (int subkey_pl_id = 0; subkey_pl_id < nb_subkey_dc; subkey_pl_id++) {
-			string key_str = to_string(PC_get(arch_placement_tree, "{%d}", subkey_pl_id));
+			std::string key_str = PDI::to_string(PC_get(arch_placement_tree, "{%d}", subkey_pl_id));
 
 			if (key_str == "start") {
-				m_placement_start = to_long(PC_get(arch_placement_tree, ".start"));
+				m_placement_start = PDI::to_long(PC_get(arch_placement_tree, ".start"));
 			} else if (key_str == "stride") {
-				m_placement_stride = to_long(PC_get(arch_placement_tree, ".stride"));
+				m_placement_stride = PDI::to_long(PC_get(arch_placement_tree, ".stride"));
 			} else if (key_str == "blocksize") {
-				m_placement_blocksize = to_long(PC_get(arch_placement_tree, ".blocksize"));
+				m_placement_blocksize = PDI::to_long(PC_get(arch_placement_tree, ".blocksize"));
 			} else if (key_str == "mask") {
-				m_placement_mask_str = to_string(PC_get(arch_placement_tree, ".mask"));
+				m_placement_mask_str = PDI::to_string(PC_get(arch_placement_tree, ".mask"));
 			}
 		}
 		//TODO: find_replace_map.insert(   );
@@ -391,38 +370,38 @@ void Damaris_cfg::parse_architecture_tree(Context& ctx, PC_tree_t arch_tree)
 	damarisXMLModifyModel.RepalceWithRegEx(find_replace_map);
 }
 
-void Damaris_cfg::parse_parameters_tree(Context& ctx, PC_tree_t parameters_tree_list)
+void Damaris_cfg::parse_parameters_tree(PDI::Context& ctx, PC_tree_t parameters_tree_list)
 {
-	opt_each(parameters_tree_list, [&](PC_tree_t parameters_tree) { //each parameters (list of parameter)
-		each(parameters_tree, [&](PC_tree_t prm_tree_key, PC_tree_t parameter_tree) { //each parameter
+	PDI::opt_each(parameters_tree_list, [&](PC_tree_t parameters_tree) { //each parameters (list of parameter)
+		PDI::each(parameters_tree, [&](PC_tree_t prm_tree_key, PC_tree_t parameter_tree) { //each parameter
 			damaris::model::DamarisParameterXML prmxml{};
 			std::map<std::string, std::string> find_replace_map = {};
 			std::unordered_map<std::string, bool> depends_on_metadata;
 			bool is_dependent = false;
 
-			each(parameter_tree, [&](PC_tree_t prm_key, PC_tree_t value) { //parameter info
-				std::string key = to_string(prm_key);
+			PDI::each(parameter_tree, [&](PC_tree_t prm_key, PC_tree_t value) { //parameter info
+				std::string key = PDI::to_string(prm_key);
 
 				if (key == "name") {
-					prmxml.param_name_ = to_string(value);
+					prmxml.param_name_ = PDI::to_string(value);
 				} else if (key == "type") {
-					prmxml.param_datatype_ = to_string(value);
+					prmxml.param_datatype_ = PDI::to_string(value);
 				} else if (key == "value") {
-					prmxml.param_value_ = to_string(value);
-					m_parameter_expression.emplace(prmxml.param_name_, to_string(value));
+					prmxml.param_value_ = PDI::to_string(value);
+					m_parameter_expression.emplace(prmxml.param_name_, PDI::to_string(value));
 				} else if (key == "depends_on") {
 					is_dependent = true;
 					if (!PC_status(PC_get(value, "[0]"))) { //Array //[d1,d2,d3] for instance, each di an expreession of of Damaris Parameter
 						//int idx = 0;
-						each(value, [&](PC_tree_t metadata_name_tree) {
-							std::string metadata_name = to_string(metadata_name_tree);
+						PDI::each(value, [&](PC_tree_t metadata_name_tree) {
+							std::string metadata_name = PDI::to_string(metadata_name_tree);
 
 							depends_on_metadata.insert({metadata_name, false});
 
 							load_desc(m_descs, ctx, metadata_name, Desc_type::PRM_REQUIRED_METADATA);
 						});
 					} else { //d1
-						std::string metadata_name = to_string(value);
+						std::string metadata_name = PDI::to_string(value);
 						//depends_on_metadata[metadata_name] = false;
 						depends_on_metadata.insert({metadata_name, false});
 
@@ -453,50 +432,50 @@ void Damaris_cfg::parse_parameters_tree(Context& ctx, PC_tree_t parameters_tree_
 	});
 }
 
-void Damaris_cfg::parse_datasets_tree(Context& ctx, PC_tree_t datasets_tree_list)
+void Damaris_cfg::parse_datasets_tree(PDI::Context& ctx, PC_tree_t datasets_tree_list)
 {
-	opt_each(datasets_tree_list, [&](PC_tree_t datasets_tree) { //each datasets (list of dataset)
-		each(datasets_tree, [&](PC_tree_t ds_tree_key, PC_tree_t dataset_tree) { //each dataset
+	PDI::opt_each(datasets_tree_list, [&](PC_tree_t datasets_tree) { //each datasets (list of dataset)
+		PDI::each(datasets_tree, [&](PC_tree_t ds_tree_key, PC_tree_t dataset_tree) { //each dataset
 			damaris::model::DamarisVarXML vxml{};
 			std::map<std::string, std::string> find_replace_map = {};
 			unsigned name_index = 0;
 			std::string dataset_elt_full_name;
 
-			each(dataset_tree, [&](PC_tree_t ds_key, PC_tree_t value) { //dataset info
-				std::string key = to_string(ds_key);
+			PDI::each(dataset_tree, [&](PC_tree_t ds_key, PC_tree_t value) { //dataset info
+				std::string key = PDI::to_string(ds_key);
 
 				int tf; // 0 is false, anything else is true
 				if (key == "name") {
-					dataset_elt_full_name = to_string(value);
+					dataset_elt_full_name = PDI::to_string(value);
 					retrive_nested_groups(dataset_elt_full_name, ds_elt_full_name_delimiter, nested_groups_names, name_index);
 
-					vxml.var_name_ = nested_groups_names[name_index - 1]; //to_string(value);
+					vxml.var_name_ = nested_groups_names[name_index - 1]; //PDI::to_string(value);
 				} else if (key == "layout") {
-					vxml.layout_name_ = to_string(value);
+					vxml.layout_name_ = PDI::to_string(value);
 				} else if (key == "mesh") {
-					vxml.mesh_ = to_string(value);
+					vxml.mesh_ = PDI::to_string(value);
 				} else if (key == "centering") {
-					std::string t_centering = to_string(value);
+					std::string t_centering = PDI::to_string(value);
 					vxml.set_centering(t_centering);
 				} else if (key == "storage") {
-					vxml.store_ = to_string(value);
+					vxml.store_ = PDI::to_string(value);
 				} else if (key == "script") {
-					vxml.script_ = to_string(value);
+					vxml.script_ = PDI::to_string(value);
 				} else if (key == "unit") {
-					vxml.unit_ = to_string(value);
+					vxml.unit_ = PDI::to_string(value);
 				} else if (key == "select_mem") {
-					vxml.select_mem_ = to_string(value);
+					vxml.select_mem_ = PDI::to_string(value);
 				} else if (key == "select_file") {
-					vxml.select_file_ = to_string(value);
+					vxml.select_file_ = PDI::to_string(value);
 				} else if (key == "select_subset") {
-					vxml.select_subset_ = to_string(value);
+					vxml.select_subset_ = PDI::to_string(value);
 				} else if (key == "ref") {
-					vxml.ref_ = to_string(value);
+					vxml.ref_ = PDI::to_string(value);
 				} else if (key == "type") {
-					std::string in_type = to_string(value);
+					std::string in_type = PDI::to_string(value);
 					vxml.set_type(in_type);
 				} else if (key == "comment") {
-					vxml.comment_ = to_string(value);
+					vxml.comment_ = PDI::to_string(value);
 				} else if (key == "visualizable") {
 					PC_bool(value, &tf);
 					vxml.visualizable_ = (tf == 0) ? false : true;
@@ -507,11 +486,11 @@ void Damaris_cfg::parse_datasets_tree(Context& ctx, PC_tree_t datasets_tree_list
 					PC_bool(value, &tf);
 					vxml.enabled_ = (tf == 0) ? false : true;
 				} else {
-					throw Value_error{"ERROR: damaris_cfg unrecogognized variable map string: `{}'", key};
+					throw PDI::Value_error{"ERROR: damaris_cfg unrecogognized variable map string: `{}'", key};
 				}
 			});
 
-			if (dataset_elt_full_name.empty()) throw Value_error{"ERROR: damaris_cfg variable name must not be empty"};
+			if (dataset_elt_full_name.empty()) throw PDI::Value_error{"ERROR: damaris_cfg variable name must not be empty"};
 
 			//m_datasets.emplace(vxml.var_name_ , vxml) ;
 			m_datasets.emplace(dataset_elt_full_name, vxml);
@@ -528,10 +507,10 @@ void Damaris_cfg::parse_datasets_tree(Context& ctx, PC_tree_t datasets_tree_list
 	});
 }
 
-void Damaris_cfg::parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list)
+void Damaris_cfg::parse_layouts_tree(PDI::Context& ctx, PC_tree_t layouts_tree_list)
 {
-	opt_each(layouts_tree_list, [&](PC_tree_t layouts_tree) { //each layouts (list of layout)
-		each(layouts_tree, [&](PC_tree_t lts_key, PC_tree_t layout_tree) { //each layout
+	PDI::opt_each(layouts_tree_list, [&](PC_tree_t layouts_tree) { //each layouts (list of layout)
+		PDI::each(layouts_tree, [&](PC_tree_t lts_key, PC_tree_t layout_tree) { //each layout
 			damaris::model::DamarisLayoutXML layoutxml{};
 			std::map<std::string, std::string> find_replace_map = {};
 			unsigned name_index = 0;
@@ -542,17 +521,17 @@ void Damaris_cfg::parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list)
 			std::string in_datatype;
 			int nb_dims;
 
-			each(layout_tree, [&](PC_tree_t lt_key, PC_tree_t value) { //layout info
-				std::string key = to_string(lt_key);
+			PDI::each(layout_tree, [&](PC_tree_t lt_key, PC_tree_t value) { //layout info
+				std::string key = PDI::to_string(lt_key);
 
 				int intb; // 0 is false, anything else is true
 				if (key == "name") {
-					dataset_elt_full_name = to_string(value);
+					dataset_elt_full_name = PDI::to_string(value);
 					retrive_nested_groups(dataset_elt_full_name, ds_elt_full_name_delimiter, nested_groups_names, name_index);
 
-					layoutxml.layout_name_ = nested_groups_names[name_index - 1]; //to_string(value);
+					layoutxml.layout_name_ = nested_groups_names[name_index - 1]; //PDI::to_string(value);
 				} else if (key == "type") {
-					in_datatype = to_string(value);
+					in_datatype = PDI::to_string(value);
 					layoutxml.set_datatype(in_datatype);
 				} else if (key == "dimensions") {
 					//Is there a way to determine if an expression is ready to be evaluated? ei, all the conponent have a value
@@ -561,11 +540,11 @@ void Damaris_cfg::parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list)
 						PC_len(value, &nb_layout_dims2);
 
 						std::string dims_list = "";
-						each(value, [&](PC_tree_t dim) { dims_list += to_string(dim) + ","; });
+						PDI::each(value, [&](PC_tree_t dim) { dims_list += PDI::to_string(dim) + ","; });
 						dims_list.pop_back();
 						layoutxml.layout_dimensions_ = dims_list;
 					} else { //"d1,d2,d3" for instance, each di an expreession of of Damaris Parameter
-						layoutxml.layout_dimensions_ = to_string(value);
+						layoutxml.layout_dimensions_ = PDI::to_string(value);
 					}
 
 					nb_dims = count(layoutxml.layout_dimensions_.begin(), layoutxml.layout_dimensions_.end(), ',') + 1;
@@ -574,11 +553,11 @@ void Damaris_cfg::parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list)
 					if (!PC_status(PC_get(value, "[0]"))) { //Array //[dg1,dg2,dg3] for instance, each di an expreession of of Damaris Parameter
 
 						std::string dims_global_list = "";
-						each(value, [&](PC_tree_t dim) { dims_global_list += to_string(dim) + ","; });
+						PDI::each(value, [&](PC_tree_t dim) { dims_global_list += PDI::to_string(dim) + ","; });
 						dims_global_list.pop_back();
 						layoutxml.layout_dims_global_ = dims_global_list;
 					} else { //"dg1,dg2,dg3" for instance, each di an expreession of of Damaris Parameter
-						layoutxml.layout_dims_global_ = to_string(value);
+						layoutxml.layout_dims_global_ = PDI::to_string(value);
 					}
 				} else if (key == "ghosts") {
 					//Is there a way to determine if an expression is ready to be evaluated? ei, all the conponent have a value
@@ -586,27 +565,27 @@ void Damaris_cfg::parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list)
 					{ //Array //['g11:g12','g21:g22','g31:g32'] for instance, each di an expreession of of Damaris Parameter
 
 						std::string ghosts_list = "";
-						each(value, [&](PC_tree_t dim) { ghosts_list += to_string(dim) + ","; });
+						PDI::each(value, [&](PC_tree_t dim) { ghosts_list += PDI::to_string(dim) + ","; });
 						ghosts_list.pop_back();
 						layoutxml.layout_ghosts_ = ghosts_list;
-					} else { //"g11:g12,g21:g22,g31:g32" for instance, each di an expreession of of Damaris Parameter
-						layoutxml.layout_ghosts_ = to_string(value);
+					} else { //"g11:g12,g21:g22,g31:g32" for instance, Peach di an expreession of of Damaris Parameter
+						layoutxml.layout_ghosts_ = PDI::to_string(value);
 					}
 				} else if (key == "language") {
-					std::string in_language = to_string(value);
+					std::string in_language = PDI::to_string(value);
 					layoutxml.set_language(in_language);
 				} else if (key == "visualizable") {
 					PC_bool(value, &intb);
 					bool in_visualizable = (intb == 0) ? false : true;
 					layoutxml.layout_visualizable_ = in_visualizable;
 				} else if (key == "comment") {
-					layoutxml.layout_comment_ = to_string(value);
+					layoutxml.layout_comment_ = PDI::to_string(value);
 				} else if (key == "depends_on") {
 					is_dependent = true;
 					if (!PC_status(PC_get(value, "[0]"))) { //Array //[d1,d2,d3] for instance, each di an expreession of of Damaris Parameter
 						//int idx = 0;
-						each(value, [&](PC_tree_t metadata_name_tree) {
-							std::string metadata_name = to_string(metadata_name_tree);
+						PDI::each(value, [&](PC_tree_t metadata_name_tree) {
+							std::string metadata_name = PDI::to_string(metadata_name_tree);
 							depends_on_str += metadata_name + ", ";
 
 							depends_on_metadata.insert({metadata_name, false});
@@ -614,7 +593,7 @@ void Damaris_cfg::parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list)
 						depends_on_str.pop_back(); //' '
 						depends_on_str.pop_back(); //','
 					} else { //d1
-						std::string metadata_name = to_string(value);
+						std::string metadata_name = PDI::to_string(value);
 						depends_on_str = metadata_name;
 						//depends_on_metadata[metadata_name] = false;
 						depends_on_metadata.insert({metadata_name, false});
@@ -622,7 +601,7 @@ void Damaris_cfg::parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list)
 					depends_on_str = "[" + depends_on_str + "]";
 
 				} else {
-					throw Value_error{"ERROR: damaris_cfg unrecogognized layout map string: `{}'", key};
+					throw PDI::Value_error{"ERROR: damaris_cfg unrecogognized layout map string: `{}'", key};
 				}
 			});
 			m_layout_depends_on.emplace(layoutxml.layout_name_, depends_on_metadata);
@@ -648,7 +627,7 @@ void Damaris_cfg::parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list)
 				std::string metadatatype = "int";
 
 				for (int i = 0; i < nb_dims; i++) {
-					string dim_name = layoutxml.layout_name_ + "_dim" + std::to_string(i);
+					std::string dim_name = layoutxml.layout_name_ + "_dim" + std::to_string(i);
 					prm_config_yaml += "- parameter:                                                    \n";
 					prm_config_yaml += "    name: " + dim_name + "                                          \n";
 					prm_config_yaml += "    type: " + metadatatype + "                                      \n";
@@ -658,7 +637,7 @@ void Damaris_cfg::parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list)
 					layoutxml.layout_dimensions_ += dim_name + ",";
 
 					if (layoutxml.layout_dims_global_.length() > 1) {
-						string global_name = layoutxml.layout_name_ + "_global" + std::to_string(i);
+						std::string global_name = layoutxml.layout_name_ + "_global" + std::to_string(i);
 						prm_config_yaml += "- parameter:                                                    \n";
 						prm_config_yaml += "    name: " + global_name + "                                       \n";
 						prm_config_yaml += "    type: " + metadatatype + "                                      \n";
@@ -681,7 +660,7 @@ void Damaris_cfg::parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list)
 				parse_parameters_tree(ctx, parameters_conf);
 			}
 
-			if (dataset_elt_full_name.empty()) throw Value_error{"ERROR: damaris_cfg layout name must not be empty"};
+			if (dataset_elt_full_name.empty()) throw PDI::Value_error{"ERROR: damaris_cfg layout name must not be empty"};
 
 			m_layouts.emplace(dataset_elt_full_name, layoutxml);
 
@@ -697,32 +676,31 @@ void Damaris_cfg::parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list)
 	});
 }
 
-void Damaris_cfg::parse_storages_tree(Context& ctx, PC_tree_t storages_tree_list)
+void Damaris_cfg::parse_storages_tree(PDI::Context& ctx, PC_tree_t storages_tree_list)
 {
-	opt_each(storages_tree_list, [&](PC_tree_t storages_tree) { //each storages (list of storage)
-		each(storages_tree, [&](PC_tree_t storagest_key, PC_tree_t storage_tree) { //each storage
+	PDI::opt_each(storages_tree_list, [&](PC_tree_t storages_tree) { //each storages (list of storage)
+		PDI::each(storages_tree, [&](PC_tree_t storagest_key, PC_tree_t storage_tree) { //each storage
 			damaris::model::DamarisStoreXML store{};
 			std::map<std::string, std::string> find_replace_map = {};
-			each(storage_tree, [&](PC_tree_t st_key, PC_tree_t value) { //storage info
-				std::string key = to_string(st_key);
+			PDI::each(storage_tree, [&](PC_tree_t st_key, PC_tree_t value) { //storage info
+				std::string key = PDI::to_string(st_key);
 
 				int tf; // 0 is false, anything else is true
 				if (key == "name") {
-					store.store_name_ = to_string(value);
+					store.store_name_ = PDI::to_string(value);
 				} else if (key == "type") {
-					store.store_type_ = to_string(value);
+					store.store_type_ = PDI::to_string(value);
 				} else if (key == "file_mode") {
-					store.store_opt_FileMode_ = to_string(value);
+					store.store_opt_FileMode_ = PDI::to_string(value);
 				} else if (key == "files_path") {
-					store.store_opt_FilesPath_ = to_string(value);
+					store.store_opt_FilesPath_ = PDI::to_string(value);
 					// bool create_dir = creation_directory_c_only(ctx, store.store_opt_FilesPath_);
 					bool create_dir = creation_directory_cpp(store.store_opt_FilesPath_);
 					if (!create_dir) {
-						Spectree_error{storage_tree, "The key `{}' doesn't exist for a storage.", key};
-						std::exit(EXIT_FAILURE);
+						throw PDI::Spectree_error{storage_tree, "The key `{}' doesn't exist for a storage.", key};
 					}
 				} else {
-					throw Spectree_error{storage_tree, "The key `{}' doesn't exist for a storage.", key};
+					throw PDI::Spectree_error{storage_tree, "The key `{}' doesn't exist for a storage.", key};
 				}
 			});
 			m_storages.emplace(store.store_name_, store);
@@ -735,9 +713,9 @@ void Damaris_cfg::parse_storages_tree(Context& ctx, PC_tree_t storages_tree_list
 	});
 }
 
-void Damaris_cfg::parse_write_tree(Context& ctx, PC_tree_t write_tree_list)
+void Damaris_cfg::parse_write_tree(PDI::Context& ctx, PC_tree_t write_tree_list)
 {
-	each(write_tree_list, [&](PC_tree_t write_key, PC_tree_t write_ds_tree) { //each dataset to write
+	PDI::each(write_tree_list, [&](PC_tree_t write_key, PC_tree_t write_ds_tree) { //each dataset to write
 		std::string data_name = PDI::to_string(write_key);
 		Dataset_Write_Info ds_write_info;
 		ds_write_info.dataset_name = data_name;
@@ -759,7 +737,7 @@ void Damaris_cfg::parse_write_tree(Context& ctx, PC_tree_t write_tree_list)
 		//when
 		PC_tree_t ds_when_tree = PC_get(write_ds_tree, ".when");
 		if (!PC_status(ds_when_tree)) {
-			ds_write_info.when = to_string(ds_when_tree);
+			ds_write_info.when = PDI::to_string(ds_when_tree);
 		}
 		//position
 		PC_tree_t ds_position_tree = PC_get(write_ds_tree, ".position");
@@ -769,18 +747,18 @@ void Damaris_cfg::parse_write_tree(Context& ctx, PC_tree_t write_tree_list)
 				PC_len(ds_position_tree, &position_dim);
 
 				int pos_idx = 0;
-				each(ds_position_tree, [&](PC_tree_t dim) {
-					ds_write_info.position[pos_idx] = to_string(dim);
+				PDI::each(ds_position_tree, [&](PC_tree_t dim) {
+					ds_write_info.position[pos_idx] = PDI::to_string(dim);
 					pos_idx++;
 				});
-			} else { 
+			} else {
 				throw PDI::Spectree_error{write_tree_list, "Write.position must be an array of 1 to 3 values."};
 			}
 		}
 		//block
 		PC_tree_t ds_block_tree = PC_get(write_ds_tree, ".block");
 		if (!PC_status(ds_block_tree)) {
-			ds_write_info.block = to_string(ds_block_tree);
+			ds_write_info.block = PDI::to_string(ds_block_tree);
 		}
 
 		m_datasets_to_write.emplace(data_name, ds_write_info);
@@ -790,13 +768,13 @@ void Damaris_cfg::parse_write_tree(Context& ctx, PC_tree_t write_tree_list)
 	});
 }
 
-void Damaris_cfg::parse_parameter_to_update_tree(Context& ctx, PC_tree_t ptu_tree, Desc_type op_type)
+void Damaris_cfg::parse_parameter_to_update_tree(PDI::Context& ctx, PC_tree_t ptu_tree, Desc_type op_type)
 {
 	if (!PC_status(PC_get(ptu_tree, "[0]"))) { //Array [prm0,prm1,prm3,...] / it's a list of names only
-		each(ptu_tree, [&](PC_tree_t prm_name_t) {
+		PDI::each(ptu_tree, [&](PC_tree_t prm_name_t) {
 			std::pair<std::string, Desc_type> prm_to_update_info;
-			std::string metadata = to_string(prm_name_t);
-			std::string prm_name = to_string(prm_name_t);
+			std::string metadata = PDI::to_string(prm_name_t);
+			std::string prm_name = PDI::to_string(prm_name_t);
 
 			prm_to_update_info.first = prm_name;
 			prm_to_update_info.second = op_type;
@@ -804,13 +782,13 @@ void Damaris_cfg::parse_parameter_to_update_tree(Context& ctx, PC_tree_t ptu_tre
 			load_desc(m_descs, ctx, metadata, op_type);
 		});
 	} else if (!PC_status(ptu_tree)) { // it's a name:{config...} mapping
-		each(ptu_tree, [&](PC_tree_t ptu_metadata, PC_tree_t ptu_prmname) {
-			std::string metadata = to_string(ptu_metadata);
-			std::string prm_name = to_string(ptu_metadata);
+		PDI::each(ptu_tree, [&](PC_tree_t ptu_metadata, PC_tree_t ptu_prmname) {
+			std::string metadata = PDI::to_string(ptu_metadata);
+			std::string prm_name = PDI::to_string(ptu_metadata);
 			std::pair<std::string, Desc_type> prm_to_update_info;
 
 			if (!PC_status(ptu_prmname)) {
-				if (to_string(ptu_prmname) != "") prm_name = to_string(ptu_prmname);
+				if (PDI::to_string(ptu_prmname) != "") prm_name = PDI::to_string(ptu_prmname);
 			}
 
 			prm_to_update_info.first = prm_name;
@@ -821,7 +799,7 @@ void Damaris_cfg::parse_parameter_to_update_tree(Context& ctx, PC_tree_t ptu_tre
 	}
 }
 
-void Damaris_cfg::parse_log_tree(Context& ctx, PC_tree_t config)
+void Damaris_cfg::parse_log_tree(PDI::Context& ctx, PC_tree_t config)
 {
 	std::map<std::string, std::string> find_replace_map = {};
 
@@ -829,30 +807,30 @@ void Damaris_cfg::parse_log_tree(Context& ctx, PC_tree_t config)
 	std::string log_file_name = "damaris_pdi_simu";
 	PC_tree_t log_file_name_tree = PC_get(config, ".log.file_name");
 	if (!PC_status(log_file_name_tree)) {
-		log_file_name = to_string(log_file_name_tree);
+		log_file_name = PDI::to_string(log_file_name_tree);
 	} else {
 		PC_tree_t sim_name_tree = PC_get(config, ".architecture.sim_name");
 		if (!PC_status(sim_name_tree)) {
-			log_file_name = to_string(sim_name_tree);
+			log_file_name = PDI::to_string(sim_name_tree);
 		}
 	}
 
 	std::string log_rotation_size = "5";
 	PC_tree_t log_rotation_size_tree = PC_get(config, ".log.rotation_size");
 	if (!PC_status(log_rotation_size_tree)) {
-		log_rotation_size = to_string(log_rotation_size_tree);
+		log_rotation_size = PDI::to_string(log_rotation_size_tree);
 	}
 
 	std::string log_level = "info";
 	PC_tree_t log_level_tree = PC_get(config, ".log.log_level");
 	if (!PC_status(log_level_tree)) {
-		log_level = to_string(log_level_tree);
+		log_level = PDI::to_string(log_level_tree);
 	}
 
 	std::string log_flush = "true";
 	PC_tree_t log_flush_tree = PC_get(config, ".log.flush");
 	if (!PC_status(log_flush_tree)) {
-		log_flush = to_string(log_flush_tree);
+		log_flush = PDI::to_string(log_flush_tree);
 	}
 
 	find_replace_map.insert(
@@ -863,7 +841,10 @@ void Damaris_cfg::parse_log_tree(Context& ctx, PC_tree_t config)
 		//Update the xml config
 		damarisXMLModifyModel.RepalceWithRegEx(find_replace_map);
 	} catch (...) {
-		throw Value_error{"Error in RepalceWithRegEx in parse_log_tree\n The XML file for damaris is`{}'", damarisXMLModifyModel.GetConfigString()};
+		throw PDI::Value_error{
+			"Error in RepalceWithRegEx in parse_log_tree\n The XML file for damaris is`{}'",
+			damarisXMLModifyModel.GetConfigString()
+		};
 	}
 }
 
@@ -913,8 +894,8 @@ bool Damaris_cfg::is_needed_metadata(std::string data_name)
 	return is_needed_metadata;
 }
 
-// Jacques: Comme on ne change pas les valeurs de  m_parameter_depends_on ici on peut se permettre d'utiliser auto. Mais on fait une copie.
-std::unordered_map<std::string, std::pair<std::string, std::string>> Damaris_cfg::get_updatable_parameters(Context& ctx)
+// Jacques: Comme on ne change pas les valeurs de  "m_parameter_depends_on" ici on peut se permettre d'utiliser auto. Mais on fait une copie.
+std::unordered_map<std::string, std::pair<std::string, std::string>> Damaris_cfg::get_updatable_parameters(PDI::Context& ctx)
 {
 	std::unordered_map<std::string, std::pair<std::string, std::string>> updatable_parameters;
 	for (auto prm_depends_on: m_parameter_depends_on) {
@@ -950,7 +931,7 @@ void Damaris_cfg::reset_parameter_depends_on(std::string prm_name)
 	if (m_parameter_depends_on.find(prm_name) == m_parameter_depends_on.end()) {
 		// not found
 		//  handle the error
-		throw Value_error{"m_parameter_depends_on not found: `{}'", prm_name.c_str()};
+		throw PDI::Value_error{"m_parameter_depends_on not found: `{}'", prm_name.c_str()};
 	} else {
 		std::unordered_map<std::string, bool>& prm_depends_on_data = m_parameter_depends_on.at(prm_name);
 		for (auto& depends_on_data: prm_depends_on_data) {
@@ -987,12 +968,12 @@ void retrive_nested_groups(std::string& dataset_elt_full_name, char delimiter, s
 	std::istringstream namestream(dataset_elt_full_name);
 
 	// Tmp string
-	string gp_name;
+	std::string gp_name;
 
 	// Retrive names from the string stream separated by the delimiter
 	while (getline(namestream, gp_name, delimiter)) {
 		if (index == max_nested_groups) {
-			throw Value_error{"Damaris variable/layout/mesh can be nested in more than `{}' groups", max_nested_groups};
+			throw PDI::Value_error{"Damaris variable/layout/mesh can be nested in more than `{}' groups", max_nested_groups};
 		}
 		// Add the gp_name to the array
 		nested_groups_names[index++] = gp_name;
@@ -1081,7 +1062,7 @@ void insert_dataset_elts_to_group(DS_TYPE ds_elt_xml, std::string nested_groups_
 	}
 }
 
-const string& Damaris_cfg::xml_config_object(void)
+const std::string& Damaris_cfg::xml_config_object(void)
 {
 	m_xml_config_object = damarisXMLModifyModel.GetConfigString();
 	return m_xml_config_object;
@@ -1093,22 +1074,22 @@ PDI::Expression Damaris_cfg::communicator() const
 	return m_communicator;
 }
 
-const unordered_map<std::string, damaris::model::DamarisVarXML>& Damaris_cfg::datasets() const
+const std::unordered_map<std::string, damaris::model::DamarisVarXML>& Damaris_cfg::datasets() const
 {
 	return m_datasets;
 }
 
-const unordered_map<std::string, damaris::model::DamarisLayoutXML>& Damaris_cfg::layouts() const
+const std::unordered_map<std::string, damaris::model::DamarisLayoutXML>& Damaris_cfg::layouts() const
 {
 	return m_layouts;
 }
 
-const unordered_map<std::string, damaris::model::DamarisParameterXML>& Damaris_cfg::parameters() const
+const std::unordered_map<std::string, damaris::model::DamarisParameterXML>& Damaris_cfg::parameters() const
 {
 	return m_parameters;
 }
 
-const damaris::model::DamarisParameterXML Damaris_cfg::get_parameter_xml(string prm_name) const
+const damaris::model::DamarisParameterXML Damaris_cfg::get_parameter_xml(std::string prm_name) const
 {
 	return m_parameters.at(prm_name);
 }
@@ -1123,12 +1104,12 @@ const std::unordered_map<std::string, damaris::model::DamarisGroupXML>& Damaris_
 	return m_groups;
 }
 
-const unordered_map<string, Desc_type>& Damaris_cfg::descs() const
+const std::unordered_map<std::string, Desc_type>& Damaris_cfg::descs() const
 {
 	return m_descs;
 }
 
-const unordered_map<string, Event_type>& Damaris_cfg::events() const
+const std::unordered_map<std::string, Event_type>& Damaris_cfg::events() const
 {
 	return m_events;
 }

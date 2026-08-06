@@ -44,11 +44,6 @@
 
 #include "damaris_wrapper.h"
 
-using PDI::Context;
-using std::list;
-using std::string;
-using std::unique_ptr;
-
 namespace damaris_pdi {
 
 typedef struct placement {
@@ -165,7 +160,7 @@ class Damaris_cfg
 	std::unordered_map<std::string, Desc_type> m_descs;
 	std::unordered_map<std::string, Event_type> m_events;
 	std::unordered_map<std::string, Dataset_Write_Info> m_datasets_to_write;
-	list<string> m_after_write_events;
+	std::list<std::string> m_after_write_events;
 	//<metadata_name, <parameter_name, PRM_TO_GET/PRM_TO_SET>>
 	std::unordered_map<std::string, std::pair<std::string, Desc_type>> m_parameter_to_update;
 
@@ -215,14 +210,14 @@ class Damaris_cfg
 
 
 protected:
-	void parse_architecture_tree(Context& ctx, PC_tree_t arch_tree);
-	void parse_parameters_tree(Context& ctx, PC_tree_t parameters_tree_list);
-	void parse_datasets_tree(Context& ctx, PC_tree_t datasets_tree_list);
-	void parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list);
-	void parse_storages_tree(Context& ctx, PC_tree_t storages_tree_list);
-	void parse_write_tree(Context& ctx, PC_tree_t write_tree_list);
-	void parse_parameter_to_update_tree(Context& ctx, PC_tree_t ptu_tree_list, Desc_type op_type);
-	void parse_log_tree(Context& ctx, PC_tree_t config);
+	void parse_architecture_tree(PDI::Context& ctx, PC_tree_t arch_tree);
+	void parse_parameters_tree(PDI::Context& ctx, PC_tree_t parameters_tree_list);
+	void parse_datasets_tree(PDI::Context& ctx, PC_tree_t datasets_tree_list);
+	void parse_layouts_tree(PDI::Context& ctx, PC_tree_t layouts_tree_list);
+	void parse_storages_tree(PDI::Context& ctx, PC_tree_t storages_tree_list);
+	void parse_write_tree(PDI::Context& ctx, PC_tree_t write_tree_list);
+	void parse_parameter_to_update_tree(PDI::Context& ctx, PC_tree_t ptu_tree_list, Desc_type op_type);
+	void parse_log_tree(PDI::Context& ctx, PC_tree_t config);
 
 	void init_xml_config_object()
 	{
@@ -241,7 +236,7 @@ public:
 	const std::unordered_map<std::string, damaris::model::DamarisVarXML>& datasets() const;
 	const std::unordered_map<std::string, damaris::model::DamarisLayoutXML>& layouts() const;
 	const std::unordered_map<std::string, damaris::model::DamarisParameterXML>& parameters() const;
-	const damaris::model::DamarisParameterXML get_parameter_xml(string prm_name) const;
+	const damaris::model::DamarisParameterXML get_parameter_xml(std::string prm_name) const;
 	const std::unordered_map<std::string, damaris::model::DamarisStoreXML>& storages() const;
 	const std::unordered_map<std::string, damaris::model::DamarisGroupXML>& groups() const;
 
@@ -253,7 +248,7 @@ public:
 	Dataset_Write_Info get_dataset_write_info(std::string data_name) const;
 	std::pair<std::string, Desc_type> get_parameter_to_update_info(std::string data_name) const;
 
-	list<string> get_after_write_events() const { return m_after_write_events; }
+	std::list<std::string> get_after_write_events() const { return m_after_write_events; }
 
 	bool is_there_after_write_events() const { return m_after_write_events.size(); }
 
@@ -276,7 +271,7 @@ public:
 	bool is_parameter_to_update(std::string data_name);
 	bool is_needed_metadata(std::string data_name);
 
-	std::unordered_map<std::string, std::pair<std::string, std::string>> get_updatable_parameters(Context& ctx);
+	std::unordered_map<std::string, std::pair<std::string, std::string>> get_updatable_parameters(PDI::Context& ctx);
 
 	void reset_parameter_depends_on(std::string prm_name);
 	void reset_parameter_depends_on(std::vector<std::string> prm_list);

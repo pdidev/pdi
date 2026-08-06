@@ -35,25 +35,13 @@
 
 #include "damaris_wrapper.h"
 
-using PDI::Context;
-using PDI::Context_proxy;
-using PDI::Data_descriptor;
-using PDI::Datatype_sptr;
-using PDI::Impl_error;
-using PDI::Plugin_error;
-using PDI::Scalar_datatype;
-using PDI::Scalar_kind;
-using PDI::to_string;
-
-using std::string;
-
 namespace {
 
-void add_predefined(Context& ctx, const std::string& name, void* data, Datatype_sptr type)
+void add_predefined(PDI::Context& ctx, const std::string& name, void* data, PDI::Datatype_sptr type)
 {
-	Data_descriptor& predef_desc = ctx.desc(name);
+	PDI::Data_descriptor& predef_desc = ctx.desc(name);
 	if (!predef_desc.empty()) {
-		throw Impl_error{"Predefined descriptor already defined `%s'", name.c_str()};
+		throw PDI::Impl_error{"Predefined descriptor already defined `%s'", name.c_str()};
 	}
 
 	predef_desc.metadata(true);
@@ -67,12 +55,12 @@ void add_predefined(Context& ctx, const std::string& name, void* data, Datatype_
 namespace damaris_pdi {
 
 // Constructer calls damaris_init()
-Damaris_wrapper::Damaris_wrapper(Context& ctx, const char* xmlConfigObject, MPI_Comm comm)
+Damaris_wrapper::Damaris_wrapper(PDI::Context& ctx, const char* xmlConfigObject, MPI_Comm comm)
 {
 	ctx.logger().debug("Damaris lib initialization starts...");
 	int status = damaris_pdi_initialize(xmlConfigObject, comm);
 	if (status != DAMARIS_OK) {
-		throw Plugin_error{"Cannot initialize Damaris library"};
+		throw PDI::Plugin_error{"Cannot initialize Damaris library"};
 	} else
 		ctx.logger().info("Damaris lib initialization Done!");
 }

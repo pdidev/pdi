@@ -48,38 +48,19 @@
 
 namespace {
 
-using PDI::Context;
-using PDI::Datatype_sptr;
-using PDI::Error;
-using PDI::Plugin;
-using PDI::Ref;
-using PDI::Ref_r;
-using PDI::Ref_w;
-using PDI::to_string;
-
-using std::dynamic_pointer_cast;
-using std::get;
-using std::list;
-using std::pair;
-using std::string;
-using std::unique_ptr;
-using std::unordered_map;
-using std::unordered_set;
-
-using namespace PDI;
 using namespace damaris_pdi;
 
-class damaris_plugin: public Plugin
+class damaris_plugin: public PDI::Plugin
 {
 	Damaris_cfg m_config;
 	Damaris_api_call_handler m_event_handler;
 
-	unique_ptr<Damaris_wrapper> m_damaris;
+	std::unique_ptr<Damaris_wrapper> m_damaris;
 
-	static pair<unordered_set<string>, unordered_set<string>> dependencies() { return {{"mpi"}, {"mpi"}}; }
+	static std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> dependencies() { return {{"mpi"}, {"mpi"}}; }
 
-	list<string> multi_expose_transaction_dataname;
-	//list<Ref> multi_expose_transaction_dataref;
+	std::list<std::string> multi_expose_transaction_dataname;
+	//std::list<PDI::Ref> multi_expose_transaction_dataref;
 
 	std::string int_numbers_types[3] = {"short", "int", "integer"};
 	std::string real_numbers_types[3] = {"float", "real", "double"};
@@ -88,7 +69,7 @@ class damaris_plugin: public Plugin
 	int datasets_to_write_count = 0; //The number of data already written in the current iteration
 
 public:
-	damaris_plugin(Context& ctx, PC_tree_t config)
+	damaris_plugin(PDI::Context& ctx, PC_tree_t config)
 		: Plugin{ctx}
 		, m_config{ctx, config}
 		, m_event_handler{
@@ -101,7 +82,7 @@ public:
 	{
 		std::string data_cb_concat = "";
 		for (auto&& desc: m_config.descs()) { //add data callback only for awaited data
-			ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) { this->data(name, ref); }, desc.first);
+			ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) { this->data(name, ref); }, desc.first);
 			data_cb_concat.append(desc.first + ", ");
 		}
 		context().logger().debug("Data for callback : {}", data_cb_concat);
@@ -121,7 +102,7 @@ public:
 		ctx.logger().info("Plugin loaded successfully");
 	}
 
-	void data(const std::string& name, Ref ref)
+	void data(const std::string& name, PDI::Ref ref)
 	{
 		ensure_damaris_is_initialized("");
 
@@ -169,7 +150,7 @@ public:
 				context().logger().debug("data `{}' is a needed metadata for the evaluation of parameters {}", name, prm_name_concat);
 			}
 		} else if (m_config.is_dataset_to_write(name)) {
-			if (Ref_r rref = ref) {
+			if (PDI::Ref_r rref = ref) {
 				Dataset_Write_Info ds_write_info = m_config.get_dataset_write_info(name);
 
 				//Only write when autorized!
@@ -229,14 +210,20 @@ public:
 						);
 
 						std::string write_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_WRITE);
-						m_event_handler
-							.damaris_api_call_event(context(), m_damaris, write_event_name, multi_expose_transaction_dataname, ds_write_info.dataset_name.c_str(), data);
+						m_event_handler.damaris_api_call_event(
+							context(),
+							m_damaris,
+							write_event_name,
+							multi_expose_transaction_dataname,
+							ds_write_info.dataset_name.c_str(),
+							data
+						);
 					}
 
 					datasets_to_write_count++;
 					//Wait until all datasets are written before launching end of iteration operations
 					if (m_config.is_there_after_write_events() && datasets_to_write_count == m_config.datasets_to_write().size()) {
-						list<string> after_write_events = m_config.get_after_write_events();
+						std::list<std::string> after_write_events = m_config.get_after_write_events();
 						for (auto it = after_write_events.begin(); it != after_write_events.end(); it++) {
 							std::string aw_event = it->c_str();
 							if (m_event_handler.is_damaris_api_call_event(aw_event)) {
@@ -273,11 +260,11 @@ public:
 			}
 
 			if (prm_to_update_info.second == Desc_type::PRM_TO_SET) {
-				Ref_r rref = ref;
+				PDI::Ref_r rref = ref;
 
 				int msg_err = m_damaris->damaris_pdi_parameter_set(prm_name.c_str(), static_cast<const void*>(rref.get()), size);
 			} else if (prm_to_update_info.second == Desc_type::PRM_TO_GET) {
-				Ref_w wref = ref;
+				PDI::Ref_w wref = ref;
 
 				int msg_err = m_damaris->damaris_pdi_parameter_get(prm_name.c_str(), static_cast<void*>(wref.get()), size);
 			} else {
@@ -289,7 +276,7 @@ public:
 		{
 			context().logger().debug("'{}' == m_config.is_client_dataset_name() = '{}'", name, (name == m_config.is_client_dataset_name()));
 
-			if (Ref_w wref = ref) {
+			if (PDI::Ref_w wref = ref) {
 				*static_cast<int*>(wref.get()) = m_damaris->get_is_client();
 				context().logger().debug("is_client = '{}', buffer can be written", m_damaris->get_is_client());
 			} else {
@@ -300,7 +287,7 @@ public:
 		//client_comm_get !?
 		else if (name == m_config.client_comm_get_dataset_name())
 		{
-			if (Ref_w wref = ref) {
+			if (PDI::Ref_w wref = ref) {
 				MPI_Comm client_comm;
 				int err = m_damaris->damaris_pdi_client_comm_get(&client_comm);
 
