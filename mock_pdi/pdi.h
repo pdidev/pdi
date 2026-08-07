@@ -48,8 +48,17 @@ typedef enum PDI_status_e {
 	PDI_ERR_PERMISSION,
 	PDI_ERR_RIGHT = PDI_ERR_PERMISSION,
 	PDI_ERR_TYPE,
+	PDI_ERR_INVALIDACTION,
+	PDI_ERR_MULTIPLE,
 	PDI_NB_STATUSES_DEFINED
 } PDI_status_t;
+
+static
+#ifdef __cplusplus
+	constexpr
+#endif
+	char const * const PDI_STATUS_MSG[PDI_NB_STATUSES_DEFINED]
+	= {"", "", "", "", "", "", "", "", "", "", "", ""};
 
 typedef void (*PDI_errfunc_f)(PDI_status_t status, const char* message, void* context);
 

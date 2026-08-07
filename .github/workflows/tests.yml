@@ -112,6 +112,7 @@ jobs:
       MAKEFLAGS: -j4
       CC: clang
       CXX: clang++
+      FC: gfortran-15
       CMAKE_BUILD_TYPE: ${{matrix.build_type}}
       OMPI_MCA_rmaps_base_oversubscribe: 1
       PRTE_MCA_rmaps_default_mapping_policy: :oversubscribe
@@ -121,11 +122,11 @@ jobs:
       CTEST_DIR: "/tmp/tests_output"
     steps:
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.14'
-    - name: Install MPI (macOS)
-      run: brew install open-mpi
+    - name: Install MPI (macOS) and doxygen
+      run: brew install open-mpi doxygen
     - name: Install Python Dependencies
       run: |
         python -m pip install --upgrade pip
@@ -137,7 +138,7 @@ jobs:
     - name: Build PDI
       run: bin/build_and_run_all_tests
     - name: Publish Test Report
-      uses: mikepenz/action-junit-report@v5
+      uses: mikepenz/action-junit-report@v6
       if: ( success() || failure() )  # always run even if the previous step fails
       with:
         report_paths: '/tmp/tests_output/tests_*.xml'

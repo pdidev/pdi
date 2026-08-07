@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,20 +22,26 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-// this is a header designed to support fmt provided as either a standalone of embedded in spdlog
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
-#include <spdlog/spdlog.h>
-#if !defined(SPDLOG_FMT_EXTERNAL)
-#ifdef SPDLOG_HEADER_ONLY
-#ifndef FMT_HEADER_ONLY
-#define FMT_HEADER_ONLY
-#endif
-#endif
-#include <spdlog/fmt/bundled/core.h>
-#include <spdlog/fmt/bundled/format.h>
-#include <spdlog/fmt/bundled/ranges.h>
-#else // SPDLOG_FMT_EXTERNAL is defined - use external fmtlib
-#include <fmt/core.h>
-#include <fmt/format.h>
-#include <fmt/ranges.h>
-#endif
+#include "pdi/paraconf_wrapper.h"
+
+using namespace PDI;
+using namespace std;
+
+TEST(ParaconfWrapper, ToString)
+{
+	PC_tree_t tree = PC_parse_string(R"==(
+subtree1:
+subtree2:
+  - list
+  - elem2
+)==");
+	EXPECT_THAT(to_string(Yaml_region::make(PC_get(tree, ".subtree1"))), testing::HasSubstr("(2:10 -> 2:10)"));
+	EXPECT_THAT(to_string(*Yaml_region::make(PC_get(tree, ".subtree1"))), testing::HasSubstr("(2:10 -> 2:10)"));
+	EXPECT_THAT(to_string(Yaml_region::make(PC_get(tree, ".subtree2"))), testing::HasSubstr("(4:3 -> 6:1)"));
+	EXPECT_THAT(to_string(*Yaml_region::make(PC_get(tree, ".subtree2"))), testing::HasSubstr("(4:3 -> 6:1)"));
+	PC_errhandler(PC_NULL_HANDLER);
+	EXPECT_EQ(to_string(Yaml_region::make(PC_get(tree, ".invalid"))), "");
+}

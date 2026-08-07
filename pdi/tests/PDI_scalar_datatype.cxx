@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -61,7 +61,7 @@ struct ScalarDatatypeTest: public ::testing::Test {
 };
 
 typedef ::testing::Types<int, long, unsigned int, unsigned long, float, double> TypesForScalar;
-TYPED_TEST_CASE(ScalarDatatypeTest, TypesForScalar);
+TYPED_TEST_SUITE(ScalarDatatypeTest, TypesForScalar);
 
 /*
  * Name:                ScalarDatatypeTest/<typename>.check_kind

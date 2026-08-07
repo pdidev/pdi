@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -933,11 +933,11 @@ TEST_F(AdvancedExpressionTest, parse_reference)
 	ASSERT_EQ(10L, parse_result.second);
 }
 
-INSTANTIATE_TEST_CASE_P(, LongExpressionTest, ::testing::Values(numeric_limits<long>::min(), -1l, 0l, 1l, numeric_limits<long>::max()));
+INSTANTIATE_TEST_SUITE_P(, LongExpressionTest, ::testing::Values(numeric_limits<long>::min(), -1l, 0l, 1l, numeric_limits<long>::max()));
 
-INSTANTIATE_TEST_CASE_P(, DoubleExpressionTest, ::testing::Values(numeric_limits<double>::min(), -1.0, 0.0, 1.0, numeric_limits<double>::max()));
+INSTANTIATE_TEST_SUITE_P(, DoubleExpressionTest, ::testing::Values(numeric_limits<double>::min(), -1.0, 0.0, 1.0, numeric_limits<double>::max()));
 
-INSTANTIATE_TEST_CASE_P(, StringExpressionTest, ::testing::Values("test_string", "s", "a+b+c", "", "-100000", "0", "100000"));
+INSTANTIATE_TEST_SUITE_P(, StringExpressionTest, ::testing::Values("test_string", "s", "a+b+c", "", "-100000", "0", "100000"));
 
 TEST(PCTreeToRefDefault, scalar_value_long)
 {

@@ -212,6 +212,7 @@ Dnc_variable* Dnc_file_context::variable(const std::string& desc_name, const std
 
 void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 {
+	PDI::TimerEventHandler netcdf_timer(m_ctx, "decl_netcdf");
 	if (m_when.to_long(m_ctx)) {
 		std::list<Dnc_variable> variables_holder; // memory for Variables created from descriptor
 
@@ -265,7 +266,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 			nc_file.read_variable(*variable);
 
 			// execute read
-			nc_file.get_variable(*variable, read_it->second, ref);
+			nc_file.get_variable(*variable, read_it->second, ref, desc_name);
 		}
 
 		auto size_it = m_sizeof.find(desc_name);
@@ -280,6 +281,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 
 void Dnc_file_context::execute()
 {
+	PDI::TimerEventHandler netcdf_timer(m_ctx, "decl_netcdf");
 	if (m_when.to_long(m_ctx)) {
 		std::list<Dnc_variable> variables_holder;
 		std::vector<Dnc_variable*> variables_to_get;
@@ -350,7 +352,7 @@ void Dnc_file_context::execute()
 		i = 0;
 		for (auto&& read: m_read) {
 			Dnc_variable* variable = variables_to_get[i]; // order of loop iteration is the same as was on define loop
-			nc_file->get_variable(*variable, read.second, m_ctx.desc(read.first).ref());
+			nc_file->get_variable(*variable, read.second, m_ctx.desc(read.first).ref(), read.first);
 			i++;
 		}
 	}

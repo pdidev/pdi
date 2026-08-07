@@ -28,10 +28,13 @@
 #include <numeric>
 #include <ranges>
 
+#include <hdf5.h>
+
 #include <pdi/testing.h>
 
 using PDI::make_random;
 using PDI::random_init;
+using testing::AllOf;
 using testing::Eq;
 using testing::HasSubstr;
 using testing::StartsWith;
@@ -600,8 +603,7 @@ plugins:
 			*this,
 			PdiError(
 				Eq(PDI_ERR_SYSTEM),
-				StartsWith("Error while triggering event `read_scalar': "
-		                   "System_error: Cannot open `scalar_data' dataset object 'scalar_data' doesn't exist")
+				StartsWith("System error: while triggering `read_scalar', Cannot open `scalar_data' dataset object 'scalar_data' doesn't exist")
 			)
 		);
 		PDI_multi_expose("read_scalar", "scalar_data", &scalar_data_read, PDI_IN, nullptr);
@@ -625,10 +627,7 @@ plugins:
 	// APPEND => error (scalar_data already exists)
 	EXPECT_CALL(
 		*this,
-		PdiError(
-			Eq(PDI_ERR_SYSTEM),
-			StrEq("Error while triggering event `append': System_error: Dataset collision `scalar_data': Dataset already exists")
-		)
+		PdiError(Eq(PDI_ERR_SYSTEM), StrEq("System error: while triggering `append', Dataset collision `scalar_data': Dataset already exists"))
 	);
 	auto const scalar_data_2 = make_a<int>();
 	PDI_multi_expose("append", "scalar_data", &scalar_data_2, PDI_OUT, nullptr);
@@ -638,7 +637,7 @@ plugins:
 		*this,
 		PdiError(
 			Eq(PDI_ERR_SYSTEM),
-			StrEq("Error while triggering event `error': System_error: Filename collision `decl_hdf5_test_collision_policy.h5': File already exists")
+			StrEq("System error: while triggering `error', Filename collision `decl_hdf5_test_collision_policy.h5': File already exists")
 		)
 	);
 	auto const array_data_5 = make_a<std::array<std::array<int, 4>, 4>>();
@@ -800,16 +799,15 @@ plugins:
 	EXPECT_CALL(
 		*this,
 		PdiError(
-			Eq(PDI_ERR_SPECTREE),
-			StrEq("Error while triggering event `write_event': Spectree_error: "
-	              "Found `4' match(es) in the list of datasets section for `group123/array_data'. "
-	              "Cannot choose the right element in datasets.\n"
-	              "The elements that match `group123/array_data' are:\n"
-	              " - group[0-9]+/array_data defined in line 13\n"
-	              " - group.*/array_data defined in line 14\n"
-	              " - group1.*/array_data defined in line 15\n"
-	              " - group12.*/array_data defined in line 17\n"
-	              "Attention: The elements are considered as a regex.")
+			Eq(PDI_ERR_INVALIDACTION),
+			AllOf(
+				StartsWith("Invalid action requested: while triggering `write_event'"),
+				HasSubstr(R"(found 4 regexes in the "datasets:" list that match the dataset `group123/array_data' to write:)"),
+				HasSubstr("- group[0-9]+/array_data defined in line "),
+				HasSubstr("- group.*/array_data defined in line "),
+				HasSubstr("- group1.*/array_data defined in line "),
+				HasSubstr("- group12.*/array_data defined in line ")
+			)
 		)
 	);
 	PDI_multi_expose("write_event", "array_data", array_data.data(), PDI_OUT, nullptr);
@@ -840,4 +838,125 @@ plugins:
 	auto const array_data = make_a<std::array<int, 3>>();
 	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_SPECTREE), HasSubstr("Dataset selection is invalid for implicit dataset `group123/array_data'")));
 	PDI_expose("array_data", array_data.data(), PDI_OUT);
+}
+
+/* Precision conversion with decl_hdf5 
+ * data in double precision
+ * file dataset in double, float, and int
+ */
+TEST_F(DeclHdf5, PrecisionConversion)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata:
+  N: int
+data:
+  array: {type: array, size: [$N, $N], subtype: double}
+plugins:
+  decl_hdf5:   
+    - file: d2d_test.h5
+      datasets:
+        double_ds: {type: array, size: [$N, $N], subtype: double}
+      write:
+        array:
+          dataset: double_ds
+    - file: d2f_test.h5
+      datasets:
+        float_ds: {type: array, size: [$N, $N], subtype: float}
+      write:
+        array:
+          dataset: float_ds
+    - file: d2i_test.h5
+      datasets:
+        int_ds: {type: array, size: [$N, $N], subtype: int}
+      write:
+        array:
+          dataset: int_ds
+)=="));
+
+	EXPECT_FALSE(std::filesystem::exists("d2d_test.h5"));
+	EXPECT_FALSE(std::filesystem::exists("d2f_test.h5"));
+	EXPECT_FALSE(std::filesystem::exists("d2i_test.h5"));
+
+	static constexpr size_t N = 100;
+	PDI_expose("N", &N, PDI_OUT);
+
+	auto const test_array = make_a<std::array<std::array<double, N>, N>>();
+	PDI_expose("array", test_array.data(), PDI_OUT);
+
+	ASSERT_TRUE(std::filesystem::exists("d2d_test.h5"));
+	ASSERT_TRUE(std::filesystem::exists("d2f_test.h5"));
+	ASSERT_TRUE(std::filesystem::exists("d2i_test.h5"));
+
+	// read double precision dataset and compare
+	hid_t file_id = H5Fopen("d2d_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+	ASSERT_GE(file_id, 0);
+	hid_t dataset_id = H5Dopen2(file_id, "/double_ds", H5P_DEFAULT);
+	ASSERT_GE(dataset_id, 0);
+	hid_t type_id = H5Dget_type(dataset_id);
+	ASSERT_GE(type_id, 0);
+
+	EXPECT_GT(H5Tequal(type_id, H5T_IEEE_F64LE), 0);
+	std::array<std::array<double, N>, N> read_double_array;
+
+	herr_t status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_double_array.data()->data());
+	ASSERT_GE(status, 0);
+
+	EXPECT_EQ(test_array, read_double_array);
+
+	H5Tclose(type_id);
+	H5Dclose(dataset_id);
+	H5Fclose(file_id);
+
+	// read single precision dataset and compare
+	file_id = H5Fopen("d2f_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+	ASSERT_GE(file_id, 0);
+	dataset_id = H5Dopen2(file_id, "/float_ds", H5P_DEFAULT);
+	ASSERT_GE(dataset_id, 0);
+	type_id = H5Dget_type(dataset_id);
+	ASSERT_GE(type_id, 0);
+
+	EXPECT_GT(H5Tequal(type_id, H5T_IEEE_F32LE), 0);
+	std::array< std::array<float, N>, N > read_float_array;
+
+	status = H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_float_array.data()->data());
+	ASSERT_GE(status, 0);
+
+// Skipping the numerical comparison because Clang 15 has known issues with ranges.
+#if !defined(__clang__) || (__clang_major__ != 15)
+	EXPECT_THAT(read_float_array, testing::ElementsAreArray(test_array | std::views::transform([](std::array<double, N> const & aref) {
+																return testing::Pointwise(testing::FloatEq(), aref);
+															})));
+#endif
+
+	H5Tclose(type_id);
+	H5Dclose(dataset_id);
+	H5Fclose(file_id);
+
+	// read integer dataset and compare
+	file_id = H5Fopen("d2i_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+	ASSERT_GE(file_id, 0);
+	dataset_id = H5Dopen2(file_id, "/int_ds", H5P_DEFAULT);
+	ASSERT_GE(dataset_id, 0);
+	type_id = H5Dget_type(dataset_id);
+	ASSERT_GE(type_id, 0);
+
+	EXPECT_GT(H5Tequal(type_id, H5T_STD_I32LE), 0);
+	std::array< std::array<int, N>, N > read_int_array;
+
+	status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_int_array.data()->data());
+	ASSERT_GE(status, 0);
+
+// Skipping the numerical comparison because Clang 15 has known issues with ranges.
+#if !defined(__clang__) || (__clang_major__ != 15)
+	EXPECT_THAT(read_int_array, testing::ElementsAreArray(test_array | std::views::transform([](std::array<double, N> const & aref) {
+															  return testing::ElementsAreArray(aref | std::views::transform([](double const & ref) {
+																								   return static_cast<int>(ref);
+																							   }));
+														  })));
+#endif
+
+	H5Tclose(type_id);
+	H5Dclose(dataset_id);
+	H5Fclose(file_id);
 }

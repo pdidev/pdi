@@ -10,6 +10,15 @@ pdi:
   include:
   - pdi.yml
   plugins:
+    trace: debug
+    timer:
+      - timer_h5: "decl_hdf5"
+      - timer_nc:
+          start: "decl_netcdf_start_timer"
+          stop: "decl_netcdf_stop_timer"
+      - timer_user: [pycall, user_code]
+      - timer_json: {start: "json_start_timer", stop: "json_stop_timer"}
+      - timer_pdi: "pdi"
     mpi:
     decl_hdf5:
       file: data.h5
@@ -30,3 +39,18 @@ pdi:
           dataset_selection: # only write into a single slice in time
             size:  [1, '$dsize[0]-2', '$dsize[1]-2']
             start: [$iter, '($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]']
+    decl_netcdf:
+      file: data.nc
+      communicator: $MPI_COMM_WORLD # the MPI communicator used for HDF5 parallel synchronized write
+      variables: # type of the datasets to create in file
+        v_data:
+          type: array
+          subtype: double
+          size: [10, '$psize[0]*$dsize[0]', '$psize[1]*$dsize[1]']
+      write:
+        main_field: # the name of the data to write
+          variable: v_data
+          when: '$iter<10'   # do only write the first 10 iterations (0...9)
+          variable_selection: # only write into a single slice in time
+            subsize:  [1, '$dsize[0]', '$dsize[1]']
+            start: [$iter, '$dsize[0]*$pcoord[0]', '$dsize[1]*$pcoord[1]']

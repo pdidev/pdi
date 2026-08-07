@@ -7,12 +7,13 @@ and this project adheres to
 
 
 
-
 ## [Unreleased]
 
 ### For users
 
 #### Added
+* Improved error message in type check in Decl'NetCDF when reading scalar variable from file
+[#731]https://github.com/pdidev/pdi/issues/731
 
 #### Changed
 
@@ -34,10 +35,59 @@ and this project adheres to
 #### Deprecated
 
 #### Removed
+* Removed performance micro-benchmarks of the core PDI library that were
+  intended as examples but provided only misleading information and prevented
+  refactoring (Decl'HDF5 benchmarks remain for now). This partially answers
+  [#733](https://github.com/pdidev/pdi/issues/733)
 
 #### Fixed
 
 #### Security
+
+
+
+## [1.12.0] - 2026-07-29
+
+### For users
+
+#### Added
+* A timer plugin is added to reflect the time consumed by pdi and its plugins.
+  [#710](https://github.com/pdidev/pdi/issues/710)
+* Add test for HDF5 precision conversion [#708](https://github.com/pdidev/pdi/issues/708)
+* Added support for `includes` in the specification tree, hence solving the 
+  long-standing issue [#80](https://github.com/pdidev/pdi/issues/80)
+* Improved messages for specification tree errors, with file & line numbers and
+  support for file names from Paraconf 1.1,
+  [#657](https://github.com/pdidev/pdi/issues/657)
+* A new error code `PDI_ERR_INVALIDACTION` has been added when an action
+  requested in the yaml specification tree makes no sense (but the specification
+  tree is syntaxically correct)
+* A new error code `PDI_ERR_MULTIPLE` has been added when multiple errors of
+  different kind happen
+* `PDI_STATUS_MSG` has been added to offer an english description of error
+  codes.
+* Added support for MacOS and fixed all CI issues on MacOS, fix
+  [#688](https://github.com/pdidev/pdi/issues/688)
+* Add `when` keyword for user_code plugin, fix [#698](https://github.com/pdidev/pdi/issues/698)
+* Update the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
+  and document the cmake option to override 'NetCDF_FIND_STRATEGIES' as
+  requested in [#500](https://github.com/pdidev/pdi/issues/500)
+
+#### Fixed
+* Migrate from `TYPED_TEST_CASE` to `TYPED_TEST_SUITE`, from `INSTANTIATE_TEST_CASE_P`
+  to `INSTANTIATE_TEST_SUITE_P` to resolve deprecation warnings.
+* Resolve compilation warning in `decl_netcdf_test_08`
+ [#716](https://github.com/pdidev/pdi/issues/716)
+
+
+### For plugin developers
+
+#### Added
+* Support conversion of `Yaml_region` to a `string`
+  [#702](https://github.com/pdidev/pdi/issues/702)
+
+#### Removed
+* `PDI::Error` is now an abstract class and should never be used directly.
 
 
 
@@ -47,7 +97,6 @@ and this project adheres to
 
 #### Fixed
 * Fixed the build failure of a test in 1.11.1
-
 
 
 ## [1.11.1] - 2026-06-23
@@ -71,7 +120,7 @@ and this project adheres to
   [#699](https://github.com/pdidev/pdi/issues/699)
 
 #### Fixed
-* Correctly genrerate test directory name to prevent random failures
+* Correctly generate test directory name to prevent random failures
   [#700](https://github.com/pdidev/pdi/issues/700)
 
 

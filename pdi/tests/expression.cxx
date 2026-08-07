@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -58,7 +58,7 @@ struct ExpressionU@CASE_NAME@Test: public ::testing::Test{};
 // clang-format on
 
 // clang-format off
-TYPED_TEST_CASE(ExpressionU@CASE_NAME@Test, OperatorTypes);
+TYPED_TEST_SUITE(ExpressionU@CASE_NAME@Test, OperatorTypes);
 // clang-format on
 
 

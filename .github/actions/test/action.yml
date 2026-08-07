@@ -59,7 +59,7 @@ runs:
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
     - id: Publish
-      uses: mikepenz/action-junit-report@v5
+      uses: mikepenz/action-junit-report@v6
       if: always() && steps.test.outputs.with_report == 'true'
       with:
         report_paths: 'tests_output/tests_*.xml'

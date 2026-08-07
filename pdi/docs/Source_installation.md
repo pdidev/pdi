@@ -16,8 +16,8 @@ The %PDI source distribution includes:
 To download the sources, have a look at the list of all releases at 
 https://github.com/pdidev/pdi/releases/
 
-For example, release 1.11.2 can be downloaded from
-https://github.com/pdidev/pdi/archive/refs/tags/1.11.2.tar.gz
+For example, release 1.12.0 can be downloaded from
+https://github.com/pdidev/pdi/archive/refs/tags/1.12.0.tar.gz
 
 ## Default installation {#default_installation}
 
@@ -42,15 +42,15 @@ external dependencies are:
 This list of dependencies can be further reduced or extended by changing the
 set of features compiled.
 
-For example, release 1.11.2 can be installed by following these instructions (but
+For example, release 1.12.0 can be installed by following these instructions (but
 look for the latest release at
 https://github.com/pdidev/pdi/releases ):
 
 ```bash
-wget https://github.com/pdidev/pdi/archive/refs/tags/1.11.2.tar.gz
-tar -xjf 1.11.2.tar.gz
-mkdir 1.11.2/build
-cd 1.11.2/build
+wget https://github.com/pdidev/pdi/archive/refs/tags/1.12.0.tar.gz
+tar -xjf 1.12.0.tar.gz
+mkdir 1.12.0/build
+cd 1.12.0/build
 cmake -DCMAKE_INSTALL_PREFIX="${HOME}/.local/" ..   # configuration
 make install   # compilation and installation
 ```
@@ -123,16 +123,35 @@ The following flags define whether to:
 
 |Flag           |Default   |Description|
 |:--------------|:---------|:----------|
-|`USE_benchmark`|`EMBEDDED`|the [Benchmark](https://github.com/google/benchmark) library.|
-|`USE_Doxygen`  |`AUTO`    |the [doxygen](http://www.doxygen.nl/) tool.|
-|`USE_GTest`    |`EMBEDDED`|the [googletest](https://github.com/google/googletest) library.|
-|`USE_HDF5`     |`AUTO`    |the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library.|
-|`USE_JSON`     |`AUTO`    |the [Json](https://github.com/nlohmann/json/) library.|
-|`USE_paraconf` |`AUTO`    |the [paraconf](https://github.com/pdidev/paraconf) library.|
-|`USE_pybind11` |`AUTO`    |the [pybind11](https://pybind11.readthedocs.io/en/stable) library.|
-|`USE_spdlog`   |`AUTO`    |the [spdlog](https://github.com/gabime/spdlog) library.|
-|`USE_yaml`     |`AUTO`    |the [yaml](https://github.com/jbigot/zpp) library.|
-|`USE_Zpp`      |`EMBEDDED`|the [zpp](https://github.com/jbigot/zpp) preprocessor.|
+|`USE_HDF5`     |`AUTO`    |The [HDF5](https://www.hdfgroup.org/solutions/hdf5) library.|
+|`USE_JSON`     |`AUTO`    |The [Json](https://github.com/nlohmann/json) library.|
+|`USE_NetCDF`   |`AUTO`    |The [NetCDF](https://www.unidata.ucar.edu/software/netcdf) library.|
+|`USE_paraconf` |`AUTO`    |The [paraconf](https://github.com/pdidev/paraconf) library.|
+|`USE_pybind11` |`AUTO`    |The [pybind11](https://pybind11.readThedocs.io/en/stable) library.|
+|`USE_spdlog`   |`AUTO`    |The [spdlog](https://github.com/gabime/spdlog) library.|
+|`USE_yaml`     |`AUTO`    |The [yaml](https://github.com/yaml/libyaml) library.|
+
+When looking for `SYSTEM` version of libraries, the standard CMake variables are
+adhered to, such as
+[`<PackageName>_ROOT`](https://cmake.org/cmake/help/latest/variable/PackageName_ROOT.html),
+or
+[`CMAKE_PREFIX_PATH`](https://cmake.org/cmake/help/latest/variable/CMAKE_PREFIX_PATH.html),
+and standard CMake environment variables such as
+[`<PackageName>_ROOT`](https://cmake.org/cmake/help/latest/envvar/PackageName_ROOT.html).
+The specific parameters of cmake find modules are also used for
+[`Doxygen`](https://cmake.org/cmake/help/latest/module/FindDoxygen.html),
+[`HDF5`](https://cmake.org/cmake/help/latest/module/FindHDF5.html),
+[`MPI`](https://cmake.org/cmake/help/latest/module/FindMPI.html),
+[`PkgConfig`](https://cmake.org/cmake/help/latest/module/FindPkgConfig.html),
+[`Python3`](https://cmake.org/cmake/help/latest/module/FindPython3.html), and
+[`Threads`](https://cmake.org/cmake/help/latest/module/FindThreads.html).
+
+We also provide dedicated cmake find modules for `libyaml`, and `NetCDF` that
+can be configured with the following cmake variables:
+|Flag                    |Default                                 |Description|
+|:-----------------------|:---------------------------------------|:----------|
+|`NetCDF_CFGSCRIPT`      |`nc-config`                             |Path of the NetCDF configuration script used by the CFGSCRIPT discovery strategy.|
+|`NetCDF_FIND_STRATEGIES`|`\"CMAKE;CFGSCRIPT;PKGCONFIG;FALLBACK\"`|Ordered list of strategies used to locate a NetCDF installation.|
 
 
 The following flags define where to install %PDI, those prefixed with `CMAKE_`
@@ -140,18 +159,18 @@ are provided and documented by the
 [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)
 cmake module.
 
-|Flag          |Default   |Description|
-|:-------------|:---------|:----------|
-|`INSTALL_CMAKEDIR`|`PDIDATADIR/cmake`|Cmake modules.|
-|`INSTALL_FMODDIR`|`LIBDIR/pdi/finclude/${COMPILER_VERSION}`|Fortran modules|
-|`INSTALL_PDIDATADIR`|`DATADIR/pdi`|PDI data|
-|`INSTALL_PDIPLUGINDIR`|`LIBDIR/pdi/plugins_${PDI_VERSION}`|PDI plugins|
-|`CMAKE_INSTALL_BINDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|user executables|
-|`CMAKE_INSTALL_DATADIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|read-only architecture-independent data|
-|`CMAKE_INSTALL_DOCDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|documentation root|
-|`CMAKE_INSTALL_INCLUDEDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|C header files|
-|`CMAKE_INSTALL_LIBDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|object code libraries|
-|`CMAKE_INSTALL_PREFIX`|see [CMake doc](https://cmake.org/cmake/help/v3.22/variable/CMAKE_INSTALL_PREFIX.html)|Installation base|
+|Flag                      |Default                                                                                |Description|
+|:-------------------------|:--------------------------------------------------------------------------------------|:----------|
+|`INSTALL_CMAKEDIR`        |`PDIDATADIR/cmake`                                                                     |Cmake modules.|
+|`INSTALL_FMODDIR`         |`LIBDIR/pdi/finclude/${COMPILER_VERSION}`                                              |Fortran modules|
+|`INSTALL_PDIDATADIR`      |`DATADIR/pdi`                                                                          |PDI data|
+|`INSTALL_PDIPLUGINDIR`    |`LIBDIR/pdi/plugins_${PDI_VERSION}`                                                    |PDI plugins|
+|`CMAKE_INSTALL_BINDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |user executables|
+|`CMAKE_INSTALL_DATADIR`   |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |read-only architecture-independent data|
+|`CMAKE_INSTALL_DOCDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |documentation root|
+|`CMAKE_INSTALL_INCLUDEDIR`|See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |C header files|
+|`CMAKE_INSTALL_LIBDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |object code libraries|
+|`CMAKE_INSTALL_PREFIX`    |See [CMake doc](https://cmake.org/cmake/help/v3.22/variable/CMAKE_INSTALL_PREFIX.html).|Installation base|
 
 ## List of dependencies {#dependecies}
 

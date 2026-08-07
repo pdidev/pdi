@@ -66,6 +66,7 @@ option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
 option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
 option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
+option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
 option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
 option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
@@ -73,9 +74,9 @@ option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
 option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
+option(BUILD_TIMER_PLUGIN       "Build Timer plugin" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
-option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 
 
@@ -344,6 +345,13 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 				"     * use another version of HDF5 from the system => pass `-DHDF5_ROOT=/path/to/hdf5/root/' to cmake"
 			)
 		endif()
+	elseif(NOT "EMBEDDED" STREQUAL "${USE_HDF5}")
+		message(FATAL_ERROR
+			"HDF5 setup failed: A suitable SYSTEM version (>= 1.10) could not be found.\n"
+			"    you have the following options:\n"
+			"     * build the EMBEDDED HDF5 from PDI distribution => pass `-DUSE_HDF5=EMBEDDED' to cmake\n"
+			"     * use another version of HDF5 from the system => pass `-DHDF5_ROOT=/path/to/hdf5/root/' to cmake"
+		)
 	endif()
 endif()
 
@@ -390,16 +398,27 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			-DNETCDF_ENABLE_TESTS:BOOL=OFF
 		VERSION 4.8
 	)
-	if("${NETCDF_FOUND}")
+	if("${NetCDF_FOUND}")
 		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
 			message(FATAL_ERROR
 				"You requested a parallel NetCDF build (-DBUILD_NETCDF_PARALLEL=ON) but a sequential SYSTEM version has been found\n"
 				"    you have the following options:\n"
 				"     * build with this sequential NetCDF => pass `-DBUILD_NETCDF_PARALLEL=OFF' to cmake\n"
-				"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NETCDF=EMBEDDED' to cmake\n"
-				"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake"
+				"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NetCDF=EMBEDDED' to cmake\n"
+				"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake\n"
+				"       you may need to change the discovery order so the config script is tried first =>\n"
+				"       pass `-DNetCDF_FIND_STRATEGIES=\"CFGSCRIPT\"' to cmake"
 			)
 		endif()
+	elseif(NOT "EMBEDDED" STREQUAL "${USE_NetCDF}")
+		message(FATAL_ERROR
+			"NetCDF setup failed: A suitable SYSTEM version (>= 4.8) could not be found.\n"
+			"    you have the following options:\n"
+			"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NetCDF=EMBEDDED' to cmake\n"
+			"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake\n"
+			"       you may need to change the discovery order so the config script is tried first =>\n"
+			"       pass `-DNetCDF_FIND_STRATEGIES=\"CFGSCRIPT\"' to cmake"
+		)
 	endif()
 endif()
 
@@ -473,7 +492,7 @@ sbuild_add_module(JSON_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_JSON_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json"
 	DEPENDS PDI JSON
-	SUBSTEPS indent test
+	SUBSTEPS test
 )
 
 
@@ -534,5 +553,12 @@ sbuild_add_module(PDI_API_TESTS
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/api_tests"
 	DEPENDS PDI
 	INSTALL_COMMAND ""
+	SUBSTEPS test
+)
+
+sbuild_add_module(TIMER_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_TIMER_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/timer"
+	DEPENDS PDI
 	SUBSTEPS test
 )

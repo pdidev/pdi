@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -52,7 +52,7 @@ typedef ::testing::Types<
 	DenseRecordsInRecordTest,
 	SparseRecordsInRecordTest>
 	TypesForRecord;
-TYPED_TEST_CASE(RecordDatatypeTest, TypesForRecord);
+TYPED_TEST_SUITE(RecordDatatypeTest, TypesForRecord);
 
 /*
  * Name:                RecordDatatypeTest/<structname>.check_dense

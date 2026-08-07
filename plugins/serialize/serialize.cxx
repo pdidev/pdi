@@ -272,6 +272,7 @@ struct serialize_plugin: PDI::Plugin {
 	 */
 	void share_serialized(const std::string& desc_name, PDI::Ref ref)
 	{
+		PDI::TimerEventHandler serialize_timer(context(), "serialize");
 		std::string serialized_name = m_desc_to_serialize[desc_name];
 		context().logger().debug("Serializing `{}` as `{}`", desc_name, serialized_name);
 		PDI::Datatype_sptr serialized_type = serialize_type(ref.type());
