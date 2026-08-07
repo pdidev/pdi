@@ -749,16 +749,21 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 					scalar_type->datasize()
 				};
 			}
-		} else {
-			// case scalar_type->kind() == PDI::Scalar_kind::UNKNOWN
-			// or new added case (after 2026.08) in PDI::Scalar_kind not previously checked
+		} else if ((*scalar_type) == (*PDI::UNDEF_TYPE)) {
 			throw PDI::Type_error{
-				"Can not read `{}' : Invalid type in NetCDF plugin: #`{}', "
-				"Possible reason: The exposed data `{}' "
-				"is not defined in yaml (meta)data section.",
+				"Can not read `{}' : Invalid type in Decl_netcdf plugin: "
+				"The exposed data `{}' is not defined in yaml (meta)data section.",
 				variable_name,
-				static_cast<uint8_t>(scalar_type->kind()),
 				ref_name
+			};
+		} else {
+			throw PDI::Type_error{
+				"Can not read `{}' : Invalid type in Decl_netcdf plugin: "
+				"The exposed data `{}' is defined with an unsupported unknown"
+				" scalar datatype: {}.",
+				variable_name,
+				ref_name,
+				scalar_type->debug_string()
 			};
 		}
 	}
