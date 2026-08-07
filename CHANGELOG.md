@@ -70,6 +70,7 @@ and this project adheres to
 * Update the error messages for invalid SYSTEM dependencies of NetCDF and HDF5,
   and document the cmake option to override 'NetCDF_FIND_STRATEGIES' as
   requested in [#500](https://github.com/pdidev/pdi/issues/500)
+* Added new checkpointing plugin using the [VeloC library](https://veloc.readthedocs.io/en/latest/userguide.html) as requested in [issue #726](https://github.com/pdidev/pdi/issues/726)
 
 #### Fixed
 * Migrate from `TYPED_TEST_CASE` to `TYPED_TEST_SUITE`, from `INSTANTIATE_TEST_CASE_P`
