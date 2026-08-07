@@ -27,7 +27,7 @@ The user also needs an MPI implementation, such as
 
 The VeloC plugin specification tree requires 3 mandatory mappings for successful initialization. 
 
-* *config_file* : path to [VeloC's own configuration file](https://veloc.readthedocs.io/en/latest/userguide.html#setup). <br> Please note the plugin currently only works in synchronous mode. This means the parameter "mode" should be set to "sync" in VeloC's configuration file when using the plugin. 
+* *config_file* : path to [VeloC's own configuration file](https://veloc.readthedocs.io/en/latest/quick.html#configure). <br> Please note the plugin currently only works in synchronous mode. This means the parameter "mode" should be set to "sync" in VeloC's configuration file when using the plugin. 
 
 ```yml
 config_file: ./veloc_config.cfg 
