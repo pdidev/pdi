@@ -38,36 +38,36 @@ config_file: ./veloc_config.cfg
 checkpoint_label: myapp
 ```
 
-* *iteration*: name of the variable corresponding to the simulation loop's iterator in the PDI data store. This is also used by VeloC to name checkpoint files. 
+* *iteration*: name of the data corresponding to the simulation loop's iterator in the PDI data store. This is also used by VeloC to name checkpoint files. 
 
 ```yml
 iteration: ii
 ```
 
 ### Optional Mappings 
-* *status* : name of an integer variable in the PDI data store that represents whether a recovery is needed (status = 0) or not (status = 1). 
-```yml
-status: checkpoint_status
-```
-The plugin by default defines the status equal to 1 but users can change the status by writing to PDI.
-```cpp 
-PDI_expose("status", &checkpoint_status, PDI_OUT);
-``` 
-If users wish to inspect the status they can read it from PDI. 
-```cpp 
-PDI_expose("status", &checkpoint_status, PDI_IN);
-``` 
+* *status* : name of an integer data in the PDI data store that represents whether a recovery is needed (status = 0) or not (status = 1). 
+  ```yml
+  status: checkpoint_status
+  ```
+  The plugin by default defines the status equal to 1 but users can change the status by writing to PDI.
+  ```cpp 
+  PDI_expose("status", &checkpoint_status, PDI_OUT);
+  ``` 
+  If users wish to inspect the status they can read it from PDI. 
+  ```cpp 
+  PDI_expose("status", &checkpoint_status, PDI_IN);
+  ``` 
 
 * *counter* : name of an integer variable in the PDI data store that represents the number of checkpoints written by the plugin.
 
-```yml
-counter: checkpoint_counter
-```
+  ```yml
+  counter: checkpoint_counter
+  ```
 
-If users wish to inspect this value they can read it from PDI. 
-```cpp 
-PDI_expose("counter", &checkpoint_counter, PDI_IN);
-```
+  If users wish to inspect this value they can read it from PDI. 
+  ```cpp 
+  PDI_expose("counter", &checkpoint_counter, PDI_IN);
+  ```
 
 ### Checkpointing Behaviors
 
