@@ -32,7 +32,7 @@ The VeloC plugin specification tree requires 3 mandatory mappings for successful
 ```yml
 config_file: ./veloc_config.cfg 
 ```
-* *checkpoint_label*: label used by VeloC to name checkpoint files. When using the VeloC plugin to checkpoint an application, the user may set the *checkpoint_label* equal to "myapp". If a failure occurs and the user wishes to restart the simulation from a checkpoint, the specification tree used in the new simulation run must have the *checkpoint_label* also equal to "myapp". 
+* *checkpoint_label*: label used by VeloC to name checkpoint files. When using the VeloC plugin to checkpoint an application with *checkpoint_label* equal to "myapp", the user must use the same label to restart the simulation from the checkpoint. 
 
 ```yml
 checkpoint_label: myapp
