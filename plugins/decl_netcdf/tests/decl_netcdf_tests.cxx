@@ -24,7 +24,6 @@
  ******************************************************************************/
 
 #include <filesystem>
-//#include <iostream>
 #include <numeric>
 #include <ranges>
 
@@ -1070,9 +1069,11 @@ plugins:
 		*this,
 		PdiError(
 			testing::Eq(PDI_ERR_TYPE),
-			testing::StrEq("Error while triggering event `read_data': "
-	                       "Type_error: Decl_netcdf plugin: Datatype mismatch (with size): "
-	                       "read 'scalar_int32' of size 4 for a buffer of size 8")
+			testing::AllOf(
+				testing::HasSubstr("while triggering `read_data',"),
+				testing::HasSubstr("Decl_netcdf plugin: Datatype mismatch (with size): "
+	                               "read 'scalar_int32' of size 4 for a buffer of size 8")
+			)
 		)
 	);
 
@@ -1115,9 +1116,11 @@ plugins:
 		*this,
 		PdiError(
 			testing::Eq(PDI_ERR_TYPE),
-			testing::StrEq("Error while triggering event `read_data': "
-	                       "Type_error: Decl_netcdf plugin: Datatype mismatch (with size): "
-	                       "read 'scalar_float' of size 4 for a buffer of size 8")
+			testing::AllOf(
+				testing::HasSubstr("while triggering `read_data',"),
+				testing::HasSubstr("Decl_netcdf plugin: Datatype mismatch (with size): "
+	                               "read 'scalar_float' of size 4 for a buffer of size 8")
+			)
 		)
 	);
 
@@ -1163,8 +1166,8 @@ plugins:
 		PdiError(
 			testing::Eq(PDI_ERR_TYPE),
 			testing::AllOf(
-				testing::StartsWith("Error while triggering event `read_data': "
-	                                "Type_error: Can not read `scalar_float' : "),
+				testing::HasSubstr("while triggering `read_data',"),
+				testing::HasSubstr("Can not read `scalar_float' :"),
 				testing::HasSubstr("Invalid type in Decl_netcdf plugin:"),
 				testing::HasSubstr("The exposed data `var_out' "
 	                               "is not defined in yaml (meta)data section.")
@@ -1214,9 +1217,8 @@ plugins:
 		PdiError(
 			testing::Eq(PDI_ERR_TYPE),
 			testing::AllOf(
-				testing::StartsWith("Unable to share `var_out'"),
-				testing::HasSubstr("Error while triggering data share `var_out': "
-	                               "Type_error: Can not read `scalar_float' :"),
+				testing::HasSubstr("while sharing `var_out'"),
+				testing::HasSubstr("Can not read `scalar_float'"),
 				testing::HasSubstr("Invalid type in Decl_netcdf plugin:"),
 				testing::HasSubstr("The exposed data `var_out' "
 	                               "is not defined in yaml (meta)data section.")
@@ -1279,8 +1281,8 @@ plugins:
 		PdiError(
 			testing::Eq(PDI_ERR_TYPE),
 			testing::AllOf(
-				testing::StartsWith("Error while triggering event `read_data': "
-	                                "Type_error: Can not read `nc_var' : "),
+				testing::HasSubstr("while triggering `read_data',"),
+				testing::HasSubstr("Can not read `nc_var'"),
 				testing::HasSubstr("Invalid type in Decl_netcdf plugin:"),
 				testing::HasSubstr("The exposed data `array_out' "
 	                               "is not defined in yaml (meta)data section.")
