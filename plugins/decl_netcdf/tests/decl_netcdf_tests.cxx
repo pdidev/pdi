@@ -24,7 +24,7 @@
  ******************************************************************************/
 
 #include <filesystem>
-#include <iostream>
+//#include <iostream>
 #include <numeric>
 #include <ranges>
 
@@ -1027,94 +1027,6 @@ TEST(decl_netcdf_test, deflate)
 	PDI_finalize();
 }
 
-/*
- * Name:                decl_netcdf_test.read
- *
- * Description:         Tests write and read of int with type mismatch
- */
-TEST(decl_netcdf_test, int_read)
-{
-	constexpr char CONFIG_YAML[] = R"(
-    logging: trace
-    data:
-      int_in: int32
-      int_out: int64
-    plugins:
-      decl_netcdf:
-      - file: 'test_int_read.nc'
-        variable:
-          scalar_int32: int32
-        on_event: write_data
-        write:
-          int_in:
-            variable: scalar_int32
-      - file: 'test_int_read.nc'
-        variable:
-          scalar_int32: int32
-        on_event: read_data
-        read:
-          int_out:
-            variable:
-              scalar_int32
-    )";
-
-	PDI_init(PC_parse_string(CONFIG_YAML));
-	PDI_errhandler(PDI_NULL_HANDLER);
-
-	// write data
-	int32_t int_in = 42;
-	PDI_multi_expose("write_data", "int_in", &int_in, PDI_OUT, NULL);
-
-	// read data
-	int64_t int_out = -1;
-	EXPECT_NE(PDI_OK, PDI_multi_expose("read_data", "int_out", &int_out, PDI_IN, NULL));
-	PDI_finalize();
-}
-
-/*
- * Name:                decl_netcdf_test.read
- *
- * Description:         Tests write and read of float/double with type mismatch
- */
-TEST(decl_netcdf_test, float_read)
-{
-	constexpr char CONFIG_YAML[] = R"(
-    logging: trace
-    data:
-      var_in: float
-      var_out: double
-    plugins:
-      decl_netcdf:
-      - file: 'test_float_read.nc'
-        variable:
-          nc_var: float
-        on_event: write_data
-        write:
-          var_in:
-            variable: nc_var
-      - file: 'test_float_read.nc'
-        variable:
-          nc_var: float
-        on_event: read_data
-        read:
-          var_out:
-            variable: nc_var
-    )";
-
-	PDI_init(PC_parse_string(CONFIG_YAML));
-	PDI_errhandler(PDI_NULL_HANDLER);
-
-	// write data
-	float var_in = 12.34;
-	PDI_multi_expose("write_data", "var_in", &var_in, PDI_OUT, NULL);
-
-	// read data
-	double var_out = -1.0;
-	EXPECT_NE(PDI_OK, PDI_multi_expose("read_data", "var_out", &var_out, PDI_IN, NULL));
-
-	PDI_finalize();
-}
-
 class DeclNetcdfCheckType: public ::PDI::PdiTest
 {};
 
@@ -1217,9 +1129,10 @@ plugins:
 /*
  * Name:                DeclNetcdfCheckType.ReadDataNotDefinedInYaml
  *
- * Description:         Tests write and read of float/double with type mismatch
+ * Description:         Tests write and read of float/double which is not defined in Yaml
+ *                      Read with on_event
  */
-TEST_F(DeclNetcdfCheckType, ReadDataNotDefinedInYaml)
+TEST_F(DeclNetcdfCheckType, ReadDataNotDefinedInYamlCaseOnEvent)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
@@ -1252,8 +1165,8 @@ plugins:
 			testing::AllOf(
 				testing::StartsWith("Error while triggering event `read_data': "
 	                                "Type_error: Can not read `scalar_float' : "),
-				testing::HasSubstr("Invalid type in NetCDF plugin: #`0',"),
-				testing::HasSubstr("Possible reason: The exposed data `var_out' "
+				testing::HasSubstr("Invalid type in Decl_netcdf plugin:"),
+				testing::HasSubstr("The exposed data `var_out' "
 	                               "is not defined in yaml (meta)data section.")
 			)
 		)
@@ -1267,7 +1180,8 @@ plugins:
 /*
  * Name:                DeclNetcdfCheckType.ReadDataNotDefinedInYamlCaseOnData
  *
- * Description:         Tests write and read of float/double with type mismatch
+ * Description:         Tests write and read of float/double which is not defined in Yaml
+ *                      Read with on_data
  */
 TEST_F(DeclNetcdfCheckType, ReadDataNotDefinedInYamlCaseOnData)
 {
@@ -1303,8 +1217,8 @@ plugins:
 				testing::StartsWith("Unable to share `var_out'"),
 				testing::HasSubstr("Error while triggering data share `var_out': "
 	                               "Type_error: Can not read `scalar_float' :"),
-				testing::HasSubstr("Invalid type in NetCDF plugin: #`0',"),
-				testing::HasSubstr("Possible reason: The exposed data `var_out' "
+				testing::HasSubstr("Invalid type in Decl_netcdf plugin:"),
+				testing::HasSubstr("The exposed data `var_out' "
 	                               "is not defined in yaml (meta)data section.")
 			)
 		)
@@ -1312,5 +1226,67 @@ plugins:
 
 	// read data
 	float var_out = -1.0;
-	EXPECT_EQ(PDI_ERR_TYPE, PDI_expose("var_out", &var_out, PDI_IN));
+	PDI_expose("var_out", &var_out, PDI_IN);
+}
+
+/*
+ * Name:                DeclNetcdfCheckType.ReadDoubleArrayNotDefinedInYaml
+ *
+ * Description:         Tests write and read of double array that not defined in Yaml
+ */
+TEST_F(DeclNetcdfCheckType, ReadDoubleArrayNotDefinedInYaml)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata:
+  nn: int
+data:
+  array_in: {type: array, subtype: double, size: ['$nn']}
+plugins:
+  decl_netcdf:
+    - file: 'test_double_array_read.nc'
+      variables:
+        nc_var: {type: array, subtype: double, size: ['$nn']}
+      on_event: write_data
+      write:
+        array_in:
+          variable: nc_var
+    - file: 'test_double_array_read.nc'
+      variables:
+        nc_var:  {type: array, subtype: double, size: ['$nn']}
+      on_event: read_data
+      read:
+        array_out:
+          variable: nc_var
+)=="));
+
+
+	int const nn = 3;
+	PDI_expose("nn", &nn, PDI_INOUT);
+
+	auto const array_in = make_a<std::array<double, nn>>();
+
+	PDI_multi_expose("write_data", "array_in", array_in.data(), PDI_OUT, NULL);
+
+	// read data
+	std::array<double, nn> array_out{};
+	array_out.fill(-1.0);
+
+	EXPECT_TRUE(std::filesystem::exists("test_double_array_read.nc"));
+
+	EXPECT_CALL(
+		*this,
+		PdiError(
+			testing::Eq(PDI_ERR_TYPE),
+			testing::AllOf(
+				testing::StartsWith("Error while triggering event `read_data': "
+	                                "Type_error: Can not read `nc_var' : "),
+				testing::HasSubstr("Invalid type in Decl_netcdf plugin:"),
+				testing::HasSubstr("The exposed data `array_out' "
+	                               "is not defined in yaml (meta)data section.")
+			)
+		)
+	);
+
+	PDI_multi_expose("read_data", "array_out", array_out.data(), PDI_IN, NULL);
 }
