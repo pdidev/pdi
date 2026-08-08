@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 	PDI_multi_expose("read_size", "nn", &damaris_size, PDI_INOUT, NULL);
 
 	if (IMX != damaris_size) {
-		printf("Error: IMX (= %d) != damaris_size(= %d) \n", IMX, (int) damaris_size);
+		printf("Error: IMX (= %d) != damaris_size(= %d) \n", IMX, (int)damaris_size);
 		exit(EXIT_FAILURE);
 	}
 
