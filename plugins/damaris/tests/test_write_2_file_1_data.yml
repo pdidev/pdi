@@ -1,0 +1,59 @@
+pdi:
+  metadata:
+    mpi_comm: MPI_Comm
+    is_client: int
+    nn: int
+  data:
+    int_values: {size: ["$nn"], type: array, subtype: int}
+    int22_values: {size: ["$nn"], type: array, subtype: int}
+  plugins:
+    trace: info
+    mpi:
+    damaris:
+      architecture:
+        sim_name: damaris_scalar_type
+        domains: 1
+        dedicated:
+          core: 1
+          node: 0
+      get_is_client: is_client
+      client_comm_get: mpi_comm
+      datasets:
+        - dataset:
+            name: int_values
+            layout: int_values_layout
+            storage: hdf5_storage
+        - dataset:
+            name: int22_values
+            layout: int_values_layout
+            storage: hdf5_22_storage
+      layouts:
+        - layout:
+            name: int_values_layout
+            type: int
+            global: ["$nn"]
+            dimensions: ["$nn"]
+            ghosts: '0:0'
+            depends_on: [nn]
+      storages:
+        - storage:
+            name: hdf5_storage
+            type: HDF5
+            file_mode: Collective
+            files_path: ./HDF5_files/
+        - storage:
+            name: hdf5_22_storage
+            type: HDF5
+            file_mode: Collective
+            files_path: ./HDF5_22_files/
+      write: 
+        int_values:
+          dataset: int_values
+          position: ["$nn"]
+        int22_values:
+          dataset: int22_values
+          position: ["$nn"]
+      log:
+        rotation_size: 5
+        log_level: info
+        flush: true

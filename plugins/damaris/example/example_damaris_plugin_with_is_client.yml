@@ -1,0 +1,61 @@
+# duration in seconds
+duration: 0.75
+# global [height, width] (excluding boundary conditions or ghosts)
+datasize: [60, 12]
+# degree of parallelism
+parallelism: { height: 3, width: 1 }
+
+pdi:
+  metadata:
+    iter:   int                    # current iteration id
+    dsize:  { size: 2, type: array, subtype: int } # local data size including ghosts/boundary
+    psize:  { size: 2, type: array, subtype: int } # number of processes in each dimension
+    pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
+    mpi_comm: MPI_Comm
+    conf_yaml: uintptr_t
+    is_client: int
+  data:
+    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
+  
+  plugins:
+    mpi:
+    damaris:
+      architecture: 
+        sim_name: example  
+        domains: 1
+        dedicated:
+          core: 1
+          node: 0 
+      client_comm_get: mpi_comm # Needed to return the Damaris client comm
+      get_is_client: is_client #Needed only when is_client is used
+      datasets:
+        - dataset: 
+            name: main_field
+            layout: main_field_layout
+            storage: hdf5_example
+      layouts:
+        - layout: 
+            name: main_field_layout
+            type: double
+            global: ['$psize[0]*($dsize[0]-2)', '$psize[1]*($dsize[1]-2)']
+            dimensions: [ '$dsize[0]', '$dsize[1]' ] # process dim, with ghosts/boundaries
+            ghosts: '1:1,1:1'
+            depends_on: [dsize, psize] # This will help ensure an update of the layout attributes value to Damaris lib once the metadata are exposed (using Damaris Parameters in the background)!
+      storages:
+        - storage:
+            name: hdf5_example
+            type: HDF5
+            file_mode: Collective       # or FilePerCore
+            files_path: ./HDF5_files_with_is_client/   # Where to save files
+          
+      write: 
+        main_field: # the name of the data to write, if dataset not specified afterward! ~meme notion de dataset hdf5
+          dataset: main_field 
+          when: '$iter<10'   # do only write the first 10 iterations (0...9), Default at every iteration.
+          position: ['($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]'] # ~start de dataset_selection par iteration
+
+      log:
+        file_name: example_with_is_client 
+        rotation_size: 5
+        log_level: info
+        flush: true
