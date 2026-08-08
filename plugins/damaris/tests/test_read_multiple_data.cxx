@@ -38,7 +38,7 @@ TEST_F(Gdamaris, File2Data)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
-metadata: { damaris22_nn: int, damaris_nn: int }
+metadata: { damaris22_nn: int64, damaris_nn: int64 }
 data:
   damaris22_values: {size: ['$damaris_nn'], type: array, subtype: int}
   damaris_values: {size: ['$damaris_nn'], type: array, subtype: int}
@@ -61,7 +61,7 @@ plugins:
 	std::string yaml_file = "test_write_1_file_2_data.yml";
 	std::string run_command = "mpirun -np 2 ../" + exec_name + " ../" + yaml_file;
 
-	constexpr int const array_size_0 = 10;
+	constexpr int64_t const array_size_0 = 10;
 
 	int result = std::system(run_command.c_str());
 	ASSERT_EQ(result, 0) << "Error in the writing step for input file " + yaml_file;
@@ -76,7 +76,7 @@ plugins:
 	int run_check_dataset = std::system(run_command1.c_str());
 	EXPECT_EQ(run_check_dataset, 0) << "Error: The dataset " + dataset_name + " doesn't exist in " + filename;
 
-	int global_size = 0;
+	int64_t global_size = 0;
 	PDI_expose("damaris_nn", &global_size, PDI_INOUT); // get global size
 	ASSERT_EQ(global_size, array_size_0);
 
@@ -96,7 +96,7 @@ TEST_F(Gdamaris, TwoFile)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
-metadata: { damaris22_nn: int, damaris_nn: int }
+metadata: { damaris22_nn: int64, damaris_nn: int64 }
 data:
   damaris22_values: {size: ['$damaris_nn'], type: array, subtype: int}
   damaris_values: {size: ['$damaris_nn'], type: array, subtype: int}
@@ -121,7 +121,7 @@ plugins:
 	std::string yaml_file = "test_write_2_file_1_data.yml";
 	std::string run_command = "mpirun -np 2 ../" + exec_name + " ../" + yaml_file;
 
-	constexpr int const array_size_0 = 10;
+	constexpr int64_t const array_size_0 = 10;
 
 	int result = std::system(run_command.c_str());
 	ASSERT_EQ(result, 0) << "Error in the writing step for input file " + yaml_file;
@@ -136,7 +136,7 @@ plugins:
 	int run_check_dataset = std::system(run_command1.c_str());
 	EXPECT_EQ(run_check_dataset, 0) << "Error: The dataset " + dataset_name + " doesn't exist in " + filename;
 
-	int global_size = 0;
+	int64_t global_size = 0;
 	PDI_expose("damaris_nn", &global_size, PDI_INOUT); // get global size
 	ASSERT_EQ(global_size, array_size_0);
 
@@ -145,8 +145,7 @@ plugins:
 	ASSERT_TRUE(std::filesystem::exists(filename));
 
 	dataset_name = "int22_values";
-	run_command1 = "h5dump -d \'" + dataset_name + "\' " + filename;
-	+" > /dev/null 2>&1";
+	run_command1 = "h5dump -d \'" + dataset_name + "\' " + filename + " > /dev/null 2>&1";
 
 	run_check_dataset = std::system(run_command1.c_str());
 	EXPECT_EQ(run_check_dataset, 0) << "Error: The dataset " + dataset_name + " doesn't exist in " + filename;

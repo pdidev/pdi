@@ -57,8 +57,6 @@ class damaris_plugin: public PDI::Plugin
 
 	std::unique_ptr<Damaris_wrapper> m_damaris;
 
-	static std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> dependencies() { return {{"mpi"}, {"mpi"}}; }
-
 	std::list<std::string> multi_expose_transaction_dataname;
 	//std::list<PDI::Ref> multi_expose_transaction_dataref;
 
@@ -69,6 +67,11 @@ class damaris_plugin: public PDI::Plugin
 	int datasets_to_write_count = 0; //The number of data already written in the current iteration
 
 public:
+	static std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> dependencies()
+	{
+		return {std::unordered_set<std::string>{}, {"mpi"}};
+	}
+
 	damaris_plugin(PDI::Context& ctx, PC_tree_t config)
 		: Plugin{ctx}
 		, m_config{ctx, config}

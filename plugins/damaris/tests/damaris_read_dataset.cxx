@@ -36,7 +36,7 @@
 constexpr char CONFIG_FOR_READING_RESULT[] = R"(
 logging: trace
 metadata:
-  nn: int
+  nn: int64
 data:
   damaris_values: {size: ['$nn'], type: array, subtype: int}
 plugins:
@@ -52,22 +52,13 @@ int main(int argc, char* argv[])
 {
 	PDI_init(PC_parse_string(CONFIG_FOR_READING_RESULT));
 
-	int damaris_size = 0;
+	int64_t damaris_size = 0;
 	PDI_multi_expose("read_size", "nn", &damaris_size, PDI_INOUT, NULL);
 
 	if (IMX != damaris_size) {
-		printf("Error: IMX (= %d) != damaris_size(= %d) \n", IMX, damaris_size);
+		printf("Error: IMX (= %d) != damaris_size(= %d) \n", IMX, (int) damaris_size);
 		exit(EXIT_FAILURE);
 	}
-
-	// PDI_multi_expose("read", "damaris_values", damaris_values, PDI_INOUT, NULL);
-
-	// for (int ii = 0; ii < size; ++ii) {
-	//   if (written_values[ii] != damaris_values[ii]) {
-	//     printf("written_values[%d] (= %d) != damaris_values[%d] (= %d) \n", ii, written_values[ii], ii, damaris_values[ii]);
-	//     exit(EXIT_FAILURE);
-	//   }
-	// }
 
 	PDI_finalize();
 

@@ -87,9 +87,7 @@ target_compile_features(damaris_write_multiple_data  PUBLIC cxx_std_17)
 add_executable(damaris_read_multiple_data test_read_multiple_data.cxx)
 target_compile_features(damaris_read_multiple_data PUBLIC cxx_std_17)
 target_link_libraries(damaris_read_multiple_data PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest)
-gtest_add_tests(TARGET damaris_read_multiple_data TEST_LIST GDamaris_multidata)
-
-set_tests_properties(${GDamaris_multidata} PROPERTIES TIMEOUT 8)
+gtest_discover_tests(damaris_read_multiple_data PROPERTIES TIMEOUT 3)
 
 # generic executable to test damaris
 add_executable(test_write_simple_array_int test_write_simple_array_int.c)
@@ -103,6 +101,5 @@ configure_file(test_write_metadata.yml test_write_metadata.yml COPYONLY)
 
 add_executable(test_read_simple_array_int test_read_simple_array_int.cxx)
 target_link_libraries(test_read_simple_array_int PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest GTest::gtest_main)
-gtest_add_tests(TARGET test_read_simple_array_int TEST_LIST GDamaris_multiprocess)
+gtest_discover_tests(test_read_simple_array_int PROPERTIES TIMEOUT 3)
 
-set_tests_properties(${GDamaris_multiprocess} PROPERTIES TIMEOUT 8)
