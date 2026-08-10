@@ -32,10 +32,10 @@ PDI_PLUGIN(example)
 ```
 
 ### Adding a callback {#adding_callback}
-PDI::Context has a member with all the functions (callbacks) that are called when user is sharing the data (calls PDI_share). To add a new function to the plugin must call `callbacks().add_data_callback`.
+PDI::Context has a member with all the functions (callbacks) that are called when user is sharing the data (calls PDI_share). To add a new function to the plugin must call `on_data`.
 
 ```cpp
-std::function<void()> add_data_callback(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {}))
+std::function<void()> on_data(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {}))
 ```
 
 The first argument is the function to be called when user shares the data.
@@ -54,7 +54,7 @@ struct example_plugin : public PDI::Plugin
     example_plugin(PDI::Context& ctx, PC_tree_t spec_tree):
         Plugin{ctx}
     {
-        ctx.callbacks().add_data_callback([](const std::string& data_name, PDI::Ref ref){
+        ctx.on_data([](const std::string& data_name, PDI::Ref ref){
             std::cout << "User has shared a data named " << data_name << std::endl;
         });
     }
@@ -103,7 +103,7 @@ struct example_plugin : public PDI::Plugin
     example_plugin(PDI::Context& ctx, PC_tree_t spec_tree):
         Plugin{ctx}
     {
-        ctx.callbacks().add_data_callback([](const std::string& data_name, PDI::Ref ref){
+        ctx.on_data([](const std::string& data_name, PDI::Ref ref){
             if(PDI::Ref_rw ref_rw{ref}) {
                 //Plugin can read and write
                 int* some_integer = ref_rw.get();
@@ -135,10 +135,10 @@ struct example_plugin : public PDI::Plugin
     example_plugin(PDI::Context& ctx, PC_tree_t spec_tree):
         Plugin{ctx}
     {
-        ctx.callbacks().add_event_callback([this](const std::string& event_name){
+        ctx.on_event([this](const std::string& event_name){
             this->handle_event(event_name);
         });
-        ctx.callbacks().add_event_callback([this](const std::string& event_name){
+        ctx.on_event([this](const std::string& event_name){
             this->handle_special_event(event_name);
         }, "special_event");
     }
@@ -382,15 +382,15 @@ public:
         read_recover_tree(spec_tree);
         read_data_tree(spec_tree);
         for (const auto& data_path_pair : m_data_to_path_map) {
-            ctx.callbacks().add_data_callback([this](const std::string& data_name, PDI::Ref ref) {
+            ctx.on_data([this](const std::string& data_name, PDI::Ref ref) {
                 this->write_data(data_name, ref);
             }, data_path_pair.first);
-            ctx.callbacks().add_data_callback([this](const std::string& data_name, PDI::Ref ref) {
+            ctx.on_data([this](const std::string& data_name, PDI::Ref ref) {
                 this->read_data(data_name, ref);
             }, data_path_pair.first);
         }
         if (!m_can_recover_data.empty()) {
-            ctx.callbacks().add_data_callback([this](const std::string& data_name, PDI::Ref ref) {
+            ctx.on_data([this](const std::string& data_name, PDI::Ref ref) {
                 this->can_recover(data_name, ref);
             }, m_can_recover_all_data);
         }
