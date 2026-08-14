@@ -32,43 +32,32 @@ cmake_minimum_required(VERSION 3.22...4.2)
 find_package(Doxygen 1.9 REQUIRED)
 
 set(DOXYGEN_INPUT
-		"${CMAKE_CURRENT_SOURCE_DIR}/About.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Concepts.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/FAQ.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/First_steps.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/How_to_create_plugin.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Installation.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Plugins.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Specification_tree_ref.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Source_installation.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Using_PDI.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Yaml.md"
-		"${PDI_BINARY_DIR}/pdi/export.h"
-		"${PDI_BINARY_DIR}/pdi/version.h"
-		"${PDI_SOURCE_DIR}/include/pdi.h"
-		"${PDI_SOURCE_DIR}/include/pdi/"
-		"${PDI_SOURCE_DIR}/../example/README.md"
-		"${PDI_SOURCE_DIR}/../tutorial/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/decl_hdf5/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/decl_netcdf/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/mpi/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/timer/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/trace/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/user_code/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/pycall/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/serialize/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/set_value/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/json/README.md")
-
-set(DOXY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
-cmake_path(NORMAL_PATH DOXY_ROOT)
-
-set(DOXYGEN_REL_INPUT)
-foreach(INPUT_ELEMENT IN LISTS DOXYGEN_INPUT)
-	cmake_path(RELATIVE_PATH INPUT_ELEMENT BASE_DIRECTORY "${DOXY_ROOT}")
-	list(APPEND DOXYGEN_REL_INPUT "${INPUT_ELEMENT}")
-endforeach()
-string(REPLACE ";" " " DOXYGEN_REL_INPUT "${DOXYGEN_REL_INPUT}")
+		"documentation/About.md"
+		"documentation/Concepts.md"
+		"documentation/FAQ.md"
+		"documentation/First_steps.md"
+		"documentation/How_to_create_plugin.md"
+		"documentation/Installation.md"
+		"documentation/Plugins.md"
+		"documentation/Specification_tree_ref.md"
+		"documentation/Source_installation.md"
+		"documentation/Using_PDI.md"
+		"documentation/Yaml.md"
+		"pdi/include/pdi.h"
+		"pdi/include/pdi/"
+		"example/README.md"
+		"tutorial/README.md"
+		"plugins/decl_hdf5/README.md"
+		"plugins/decl_netcdf/README.md"
+		"plugins/mpi/README.md"
+		"plugins/timer/README.md"
+		"plugins/trace/README.md"
+		"plugins/user_code/README.md"
+		"plugins/pycall/README.md"
+		"plugins/serialize/README.md"
+		"plugins/set_value/README.md"
+		"plugins/json/README.md")
+string(REPLACE ";" " " DOXYGEN_INPUT "${DOXYGEN_INPUT}")
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html")
 configure_file(Doxyfile "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")

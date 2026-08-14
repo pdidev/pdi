@@ -32,25 +32,8 @@ project(PDI LANGUAGES CXX C)
 list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
 
 
-# Version
-
-file(READ ../VERSION PDI_VERSION)
-string(STRIP "${PDI_VERSION}" PDI_VERSION)
-string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${PDI_VERSION}")
-set(PDI_VERSION_MAJOR "${CMAKE_MATCH_1}")
-set(PDI_VERSION_MINOR "${CMAKE_MATCH_2}")
-set(PDI_VERSION_PATCH "${CMAKE_MATCH_3}")
-set(PDI_VERSION_MODIF "${CMAKE_MATCH_5}")
-if("git" STREQUAL "${PDI_VERSION_MODIF}" OR "alpha" STREQUAL "${PDI_VERSION_MODIF}")
-	execute_process(COMMAND "${PDI_SOURCE_DIR}/cmake/version-uid" "${PDI_VERSION_MODIF}" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
-set(PDI_VERSION "${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
-set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
-
-
 # Build options
 
-option(BUILD_DOCUMENTATION "Build documentation" ON)
 option(BUILD_SHARED_LIBS   "Build shared libraries rather than static ones" ON)
 option(BUILD_TESTING       "Build tests" ON)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
@@ -103,7 +86,7 @@ if("${BUILD_PYTHON}")
 	set(PDI_REQUIRED_PYBIND11_VERSION 2.9) # used in PDIConfig too
 	find_package(pybind11 "${PDI_REQUIRED_PYBIND11_VERSION}" REQUIRED)
 endif()
-if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
+if("${BUILD_FORTRAN}")
 	add_subdirectory("../vendor/zpp-1.1.2/" "zpp")
 endif()
 
@@ -328,13 +311,6 @@ if("${BUILD_FORTRAN}")
 	add_library(PDI::pdi_f90     ALIAS PDI_f90)
 	add_library(PDI::PDI_f90     ALIAS PDI_f90)
 	add_library(PDI::PDI_Fortran ALIAS PDI_f90)
-endif()
-
-
-# Documentation
-
-if("${BUILD_DOCUMENTATION}")
-	add_subdirectory(docs docs)
 endif()
 
 
