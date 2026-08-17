@@ -661,7 +661,7 @@ void Dnc_netcdf_file::put_variable(const Dnc_variable& variable, const Dnc_io& w
 	m_ctx.logger().trace("Variable `{}' written", variable_name);
 }
 
-void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w)
+void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w, const std::string& ref_name)
 {
 	if (!ref_w) {
 		throw PDI::Permission_error{"Decl_netcdf plugin: Cannot read `{}'. Need write access to read it from file", variable.path()};
@@ -690,12 +690,12 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	}
 	nc_id var_id = var_it->second;
 
-	// read variable and check for scalar type match
-	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type())) {
+	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type()->evaluate(m_ctx))) {
 		nc_type var_nc_type;
 		size_t var_nc_type_size;
 		nc_try(nc_inq_vartype(src_id, var_id, &var_nc_type), "cannot get type of `{}' from file", variable.path());
 		nc_try(nc_inq_type(0, var_nc_type, NULL, &var_nc_type_size), "can not inquire the size of `{}'", var_nc_type);
+
 		if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
 			switch (var_nc_type) {
 			case NC_BYTE:
@@ -749,8 +749,22 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 					scalar_type->datasize()
 				};
 			}
+		} else if ((*scalar_type) == (*PDI::UNDEF_TYPE)) {
+			throw PDI::Type_error{
+				"Can not read `{}' : Invalid type in Decl_netcdf plugin: "
+				"The exposed data `{}' is not defined in yaml (meta)data section.",
+				variable_name,
+				ref_name
+			};
 		} else {
-			throw PDI::Type_error{"Can not read `{}' : buffer has unknown type", variable_name};
+			throw PDI::Type_error{
+				"Can not read `{}' : Invalid type in Decl_netcdf plugin: "
+				"The exposed data `{}' is defined with an unsupported unknown"
+				" scalar datatype: {}.",
+				variable_name,
+				ref_name,
+				scalar_type->debug_string()
+			};
 		}
 	}
 
