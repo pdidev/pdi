@@ -41,11 +41,11 @@ class PDI_EXPORT Delayed_data_callbacks
 	std::vector<std::string> m_datanames;
 
 	/// The context where the list of data is a part of
-	Global_context & m_context;
+	Global_context& m_context;
 
 public:
 	/// constructor
-	Delayed_data_callbacks(Global_context & ctx);
+	Delayed_data_callbacks(Global_context& ctx);
 
 	Delayed_data_callbacks(const Delayed_data_callbacks&) = delete;
 

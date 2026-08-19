@@ -180,7 +180,7 @@ plugins:
     write: [Nsize, pdi_array]
 )=="));
 
-	int Nsize= 3;
+	int Nsize = 3;
 	auto array_data = make_a<std::array<int, 3>>();
 
 	ASSERT_FALSE(std::filesystem::exists("mydata.h5"));
@@ -204,7 +204,7 @@ plugins:
     write: [Nsize, pdi_array]
 )=="));
 
-	int Nsize= 3;
+	int Nsize = 3;
 	auto array_data = make_a<std::array<int, 3>>();
 
 	ASSERT_FALSE(std::filesystem::exists("mydata.h5"));
