@@ -39,7 +39,7 @@ namespace {
 void do_pc(PC_tree_t tree, PC_status_t status)
 {
 	if (status) {
-		throw Spectree_error{tree, "Configuration error #{}: {}", static_cast<int>(status), PC_errmsg()};
+		throw Spectree_error{tree, "{}", PC_errmsg()};
 	}
 }
 
@@ -57,15 +57,15 @@ Yaml_region::Yaml_region(PC_tree_t tree)
 		  ""
 #endif
 	  )
-	, m_start{tree.node->start_mark.line + 1, tree.node->start_mark.column + 1}
-	, m_end{tree.node->end_mark.line + 1, tree.node->end_mark.column + 1}
+	, m_start{tree.node ? tree.node->start_mark.line + 1 : 0, tree.node ? tree.node->start_mark.column + 1 : 0}
+	, m_end{tree.node ? tree.node->end_mark.line + 1 : 0, tree.node ? tree.node->end_mark.column + 1 : 0}
 {
-	assert(!PC_status(tree) && "building a region from an invalid tree is unspecified");
+	assert(tree.node && "building a region from a null tree node is unsupported");
 }
 
 std::optional<Yaml_region> Yaml_region::make(PC_tree_t tree)
 {
-	if (PC_status(tree) == PC_OK && tree.node) {
+	if (tree.node) {
 		return Yaml_region(tree);
 	} else {
 		return {};
@@ -84,7 +84,7 @@ Paraconf_wrapper::~Paraconf_wrapper()
 std::string to_string(Yaml_region location)
 {
 	return fmt::format(
-		"{}({}:{} -> {}:{})",
+		"{} (line {}, column {} to line {}, column {})",
 		location.file(),
 		location.start().line,
 		location.start().column,
@@ -174,17 +174,17 @@ bool to_bool(PC_tree_t tree, bool dflt)
 
 bool is_list(PC_tree_t tree)
 {
-	return tree.node->type == YAML_SEQUENCE_NODE;
+	return !PC_status(tree) && tree.node && tree.node->type == YAML_SEQUENCE_NODE;
 }
 
 bool is_map(PC_tree_t tree)
 {
-	return tree.node->type == YAML_MAPPING_NODE;
+	return !PC_status(tree) && tree.node && tree.node->type == YAML_MAPPING_NODE;
 }
 
 bool is_scalar(PC_tree_t tree)
 {
-	return tree.node->type == YAML_SCALAR_NODE;
+	return !PC_status(tree) && tree.node && tree.node->type == YAML_SCALAR_NODE;
 }
 
 void each(PC_tree_t tree, std::function<void(PC_tree_t)> operation)
