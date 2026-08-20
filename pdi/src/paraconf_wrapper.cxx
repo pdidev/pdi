@@ -57,15 +57,15 @@ Yaml_region::Yaml_region(PC_tree_t tree)
 		  ""
 #endif
 	  )
-	, m_start{tree.node ? tree.node->start_mark.line + 1 : 0, tree.node ? tree.node->start_mark.column + 1 : 0}
-	, m_end{tree.node ? tree.node->end_mark.line + 1 : 0, tree.node ? tree.node->end_mark.column + 1 : 0}
+	, m_start{tree.node->start_mark.line + 1, tree.node->start_mark.column + 1}
+	, m_end{tree.node->end_mark.line + 1, tree.node->end_mark.column + 1}
 {
-	assert(tree.node && "building a region from a null tree node is unsupported");
+	assert(!PC_status(tree) && "building a region from an invalid tree is unspecified");
 }
 
 std::optional<Yaml_region> Yaml_region::make(PC_tree_t tree)
 {
-	if (tree.node) {
+	if (PC_status(tree) == PC_OK && tree.node) {
 		return Yaml_region(tree);
 	} else {
 		return {};
