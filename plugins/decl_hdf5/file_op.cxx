@@ -129,36 +129,42 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 	vector<Dataset_op> dset_ops;
 	vector<Attribute_op> attr_ops;
 	unordered_map<string, Expression> dset_size_ops;
+	vector<std::pair<PC_tree_t, string>> descs_to_check;
 
 	PC_tree_t read_tree = PC_get(tree, ".read");
 	if (!PC_status(PC_get(read_tree, "[0]"))) { // it's a list of names only
-		each(read_tree, [&](PC_tree_t tree) {
-			string dset_string = to_string(tree);
+		each(read_tree, [&](PC_tree_t item_tree) {
+			string dset_string = to_string(item_tree);
+			descs_to_check.emplace_back(item_tree, dset_string);
 			if (dset_string.find("#") == string::npos) {
-				dset_ops.emplace_back(Dataset_op::READ, to_string(tree), default_when);
+				dset_ops.emplace_back(Dataset_op::READ, dset_string, default_when);
 			} else {
-				attr_ops.emplace_back(Attribute_op::READ, tree, default_when);
+				attr_ops.emplace_back(Attribute_op::READ, item_tree, default_when);
 			}
 		});
 	} else if (!PC_status(read_tree)) { // it's a name:{config...} mapping
 		each(read_tree, [&](PC_tree_t name, PC_tree_t config) {
-			opt_each(config, [&](PC_tree_t value) { // each config is an independant op
+			string dset_string = to_string(name);
+			descs_to_check.emplace_back(name, dset_string);
+			opt_each(config, [&](PC_tree_t value) { // each config is an independent op
 				if (!PC_status(PC_get(value, ".attribute"))) {
-					attr_ops.emplace_back(Attribute_op::READ, to_string(name), default_when, value);
+					attr_ops.emplace_back(Attribute_op::READ, dset_string, default_when, value);
 				} else if (!PC_status(PC_get(value, ".size_of"))) {
-					dset_size_ops.emplace(to_string(name), to_string(PC_get(value, ".size_of")));
+					dset_size_ops.emplace(dset_string, to_string(PC_get(value, ".size_of")));
 				} else {
-					dset_ops.emplace_back(Dataset_op::READ, to_string(name), default_when, value);
+					dset_ops.emplace_back(Dataset_op::READ, dset_string, default_when, value);
 				}
 			});
 		});
 	}
+
 	PC_tree_t write_tree = PC_get(tree, ".write");
 	if (!PC_status(PC_get(write_tree, "[0]"))) { // it's a list of names only
-		each(write_tree, [&](PC_tree_t tree) {
-			string dset_string = to_string(tree);
+		each(write_tree, [&](PC_tree_t item_tree) {
+			string dset_string = to_string(item_tree);
+			descs_to_check.emplace_back(item_tree, dset_string);
 			if (dset_string.find("#") == string::npos) {
-				dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when, template_op.m_collision_policy);
+				dset_ops.emplace_back(Dataset_op::WRITE, dset_string, default_when, template_op.m_collision_policy);
 				if (deflate) {
 					dset_ops.back().deflate(ctx, deflate.to_long(ctx));
 				}
@@ -166,18 +172,20 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 					dset_ops.back().fletcher(ctx, fletcher.to_long(ctx));
 				}
 			} else {
-				attr_ops.emplace_back(Attribute_op::WRITE, tree, default_when);
+				attr_ops.emplace_back(Attribute_op::WRITE, item_tree, default_when);
 			}
 		});
 	} else if (!PC_status(write_tree)) { // it's a name:{config...} mapping
 		each(write_tree, [&](PC_tree_t name, PC_tree_t config) {
+			string dset_string = to_string(name);
+			descs_to_check.emplace_back(name, dset_string);
 			if (!PC_status(PC_get(config, ".attribute"))) {
-				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
-					attr_ops.emplace_back(Attribute_op::WRITE, to_string(name), default_when, value);
+				opt_each(config, [&](PC_tree_t value) { // each config is an independent op
+					attr_ops.emplace_back(Attribute_op::WRITE, dset_string, default_when, value);
 				});
 			} else {
-				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
-					dset_ops.emplace_back(Dataset_op::WRITE, to_string(name), default_when, value, template_op.m_collision_policy);
+				opt_each(config, [&](PC_tree_t value) { // each config is an independent op
+					dset_ops.emplace_back(Dataset_op::WRITE, dset_string, default_when, value, template_op.m_collision_policy);
 					if (deflate) {
 						dset_ops.back().deflate(ctx, deflate.to_long(ctx));
 					}
@@ -188,6 +196,22 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			}
 		});
 	}
+
+	ctx.on_init([&ctx, descs = std::move(descs_to_check)]() {
+		for (const auto& item : descs) {
+			PC_tree_t node = item.first;
+			const string& raw_name = item.second;
+
+			string data_name = raw_name.substr(0, raw_name.find('#'));
+			if (ctx.find(data_name) == ctx.end()) {
+				throw Spectree_error{
+					node,
+					"Cannot reference data `{}` in `decl_hdf5`: descriptor is not declared in `data` or `metadata`",
+					data_name
+				};
+			}
+		}
+	});
 
 
 	// final pass to build the result
