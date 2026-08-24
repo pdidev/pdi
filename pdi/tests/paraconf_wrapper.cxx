@@ -38,10 +38,26 @@ subtree2:
   - list
   - elem2
 )==");
-	EXPECT_THAT(to_string(Yaml_region::make(PC_get(tree, ".subtree1"))), testing::HasSubstr("(2:10 -> 2:10)"));
-	EXPECT_THAT(to_string(*Yaml_region::make(PC_get(tree, ".subtree1"))), testing::HasSubstr("(2:10 -> 2:10)"));
-	EXPECT_THAT(to_string(Yaml_region::make(PC_get(tree, ".subtree2"))), testing::HasSubstr("(4:3 -> 6:1)"));
-	EXPECT_THAT(to_string(*Yaml_region::make(PC_get(tree, ".subtree2"))), testing::HasSubstr("(4:3 -> 6:1)"));
+	EXPECT_THAT(to_string(Yaml_region::make(PC_get(tree, ".subtree1"))), testing::HasSubstr("(line 2, column 10 to line 2, column 10)"));
+	EXPECT_THAT(to_string(*Yaml_region::make(PC_get(tree, ".subtree1"))), testing::HasSubstr("(line 2, column 10 to line 2, column 10)"));
+	EXPECT_THAT(to_string(Yaml_region::make(PC_get(tree, ".subtree2"))), testing::HasSubstr("(line 4, column 3 to line 6, column 1)"));
+	EXPECT_THAT(to_string(*Yaml_region::make(PC_get(tree, ".subtree2"))), testing::HasSubstr("(line 4, column 3 to line 6, column 1)"));
 	PC_errhandler(PC_NULL_HANDLER);
 	EXPECT_EQ(to_string(Yaml_region::make(PC_get(tree, ".invalid"))), "");
+}
+
+TEST(ParaconfWrapper, TabIndentationError)
+{
+	PC_errhandler_t handler = PC_errhandler(PC_NULL_HANDLER);
+
+	PC_tree_t tree = PC_parse_string(R"==(
+data:
+	var_with_tab: int
+)==");
+
+	PC_errhandler(handler);
+
+	EXPECT_NE(PC_status(tree), PC_OK);
+	EXPECT_THAT(PC_errmsg(), testing::HasSubstr("line 3, column 1"));
+	EXPECT_THAT(PC_errmsg(), testing::HasSubstr("tabulation"));
 }

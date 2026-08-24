@@ -111,7 +111,7 @@ std::string Spectree_error::full_msg() const
 	if (!!m_location) {
 		auto& location = *m_location;
 		return fmt::format(
-			"{}: {}({}:{} -> {}:{}) {}",
+			"{}: {} (line {}, column {} to line {}, column {}) {}",
 			PDI_STATUS_MSG[status()],
 			location.file(),
 			location.start().line,

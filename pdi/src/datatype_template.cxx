@@ -53,7 +53,6 @@ using std::make_shared;
 using std::max;
 using std::string;
 using std::transform;
-using std::unique_ptr;
 using std::vector;
 
 namespace {
@@ -416,9 +415,9 @@ Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 {
 	{
 		string order_str = to_string(PC_get(node, ".order"), "");
-		if (order_str == "c" && order_str == "C") {
+		if (order_str == "c" || order_str == "C") {
 			ctx.logger().warn("`order: C' for array is the only supported order and its specification is deprecated");
-		} else if (order_str != "") {
+		} else if (!order_str.empty()) {
 			throw Spectree_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};
 		}
 	}
@@ -432,6 +431,9 @@ Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 	PC_tree_t config_elem = PC_get(node, ".subtype");
 	if (PC_status(config_elem)) {
 		throw Spectree_error{node, "Array must have `subtype'"};
+	}
+	if (is_scalar(config_elem) && to_string(config_elem, "").empty()) {
+		throw Spectree_error{config_elem, "Array `subtype` cannot be empty"};
 	}
 
 	Datatype_template_sptr res_type = ctx.datatype(config_elem);
@@ -498,9 +500,7 @@ Datatype_template_sptr to_tuple_datatype_template(Context& ctx, PC_tree_t node)
 		throw Spectree_error{node, "Tuple datatype must have `elements' subtree"};
 	}
 	bool tuple_buffersize_defined = static_cast<bool>(tuple_buffersize);
-	return unique_ptr<Tuple_template>{
-		new Tuple_template{get_tuple_elements(ctx, elements_node, tuple_buffersize_defined), std::move(tuple_buffersize), node}
-	};
+	return std::make_unique<Tuple_template>(get_tuple_elements(ctx, elements_node, tuple_buffersize_defined), std::move(tuple_buffersize), node);
 }
 
 vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_node)
@@ -535,17 +535,24 @@ Datatype_template_sptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 	Expression record_buffersize = to_string(buffersize_conf);
 
 	PC_tree_t member_list_node = PC_get(node, ".members");
+	if (PC_status(member_list_node)) {
+		throw Spectree_error{node, "Record datatype must have `members' subtree"};
+	}
 
-	return unique_ptr<Record_template>{new Record_template{get_members(ctx, member_list_node), std::move(record_buffersize), node}};
+	return std::make_unique<Record_template>(get_members(ctx, member_list_node), std::move(record_buffersize), node);
 }
 
 Datatype_template_sptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
 {
+	PC_tree_t members_node = PC_get(node, ".members");
+	if (PC_status(members_node)) {
+		throw Spectree_error{node, "Struct datatype must have `members' subtree"};
+	}
 	vector<Struct_template::Member> members;
-	each_in_omap(PC_get(node, ".members"), [&](PC_tree_t member_name, PC_tree_t member_value_node) {
+	each_in_omap(members_node, [&](PC_tree_t member_name, PC_tree_t member_value_node) {
 		members.emplace_back(ctx.datatype(member_value_node), to_string(member_name));
 	});
-	return unique_ptr<Struct_template>{new Struct_template{std::move(members), node}};
+	return std::make_unique<Struct_template>(std::move(members), node);
 }
 
 Datatype_template_sptr to_pointer_datatype_template(Context& ctx, PC_tree_t node)
@@ -554,7 +561,10 @@ Datatype_template_sptr to_pointer_datatype_template(Context& ctx, PC_tree_t node
 	if (PC_status(subtype_conf)) {
 		throw Spectree_error{node, "Pointer must have defined subtype"};
 	}
-	return unique_ptr<Pointer_template>{new Pointer_template{ctx.datatype(subtype_conf), node}};
+	if (is_scalar(subtype_conf) && to_string(subtype_conf, "").empty()) {
+		throw Spectree_error{subtype_conf, "Pointer `subtype` cannot be empty"};
+	}
+	return std::make_unique<Pointer_template>(ctx.datatype(subtype_conf), node);
 }
 
 } // namespace

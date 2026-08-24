@@ -101,33 +101,47 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 		m_ctx.logger().trace("No variable defined");
 	}
 
+	auto check_data_declared = [this](PC_tree_t node, const std::string& data_name) {
+		if (m_ctx.find(data_name) == m_ctx.end()) {
+			throw PDI::Spectree_error{
+				node,
+				"Cannot reference data `{}` in `decl_netcdf`: descriptor is not declared in `data` or `metadata`",
+				data_name
+			};
+		}
+	};
+
+	std::vector<std::pair<PC_tree_t, std::string>> descs_to_check;
+
 	PC_tree_t read_node = PC_get(config, ".read");
 	if (!PC_status(read_node)) {
 		if (PDI::is_scalar(read_node)) {
 			std::string read_desc = PDI::to_string(read_node);
+			descs_to_check.emplace_back(read_node, read_desc);
 			m_ctx.logger().trace("Creating new empty read info for: {}", read_desc);
 			m_read.emplace(read_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
 		} else if (PDI::is_list(read_node)) {
 			int len = PDI::len(read_node);
 			for (int i = 0; i < len; i++) {
-				std::string read_desc = PDI::to_string(PC_get(read_node, "[%d]", i));
+				PC_tree_t item_node = PC_get(read_node, "[%d]", i);
+				std::string read_desc = PDI::to_string(item_node);
+				descs_to_check.emplace_back(item_node, read_desc);
 				m_ctx.logger().trace("Creating new empty read info for: {}", read_desc);
 				m_read.emplace(read_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
 			}
-		} else {
-			PDI::each(read_node, [this](PC_tree_t desc_name, PC_tree_t read_value) {
+		} else if (PDI::is_map(read_node)) {
+			PDI::each(read_node, [this, &descs_to_check](PC_tree_t desc_name, PC_tree_t read_value) {
 				std::string read_desc = PDI::to_string(desc_name);
+				descs_to_check.emplace_back(desc_name, read_desc);
 				m_ctx.logger().trace("Creating new read info for: {}", read_desc);
-				// if we read a variable with "size_of" key
 				if (!PC_status(PC_get(read_value, ".size_of"))) {
 					this->m_sizeof.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
-				}
-				// if we read a regular variable
-				else
-				{
+				} else {
 					this->m_read.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
 				}
 			});
+		} else {
+			throw PDI::Spectree_error{read_node, "Invalid `read` node in `decl_netcdf`"};
 		}
 	}
 
@@ -135,25 +149,41 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 	if (!PC_status(write_node)) {
 		if (PDI::is_scalar(write_node)) {
 			std::string write_desc = PDI::to_string(write_node);
+			descs_to_check.emplace_back(write_node, write_desc);
 			m_ctx.logger().trace("Creating new empty write info for: {}", write_desc);
 			m_write.emplace(write_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
 		} else if (PDI::is_list(write_node)) {
 			int len = PDI::len(write_node);
 			for (int i = 0; i < len; i++) {
-				std::string write_desc = PDI::to_string(PC_get(write_node, "[%d]", i));
+				PC_tree_t item_node = PC_get(write_node, "[%d]", i);
+				std::string write_desc = PDI::to_string(item_node);
+				descs_to_check.emplace_back(item_node, write_desc);
 				m_ctx.logger().trace("Creating new empty write info for: {}", write_desc);
 				m_write.emplace(write_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
 			}
 		} else if (PDI::is_map(write_node)) {
-			PDI::each(write_node, [this](PC_tree_t desc_name, PC_tree_t write_value) {
+			PDI::each(write_node, [this, &descs_to_check](PC_tree_t desc_name, PC_tree_t write_value) {
 				std::string write_desc = PDI::to_string(desc_name);
+				descs_to_check.emplace_back(desc_name, write_desc);
 				m_ctx.logger().trace("Creating new write info for: {}", write_desc);
-				this->m_write.emplace(PDI::to_string(desc_name), Dnc_io{this->m_ctx, write_value});
+				this->m_write.emplace(write_desc, Dnc_io{this->m_ctx, write_value});
 			});
 		} else {
-			throw PDI::Spectree_error{write_node, "write node is not parsed correctly"};
+			throw PDI::Spectree_error{write_node, "Invalid `write` node in `decl_netcdf`"};
 		}
 	}
+
+	m_ctx.on_init([this, descs = std::move(descs_to_check)]() {
+		for (const auto& [node, data_name]: descs) {
+			if (m_ctx.find(data_name) == m_ctx.end()) {
+				throw PDI::Spectree_error{
+					node,
+					"Cannot reference data `{}` in `decl_netcdf`: descriptor is not declared in `data` or `metadata`",
+					data_name
+				};
+			}
+		}
+	});
 
 	for (auto&& event: events) {
 		m_ctx.on_event([this](const std::string&) { this->execute(); }, event);
