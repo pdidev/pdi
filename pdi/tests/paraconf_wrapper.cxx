@@ -45,3 +45,19 @@ subtree2:
 	PC_errhandler(PC_NULL_HANDLER);
 	EXPECT_EQ(to_string(Yaml_region::make(PC_get(tree, ".invalid"))), "");
 }
+
+TEST(ParaconfWrapper, TabIndentationError)
+{
+	PC_errhandler_t handler = PC_errhandler(PC_NULL_HANDLER);
+
+	PC_tree_t tree = PC_parse_string(R"==(
+data:
+	var_with_tab: int
+)==");
+
+	PC_errhandler(handler);
+
+	EXPECT_NE(PC_status(tree), PC_OK);
+	EXPECT_THAT(PC_errmsg(), testing::HasSubstr("line 3, column 1"));
+	EXPECT_THAT(PC_errmsg(), testing::HasSubstr("tabulation"));
+}

@@ -497,8 +497,8 @@ Datatype_template_sptr Global_context::datatype(PC_tree_t node)
 	}
 
 	if (type.empty()) {
-        throw Spectree_error{node, "Data type specification cannot be empty"};
-    }
+		throw Spectree_error{node, "Data type specification cannot be empty"};
+	}
 
 	// check if someone didn't mean to create an array with the old syntax
 	if (type != "array" && node.node) {

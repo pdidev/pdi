@@ -198,7 +198,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 	}
 
 	ctx.on_init([&ctx, descs = std::move(descs_to_check)]() {
-		for (const auto& item : descs) {
+		for (const auto& item: descs) {
 			PC_tree_t node = item.first;
 			const string& raw_name = item.second;
 

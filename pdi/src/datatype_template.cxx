@@ -500,11 +500,7 @@ Datatype_template_sptr to_tuple_datatype_template(Context& ctx, PC_tree_t node)
 		throw Spectree_error{node, "Tuple datatype must have `elements' subtree"};
 	}
 	bool tuple_buffersize_defined = static_cast<bool>(tuple_buffersize);
-	return std::make_unique<Tuple_template>(
-        get_tuple_elements(ctx, elements_node, tuple_buffersize_defined),
-        std::move(tuple_buffersize),
-        node
-    );
+	return std::make_unique<Tuple_template>(get_tuple_elements(ctx, elements_node, tuple_buffersize_defined), std::move(tuple_buffersize), node);
 }
 
 vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_node)
@@ -540,8 +536,8 @@ Datatype_template_sptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 
 	PC_tree_t member_list_node = PC_get(node, ".members");
 	if (PC_status(member_list_node)) {
-        throw Spectree_error{node, "Record datatype must have `members' subtree"};
-    }
+		throw Spectree_error{node, "Record datatype must have `members' subtree"};
+	}
 
 	return std::make_unique<Record_template>(get_members(ctx, member_list_node), std::move(record_buffersize), node);
 }
@@ -549,9 +545,9 @@ Datatype_template_sptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 Datatype_template_sptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
 {
 	PC_tree_t members_node = PC_get(node, ".members");
-    if (PC_status(members_node)) {
-        throw Spectree_error{node, "Struct datatype must have `members' subtree"};
-    }
+	if (PC_status(members_node)) {
+		throw Spectree_error{node, "Struct datatype must have `members' subtree"};
+	}
 	vector<Struct_template::Member> members;
 	each_in_omap(members_node, [&](PC_tree_t member_name, PC_tree_t member_value_node) {
 		members.emplace_back(ctx.datatype(member_value_node), to_string(member_name));

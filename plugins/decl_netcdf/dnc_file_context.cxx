@@ -174,7 +174,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 	}
 
 	m_ctx.on_init([this, descs = std::move(descs_to_check)]() {
-		for (const auto& [node, data_name] : descs) {
+		for (const auto& [node, data_name]: descs) {
 			if (m_ctx.find(data_name) == m_ctx.end()) {
 				throw PDI::Spectree_error{
 					node,
