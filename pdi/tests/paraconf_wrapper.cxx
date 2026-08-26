@@ -38,10 +38,10 @@ subtree2:
   - list
   - elem2
 )==");
-	EXPECT_THAT(to_string(Yaml_region::make(PC_get(tree, ".subtree1"))), testing::HasSubstr("(2:10 -> 2:10)"));
-	EXPECT_THAT(to_string(*Yaml_region::make(PC_get(tree, ".subtree1"))), testing::HasSubstr("(2:10 -> 2:10)"));
-	EXPECT_THAT(to_string(Yaml_region::make(PC_get(tree, ".subtree2"))), testing::HasSubstr("(4:3 -> 6:1)"));
-	EXPECT_THAT(to_string(*Yaml_region::make(PC_get(tree, ".subtree2"))), testing::HasSubstr("(4:3 -> 6:1)"));
+	EXPECT_THAT(to_string(Yaml_region::make(PC_get(tree, ".subtree1"))), testing::HasSubstr("(line 2, column 10 to line 2, column 10)"));
+	EXPECT_THAT(to_string(*Yaml_region::make(PC_get(tree, ".subtree1"))), testing::HasSubstr("(line 2, column 10 to line 2, column 10)"));
+	EXPECT_THAT(to_string(Yaml_region::make(PC_get(tree, ".subtree2"))), testing::HasSubstr("(line 4, column 3 to line 6, column 1)"));
+	EXPECT_THAT(to_string(*Yaml_region::make(PC_get(tree, ".subtree2"))), testing::HasSubstr("(line 4, column 3 to line 6, column 1)"));
 	PC_errhandler(PC_NULL_HANDLER);
 	EXPECT_EQ(to_string(Yaml_region::make(PC_get(tree, ".invalid"))), "");
 }
