@@ -12,6 +12,6 @@
 |\subpage timer_plugin "Timer plugin"                 |Measure the time spent by PDI and its plugins.                     |
 |\subpage trace_plugin "Trace plugin"                 |Generate a trace of what happens in %PDI data store.               |
 |\subpage user_code_plugin "user-code plugin"         |Call your function on event or when data becomes available.        |
-|\subpage veloc_plugin "VeloC plugin"                 |Checkpoint and recover data using VeloC.                            |
+|\subpage veloc_plugin "VeloC plugin"                 |Checkpoint and recover data using VeloC.                           |
 
 To learn how to create your own plugin see: \ref how_to_create_plugin "How to create a plugin"
