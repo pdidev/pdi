@@ -4,23 +4,23 @@ duration: 5
 datasize: [420, 60]
 # degree of parallelism
 parallelism: { height: 3, width: 1 }
-# status for checkpoint 
-cp_status : 1 
+# status for checkpoint
+cp_status : 1
 
 pdi:
   include:
   - pdi.yml
-  data: 
+  data:
     cp_status : int
     elapsed_offset : double
   plugins:
     veloc:
-      config_file: veloc_example.cfg # needed for VeloC internal config 
-      status : cp_status 
-      checkpoint_label : example # needed by VeloC to name checkpoint files 
-      iteration : iter # needed by VeloC to name checkpoint files 
+      config_file: veloc_example.cfg # needed for VeloC internal config
+      status : cp_status
+      checkpoint_label : example # needed by VeloC to name checkpoint files
+      iteration : iter # needed by VeloC to name checkpoint files
       managed_checkpointing:
         protect_data: [iter, main_field,elapsed_offset] # data to be checkpointed or recovered, iter must be included
-        synchronize_on_event: newiter # PDI_event to check status and consequently checkpoint/recover  
+        synchronize_on_event: newiter # PDI_event to check status and consequently checkpoint/recover
         when : '$iter % 1000 = 0'
 
