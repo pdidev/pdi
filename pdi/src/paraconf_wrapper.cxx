@@ -84,7 +84,7 @@ Paraconf_wrapper::~Paraconf_wrapper()
 std::string to_string(Yaml_region location)
 {
 	return fmt::format(
-		"{}({}:{} -> {}:{})",
+		"{} (line {}, column {} to line {}, column {})",
 		location.file(),
 		location.start().line,
 		location.start().column,
