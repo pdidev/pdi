@@ -1,6 +1,6 @@
 # The VeloC plugin {#veloc_plugin}
 
-The VeloC plugin enables  
+The VeloC plugin enables
 
 * writing and reading generic-data checkpoint files using [VeloC memory-based API](https://veloc.readthedocs.io/en/latest/api.html#example)
 * writing and reading applications' custom checkpoint files using [VeloC file-based API](https://veloc.readthedocs.io/en/latest/api.html#example#memory-based-api)
