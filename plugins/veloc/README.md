@@ -8,7 +8,7 @@ The VeloC plugin enables
 
 Please note: <br> 
 * for applications's customs checkpoints, VeloC does not automate the serialization or deserialization of data structure like it does for generic-data checkpoints; that remains manual and user‑defined. (See [VeloC documentation](https://veloc.readthedocs.io/en/latest/)) <br>
-* VeloC's own configuration file requires the definition of a temporary storage directory `scratch` and a persistent one `persistent`. After the program's execution, users will find the checkpoint files in : `persistent`with the naming convention: `<label>-<rank>-<version>.dat`
+* VeloC's own configuration file requires the definition of a temporary storage directory `scratch` and a persistent one `persistent`. After the program's execution, users will find the checkpoint files in : `persistent` with the naming convention: `<label>-<rank>-<version>.dat`
 
 
 
