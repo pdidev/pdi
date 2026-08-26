@@ -174,17 +174,17 @@ bool to_bool(PC_tree_t tree, bool dflt)
 
 bool is_list(PC_tree_t tree)
 {
-	return tree.node->type == YAML_SEQUENCE_NODE;
+	return !PC_status(tree) && tree.node && tree.node->type == YAML_SEQUENCE_NODE;
 }
 
 bool is_map(PC_tree_t tree)
 {
-	return tree.node->type == YAML_MAPPING_NODE;
+	return !PC_status(tree) && tree.node && tree.node->type == YAML_MAPPING_NODE;
 }
 
 bool is_scalar(PC_tree_t tree)
 {
-	return tree.node->type == YAML_SCALAR_NODE;
+	return !PC_status(tree) && tree.node && tree.node->type == YAML_SCALAR_NODE;
 }
 
 void each(PC_tree_t tree, std::function<void(PC_tree_t)> operation)
