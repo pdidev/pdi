@@ -39,7 +39,7 @@ add_library(pdi_veloc_plugin MODULE
     veloc.cxx
     veloc_cfg.cxx)
 
-# to link libraries needed but whose symbols are not directly present in the plugin 
+# to link libraries needed but whose symbols are not directly present in the plugin
 target_link_libraries(pdi_veloc_plugin
     PUBLIC
         PDI::PDI_plugins
