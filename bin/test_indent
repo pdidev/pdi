@@ -77,3 +77,9 @@ then
 fi
 
 git ls-files -z --full-name | grep -zZv '^vendor/' | grep -zZ '\.[hHcC]\(\|++\|xx\|pp\)\s*$' | xargs -0 ${RUN_CLANG_FORMAT} ${CLANG_FORMAT_ARGS}
+
+git ls-files -z | grep -zZv '^vendor/' | while IFS= read -r -d '' file; do
+  if [ -f "$file" ] && file --mime-type "$file" | grep -q 'text/'; then
+    sed -i -e 's/[ \t]*$//' -e '$a\' "$file"
+  fi
+done
