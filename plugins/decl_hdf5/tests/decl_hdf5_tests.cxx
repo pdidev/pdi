@@ -960,3 +960,23 @@ plugins:
 	H5Dclose(dataset_id);
 	H5Fclose(file_id);
 }
+
+/* Validation of invalid mpio key location in decl_hdf5 */
+TEST_F(DeclHdf5, InvalidMpioKeyLocation)
+{
+	EXPECT_CALL(
+		*this,
+		PdiError(testing::_, testing::AllOf(testing::HasSubstr("Unknown key in HDF5 file configuration"), testing::HasSubstr("mpio")))
+	);
+
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  array_data: {size: [5, 5], type: array, subtype: int}
+plugins:
+  decl_hdf5:
+    file: test_mpio.h5
+    mpio: INDEPENDENT
+    write: [array_data]
+)=="));
+}
