@@ -79,7 +79,9 @@ The user can define a *managed_checkpointing* tree or a *custom_checkpointing* t
 #### Managed Checkpointing
 *managed_checkpointing* requires the following mappings: 
 
-* *protected_data* : list of data structures to be checkpointed during a checkpoint event or to be recovered during a recover event (specify the same names as defined in the PDI data store). This list must include the simulation's iteration counter.
+* *protected_data* : list of data structures to be checkpointed during a checkpoint event or to be recovered during a recover event (specify the same names as defined in the PDI data store).
+ 
+\attention This list must include the simulation's iteration counter.
 
 * *checkpoint_on_event* : name of the PDI event where the user wants to checkpoint
 
