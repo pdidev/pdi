@@ -88,7 +88,7 @@ jobs:
         base:    ['ubuntu/jammy', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
         mpi:     ['openmpi', 'mpich']
         variant: ['mini', 'all']
-        # exclude config already done in second
+        # exclude config already done in second 
         exclude: [ { base: 'ubuntu/jammy', mpi: openmpi, variant: mini } ]
     runs-on: ubuntu-24.04
     steps:
