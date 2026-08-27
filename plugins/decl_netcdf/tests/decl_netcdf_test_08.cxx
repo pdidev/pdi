@@ -55,7 +55,7 @@ std::ostream& operator<< (std::ostream& out, Record_t const & r)
 		out << " " << value << ",";
 	}
 	out.seekp(-1, std::ios_base::end); // to replace "," by ")" at the end.
-	out << ")";
+	out << "))";
 
 	return out;
 }
