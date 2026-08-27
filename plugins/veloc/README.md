@@ -15,7 +15,8 @@ Please note: <br>
 The VeloC plugin does not currently support the full set of features of VeloC, but it offers a simple
 declarative interface to access the core features, as explained in the following paragraphs. 
 
-## External Dependencies   
+## External Dependencies
+
 In order to use the VeloC plugin, the user needs to install VeloC 1.8 or above as it is not vendored in PDI. This can be done following the instructions [here](https://veloc.readthedocs.io/en/latest/quick.html#download-and-install). <br>
 
 The user also needs an MPI implementation, such as 
