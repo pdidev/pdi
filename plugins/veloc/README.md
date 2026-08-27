@@ -54,7 +54,8 @@ iteration: ii
   The plugin by default defines the status equal to 1 but users can change the status by writing to PDI.
   ```cpp 
   PDI_expose("status", &checkpoint_status, PDI_OUT);
-  ``` 
+  ```cpp 
+  PDI_expose("checkpoint_status", &simulation_checkpoint_status, PDI_OUT);
   If users wish to inspect the status they can read it from PDI. 
   ```cpp 
   PDI_expose("status", &checkpoint_status, PDI_IN);
