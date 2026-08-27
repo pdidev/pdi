@@ -203,7 +203,7 @@ Dependencies of **the Decl'NetCDF plugin**:
 Dependencies of **the VeloC plugin**:
 * the PDI library,
 * the [VeloC](https://veloc.readthedocs.io/en/latest/userguide.html) library version 1.8 or above (not provided),
-* **a MPI implementation**, such as
+* **a MPI implementation** with shared memory support such as
   - [openmpi](https://www.open-mpi.org/) 4.1 or above,
   - [mpich](https://www.mpich.org/) 4.3.2 or above with --with-ch4-shmmods configure options to enable shared memory support. Please note the [debian mpich package](https://tracker.debian.org/pkg/mpich) for versions above 4.3.2 does not build mpich with shared memory support and is therefore not suitable for the use of the plugin.
 

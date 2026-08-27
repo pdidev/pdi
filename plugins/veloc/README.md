@@ -1,15 +1,14 @@
 # The VeloC plugin {#veloc_plugin}
 
-The VeloC plugin enables
+The VeloC plugin enables  
 
 * writing and reading generic-data checkpoint files using [VeloC memory-based API](https://veloc.readthedocs.io/en/latest/api.html#example)
-* writing and reading applications' custom checkpoint files using [VeloC file-based API](https://veloc.readthedocs.io/en/latest/api.html#example#memory-based-api)
+* writing and reading applications' custom checkpoint files using [VeloC file-based API](https://veloc.readthedocs.io/en/latest/api.html#memory-based-api)
 * handling the persistence, versioning, and transfer of checkpoint files using [VeloC](https://veloc.readthedocs.io/en/latest/) **in synchronous mode only**. 
 
 Please note: <br> 
 * for applications's customs checkpoints, VeloC does not automate the serialization or deserialization of data structure like it does for generic-data checkpoints; that remains manual and user‑defined. (See [VeloC documentation](https://veloc.readthedocs.io/en/latest/)) <br>
-* VeloC's own configuration file requires the definition of a temporary storage directory `scratch` and a persistent one `persistent`. After the program's execution, users will find the checkpoint files in : `persistent` with the naming convention: `<label>-<rank>-<version>.dat`
-
+* VeloC's own configuration file requires the definition of a temporary storage directory `scratch` and a persistent one `persistent`. After the program's execution, users will find the checkpoint files in : `persistent`with the naming convention: `<label>-<rank>-<iteration>.dat`
 
 
 The VeloC plugin does not currently support the full set of features of VeloC, but it offers a simple
@@ -19,7 +18,7 @@ declarative interface to access the core features, as explained in the following
 
 In order to use the VeloC plugin, the user needs to install VeloC 1.8 or above as it is not vendored in PDI. This can be done following the instructions [here](https://veloc.readthedocs.io/en/latest/quick.html#download-and-install). <br>
 
-The user also needs an MPI implementation, such as 
+The user also needs an MPI implementation with shared memory support, such as 
   - [openmpi](https://www.open-mpi.org/) 4.1 or above,
   - [mpich](https://www.mpich.org/) 4.3.2 or above with --with-ch4-shmmods configure options to enable shared memory support. Please note the [debian mpich package](https://tracker.debian.org/pkg/mpich) for versions above 4.3.2 does not build mpich with shared memory support and is therefore not suitable for the use of the plugin. 
 
@@ -29,7 +28,9 @@ The user also needs an MPI implementation, such as
 
 The VeloC plugin specification tree requires 3 mandatory mappings for successful initialization. 
 
-* *config_file* : path to [VeloC's own configuration file](https://veloc.readthedocs.io/en/latest/quick.html#configure). <br> Please note the plugin currently only works in synchronous mode. This means the parameter "mode" should be set to "sync" in VeloC's configuration file when using the plugin. 
+* *config_file* : path to [VeloC's own configuration file](https://veloc.readthedocs.io/en/latest/quick.html#configure). <br> 
+> [ATTENTION]
+> Please note the plugin currently only works in synchronous mode. This means the parameter "mode" should be set to "sync" in VeloC's configuration file when using the plugin. 
 
 ```yml
 config_file: ./veloc_config.cfg 
@@ -81,7 +82,8 @@ The user can define a *managed_checkpointing* tree or a *custom_checkpointing* t
 
 * *protected_data* : list of data structures to be checkpointed during a checkpoint event or to be recovered during a recover event (specify the same names as defined in the PDI data store).
  
-\attention This list must include the simulation's iteration counter.
+> [ATTENTION]
+> This list must include the simulation's iteration counter.
 
 * *checkpoint_on_event* : name of the PDI event where the user wants to checkpoint
 
@@ -93,11 +95,11 @@ The user can define a *managed_checkpointing* tree or a *custom_checkpointing* t
 
 *managed_checkpointing* accepts the following optional mapping
 
-  * *recover_from_iteration* : The iteration from which the user wants to restore. For example, if the user sets this key to 20, the plugin will restore the checkpoint written at iteration 20.
+  * *recover_from_iteration* : The iteration from which the user wants to restore. For example, if the user sets this key to 20, the plugin will restore the checkpoint written at iteration 20. If this key is undefined, the plugin will restore the checkpoint from the latest iteration for which a checkpoint was written. 
 
 ```yml
 managed_checkpointing:
-        protect_data: [iter, main_field,elapsed_offset] # data to be checkpointed/recovered, iter must be included
+        protected_data: [iter, main_field,elapsed_offset] # data to be checkpointed/recovered, iter must be included
         synchronize_on_event: newiter # name of PDI_event where to check the status and consequently checkpoint/recover  
         when : '$iter % 1000 = 0' 
         recover_from_iteration : 3000
@@ -106,7 +108,7 @@ managed_checkpointing:
 #### Custom Checkpointing
 *custom_checkpointing* requires the following mappings:
 
-* *veloc_file* : name of a char array variable in the PDI data store with a maximum size equal to 256. This variable is used by VeloC to map an input filename to the actual routed file path managed by VeloC.
+* *veloc_file* : name of a char array variable in the PDI data store **with a maximum size equal to 256**. This variable is used by VeloC to map an input filename to the actual routed file path managed by VeloC.
 
 
 * *custom_checkpoint* : sub-tree that requires the following mappings 
@@ -136,16 +138,16 @@ managed_checkpointing:
 custom_checkpointing:
   veloc_file: veloc_file
   custom_checkpoint:
-    original_file: file1.h5
-    start_on: start
-    route_file_on: route
-    end_on: end
+    filename: file1.h5
+    start_on_event: start
+    route_file_on_event: route
+    end_on_event: end
   custom_recover:
-    original_file: file1.h5
-    start_on: start
-    route_file_on: route
-    end_on: end
-    checkpoint_nr : 20
+    filename: file1.h5
+    start_on_event: start
+    route_file_on_event: route
+    end_on_event: end
+    recover_from_iteration : 20
 ```
     
 ## Use Case to Avoid 

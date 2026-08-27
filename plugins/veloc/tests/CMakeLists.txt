@@ -49,9 +49,10 @@ endif()
 
 # HDF5
 set(HDF5_USE_STATIC_LIBRARIES OFF)
-find_package(HDF5 REQUIRED COMPONENTS C)
-if("${HDF5_VERSION}" VERSION_LESS 1.10)
-    message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
+find_package(HDF5 COMPONENTS C)  
+if(HDF5_FOUND AND "${HDF5_VERSION}" VERSION_LESS 1.10)
+    message(WARNING "HDF5 ${HDF5_VERSION} found but 1.10+ is required; veloc_test_custom will be skipped.")
+    set(HDF5_FOUND FALSE)
 endif()
 
 set(VELOC_TEST_YAML_WORKDIR    "${CMAKE_CURRENT_BINARY_DIR}/workdir_yaml_tests")
@@ -126,6 +127,7 @@ add_test(NAME veloc_test_managed_3
 set_property(TEST veloc_test_managed_3 PROPERTY TIMEOUT 15)
 set_property(TEST veloc_test_managed_3 PROPERTY PROCESSORS ${VELOC_TEST_NPROC})
 
+if(HDF5_FOUND)
 # veloc_test_custom
 add_executable(veloc_test_custom veloc_test_custom.cxx)
 target_link_libraries(veloc_test_custom PDI::PDI_C hdf5::hdf5 MPI::MPI_C GTest::gmock GTest::gtest GTest::gtest_main)
@@ -137,3 +139,4 @@ gtest_discover_tests(veloc_test_custom
     PROPERTIES
         TIMEOUT 15
 )
+endif()

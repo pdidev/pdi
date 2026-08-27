@@ -89,7 +89,7 @@ jobs:
         mpi:     ['openmpi', 'mpich']
         variant: ['mini', 'all']
         # exclude config already done in second 
-        exclude: { base: 'ubuntu/jammy', mpi: openmpi, variant: mini }
+        exclude: [ { base: 'ubuntu/jammy', mpi: openmpi, variant: mini } ]
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout branch
