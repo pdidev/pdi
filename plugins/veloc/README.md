@@ -21,6 +21,7 @@ In order to use the VeloC plugin, the user needs to install VeloC 1.8 or above a
 The user also needs an MPI implementation, such as 
   - [openmpi](https://www.open-mpi.org/) 4.1 or above,
   - [mpich](https://www.mpich.org/) 4.3.2 or above with --with-ch4-shmmods configure options to enable shared memory support. Please note the [debian mpich package](https://tracker.debian.org/pkg/mpich) for versions above 4.3.2 does not build mpich with shared memory support and is therefore not suitable for the use of the plugin. 
+
 ## Configuration grammar
 
 ### Mandatory Mappings
