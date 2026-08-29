@@ -33,22 +33,33 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 		//  - communicator is considered to be  MPI_COMM_WORLD
 		//	- call catalyst_initialize on_init
 		ctx.callbacks().add_init_callback([this]() { this->process_pdi_init(); });
-		ctx.callbacks().add_event_callback([this](const std::string& event_name) { this->process_event(event_name); });
 	} else {
 		// case communicator is given:
 		//	- call catalyst_initialize on event given in initialize_on_event
-
 		auto initialize_event_spec = PC_get(m_spec_tree, ".initialize_on_event");
 		if (PC_status(initialize_event_spec)) {
 			throw PDI::Spectree_error{m_spec_tree, "Catalyst: A communicator is given without specified initialize_on_event"};
 		} else {
-			m_pdi_initialize_event_name = PDI::to_string(initialize_event_spec);
-			m_pdi_execute_event_name = read_pdi_execute_event_name();
-
-			ctx.callbacks().add_event_callback([this](const std::string& event_name) { this->process_event(event_name); });
-			ctx.callbacks().add_event_callback([this](const std::string& event_name) { this->process_pdi_init_with_event(event_name); });
+			m_pdi_initialize_event_name = PDI::to_string(initialize_event_spec); // get event name for initialize
+			ctx.callbacks().add_event_callback([this](const std::string& event_name) { this->process_pdi_init_with_event(event_name); }, m_pdi_initialize_event_name);
 		}
 	}
+
+	// get when condition
+	auto when_spec = PC_get(m_spec_tree, ".when");
+	if (!PC_status(when_spec)) {
+		m_when = PDI::to_string(when_spec);
+	}
+	// get event for catalyst_execute
+	m_pdi_execute_event_name = read_pdi_execute_event_name();
+	ctx.callbacks().add_event_callback(
+		[this](const std::string& event_name) {
+			if (m_when.to_long(context())) {
+				this->process_event(event_name);
+			}
+		}
+		, m_pdi_execute_event_name
+	);
 }
 
 catalyst_plugin::~catalyst_plugin() noexcept(false)
@@ -74,7 +85,6 @@ catalyst_plugin::~catalyst_plugin() noexcept(false)
 void catalyst_plugin::process_pdi_init()
 {
 	this->run_catalyst_initialize();
-	this->m_pdi_execute_event_name = this->read_pdi_execute_event_name();
 }
 
 void catalyst_plugin::process_pdi_init_with_event(const std::string& event_name)
@@ -82,6 +92,8 @@ void catalyst_plugin::process_pdi_init_with_event(const std::string& event_name)
 	if (event_name == this->m_pdi_initialize_event_name && !catalyst_is_initialized) {
 		context().logger().trace("call run_catalyst_initialize in event `{}'", event_name);
 		this->process_pdi_init();
+	} else if (event_name != this->m_pdi_initialize_event_name) {
+		throw PDI::System_error("Try to process_pdi_init_with_event with event name `{}'. The event defined in the config is `{}'.", event_name, m_pdi_initialize_event_name);
 	}
 }
 
@@ -93,11 +105,15 @@ void catalyst_plugin::process_event(const std::string& event_name)
 			run_catalyst_execute();
 		} else {
 #ifdef CATALYST_IS_PARALLEL
+			// "catalyst_execute" is a collective call between process defined in "m_communicator" or MPI_COMM_WORLD (if "m_communicator" is not defined).
+			// If a process is not in this set, we don't have an error.
 			if (m_communicator) {
 				MPI_Comm tmp_comm = *(static_cast<const MPI_Comm*>(PDI::Ref_r{m_communicator.to_ref(context())}.get()));
 				if (tmp_comm != MPI_COMM_NULL) {
+					// process inside m_communicator
 					throw PDI::System_error("Try to execute catalyst_execute before catalyst_initialize.");
 				} else {
+					// process outside m_communicator
 					context().logger().debug("catalyst_execute is not called for this process.");
 				}
 			} else {
@@ -107,6 +123,8 @@ void catalyst_plugin::process_event(const std::string& event_name)
 			throw PDI::System_error("Try to execute catalyst_execute before catalyst_initialize.");
 #endif
 		}
+	} else {
+		throw PDI::System_error("Try to process_event with event name `{}'. The event defined in the config is `{}'.", event_name, m_pdi_execute_event_name);
 	}
 }
 
