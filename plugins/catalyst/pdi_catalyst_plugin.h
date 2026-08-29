@@ -119,11 +119,14 @@ private:
 	/// @brief  variable to know if catalyst_initialize is called.
 	/// Remark: The call of catalyst_finalize doesn't return a okay status if catalyst_initialize is not called before.
 	///         Example: In case of config error in the yaml file needed by catalyst_initialize.
-	//          Moreover, the config error message cannot be see by the user.
+	///         Moreover, the config error message cannot be see by the user.
 	bool catalyst_is_initialized;
 
 	/// @brief specification tree for catalyst plugin
 	PC_tree_t m_spec_tree;
+
+	/////////////////////////////////////////////////////////
+	// variable read from the config
 
 	/// @brief name of event use to call catalyst_execute
 	std::string m_pdi_execute_event_name;
@@ -131,7 +134,14 @@ private:
 	/// @brief name of event use to call catalyst_initialize
 	std::string m_pdi_initialize_event_name;
 
+	/// @brief communicator use in catalyst
 	PDI::Expression m_communicator;
+
+	/// @brief when condition for catalyst_execute
+	PDI::Expression m_when = 1L;
+
+	// end variable read from the config
+	/////////////////////////////////////////////////////////
 };
 
 PDI_PLUGIN(catalyst)
