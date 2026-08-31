@@ -274,7 +274,7 @@ private:
 			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const Record_datatype>(tuple_type->elements()[i].type())) {
 				json_data.emplace_back(write_record_to_json(Ref_r{std::move(reference[i])}));
 			} else {
-				throw Type_error{"Unknown tuple subtype passed to json, currently supprting scalar and array subtypes."};
+				throw Type_error{"Unknown tuple subtype passed to json, currently supporting scalar and array subtypes."};
 			}
 		}
 		return std::move(json_data);
@@ -294,7 +294,7 @@ private:
 		return choose_type_and_dump_to_json(std::move(dereferenced_ref));
 	}
 
-	/** Call different json dump function accordint to the datatype
+	/** Call different json dump function according to the datatype
 	 *
 	 * \param json_data A json data to which we write various types of data
 	 * \param reference A reference to a datatype

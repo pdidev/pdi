@@ -170,7 +170,7 @@ void* Array_datatype::data_from_dense_copy(void* to, const void* from) const
 		//size = 0, because we know that to points to allocated memory
 		to = align(subtype_alignment, 0, to, space_to_align);
 
-		//cannot use std::align, becasue `from' is const
+		//cannot use std::align, because `from' is const
 		auto subtype_align = subtype()->alignment();
 		int padding = (subtype_align - (reinterpret_cast<const uintptr_t>(from) % subtype_align)) % subtype_align;
 		from = reinterpret_cast<const uint8_t*>(from) + padding;

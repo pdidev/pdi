@@ -36,7 +36,7 @@ plugins:
         with: { a_python: $a }
         exec: \"print(' * [P] I received    $a =',a_python); a_python[1]=7; print(' * [P] changed it to $a =',a_python);\"
 ```
-In this example pycall will run script on `testing` event. In the next step in `with` section alias name for data is generated. `a` will be `a_python` for execusion of the python code. Finally `exec` contains python code that will be executed on `testing` event.
+In this example pycall will run script on `testing` event. In the next step in `with` section alias name for data is generated. `a` will be `a_python` for execution of the python code. Finally `exec` contains python code that will be executed on `testing` event.
 
 There is also an option to set a list of executions:
 ```yaml

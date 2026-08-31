@@ -37,7 +37,7 @@
 
 namespace PDI {
 
-/** Describes the state of a PDI instanciation, mostly the set of data
+/** Describes the state of a PDI instantiation, mostly the set of data
  * descriptors
  */
 class Context;

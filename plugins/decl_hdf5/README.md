@@ -48,14 +48,14 @@ The possible values for the keys are as follow:
 * `collision_policy`: a string identifying a \ref COLLISION_POLICY
 * `deflate`: an integer value (from 0 to 9) defining the default deflate (GNU
   gzip) compression level to use for datasets created in this file.
-  This can be overriden on a per dataset basis.
+  This can be overridden on a per dataset basis.
   By default, the deflate filter is deactivated.
   See https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetDeflate
   for more information.
 * `fletcher`: an integer value interpreted as a boolean (0 is false, non 0
   values are true) that defines whether to activate the Fletcher32 checksum
   filter by default for datasets created in this file.
-  This can be overriden on a per dataset basis.
+  This can be overridden on a per dataset basis.
   By default, the Fletcher32 checksum filter is deactivated.
   See
   https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
@@ -109,7 +109,7 @@ with all default values.
 
 ### DATA_IO_DESC
 
-A `DATA_IO_DESC` is a key-velue map describing one  I/O (read or write)
+A `DATA_IO_DESC` is a key-value map describing one  I/O (read or write)
 to execute.
 All keys are optional and have default values.
 The possible values for the keys are as follow:
@@ -154,7 +154,7 @@ The possible values for the keys are as follow:
 * `chunking`: a \ref intexpr_or_seq_node that defines the size of the chunks
   used to the dataset in a chunked layout.
   The \ref intexpr_or_seq_node must have the same dimension as the dataset type.
-  This can be overriden by the `decl_hdf5.chunking` attribute in the dataset
+  This can be overridden by the `decl_hdf5.chunking` attribute in the dataset
   type.
   By default, no chunking is activated.
   See https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetChunk
@@ -162,7 +162,7 @@ The possible values for the keys are as follow:
 * `deflate`: an integer value (from 0 to 9) defining the deflate (GNU gzip)
   compression level to use or `-1` for no filter for datasets created by this
   I/O.
-  This can be overriden by the `decl_hdf5.deflate` attribute in the dataset
+  This can be overridden by the `decl_hdf5.deflate` attribute in the dataset
   type.
   By default, the deflate filter is deactivated.
   See https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetDeflate
@@ -170,7 +170,7 @@ The possible values for the keys are as follow:
 * `fletcher`: an integer value interpreted as a boolean (0 is false, non 0
   values are true) that defines whether to activate the Fletcher32 checksum
   filter by default for datasets created in this file.
-  This can be overriden by the `decl_hdf5.fletcher` attribute in the dataset
+  This can be overridden by the `decl_hdf5.fletcher` attribute in the dataset
   type.
   By default, the Fletcher32 checksum filter is deactivated.
   See
@@ -227,7 +227,7 @@ metadata: # small values for which PDI keeps a copy
   height:  int                    # per proc. height including ghost
   pwidth:  int                    # nb proc. in the x dim
   pheight: int                    # nb proc. in the y dim
-  iter:    int                    # curent iteration id
+  iter:    int                    # current iteration id
   coord:   { type: array, subtype: int, size: 2 } # coordinate of the process as [x, y]
 data:     # values that are not copied by PDI
   main_field:

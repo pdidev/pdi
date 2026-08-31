@@ -51,7 +51,7 @@ struct serialize_plugin: PDI::Plugin {
 	std::unordered_map<std::string, std::string> m_desc_to_serialize;
 
 	/** Binds serialized desc with the callback remove function.
-	 *  Cannot be a map - one data can be serialized mulitple times
+	 *  Cannot be a map - one data can be serialized multiple times
 	 *  Cannot be a multimap - need to release the last serialized data (stack)
 	 *
 	 *  Tuple: <serialized desc name, remove callback function, right of deserialized share>

@@ -140,7 +140,7 @@ class Trigger
 	Expression m_when;
 
 public:
-	/// parse tree to initialiaze this instance
+	/// parse tree to initialize this instance
 	Trigger(string funcname, PC_tree_t params, Expression when_exp)
 		: m_when(when_exp)
 	{
@@ -266,8 +266,8 @@ struct user_code_plugin: Plugin {
 				for (int i = 0; i < len(on_data, 0); i++) {
 					PC_tree_t data_item = PC_get(on_data, "[%d]", i);
 					PC_tree_t data_name = PC_get(data_item, "{0}");
-					PC_tree_t datas = PC_get(data_item, ".%s", to_string(data_name).c_str());
-					opt_each(datas, [&](PC_tree_t one_data) {
+					PC_tree_t data = PC_get(data_item, ".%s", to_string(data_name).c_str());
+					opt_each(data, [&](PC_tree_t one_data) {
 						Expression when_exp = 1L;
 						std::string when_string = "true";
 
@@ -298,8 +298,8 @@ struct user_code_plugin: Plugin {
 					});
 				}
 			} else if (PDI::is_map(on_data)) {
-				each(on_data, [&](PC_tree_t data_name, PC_tree_t datas) {
-					opt_each(datas, [&](PC_tree_t one_data) {
+				each(on_data, [&](PC_tree_t data_name, PC_tree_t data) {
+					opt_each(data, [&](PC_tree_t one_data) {
 						Expression when_exp = 1L;
 						std::string when_string = "true";
 
