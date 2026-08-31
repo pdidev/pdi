@@ -199,7 +199,7 @@ TEST_F(DataDescTest, multi_read_share_data)
  *                      PDI::Data_descriptor::share(Ref, bool, bool)
  *                      PDI::Data_descriptor::ref()
  *
- * Description:         Expect exception while tring to get write access
+ * Description:         Expect exception while trying to get write access
  *                      second time.
  */
 TEST_F(DataDescTest, multi_write_share_data)
@@ -225,7 +225,7 @@ TEST_F(DataDescTest, multi_write_share_data)
  *                      PDI::Data_descriptor::release()
  *                      PDI::Data_descriptor::reclaim()
  *
- * Description:         Expect exception while tring to get write access
+ * Description:         Expect exception while trying to get write access
  *                      after granted read access.
  */
 TEST_F(DataDescTest, read_write_share_data)

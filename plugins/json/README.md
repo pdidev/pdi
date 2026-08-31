@@ -177,7 +177,7 @@ Mesh configuration was of {{mesh_config.dimensions}} dimensions and {{mesh_confi
 {{/temperature_datal}}
 ```
 
-Finaly, let's print it ! We execute the json to mustache converter ...
+Finally, let's print it ! We execute the json to mustache converter ...
 
 ```bash
 vendor/mustach/mustach data.json format.mstch

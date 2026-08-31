@@ -656,7 +656,7 @@ plugins:
 	}
 }
 
-/* test the creation of groups define by differents regex
+/* test the creation of groups defined by different regex
  */
 TEST_F(DeclHdf5, CreateGroupsWithRegexes)
 {
