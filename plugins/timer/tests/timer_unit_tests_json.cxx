@@ -32,7 +32,7 @@
 class Timer: public ::PDI::PdiTest
 {};
 
-/* Metatadata use in filename expression & write on data
+/* Metadata use in filename expression & write on data
  */
 TEST_F(Timer, json)
 {

@@ -61,7 +61,7 @@ and this project adheres to
   [#657](https://github.com/pdidev/pdi/issues/657)
 * A new error code `PDI_ERR_INVALIDACTION` has been added when an action
   requested in the yaml specification tree makes no sense (but the specification
-  tree is syntaxically correct)
+  tree is syntactically correct)
 * A new error code `PDI_ERR_MULTIPLE` has been added when multiple errors of
   different kind happen
 * `PDI_STATUS_MSG` has been added to offer an english description of error
@@ -545,7 +545,7 @@ and this project adheres to
 * Indent if required by the user, not automatically whenever astyle is found.
 
 #### Fixed
-* Add {fmt} as a direct dependancy to fix
+* Add {fmt} as a direct dependency to fix
   [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413)
 * Fix an issue where libYaml is not found correctly when installed in a
   non-standard directory
@@ -659,7 +659,7 @@ and this project adheres to
   now depend on cmake 3.10 & gtest
   [#236](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/236)
 * Communicator transtyping in the MPI plugin now uses the specific `Comm_c2f`
-  keyworkd for C to Fortran transtyping and `Comm_f2c` for Fortran to C
+  keyword for C to Fortran transtyping and `Comm_f2c` for Fortran to C
   transtyping instead of `transtype` for both directions
   [#291](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/291)
 

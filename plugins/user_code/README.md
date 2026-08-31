@@ -326,7 +326,7 @@ plugins:
                 fun3: {out: $desc2}
 ```
 
-In this exmaple, `fun2` and `fun3` will be executed when `my_data` is shared to PDI. However, `fun1` will only be executed when `my_data` is shared and also `$cond>1`.
+In this example, `fun2` and `fun3` will be executed when `my_data` is shared to PDI. However, `fun1` will only be executed when `my_data` is shared and also `$cond>1`.
 
 ### on_event {#on_event_node}
 
@@ -352,7 +352,7 @@ plugins:
                 fun3: {out: $desc2}
 ```
 
-In this exmaple, `fun2` and `fun3` will be executed when `my_event` is issued. However, `fun1` will only be executed when `my_evnet` is issued and also `$cond>1`.
+In this example, `fun2` and `fun3` will be executed when `my_event` is issued. However, `fun1` will only be executed when `my_event` is issued and also `$cond>1`.
 
 ### function_list {#function_list_node}
 

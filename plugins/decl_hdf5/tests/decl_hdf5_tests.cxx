@@ -79,7 +79,7 @@ std::ostream& operator<< (std::ostream& out, Complex_record const & r)
 class DeclHdf5: public ::PDI::PdiTest
 {};
 
-/* Metatadata use in filename expression & write on data
+/* Metadata use in filename expression & write on data
  */
 TEST_F(DeclHdf5, FilenameFromMetaList)
 {
@@ -101,7 +101,7 @@ plugins:
 	EXPECT_TRUE(std::filesystem::exists("file1.h5"));
 }
 
-/* Metatadata use in filename expression & write on data (from mapping)
+/* Metadata use in filename expression & write on data (from mapping)
  */
 TEST_F(DeclHdf5, FilenameFromMetaMapping)
 {
@@ -123,7 +123,7 @@ plugins:
 	EXPECT_TRUE(std::filesystem::exists("file2.h5"));
 }
 
-/* Metatadata use in filename expression & write on event
+/* Metadata use in filename expression & write on event
  */
 TEST_F(DeclHdf5, FilenameFromMetaEvent)
 {

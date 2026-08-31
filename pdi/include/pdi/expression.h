@@ -91,7 +91,7 @@ public:
 
 	/** Builds an expression that represents a float
 	 *
-	 * \param[in] expr the flaot value
+	 * \param[in] expr the float value
 	 */
 	Expression(double expr);
 
