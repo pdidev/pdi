@@ -1,0 +1,10 @@
+[files]
+extend-exclude = [
+    "vendor/",
+]
+
+[default.extend-words]
+ND = "ND"
+iy = "iy"
+iz = "iz"
+cpy = "cpy"
