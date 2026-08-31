@@ -213,7 +213,7 @@ PDI_status_t PDI_EXPORT PDI_version(unsigned long* provided, unsigned long expec
  * Access directions
  */
 typedef enum PDI_inout_e {
-	/// No data transfert
+	/// No data transfer
 	PDI_NONE = 0,
 	/// data tranfer from PDI to the main code
 	PDI_IN = 1,

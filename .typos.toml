@@ -1,6 +1,8 @@
 [files]
 extend-exclude = [
     "vendor/",
+    "pdi/docs/_template/",
+    "pdi/tests/PDI_expression.cxx",
 ]
 
 [default.extend-words]

@@ -53,7 +53,7 @@ void Set_operation::execute()
 		if (PDI::Ref_w existing_ref_w{existing_ref}) {
 			if (existing_ref_w.type()->buffersize() != value_ref.type()->buffersize()) {
 				throw PDI::Value_error{
-					"Cannot set value to exisitng reference. Existing buffersize = {}, value buffersize = {}",
+					"Cannot set value to existing reference. Existing buffersize = {}, value buffersize = {}",
 					existing_ref_w.type()->buffersize(),
 					value_ref.type()->buffersize()
 				};
