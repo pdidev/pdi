@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <type_traits>
+#include <unordered_set>
 
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
@@ -484,6 +485,14 @@ Expression::Impl::Operation::Operator Expression::Impl::Operation::parse_operato
 
 	*val_str = c_op;
 	return op;
+}
+
+void Expression::Impl::Operation::get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const
+{
+	m_first_operand.get_dependencies(ctx, dependencies);
+	for (auto&& op: m_operands) {
+		op.second.get_dependencies(ctx, dependencies);
+	}
 }
 
 } // namespace PDI

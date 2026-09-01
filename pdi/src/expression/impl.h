@@ -28,6 +28,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -164,6 +165,15 @@ struct PDI_NO_EXPORT Expression::Impl {
 	 * \return string with ID name
 	 */
 	static std::string parse_id(char const ** val_str);
+
+	/** Add the direct dependencies of an expression in argument dependencies
+	 *
+	 * \param[in] ctx the context in which to evaluate the dependencies
+	 * \param dependencies list of name of metadata or data needed
+	 *  input: list of data name (can be non null)
+	 *  output: input and list of data name needed to evaluate the expression
+	 */
+	virtual void get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const;
 };
 
 } // namespace PDI

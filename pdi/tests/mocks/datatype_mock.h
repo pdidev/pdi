@@ -44,6 +44,7 @@ struct MockDatatype: public PDI::Datatype {
 	MOCK_CONST_METHOD0(alignment, size_t());
 	MOCK_CONST_METHOD0(densify, PDI::Datatype_sptr());
 	MOCK_CONST_METHOD1(evaluate, PDI::Datatype_sptr(PDI::Context&));
+	MOCK_CONST_METHOD1(get_dependencies, std::unordered_set<std::string>(PDI::Context&));
 	MOCK_CONST_METHOD0(simple, bool());
 	MOCK_CONST_METHOD2(data_to_dense_copy, void*(void* to, const void* from));
 	MOCK_CONST_METHOD2(data_from_dense_copy, void*(void* to, const void* from));

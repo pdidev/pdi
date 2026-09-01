@@ -32,6 +32,7 @@
 #include <stack>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "pdi/pdi_fwd.h"
 #include "pdi/context.h"
@@ -49,6 +50,7 @@ class PDI_EXPORT Global_context: public Context
 {
 private:
 	friend class Data_descriptor_impl;
+	friend class Delayed_data_callbacks;
 
 	/// The singleton Context instance
 	static std::unique_ptr<Global_context> s_context;
@@ -158,6 +160,12 @@ private:
 	void notify_missing_data(const std::string& name);
 
 public:
+	/// list of direct dependencies for a (meta)data defines in the specification tree
+	std::unordered_map<std::string, std::unordered_set<std::string>> m_data_dependencies;
+
+	/// list of dependencies for a (meta)data defines in the specification tree including indirect
+	std::unordered_map<std::string, std::unordered_set<std::string>> m_data_all_dependencies;
+
 	static void init(PC_tree_t conf);
 
 	static bool initialized();

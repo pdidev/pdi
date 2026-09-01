@@ -29,6 +29,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -200,6 +201,15 @@ public:
 	 * \return resulted reference exrpession and number of bytes read from reference_str
 	 */
 	static std::pair<Expression, long> parse_reference(const char* reference_str);
+
+	/** Add the direct dependencies of an expression in argument dependencies
+	 *
+	 * \param[in] ctx the context in which to evaluate the dependencies
+	 * \param dependencies list of name of metadata or data needed
+	 *  input: list of data name (can be non null)
+	 *  output: input and list of data name needed to evaluate the expression
+	 */
+	void get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const;
 };
 
 } // namespace PDI

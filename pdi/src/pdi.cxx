@@ -30,6 +30,7 @@
 #include <iomanip>
 #include <iostream>
 #include <list>
+#include <queue>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -39,6 +40,7 @@
 #include "pdi/context.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/datatype.h"
+#include "pdi/delayed_data_callbacks.h"
 #include "pdi/error.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
@@ -162,6 +164,142 @@ void warn_status(PDI_status_t status, const char* message, void*)
 		Global_context::context().logger().warn("{}", message);
 	}
 }
+
+/** A structure to reclaim the data properly in case of error
+ */
+struct Var_to_reclaim {
+	std::vector<string> m_varnames;
+	const string m_event_name;
+
+	Var_to_reclaim(const char* event_name)
+		: m_event_name{event_name}
+	{}
+
+	~Var_to_reclaim() noexcept(false)
+	{
+		try {
+			this->trigger_reclaim();
+		} catch (std::exception& e) {
+			if (std::uncaught_exceptions() == 0) {
+				throw;
+			} else {
+				Global_context::context().logger().error("{}", e.what());
+			}
+		} catch (...) {
+			if (std::uncaught_exceptions() == 0) {
+				throw;
+			} else {
+				Global_context::context().logger().error("Error when triggering reclaim in multi expose for event `{}'", m_event_name);
+			}
+		}
+	}
+
+	void trigger_reclaim()
+	{
+		std::vector<std::exception_ptr> reclaim_data_errors;
+		int counter = 0;
+		for (auto&& it = m_varnames.rbegin(); it != m_varnames.rend(); it++) {
+			try {
+				Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, m_varnames.size());
+				Global_context::context()[it->c_str()].reclaim();
+			} catch (...) {
+				reclaim_data_errors.emplace_back(std::current_exception());
+			}
+		}
+		rethrow_with_context(
+			reclaim_data_errors,
+			"`{}' error(s) when triggering reclaim(s) in multi expose for event `{}': ",
+			m_varnames.size(),
+			m_event_name
+		);
+
+		m_varnames.clear();
+	}
+
+	size_t size() const { return m_varnames.size(); }
+
+	void emplace_back(const string& name) { m_varnames.emplace_back(name); }
+};
+
+// TODO(??): "topological_sort" dans Global_Context
+// TODO(??): "topological_sort" one time when reading the specification tree to avoid in multiexpose
+
+/**
+ * \brief Order a list of data according to the dependencies between in each data
+ *
+ * \param ctx the Global_context in which the data are defined
+ * \param [in] dataname_to_order set of data name that we need to order
+ * \param [out] result the list of data that be ordering
+ *
+ * Remark: No duplicate name must be defined in "dataname_to_order"
+ */
+
+void topological_sort(const std::vector<std::string>& dataname_to_order, Global_context& ctx, std::vector<std::string>& result)
+{
+	if (!(result.size() == 0)) {
+		throw System_error{"In topological_sort, result must contains 0 element and contains `{}' elements.", result.size()};
+	}
+
+	// Number of incoming edge for each data in the graph
+	std::unordered_map<std::string, int> incoming_degree;
+
+	// set of data names that depend on each data
+	std::unordered_map<std::string, std::vector<std::string>> dependents;
+
+	// Only consider dataname present in dataname_to_order.
+	for (const auto& dataname: dataname_to_order) {
+		incoming_degree[dataname] = 0;
+	}
+
+	// Build the graph.
+	for (const auto& dataname: dataname_to_order) {
+		if (ctx.m_data_all_dependencies.contains(dataname)) {
+			for (std::string dependency: ctx.m_data_all_dependencies[dataname]) {
+				// Only consider dependencies that are also in dataname_to_order
+				if (incoming_degree.contains(dependency)) {
+					++incoming_degree[dataname];
+					dependents[dependency].push_back(dataname);
+				} else if (!ctx.desc(dependency).metadata()) {
+					throw System_error{"Incoming_degree in the graph of data doesn't contains `{}' for object {}.", dependency, dataname};
+				}
+			}
+		}
+	}
+
+	// Start with data having no dependencies
+	std::queue<std::string> ready;
+
+	for (const auto& [name, degree]: incoming_degree) {
+		if (degree == 0) {
+			ready.push(name);
+		}
+	}
+
+	while (!ready.empty()) {
+		std::string front_name = ready.front();
+		ready.pop();
+
+		// Add front_name to the output result
+		result.push_back(front_name);
+
+		// The data with name='front_name' is now available, so update its dependents
+		for (std::string dependent: dependents[front_name]) {
+			if (--incoming_degree[dependent] == 0) {
+				ready.push(dependent); // add data, with no dependencies, to the queue
+			}
+		}
+	}
+
+	// If not all data were sorted, there is a cycle
+	if (result.size() != dataname_to_order.size()) {
+		ctx.logger().trace("Ordering result");
+		for (auto& elem: result) {
+			ctx.logger().trace("result elem={}", elem);
+		}
+		throw System_error{"Cyclic dependency detected: result.size={}, dataname_to_order.size()={}", result.size(), dataname_to_order.size()};
+	}
+}
+
 
 } // namespace
 
@@ -346,37 +484,61 @@ PDI_status_t PDI_multi_expose(const char* event_name, const char* name, const vo
 try {
 	Paraconf_wrapper fw;
 	va_list ap;
-	list<string> transaction_data;
-	PDI_status_t status;
-	if ((status = PDI_share(name, data, access))) return status;
-	transaction_data.emplace_back(name);
+
+	std::vector<void*> data_pointer{const_cast<void*>(data)};
+	std::unordered_map<std::string, std::vector<int>>
+		name_indexes; // list of the index for a data name (need this variable in case of duplicate name)
+	std::vector<PDI_inout_t> data_access{access};
+
+	name_indexes[std::string(name)].push_back(0);
+
+	int index_data_arg = 1;
 
 	va_start(ap, access);
-	int i = 0;
 	while (const char* v_name = va_arg(ap, const char*)) {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
-		Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, transaction_data.size());
-		if ((status = PDI_share(v_name, v_data, v_access))) {
-			break;
-		}
-		transaction_data.emplace_back(v_name);
+
+		name_indexes[std::string(v_name)].push_back(index_data_arg);
+		data_pointer.push_back(v_data); // used to avoid to create a new value
+		data_access.emplace_back(v_access);
+		index_data_arg++; // update the index
 	}
 	va_end(ap);
 
-	if (!status) { //trigger event only when all data is available
-		Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);
-		status = PDI_event(event_name);
+	std::vector<std::string> names_without_duplicate;
+	std::vector<std::string> names_ordering;
+
+	for (auto& elem: name_indexes) {
+		names_without_duplicate.push_back(elem.first);
 	}
 
-	i = 0;
-	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
-		Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
-		PDI_status_t r_status = PDI_reclaim(it->c_str());
-		status = !status ? r_status : status; //if it is first error, save its status (try to reclaim other desc anyway)
+	topological_sort(names_without_duplicate, Global_context::context(), names_ordering);
+
+	for (auto& elem: names_ordering) {
+		Global_context::context().logger().trace("order name {}", elem);
 	}
-	//the status of the first error is returned
-	return status;
+
+	Var_to_reclaim list_names{event_name}; // list of variable that will be reclaimed at the end of this function
+	Delayed_data_callbacks delayed_callbacks(Global_context::context());
+
+	int i = -1;
+	for (auto& name22: names_ordering) {
+		for (auto& index: name_indexes[name22]) {
+			PDI_inout_t v_access = data_access[index];
+			Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", name22, ++i, list_names.size());
+			Global_context::context()[name22].share(data_pointer[index], v_access & PDI_OUT, v_access & PDI_IN, std::move(delayed_callbacks));
+			list_names.emplace_back(name22);
+		}
+	}
+
+	delayed_callbacks.trigger();
+
+	Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);
+	Global_context::context().event(event_name);
+
+	// remark: The reclaim of the data is done in the destructor of the Var_to_reclaim (see struct Var_to_reclaim)
+	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
 } catch (const exception& e) {
