@@ -81,6 +81,8 @@ public:
 	size_t copy_value(Context& ctx, void* buffer, Datatype_sptr type) const override;
 
 	static std::unique_ptr<Impl> parse(char const ** val_str);
+
+	void get_dependencies(Context& ctx, std::unordered_set<std::string> & dependencies) const override;
 };
 
 } // namespace PDI

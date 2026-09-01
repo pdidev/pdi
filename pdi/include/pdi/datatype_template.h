@@ -27,6 +27,7 @@
 #define PDI_DATATYPE_TEMPLATE_H_
 
 #include <memory>
+#include <unordered_set>
 #include <string>
 #include <unordered_map>
 
@@ -70,6 +71,17 @@ public:
 	 */
 	virtual Datatype_sptr evaluate(Context& ctx) const = 0;
 
+
+	/** Adding data name that depends on the datatype template in name_of_dependencies
+	 *
+	 * \param ctx the context in which to evaluate this template
+	 * \param name_of_dependencies
+	 *  input: list of data name (can be non null)
+	 *  output: input and list of data name that depends all attributes
+	 *
+	 */
+	virtual void get_dependencies(Context& ctx, std::unordered_set<std::string> &name_of_dependencies) const;
+
 	/** Returns attribute of given name as Expression
 	 * \param attribute_name attribute to get
 	 *
@@ -82,6 +94,16 @@ public:
 	 * \return all attributes as a unordered map
 	 */
 	const Attributes_map& attributes() const;
+
+	/** Adding data name of the dependencies for all attributes in name_of_dependencies
+	 *
+	 * \param ctx the context in which to evaluate this template
+	 * \param name_of_dependencies
+	 *  input: list of data name (can be non null)
+	 *  output: input and list of data name that depends all attributes
+	 *
+	 */
+	void get_attributes_dependencies(Context& ctx, std::unordered_set<std::string> &name_of_dependencies) const;
 
 	/**
 	 * Adds to the context the basic Array, Record, C and Fortran datatypes

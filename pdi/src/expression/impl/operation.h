@@ -27,7 +27,7 @@
 #define PDI_EXPRESSION_IMPL_OPERATION_H_
 
 #include <memory>
-
+#include <unordered_set>
 #include "pdi/context.h"
 #include "pdi/datatype.h"
 #include "../impl.h"
@@ -85,6 +85,8 @@ struct PDI_NO_EXPORT Expression::Impl::Operation: Expression::Impl {
 	static int op_level(const char* op);
 
 	static Operator parse_operator(char const ** val_str, int level);
+
+	void get_dependencies(Context& ctx, std::unordered_set<std::string> & dependencies) const override;
 };
 
 } // namespace PDI

@@ -27,6 +27,7 @@
 
 #include <iomanip>
 #include <memory>
+#include <unordered_set>
 #include <sstream>
 #include <string>
 
@@ -164,5 +165,12 @@ std::pair<Expression, long> Expression::parse_reference(const char* reference_st
 	unique_ptr<Expression::Impl> reference_impl = Expression::Impl::Reference_expression::parse(&reference_str_to_parse);
 	return {std::move(reference_impl), reference_str_to_parse - reference_str};
 }
+
+
+void Expression::get_dependencies(Context& ctx,  std::unordered_set<std::string> & dependencies) const
+{
+	m_impl->get_dependencies(ctx, dependencies);
+}
+
 
 } // namespace PDI
