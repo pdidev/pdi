@@ -27,9 +27,9 @@
 #define PDI_DATATYPE_TEMPLATE_H_
 
 #include <memory>
-#include <unordered_set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <paraconf.h>
 
@@ -80,7 +80,7 @@ public:
 	 *  output: input and list of data name that depends all attributes
 	 *
 	 */
-	virtual void get_dependencies(Context& ctx, std::unordered_set<std::string> &name_of_dependencies) const;
+	virtual void get_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const;
 
 	/** Returns attribute of given name as Expression
 	 * \param attribute_name attribute to get
@@ -103,7 +103,7 @@ public:
 	 *  output: input and list of data name that depends all attributes
 	 *
 	 */
-	void get_attributes_dependencies(Context& ctx, std::unordered_set<std::string> &name_of_dependencies) const;
+	void get_attributes_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const;
 
 	/**
 	 * Adds to the context the basic Array, Record, C and Fortran datatypes

@@ -28,8 +28,8 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <utility>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include <pdi/pdi_fwd.h>
@@ -173,7 +173,7 @@ struct PDI_NO_EXPORT Expression::Impl {
 	 *  input: list of data name (can be non null)
 	 *  output: input and list of data name needed to evaluate the expression
 	 */
-	virtual void get_dependencies(Context& ctx, std::unordered_set<std::string> & dependencies) const;
+	virtual void get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const;
 };
 
 } // namespace PDI

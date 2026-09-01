@@ -30,8 +30,8 @@
 #include <fstream>
 #include <functional>
 #include <map>
-#include <queue>
 #include <memory>
+#include <queue>
 #include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
@@ -264,12 +264,16 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata, std::map<std::str
  * \param node the tree from where the direct dependencies are define
  * \param m_data_dependencies the map of direct dependencies for each data
  */
-void compute_direct_dependencies_data(Context& ctx, PC_tree_t node, std::unordered_map<std::string, std::unordered_set<std::string>> &m_data_dependencies)
+void compute_direct_dependencies_data(
+	Context& ctx,
+	PC_tree_t node,
+	std::unordered_map<std::string, std::unordered_set<std::string>>& m_data_dependencies
+)
 {
 	int map_len = len(node);
 
 	for (int map_id = 0; map_id < map_len; ++map_id) {
-		ctx.logger().trace("create direct dependencies for :: id {}, name={}", map_id, to_string(PC_get(node, "{%d}", map_id)).c_str() );
+		ctx.logger().trace("create direct dependencies for :: id {}, name={}", map_id, to_string(PC_get(node, "{%d}", map_id)).c_str());
 		std::string dataname = to_string(PC_get(node, "{%d}", map_id));
 		Data_descriptor& dsc = ctx.desc(dataname.c_str());
 
@@ -291,26 +295,26 @@ void compute_direct_dependencies_data(Context& ctx, PC_tree_t node, std::unorder
  * \param m_data_dependencies the map of direct dependencies for each data
  */
 void depth_first_search(
-	const std::string &init_name,
-    std::string vertex_name,
-    std::unordered_set<std::string> &vertex_visited,
-	const std::unordered_map<std::string, std::unordered_set<std::string>> &m_data_dependencies)
+	const std::string& init_name,
+	std::string vertex_name,
+	std::unordered_set<std::string>& vertex_visited,
+	const std::unordered_map<std::string, std::unordered_set<std::string>>& m_data_dependencies
+)
 {
 	// chek to detect circular dependency
 	if (init_name == vertex_name) {
 		throw Invalid_action_error("The data `{}' and `{}' depend on each other(circular dependency).", init_name, vertex_name);
 		return; // cyclic dependencies
 	}
-    // Check if the data is vertex_visited before
-    if (vertex_visited.contains(vertex_name))
-        return;
+	// Check if the data is vertex_visited before
+	if (vertex_visited.contains(vertex_name)) return;
 
-    // Insert vertex_name
-    vertex_visited.insert(vertex_name);
+	// Insert vertex_name
+	vertex_visited.insert(vertex_name);
 
 	// Add dependencies of the data corresponding to vertex_name in vertex_visited
-	if (auto && list_of_dependencies = m_data_dependencies.find(vertex_name); list_of_dependencies !=  m_data_dependencies.end()) {
-		for (std::string dependency : list_of_dependencies->second) {
+	if (auto&& list_of_dependencies = m_data_dependencies.find(vertex_name); list_of_dependencies != m_data_dependencies.end()) {
+		for (std::string dependency: list_of_dependencies->second) {
 			depth_first_search(init_name, dependency, vertex_visited, m_data_dependencies);
 		}
 	} else {
@@ -318,7 +322,6 @@ void depth_first_search(
 		// warning??
 		return;
 	}
-
 }
 
 // TODO: init_name: (string) --> (data_descriptor) for performance
@@ -342,19 +345,19 @@ for( elem: datas) {
  * \param [in]  m_data_dependencies the map of direct dependencies for each data
  */
 void depth_first_search(
-	const std::string & init_name,
-    std::unordered_set<std::string> &vertex_visited,
-	const std::unordered_map<std::string, std::unordered_set<std::string>> &m_data_dependencies)
+	const std::string& init_name,
+	std::unordered_set<std::string>& vertex_visited,
+	const std::unordered_map<std::string, std::unordered_set<std::string>>& m_data_dependencies
+)
 {
 	// Check if the data is vertex_visited before
-    if (vertex_visited.contains(init_name))
-        return;
-    // Insert init_name for checking cyclic dependency
-    vertex_visited.insert(init_name);
+	if (vertex_visited.contains(init_name)) return;
+	// Insert init_name for checking cyclic dependency
+	vertex_visited.insert(init_name);
 
-    // Add dependencies of the data corresponding to init_name in vertex_visited
-	if (auto && list_of_dependencies = m_data_dependencies.find(init_name); list_of_dependencies !=  m_data_dependencies.end()) {
-		for (std::string dependency : list_of_dependencies->second) {
+	// Add dependencies of the data corresponding to init_name in vertex_visited
+	if (auto&& list_of_dependencies = m_data_dependencies.find(init_name); list_of_dependencies != m_data_dependencies.end()) {
+		for (std::string dependency: list_of_dependencies->second) {
 			depth_first_search(init_name, dependency, vertex_visited, m_data_dependencies);
 		}
 	} else {
@@ -362,7 +365,6 @@ void depth_first_search(
 		// warning??
 		return;
 	}
-
 }
 
 
@@ -559,8 +561,8 @@ Global_context::Global_context(PC_tree_t conf)
 	}
 
 	m_logger.trace("compute all dependencies");
-	for (auto & elem: m_data_dependencies) {
-		depth_first_search( elem.first, m_data_all_dependencies[elem.first],  m_data_dependencies);
+	for (auto& elem: m_data_dependencies) {
+		depth_first_search(elem.first, m_data_all_dependencies[elem.first], m_data_dependencies);
 		m_data_all_dependencies[elem.first].erase(elem.first); // itself is not a dependency
 	}
 

@@ -28,8 +28,8 @@
 
 #include <map>
 #include <memory>
-#include <unordered_set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -209,7 +209,7 @@ public:
 	 *  input: list of data name (can be non null)
 	 *  output: input and list of data name needed to evaluate the expression
 	 */
-	void get_dependencies(Context& ctx, std::unordered_set<std::string> & dependencies) const;
+	void get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const;
 };
 
 } // namespace PDI

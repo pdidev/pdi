@@ -26,10 +26,10 @@
 #include <exception>
 #include <iomanip>
 #include <memory>
-#include <unordered_set>
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -356,7 +356,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 	return result;
 }
 
-void Expression::Impl::Reference_expression::get_dependencies(Context& ctx, std::unordered_set<std::string> & dependencies) const
+void Expression::Impl::Reference_expression::get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const
 {
 	dependencies.insert(m_referenced);
 }

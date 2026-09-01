@@ -26,9 +26,9 @@
 
 #include <iomanip>
 #include <memory>
-#include <unordered_set>
 #include <sstream>
 #include <string>
+#include <unordered_set>
 
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
@@ -158,7 +158,6 @@ string Expression::Impl::parse_id(char const ** val_str)
 	return result;
 }
 
-void Expression::Impl::get_dependencies(Context& ctx, std::unordered_set<std::string> & dependencies) const
-{}
+void Expression::Impl::get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const {}
 
 } // namespace PDI

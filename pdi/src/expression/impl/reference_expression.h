@@ -82,7 +82,7 @@ public:
 
 	static std::unique_ptr<Impl> parse(char const ** val_str);
 
-	void get_dependencies(Context& ctx, std::unordered_set<std::string> & dependencies) const override;
+	void get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const override;
 };
 
 } // namespace PDI
