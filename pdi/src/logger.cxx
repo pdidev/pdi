@@ -78,11 +78,22 @@ shared_ptr<logger> select_log_sinks(const string& logger_name, PC_tree_t logging
 	vector<sink_ptr> sinks;
 	PC_tree_t output_tree = PC_get(logging_tree, ".output");
 
-	//configure file sink
-	if (!PC_status(PC_get(output_tree, ".file"))) {
-		string filename{to_string(PC_get(output_tree, ".file"))};
-		auto file_sink = make_shared<basic_file_sink_st>(filename);
-		sinks.emplace_back(file_sink);
+	// Configure file sink: supports `output: { file: "path" }` and the
+	// shorthand `output: "path"` (bare scalar used directly as the filename)
+	PC_tree_t file_tree = PC_get(output_tree, ".file");
+	if (PC_status(file_tree)) {
+		file_tree = output_tree;
+	}
+	if (!PC_status(file_tree)) {
+		try {
+			string filename{to_string(file_tree)};
+			if (!filename.empty()) {
+				auto file_sink = make_shared<spdlog::sinks::basic_file_sink_mt>(filename);
+				sinks.emplace_back(file_sink);
+			}
+		} catch (const std::exception& e) {
+			fprintf(stderr, "[PDI][NOINIT] *** Warning: could not open log file: %s\n", e.what());
+		}
 	}
 
 	//configure console sink
@@ -98,7 +109,9 @@ shared_ptr<logger> select_log_sinks(const string& logger_name, PC_tree_t logging
 #endif
 	}
 
-	return make_shared<logger>(logger_name, sinks.begin(), sinks.end());
+	auto created_logger = make_shared<logger>(logger_name, sinks.begin(), sinks.end());
+	created_logger->flush_on(spdlog::level::err);
+	return created_logger;
 }
 
 /**
@@ -182,6 +195,7 @@ Logger::Logger(Logger& parent_logger, const std::string& logger_name, PC_tree_t 
 	m_parent_logger = &parent_logger;
 	parent_logger.m_default_pattern_observers.emplace_back(*this);
 	default_pattern(parent_logger.pattern());
+	if (parent_logger.muted()) mute(true);
 }
 
 void Logger::setup(const string& logger_name, PC_tree_t config, level_enum level)
@@ -212,6 +226,7 @@ void Logger::setup(Logger& parent_logger, const string& logger_name, PC_tree_t c
 	setup(logger_name, config, parent_logger.level());
 	parent_logger.m_default_pattern_observers.emplace_back(*this);
 	default_pattern(parent_logger.pattern());
+	if (parent_logger.muted()) mute(true);
 }
 
 void Logger::pattern(const string& pattern_str)
@@ -291,6 +306,32 @@ void Logger::evaluate_global_pattern(Context& ctx) const
 	} else {
 		evaluate_pattern(ctx);
 	}
+}
+
+void Logger::redirect_output(const std::string& filepath) const
+{
+	// Clear existing sinks (stdout/stderr) and replace with a file sink
+	auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath, true);
+
+	// Access underlying spdlog logger and swap sinks
+	m_logger->sinks().clear();
+	m_logger->sinks().push_back(file_sink);
+}
+
+void Logger::mute(bool is_muted)
+{
+	m_muted = is_muted;
+	if (is_muted) {
+		m_logger->set_level(spdlog::level::off);
+	}
+	for (auto&& observer: m_default_pattern_observers) {
+		observer.get().mute(is_muted);
+	}
+}
+
+bool Logger::muted() const
+{
+	return m_muted;
 }
 
 std::shared_ptr<spdlog::logger> Logger::real_logger()
