@@ -56,6 +56,9 @@ class PDI_EXPORT Logger
 	/// true if default_pattern method shouldn't change the pattern
 	bool m_pattern_from_config = false;
 
+	/// true if this logger (and future children) should stay silent
+	bool m_muted = false;
+
 	/// builds new version of the pattern
 	void build_pattern();
 
@@ -167,6 +170,23 @@ public:
 	 *
 	 */
 	void evaluate_global_pattern(Context& ctx) const;
+
+	void redirect_output(const std::string& filepath) const;
+
+	/** Mutes (or unmutes) this logger and cascades to every plugin logger
+	 *  that currently has, or will later get, this logger as parent.
+	 *
+	 * \param[in] muted whether to mute this logger
+	 *
+	 * Intended for cases like an MPI plugin silencing all logging on non-master
+	 * ranks. Unlike `level(off)`, this is remembered (`m_muted`) so loggers
+	 * created *after* the call still inherit the muted state.
+	 */
+	void mute(bool muted);
+
+	/** Returns whether this logger is currently muted
+	 */
+	bool muted() const;
 
 	/** Writes trace level message
 	 * \param[in] fmt fmt formatted string
