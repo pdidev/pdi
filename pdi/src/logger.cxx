@@ -78,8 +78,8 @@ shared_ptr<logger> select_log_sinks(const string& logger_name, PC_tree_t logging
 	vector<sink_ptr> sinks;
 	PC_tree_t output_tree = PC_get(logging_tree, ".output");
 
-	// Configure file sink: supports `output: { file: "path" }` and the
-	// shorthand `output: "path"` (bare scalar used directly as the filename)
+	// configure file sink : supports `output: { file: "path" }` and the
+	// shorthand `output : "path"` (bare scalar used directly as the filename)
 	PC_tree_t file_tree = PC_get(output_tree, ".file");
 	if (PC_status(file_tree)) {
 		file_tree = output_tree;
