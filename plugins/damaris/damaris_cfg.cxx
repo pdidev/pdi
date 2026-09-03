@@ -104,6 +104,8 @@ bool creation_directory_cpp(const std::string& dir_name)
 /// @brief
 /// @param dir_name
 /// @return true if the directory is created or exists
+/// NOTE: currently unused (kept as a pre-C++17 <filesystem> fallback) - creation_directory_cpp()
+/// below is the one actually called from parse_storages_tree().
 bool creation_directory_c_only(PDI::Context& ctx, const std::string& dir_name)
 {
 	// Remark: This function doesn't work if dir_name="./dir1/dir2/*"
@@ -157,9 +159,16 @@ bool creation_directory_c_only(PDI::Context& ctx, const std::string& dir_name)
      *       It is possible to have nested groups, but in most of the cases, 
      *       we just have root groups containing directly the dataset elements
      */
+// NOTE: file-scope global, shared across every Damaris_cfg instance (not a class member) -
+// populated by insert_dataset_elts_to_group() and drained into m_groups in the constructor,
+// but never cleared, so building more than one Damaris_cfg in the same process would leak
+// groups from a previous instance into the next one.
 std::vector<damaris::model::DamarisGroupXML> root_groups_xml;
 
-// Array to store the nested groups names
+// Global scratch buffer (not a member, not thread-safe) reused for every dataset/layout
+// entry by retrive_nested_groups()/insert_dataset_elts_to_group(); safe only because the
+// whole config tree is parsed sequentially, single-threaded, in the constructor.
+// max_nested_groups is an arbitrary nesting-depth cap, not a Damaris/XSD constraint.
 const unsigned max_nested_groups = 5;
 std::string nested_groups_names[max_nested_groups];
 char ds_elt_full_name_delimiter = '/';
@@ -189,6 +198,7 @@ Damaris_cfg::Damaris_cfg(PDI::Context& ctx, PC_tree_t tree)
 			//default_when = PDI::to_string(value);
 			parse_architecture_tree(ctx, value);
 		} else if (key == "communicator") {
+			// NOTE: `communicator` is currently a no-op - m_communicator always stays MPI_COMM_WORLD.
 			// m_communicator = PDI::to_string(value);
 			// if (!m_communicator) {
 			// 	throw PDI::Spectree_error{key_tree, "no MPI communicator setted `{}'", key};
@@ -262,6 +272,8 @@ Damaris_cfg::Damaris_cfg(PDI::Context& ctx, PC_tree_t tree)
 	});
 
 	std::string end_it_event_name = damaris_event_names.at(Event_type::DAMARIS_END_ITERATION);
+	// If the user didn't bind end-of-iteration to its own event, default it to fire
+	// after the configured `after_write` events instead (unless already listed explicitly).
 	//Add only if it does not exist yet
 	if (std::find(m_after_write_events.begin(), m_after_write_events.end(), end_it_event_name) == m_after_write_events.end()
 	    && m_end_iteration_on_event.empty())
@@ -271,7 +283,7 @@ Damaris_cfg::Damaris_cfg(PDI::Context& ctx, PC_tree_t tree)
 
 	parse_log_tree(ctx, tree);
 
-	//Insert grouped dataset elements
+	//Insert grouped dataset elements (root_groups_xml is drained here but never cleared, see its declaration above)
 	for (int root_group_id = 0; root_group_id < root_groups_xml.size(); root_group_id++) {
 		damaris::model::DamarisGroupXML root_gp_xml = root_groups_xml[root_group_id];
 
@@ -288,6 +300,8 @@ Damaris_cfg::Damaris_cfg(PDI::Context& ctx, PC_tree_t tree)
 
 	m_xml_config_object = damarisXMLModifyModel.GetConfigString();
 
+	// Assumes a "log" directory already exists relative to CWD (nothing here creates it,
+	// and Damaris hasn't been initialized yet at this point) - failure is only logged, not fatal.
 	std::ofstream outputXMLFile("log/damaris_config.xml");
 
 	if (outputXMLFile.is_open()) {
@@ -395,6 +409,9 @@ void Damaris_cfg::parse_parameters_tree(PDI::Context& ctx, PC_tree_t parameters_
 			//m_parameter_expression.emplace(prmxml.param_name_, prmxml.param_value_);
 			m_parameter_depends_on.emplace(prmxml.param_name_, depends_on_metadata);
 			//set default value if depend on metadata
+			// Damaris needs a value at startup even though this depends on not-yet-known metadata
+			// (see get_updatable_parameters() for the real value once available); use a non-zero
+			// placeholder since these often size a layout dimension, where 0 would be invalid.
 			if (is_dependent && std::find(std::begin(numbers_types), std::end(numbers_types), prmxml.param_datatype_) != std::end(numbers_types)) {
 				if (std::find(std::begin(int_numbers_types), std::end(int_numbers_types), prmxml.param_datatype_) != std::end(int_numbers_types))
 					prmxml.param_value_ = "1"; //"0"
@@ -586,6 +603,11 @@ void Damaris_cfg::parse_layouts_tree(PDI::Context& ctx, PC_tree_t layouts_tree_l
 			m_layout_depends_on.emplace(layoutxml.layout_name_, depends_on_metadata);
 			//set default value if depend on metadata
 			//Construct Damaris parameters behind the scene
+			// Damaris needs a real <parameter> element for anything expression-based in the XML;
+			// since the dimension values aren't known yet (they depend on metadata), synthesize one
+			// hidden parameter per dimension/global-dimension as YAML text and feed it back through
+			// parse_parameters_tree(), exactly as if the user had declared it under `parameters:`.
+			// LIMITATION: metadata type is hardcoded to "int" below (see TODO) - wrong for float/double deps.
 			if (is_dependent) {
 				std::stringstream ss_dims(layoutxml.layout_dimensions_), ss_globals(layoutxml.layout_dims_global_);
 				std::string tmp;
@@ -615,6 +637,9 @@ void Damaris_cfg::parse_layouts_tree(PDI::Context& ctx, PC_tree_t layouts_tree_l
 
 					layoutxml.layout_dimensions_ += dim_name + ",";
 
+					// A configured `global` is always a comma-list of dims (length > 1); the unset
+					// default placeholder is the single char "#", hence the length check instead of
+					// a direct compare (see the equivalent check with its comment further below).
 					if (layoutxml.layout_dims_global_.length() > 1) {
 						std::string global_name = layoutxml.layout_name_ + "_global" + std::to_string(i);
 						prm_config_yaml += "- parameter:                                                    \n";
@@ -747,6 +772,8 @@ void Damaris_cfg::parse_write_tree(PDI::Context& ctx, PC_tree_t write_tree_list)
 	});
 }
 
+// Accepts either a plain list of names (metadata name == Damaris parameter name), or a
+// `metadata_name: prm_name` mapping; an empty/absent prm_name falls back to metadata_name.
 void Damaris_cfg::parse_parameter_to_update_tree(PDI::Context& ctx, PC_tree_t ptu_tree, Desc_type op_type)
 {
 	if (!PC_status(PC_get(ptu_tree, "[0]"))) { //Array [prm0,prm1,prm3,...] / it's a list of names only
@@ -853,7 +880,7 @@ bool Damaris_cfg::is_parameter_to_update(std::string data_name)
 	return is_parameter_to_update;
 }
 
-// Jacques: you can't call two times this function ==> do an error
+// see doxygen comment in damaris_cfg.h
 bool Damaris_cfg::is_needed_metadata(std::string data_name)
 {
 	bool is_needed_metadata = false;
@@ -873,16 +900,16 @@ bool Damaris_cfg::is_needed_metadata(std::string data_name)
 	return is_needed_metadata;
 }
 
-// Jacques: Comme on ne change pas les valeurs de  "m_parameter_depends_on" ici on peut se permettre d'utiliser auto. Mais on fait une copie.
+// see doxygen comment in damaris_cfg.h
 std::unordered_map<std::string, std::pair<std::string, std::string>> Damaris_cfg::get_updatable_parameters(PDI::Context& ctx)
 {
 	std::unordered_map<std::string, std::pair<std::string, std::string>> updatable_parameters;
-	for (auto prm_depends_on: m_parameter_depends_on) {
-		auto prm_name = prm_depends_on.first;
-		auto prm_depends_on_data = prm_depends_on.second;
+	for (const auto& prm_depends_on: m_parameter_depends_on) {
+		const auto& prm_name = prm_depends_on.first;
+		const auto& prm_depends_on_data = prm_depends_on.second;
 		bool to_be_updated = (prm_depends_on_data.size() > 0); //true;
-		for (auto depends_on_data: prm_depends_on_data) {
-			auto depends_on_data_name = depends_on_data.first;
+		for (const auto& depends_on_data: prm_depends_on_data) {
+			const auto& depends_on_data_name = depends_on_data.first;
 			auto depends_on_data_state = depends_on_data.second;
 
 			if (!depends_on_data_state) {
@@ -893,7 +920,6 @@ std::unordered_map<std::string, std::pair<std::string, std::string>> Damaris_cfg
 		if (to_be_updated) { //Update the parameter
 			PDI::Expression prm_value = m_parameter_expression.at(prm_name);
 			damaris::model::DamarisParameterXML prmxml = m_parameters.at(prm_name);
-			prmxml.param_value_ = prm_value.to_string(ctx); // Jacques: A quoi cela sert?
 			std::pair<std::string, std::string> update_info;
 			update_info.first = prm_value.to_string(ctx);
 			update_info.second = prmxml.param_datatype_;
@@ -913,27 +939,6 @@ void Damaris_cfg::reset_parameter_depends_on(std::string prm_name)
 		throw PDI::Value_error{"m_parameter_depends_on not found: `{}'", prm_name.c_str()};
 	} else {
 		std::unordered_map<std::string, bool>& prm_depends_on_data = m_parameter_depends_on.at(prm_name);
-		for (auto& depends_on_data: prm_depends_on_data) {
-			depends_on_data.second = false;
-		}
-	}
-}
-
-// Jacques: This function is never call
-void Damaris_cfg::reset_parameter_depends_on(std::vector<std::string> prm_list)
-{
-	for (auto prm_name: prm_list) {
-		reset_parameter_depends_on(prm_name);
-	}
-}
-
-// Jacques: This function is never call
-void Damaris_cfg::reset_all_parameters_depends_on()
-{
-	for (auto& prm_depends_on: m_parameter_depends_on) {
-		auto& prm_name = prm_depends_on.first;
-		auto& prm_depends_on_data = prm_depends_on.second;
-
 		for (auto& depends_on_data: prm_depends_on_data) {
 			depends_on_data.second = false;
 		}
@@ -982,6 +987,11 @@ void insert_dataset_elts_to_group(DS_TYPE ds_elt_xml, std::string nested_groups_
 	}
 
 	//Insertion in an existing nested group
+	// CAUTION: get_sub_groups() returns groups by value, so `sub_groups` below is a fresh
+	// copy each iteration and `nearest_parent_group` ends up dangling into it once the loop
+	// body ends. The inner `for` loop's `group_id` also shadows the outer one used in the
+	// `while` condition below, so the outer counter is never actually advanced by it.
+	// Nested groups more than 2 levels deep are not reliably resolved by this loop.
 	bool insertion_group_found = false;
 	int group_id = 1;
 	if (root_group_exists) {

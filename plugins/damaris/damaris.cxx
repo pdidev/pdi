@@ -50,13 +50,19 @@ namespace {
 
 using namespace damaris_pdi;
 
+/** The Damaris plugin
+ */
 class damaris_plugin: public PDI::Plugin
 {
+	/// the Damaris configuration parsed from the specification tree
 	Damaris_cfg m_config;
+	/// dispatches Damaris API calls (init, start, write, finalize, ...) triggered by data or events
 	Damaris_api_call_handler m_event_handler;
 
+	/// the Damaris client/server instance, created on first use
 	std::unique_ptr<Damaris_wrapper> m_damaris;
 
+	/// names of data exposed as part of an ongoing PDI_multi_expose transaction
 	std::list<std::string> multi_expose_transaction_dataname;
 
 	std::string int_numbers_types[3] = {"short", "int", "integer"};
@@ -104,6 +110,18 @@ public:
 		ctx.logger().info("Plugin loaded successfully");
 	}
 
+	/** Callback triggered by PDI when a piece of data this plugin declared
+	 *  interest in (see Damaris_cfg::descs()) is exposed.
+	 *
+	 * Dispatches the data based on its configured role: updates a Damaris
+	 * parameter that depends on this metadata, writes a dataset to Damaris,
+	 * gets/sets a Damaris parameter directly, resolves the special
+	 * `is_client` / `client_comm_get` datasets, or otherwise records the name
+	 * as part of a pending PDI_multi_expose transaction.
+	 *
+	 * \param name name of the exposed data
+	 * \param ref PDI reference to the exposed data
+	 */
 	void damaris_awaited_data(const std::string& name, PDI::Ref ref)
 	{
 		ensure_damaris_is_initialized("");
@@ -243,7 +261,9 @@ public:
 				// context().logger().error("The Damaris need write access on the data (`{}')", name);
 				throw PDI::System_error{"The Damaris need write access on the data `{}' ", name};
 			}
-		} else if (m_config.is_parameter_to_update(name)) {
+		}
+		//parameter to update !?
+		else if (m_config.is_parameter_to_update(name)) {
 			context().logger().debug("m_config.is_parameter_to_update('{}') = `{}'", name, m_config.is_parameter_to_update(name));
 			std::pair<std::string, Desc_type> prm_to_update_info = m_config.get_parameter_to_update_info(name);
 			std::string prm_name = prm_to_update_info.first;
@@ -304,6 +324,16 @@ public:
 		}
 	}
 
+	/** Callback triggered by PDI when a named event fires.
+	 *
+	 * If the event matches one configured by the simulation
+	 * (init/start/end_iteration/finalize_on_event), the corresponding Damaris
+	 * API call is triggered. Otherwise, if the event name directly names a
+	 * Damaris API call (see damaris_event_names), that call is triggered and
+	 * the pending multi-expose transaction data is cleared.
+	 *
+	 * \param event_name name of the PDI event that was triggered
+	 */
 	void damaris_event(const std::string& event_name)
 	{
 		ensure_damaris_is_initialized(event_name);
@@ -323,7 +353,9 @@ public:
 				std::string finalize_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_FINALIZE);
 				m_event_handler.damaris_api_call_event(context(), m_damaris, finalize_event_name, multi_expose_transaction_dataname);
 			}
-		} else if (m_event_handler.is_damaris_api_call_event(event_name)) {
+		}
+		// use of defined names in damaris plugin to call damaris api
+		else if (m_event_handler.is_damaris_api_call_event(event_name)) {
 			context().logger().debug("event `{}' has been triggered", event_name);
 
 			context().logger().debug("is_damaris_api_call_event ( `{}' ) = TRUE", event_name);
@@ -334,6 +366,16 @@ public:
 		}
 	}
 
+	/** Lazily initializes Damaris on first use, if not already done.
+	 *
+	 * Called at the start of damaris_awaited_data() and damaris_event() to
+	 * guarantee Damaris is initialized before use. If an `init_on_event` is
+	 * configured, initialization is deferred to that event; using the plugin
+	 * beforehand is logged as an error.
+	 *
+	 * \param event_name name of the event currently being processed, or an
+	 *        empty string when called from damaris_awaited_data()
+	 */
 	void ensure_damaris_is_initialized(const std::string& event_name)
 	{
 		if (!m_damaris) {
@@ -348,6 +390,7 @@ public:
 		}
 	}
 
+	/** Triggers the Damaris library initialization (DAMARIS_INITIALIZE). */
 	void damaris_init()
 	{
 		context().logger().debug("In damaris_init()");

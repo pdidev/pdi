@@ -82,6 +82,8 @@ void Damaris_api_call_handler::damaris_api_call_event(
 	if (event_name == damaris_event_names.at(Event_type::DAMARIS_INITIALIZE)) {
 		damaris_pdi_init(ctx, m_damaris, xml_config_object.c_str());
 
+		// If the user didn't configure a separate start-on-event, fire damaris_start()
+		// immediately after initialize - Damaris requires both calls either way.
 		if (m_start_on_event.empty()) {
 			ctx.logger().debug("Plugin sent damaris_start() to Damaris, in initialize");
 
@@ -114,6 +116,9 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		for (; it != expose_dataname.end(); it++) {
 			ctx.logger().debug("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
 
+			// Separate from Damaris_cfg::is_client_dataset_name()/IS_CLIENT_GET: if the multi-expose
+			// transaction that fired damaris_start happens to expose a variable literally named
+			// "is_client", write the flag straight into it here.
 			if (arg_pos == 1 && strcmp("is_client", it->c_str()) == 0) {
 				ctx.logger().debug("Calling damaris_pdi_start {} = '{}')", arg1_name, is_client);
 
@@ -138,6 +143,9 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				PDI_release(Damaris_cfg::client_comm_get_dataset_name().c_str());
 			}
 
+			// "conf_yaml" is not a PDI/Damaris builtin: it's a convention the simulation must itself
+			// expose (a uintptr_t cast of its own PC_tree_t config), so this server-only shutdown path
+			// can retrieve and destroy it before PDI_finalize()/exit(). See example_damaris_plugin.c.
 			// Get the pointer of PC_tree_t as a (void*)
 			uintptr_t* conf;
 			PDI_access("conf_yaml", (void**)&conf, PDI_IN);
@@ -176,7 +184,9 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		std::string arg1_name = "prm_name";
 		void* buffer;
 		std::string arg2_name = "prm_buffer";
-		unsigned int* size;
+		// NOTE: value, not a pointer - unlike var_name/buffer above, there is no separate
+		// storage for this to point to, so it must hold the va_arg value directly.
+		unsigned int size;
 		std::string arg3_name = "prm_size";
 
 		va_list extra_args;
@@ -185,7 +195,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		if (!data_name.empty()) {
 			var_name = (char*)data_name.c_str();
 			buffer = va_arg(extra_args, void*);
-			*size = va_arg(extra_args, int);
+			size = va_arg(extra_args, int);
 
 			ctx.logger().debug(
 				"Calling damaris_pdi_parameter_get arg_pos({}==='{}', {}==='{}', {}==='{}')",
@@ -194,9 +204,9 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				arg2_name,
 				*(int*)buffer,
 				arg3_name,
-				*(int*)size
+				size
 			);
-			int err = m_damaris->damaris_pdi_parameter_get((const char*)var_name, (void*)buffer, *(int*)size);
+			int err = m_damaris->damaris_pdi_parameter_get((const char*)var_name, (void*)buffer, size);
 		}
 
 	}
@@ -213,7 +223,9 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		std::string arg1_name = "prm_name";
 		void* buffer;
 		std::string arg2_name = "prm_buffer";
-		unsigned int* size;
+		// NOTE: value, not a pointer - unlike var_name/buffer above, there is no separate
+		// storage for this to point to, so it must hold the va_arg value directly.
+		unsigned int size;
 		std::string arg3_name = "prm_size";
 
 		va_list extra_args;
@@ -222,7 +234,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		if (!data_name.empty()) {
 			var_name = (char*)data_name.c_str();
 			buffer = va_arg(extra_args, void*);
-			*size = va_arg(extra_args, size_t);
+			size = va_arg(extra_args, size_t);
 
 			ctx.logger().debug(
 				"Calling damaris_pdi_parameter_set arg_pos({}==='{}', {}==='{}', {}==='{}')",
@@ -231,9 +243,9 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				arg2_name,
 				*(int*)buffer,
 				arg3_name,
-				*(int*)size
+				size
 			);
-			int err = m_damaris->damaris_pdi_parameter_set((const char*)var_name, (const void*)buffer, *(int*)size);
+			int err = m_damaris->damaris_pdi_parameter_set((const char*)var_name, (const void*)buffer, size);
 		}
 	}
 	// DAMARIS_CLIENT_COMM_GET
@@ -256,7 +268,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			ctx.logger().debug("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
 
 			if (arg_pos == 1) {
-				static MPI_Comm* comm;
+				MPI_Comm* comm;
 				PDI_access(it->c_str(), (void**)&comm, PDI_INOUT);
 				*comm = client_comm; //Update the value
 				arg1_name = it->c_str();
@@ -287,6 +299,11 @@ void Damaris_api_call_handler::damaris_api_call_event(
 			var_name = (char*)data_name.c_str();
 			position = va_arg(extra_args, int64_t*);
 		} else {
+			// Two ways this event can be triggered: (a) directly, with the args passed here as C
+			// varargs (see damaris.cxx's write path); or (b) by event name alone, as part of an
+			// ongoing PDI_multi_expose transaction - in that case there are no varargs and the
+			// needed arguments are instead the LAST `nb_awaited_args` names in expose_dataname,
+			// recovered via PDI_access(). Same pattern below for WRITE/SET_BLOCK_POSITION/WRITE_BLOCK.
 			//Retrive parameters! sent via Multi expose, the two last sent data
 			char* var_name;
 			std::string arg1_name;
@@ -389,13 +406,17 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		std::string arg2_name = "dom";
 		int64_t* position;
 		std::string arg3_name = "position";
+		// backing storage for `block` in the direct-vararg branch below, since block itself
+		// must stay a pointer to also support the multi-expose branch's PDI_access(&block)
+		int32_t block_value;
 
 		va_list extra_args;
 		va_start(extra_args, expose_dataname);
 		std::string data_name = va_arg(extra_args, const char*);
 		if (!data_name.empty()) {
 			var_name = (char*)data_name.c_str();
-			*block = va_arg(extra_args, int32_t);
+			block_value = va_arg(extra_args, int32_t);
+			block = &block_value;
 			position = va_arg(extra_args, int64_t*);
 		} else {
 			//Retrive parameters! sent via Multi expose, the three last sent data
@@ -453,6 +474,9 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		std::string arg2_name = "dom";
 		void* data;
 		std::string arg3_name = "data";
+		// backing storage for `block` in the direct-vararg branch below, since block itself
+		// must stay a pointer to also support the multi-expose branch's PDI_access(&block)
+		int32_t block_value;
 
 		va_list extra_args;
 		va_start(extra_args, expose_dataname);
@@ -460,7 +484,8 @@ void Damaris_api_call_handler::damaris_api_call_event(
 		std::string data_name = va_arg(extra_args, const char*);
 		if (!data_name.empty()) {
 			var_name = (char*)data_name.c_str();
-			*block = va_arg(extra_args, int32_t);
+			block_value = va_arg(extra_args, int32_t);
+			block = &block_value;
 			data = va_arg(extra_args, void*); //const void*
 		} else {
 			//Retrive parameters! sent via Multi expose, the three last sent data
@@ -546,8 +571,11 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				int stop_err = m_damaris->damaris_pdi_stop();
 			}
 
-			//TODO: only one rank should display the info
-			ctx.logger().info("Plugin sent damaris_finalize() to Damaris");
+			int rank;
+			MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+			if (rank == 0) {
+				ctx.logger().info("Plugin sent damaris_finalize() to Damaris");
+			}
 			int err = m_damaris->damaris_pdi_finalize();
 			if (err == DAMARIS_OK) {
 				ctx.logger().info("Damaris finalized successfully!");
@@ -570,6 +598,8 @@ void Damaris_api_call_handler::damaris_pdi_init(PDI::Context& ctx, std::unique_p
 {
 	if (!m_damaris) {
 		MPI_Comm comm = MPI_COMM_WORLD;
+		// NOTE: still a no-op (see Damaris_cfg::parse_architecture_tree's commented-out
+		// "communicator" handling) - comm is always MPI_COMM_WORLD for now.
 		if (m_communicator) {
 			//TODO: could be replaced by a communicator passed from the simulation!
 		}

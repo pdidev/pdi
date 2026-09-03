@@ -37,6 +37,8 @@
 
 namespace {
 
+// Currently unused (no call sites) - registers a read-only metadata descriptor from a
+// local value by sharing it and immediately reclaiming, so PDI keeps its own copy.
 void add_predefined(PDI::Context& ctx, const std::string& name, void* data, PDI::Datatype_sptr type)
 {
 	PDI::Data_descriptor& predef_desc = ctx.desc(name);
@@ -95,12 +97,12 @@ int Damaris_wrapper::damaris_pdi_write(std::string varname, const void* data)
 	return damaris_pdi_write_block(varname, 0, data);
 }
 
-bool Damaris_wrapper::damaris_pdi_write_block(const char* varname, int32_t block, const void* data)
+int Damaris_wrapper::damaris_pdi_write_block(const char* varname, int32_t block, const void* data)
 {
 	return damaris_write_block(varname, block, data);
 }
 
-bool Damaris_wrapper::damaris_pdi_write_block(std::string varname, int32_t block, const void* data)
+int Damaris_wrapper::damaris_pdi_write_block(std::string varname, int32_t block, const void* data)
 {
 	return damaris_write_block(varname.c_str(), block, data);
 }

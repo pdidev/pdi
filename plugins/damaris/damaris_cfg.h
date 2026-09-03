@@ -46,11 +46,14 @@
 
 namespace damaris_pdi {
 
+/// Resources (cores or nodes) dedicated to Damaris servers, as configured under `architecture/dedicated`
 typedef struct dedicated {
 	int core;
 	int node;
 } dedicated;
 
+/// Unused for now: the actual domain/dedicated-resource values only ever exist as local
+/// variables in Damaris_cfg::parse_architecture_tree(), written directly into the XML config.
 struct Architecture_type {
 	int domain;
 	dedicated arch_cores_or_nodes;
@@ -104,6 +107,7 @@ const std::unordered_map<Event_type, std::string> damaris_event_names
        {Event_type::DAMARIS_STOP, "damaris_stop"},
        {Event_type::DAMARIS_FINALIZE, "damaris_finalize"}};
 
+/// Everything needed to write one dataset to Damaris, as configured under `write`
 struct Dataset_Write_Info {
 	PDI::Expression when = "1"; //By default, always write as long as there are iteration going on
 	/*int64_t* */ PDI::Expression position[3] = {"0", "0", "0"}; //Max Dim is 3
@@ -111,6 +115,7 @@ struct Dataset_Write_Info {
 	std::string dataset_name;
 };
 
+/// The Damaris XML elements generated for one dataset (variable, layout, mesh and store)
 struct DamarisXMLGenerators {
 	damaris::model::DamarisParameterXML params_; // Layouts are typically descrived using parameters. Parameters can be shared between layouts.
 	damaris::model::DamarisVarXML variable_; // A variable
@@ -119,9 +124,14 @@ struct DamarisXMLGenerators {
 	damaris::model::DamarisStoreXML store_; // Contains the extra elements that need to be part of a Damaris <store> (for HDF5 file w/r)
 };
 
+/** Parses the damaris plugin specification tree (YAML) and builds the
+ *  corresponding Damaris XML configuration.
+ */
 class Damaris_cfg
 {
 	std::string m_xml_config_object;
+	/// Wraps XML_CONFIG_TEMPLATE; each parse_*_tree() method substitutes its `_XXX_REGEX_`
+	/// placeholders as elements are parsed, incrementally building m_xml_config_object.
 	damaris::model::ModifyModel damarisXMLModifyModel;
 
 	std::string m_init_on_event = "";
@@ -130,12 +140,10 @@ class Damaris_cfg
 	std::string m_end_iteration_on_event = "";
 	std::string m_finalize_on_event = "";
 
-
-	int m_arch_domains;
-	int m_dc_cores_pernode;
-	int m_dc_nodes;
-
-
+	/// NOTE: the `communicator` YAML key is currently a no-op - this always stays at its
+	/// constructor default (MPI_COMM_WORLD; see parse_architecture_tree()'s commented-out
+	/// "communicator" key handling), and Damaris_api_call_handler checks it but never
+	/// actually uses it to pick a communicator (its handling there is still a TODO).
 	PDI::Expression m_communicator;
 
 	std::unordered_map<std::string, damaris::model::DamarisVarXML> m_datasets;
@@ -156,8 +164,13 @@ class Damaris_cfg
 	//      we need to be awards in order to update parameter value for Damaris
 	//   This variable is intended for that
 	std::unordered_map<std::string, std::unordered_map<std::string, bool>> m_parameter_depends_on;
+	/// raw declared `value:` expression per parameter, evaluated lazily once its metadata
+	/// dependencies (m_parameter_depends_on) are satisfied - see get_updatable_parameters()
 	std::unordered_map<std::string, PDI::Expression> m_parameter_expression;
+	/// NOTE: populated in parse_layouts_tree() but currently never consumed - no layout
+	/// equivalent of is_needed_metadata()/get_updatable_parameters() exists yet
 	std::unordered_map<std::string, std::unordered_map<std::string, bool>> m_layout_depends_on;
+	/// NOTE: currently unused - never written or read
 	std::unordered_map<std::string, PDI::Expression> m_layout_expression;
 
 	static std::string m_is_client_dataset_name;
@@ -214,6 +227,11 @@ protected:
 
 
 public:
+	/** Parses the damaris plugin specification tree.
+	 *
+	 * \param ctx the PDI context, used for logging and to evaluate expressions
+	 * \param tree the `damaris` specification tree
+	 */
 	Damaris_cfg(PDI::Context& ctx, PC_tree_t tree);
 
 	const std::string& xml_config_object(void);
@@ -232,7 +250,9 @@ public:
 	const std::unordered_map<std::string, Dataset_Write_Info>& datasets_to_write() const;
 	const std::unordered_map<std::string, std::pair<std::string, Desc_type>>& parameter_to_update() const;
 
+	/// Returns the write configuration (when, position, block, dataset name) for the dataset named `data_name`
 	Dataset_Write_Info get_dataset_write_info(std::string data_name) const;
+	/// Returns the target Damaris parameter name and whether `data_name` sets or gets it
 	std::pair<std::string, Desc_type> get_parameter_to_update_info(std::string data_name) const;
 
 	std::list<std::string> get_after_write_events() const { return m_after_write_events; }
@@ -254,16 +274,33 @@ public:
 	// const std::unordered_map<std::string, std::set<std::tuple<PDI::Expression, PDI::Expression, std::string>>>& send_file() const;
 
 
+	/// True if `data_name` is configured under `write` as a dataset to write to Damaris
 	bool is_dataset_to_write(std::string data_name);
+	/// True if `data_name` is configured to get or set a Damaris parameter
 	bool is_parameter_to_update(std::string data_name);
+	/** True if `data_name` is metadata a Damaris parameter depends on.
+	 *
+	 * As a side effect, marks that dependency as satisfied so a subsequent
+	 * call to get_updatable_parameters() can pick up the parameter once all
+	 * of its dependencies are satisfied.
+	 *
+	 * Called exactly once, from damaris_plugin::damaris_awaited_data() in
+	 * damaris.cxx, for each piece of data the simulation exposes that the
+	 * plugin is watching.
+	 *
+	 * \param data_name name of the exposed data to check
+	 */
 	bool is_needed_metadata(std::string data_name);
 
+	/** Returns the value/type of every Damaris parameter whose metadata
+	 *  dependencies (see is_needed_metadata()) are all satisfied.
+	 *
+	 * \param ctx the PDI context, used to evaluate each parameter's expression
+	 */
 	std::unordered_map<std::string, std::pair<std::string, std::string>> get_updatable_parameters(PDI::Context& ctx);
 
+	/// Marks every metadata dependency of parameter `prm_name` as unsatisfied again
 	void reset_parameter_depends_on(std::string prm_name);
-	void reset_parameter_depends_on(std::vector<std::string> prm_list);
-
-	void reset_all_parameters_depends_on();
 }; // class Damaris_cfg
 
 } // namespace damaris_pdi

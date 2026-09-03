@@ -136,7 +136,7 @@ public:
      *
      * \return DAMARIS_OK on success, other error codes on failures.
      */
-	bool damaris_pdi_write_block(const char* varname, int32_t block, const void* data);
+	int damaris_pdi_write_block(const char* varname, int32_t block, const void* data);
 	/**
      * Writes a block of a variable. The variable name should be the full name
      * of a variable defined in the configuration file. The block id should be
@@ -149,7 +149,7 @@ public:
      *
      * \return DAMARIS_OK on success, other error codes on failures.
      */
-	bool damaris_pdi_write_block(std::string varname, int32_t block, const void* data);
+	int damaris_pdi_write_block(std::string varname, int32_t block, const void* data);
 
 	/**
      * Checks what a variables layout type is and returns an enumerated constant
