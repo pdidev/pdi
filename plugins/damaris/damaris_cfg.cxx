@@ -345,27 +345,6 @@ void Damaris_cfg::parse_architecture_tree(PDI::Context& ctx, PC_tree_t arch_tree
 	}
 	find_replace_map.insert({{"_DC_REGEX_", std::to_string(m_dc_cores_pernode)}, {"_DN_REGEX_", std::to_string(m_dc_nodes)}});
 
-	//placement not yet used
-	PC_tree_t arch_placement_tree = PC_get(arch_tree, ".placement");
-	if (!PC_status(arch_placement_tree)) {
-		int nb_subkey_dc = PDI::len(arch_placement_tree);
-
-		for (int subkey_pl_id = 0; subkey_pl_id < nb_subkey_dc; subkey_pl_id++) {
-			std::string key_str = PDI::to_string(PC_get(arch_placement_tree, "{%d}", subkey_pl_id));
-
-			if (key_str == "start") {
-				m_placement_start = PDI::to_long(PC_get(arch_placement_tree, ".start"));
-			} else if (key_str == "stride") {
-				m_placement_stride = PDI::to_long(PC_get(arch_placement_tree, ".stride"));
-			} else if (key_str == "blocksize") {
-				m_placement_blocksize = PDI::to_long(PC_get(arch_placement_tree, ".blocksize"));
-			} else if (key_str == "mask") {
-				m_placement_mask_str = PDI::to_string(PC_get(arch_placement_tree, ".mask"));
-			}
-		}
-		//TODO: find_replace_map.insert(   );
-	}
-
 	//Update the xml config
 	damarisXMLModifyModel.RepalceWithRegEx(find_replace_map);
 }

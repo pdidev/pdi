@@ -46,13 +46,6 @@
 
 namespace damaris_pdi {
 
-typedef struct placement {
-	int start;
-	int stride;
-	int blocksize;
-	std::vector<int> mask{}; //std::vector<char> mask {} ???
-} placement;
-
 typedef struct dedicated {
 	int core;
 	int node;
@@ -60,7 +53,6 @@ typedef struct dedicated {
 
 struct Architecture_type {
 	int domain;
-	placement arch_placement;
 	dedicated arch_cores_or_nodes;
 };
 
@@ -143,11 +135,6 @@ class Damaris_cfg
 	int m_dc_cores_pernode;
 	int m_dc_nodes;
 
-
-	int m_placement_start;
-	int m_placement_stride;
-	int m_placement_blocksize;
-	std::string m_placement_mask_str;
 
 	PDI::Expression m_communicator;
 

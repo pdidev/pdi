@@ -58,7 +58,6 @@ class damaris_plugin: public PDI::Plugin
 	std::unique_ptr<Damaris_wrapper> m_damaris;
 
 	std::list<std::string> multi_expose_transaction_dataname;
-	//std::list<PDI::Ref> multi_expose_transaction_dataref;
 
 	std::string int_numbers_types[3] = {"short", "int", "integer"};
 	std::string real_numbers_types[3] = {"float", "real", "double"};
@@ -302,7 +301,6 @@ public:
 			}
 		} else { //Handle other situations...
 			multi_expose_transaction_dataname.emplace_back(name);
-			//multi_expose_transaction_dataref.emplace_back(ref);
 		}
 	}
 
@@ -332,7 +330,6 @@ public:
 			m_event_handler.damaris_api_call_event(context(), m_damaris, event_name, multi_expose_transaction_dataname);
 
 			multi_expose_transaction_dataname.clear();
-			//multi_expose_transaction_dataref.clear();
 		} else { //Non Damaris call event
 		}
 	}
