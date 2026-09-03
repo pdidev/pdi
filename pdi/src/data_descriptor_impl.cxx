@@ -69,8 +69,8 @@ struct Data_descriptor_impl::Ref_holder::Impl: Data_descriptor_impl::Ref_holder 
 	Ref ref() const override { return m_t; }
 };
 
-Data_descriptor_impl::Data_descriptor_impl(Global_context& ctx, const char* name)
-	: m_context{ctx}
+Data_descriptor_impl::Data_descriptor_impl(Data_store& store, const char* name)
+	: m_store{store}
 	, m_type{UNDEF_TYPE}
 	, m_name{name}
 	, m_metadata{false}
@@ -85,7 +85,7 @@ Data_descriptor_impl::~Data_descriptor_impl()
 
 	// on error, we might be destroyed while not empty.
 	if (!m_refs.empty()) {
-		m_context.logger().warn("Remaining {} reference(s) to `{}' in PDI after program end", m_refs.size() - (metadata() ? 1 : 0), m_name);
+		m_store.logger().warn("Remaining {} reference(s) to `{}' in PDI after program end", m_refs.size() - (metadata() ? 1 : 0), m_name);
 		// leak the remaining data
 		while (!m_refs.empty()) {
 			m_refs.top().release();
@@ -135,7 +135,7 @@ Ref Data_descriptor_impl::ref()
 {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	if (m_refs.empty()) {
-		m_context.notify_missing_data(m_name);
+		m_store.notify_missing_data(m_name);
 
 		//at least one plugin should share a Ref
 		if (m_refs.empty()) {
@@ -155,9 +155,9 @@ bool Data_descriptor_impl::empty()
 void Data_descriptor_impl::share(void* data, bool read, bool write)
 try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
-	Ref r{data, &free, m_type->evaluate(m_context), read, write};
+	Ref r{data, &free, m_type->evaluate(m_store), read, write};
 	try {
-		m_context.logger().trace("Sharing `{}' Ref with rights: R = {}, W = {}", m_name, read, write);
+		m_store.logger().trace("Sharing `{}' Ref with rights: R = {}, W = {}", m_name, read, write);
 		share(r, false, false);
 	} catch (...) {
 		// on error, do not free the data as would be done automatically otherwise
@@ -203,7 +203,7 @@ try {
 	}
 
 	try {
-		m_context.notify_data(m_name, ref());
+		m_store.notify_data(m_name, ref());
 	} catch (...) {
 		m_refs.pop();
 		throw;
@@ -221,7 +221,7 @@ try {
 	// move reference out of the store
 	if (m_refs.empty() || (m_refs.size() == 1 && metadata())) throw State_error{"Cannot release a non shared value: `{}'", m_name};
 
-	m_context.notify_data_remove(m_name, ref());
+	m_store.notify_data_remove(m_name, ref());
 
 	Ref oldref = ref();
 	m_refs.pop();
@@ -241,7 +241,7 @@ try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	if (m_refs.empty() || (m_refs.size() == 1 && metadata())) throw State_error{"Cannot reclaim a non shared value: `{}'", m_name};
 
-	m_context.notify_data_remove(m_name, ref());
+	m_store.notify_data_remove(m_name, ref());
 
 	Ref oldref = ref();
 	m_refs.pop();

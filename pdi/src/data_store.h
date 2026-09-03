@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_GLOBAL_CONTEXT_H_
-#define PDI_GLOBAL_CONTEXT_H_
+#ifndef PDI_DATA_STORE_H_
+#define PDI_DATA_STORE_H_
 
 #include <list>
 #include <map>
@@ -45,13 +45,13 @@
 namespace PDI {
 
 // this is marked PDI_EXPORT because this is the entry point for language support libraries and should therefore be available to them
-class PDI_EXPORT Global_context: public Context
+class PDI_EXPORT Data_store: public Context
 {
 private:
 	friend class Data_descriptor_impl;
 
 	/// The singleton Context instance
-	static std::unique_ptr<Global_context> s_context;
+	static std::unique_ptr<Data_store> s_store;
 
 	/// Global logger of PDI, should be constructed first, destroyed last
 	Logger m_logger;
@@ -128,9 +128,9 @@ private:
 	 */
 	std::multimap<std::string, std::function<void(const std::string&)>> m_named_empty_desc_access_callbacks;
 
-	Global_context(const Global_context&) = delete;
+	Data_store(const Data_store&) = delete;
 
-	Global_context(Global_context&&) = delete;
+	Data_store(Data_store&&) = delete;
 
 	/// Calls init callbacks
 	void notify_init() const;
@@ -162,13 +162,13 @@ public:
 
 	static bool initialized();
 
-	static Global_context& context();
+	static Data_store& store();
 
 	static void finalize();
 
-	Global_context(PC_tree_t conf);
+	Data_store(PC_tree_t conf);
 
-	~Global_context() override;
+	~Data_store() override;
 
 	Data_descriptor& desc(const std::string& name) override;
 
@@ -205,4 +205,4 @@ public:
 
 } // namespace PDI
 
-#endif // PDI_GLOBAL_CONTEXT_H_
+#endif // PDI_DATA_STORE_H_

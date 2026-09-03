@@ -34,7 +34,7 @@
 #include <pdi/logger.h>
 #include <pdi/ref_any.h>
 
-#include "global_context.h"
+#include "data_store.h"
 
 #include "logger_operation.h"
 
@@ -65,7 +65,7 @@ Logger_operation::Logger_operation(PDI::Logger& logger, PC_tree_t logger_node)
 void Logger_operation::execute(PDI::Logger& logger, PDI::Context& ctx)
 {
 	try {
-		PDI::Global_context& global_ctx = dynamic_cast<PDI::Global_context&>(ctx);
+		PDI::Data_store& data_store = dynamic_cast<PDI::Data_store&>(ctx);
 		if (m_level) {
 			static const std::unordered_map<std::string, spdlog::level::level_enum> level_map
 				= {{"trace", spdlog::level::level_enum::trace},
@@ -78,7 +78,7 @@ void Logger_operation::execute(PDI::Logger& logger, PDI::Context& ctx)
 			auto level_it = level_map.find(level_str);
 			if (level_it != level_map.end()) {
 				logger.warn("Changing level to {}", level_str);
-				global_ctx.logger().level(level_map.find(level_str)->second);
+				data_store.logger().level(level_map.find(level_str)->second);
 			} else {
 				logger.warn("Invalid logging level: {}. Available: 'trace', 'debug', 'info', 'warn', 'error', 'off'.", level_str);
 			}
@@ -92,7 +92,7 @@ void Logger_operation::execute(PDI::Logger& logger, PDI::Context& ctx)
 		}
 
 	} catch (std::bad_cast&) {
-		logger.warn("Cannot cast Context to Global_context");
+		logger.warn("Cannot cast Context to Data_store");
 	}
 }
 
