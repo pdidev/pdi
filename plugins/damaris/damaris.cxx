@@ -84,27 +84,27 @@ public:
 	{
 		std::string data_cb_concat = "";
 		for (auto&& desc: m_config.descs()) { //add data callback only for awaited data
-			ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) { this->data(name, ref); }, desc.first);
+			ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) { this->damaris_awaited_data(name, ref); }, desc.first);
 			data_cb_concat.append(desc.first + ", ");
 		}
 		context().logger().debug("Data for callback : {}", data_cb_concat);
 
 		//Sim configured event names
 		for (auto&& event: m_config.events()) {
-			ctx.callbacks().add_event_callback([this](const std::string& name) { this->event(name); }, event.first);
+			ctx.callbacks().add_event_callback([this](const std::string& name) { this->damaris_event(name); }, event.first);
 		}
 
 		//Default event names, maight be called internally
-		for (auto&& ev_name: event_names) {
+		for (auto&& ev_name: damaris_event_names) {
 			//Only if the key if not yet used by an event
 			if (m_config.events().find(ev_name.second) == m_config.events().end())
-				ctx.callbacks().add_event_callback([this](const std::string& name) { this->event(name); }, ev_name.second);
+				ctx.callbacks().add_event_callback([this](const std::string& name) { this->damaris_event(name); }, ev_name.second);
 		}
 
 		ctx.logger().info("Plugin loaded successfully");
 	}
 
-	void data(const std::string& name, PDI::Ref ref)
+	void damaris_awaited_data(const std::string& name, PDI::Ref ref)
 	{
 		ensure_damaris_is_initialized("");
 
@@ -304,7 +304,7 @@ public:
 		}
 	}
 
-	void event(const std::string& event_name)
+	void damaris_event(const std::string& event_name)
 	{
 		ensure_damaris_is_initialized(event_name);
 

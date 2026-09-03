@@ -61,8 +61,8 @@ bool load_event(std::unordered_map<std::string, Event_type>& events, PDI::Contex
 		ctx.logger().debug(
 			"Duplicate event name `{}' in `{}' (previously defined in `{}')",
 			result.first->first,
-			event_names.at(event_type),
-			event_names.at(result.first->second)
+			damaris_event_names.at(event_type),
+			damaris_event_names.at(result.first->second)
 		);
 	}
 	return result.second;
@@ -261,7 +261,7 @@ Damaris_cfg::Damaris_cfg(PDI::Context& ctx, PC_tree_t tree)
 		}
 	});
 
-	std::string end_it_event_name = event_names.at(Event_type::DAMARIS_END_ITERATION);
+	std::string end_it_event_name = damaris_event_names.at(Event_type::DAMARIS_END_ITERATION);
 	//Add only if it does not exist yet
 	if (std::find(m_after_write_events.begin(), m_after_write_events.end(), end_it_event_name) == m_after_write_events.end()
 	    && m_end_iteration_on_event.empty())

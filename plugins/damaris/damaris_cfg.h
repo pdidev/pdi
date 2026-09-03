@@ -87,8 +87,8 @@ enum class Event_type {
 };
 
 /** These default event names are for internal use. If a configured name is given, these ones will be surcharged */
-const std::unordered_map<Event_type, std::string> event_names
-	= {{Event_type::DAMARIS_INITIALIZE, "initialize"},
+const std::unordered_map<Event_type, std::string> damaris_event_names
+	= {{Event_type::DAMARIS_INITIALIZE, "damaris_initialize"},
        {Event_type::DAMARIS_START, "damaris_start"},
        {Event_type::DAMARIS_SET_POSITION, "damaris_set_position"},
        {Event_type::DAMARIS_SET_BLOCK_POSITION, "damaris_set_block_position"},
@@ -102,7 +102,7 @@ const std::unordered_map<Event_type, std::string> event_names
        {Event_type::DAMARIS_SIGNAL, "damaris_signal"},
        {Event_type::DAMARIS_BIND, "damaris_bind"},
        {Event_type::DAMARIS_STOP, "damaris_stop"},
-       {Event_type::DAMARIS_FINALIZE, "finalize"}};
+       {Event_type::DAMARIS_FINALIZE, "damaris_finalize"}};
 
 struct Dataset_Write_Info {
 	PDI::Expression when = "1"; //By default, always write as long as there are iteration going on
