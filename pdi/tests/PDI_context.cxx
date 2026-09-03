@@ -30,7 +30,7 @@
 #include <pdi/plugin.h>
 #include <pdi/scalar_datatype.h>
 
-#include "global_context.h"
+#include "data_store.h"
 
 
 using namespace PDI;
@@ -46,7 +46,7 @@ struct ContextTest: public ::testing::Test {
 		: test_conf{PC_parse_string("logging: trace")}
 	{}
 
-	void SetUp() override { test_context.reset(new Global_context{test_conf}); }
+	void SetUp() override { test_context.reset(new Data_store{test_conf}); }
 
 	Paraconf_wrapper fw;
 	PC_tree_t test_conf;
