@@ -89,11 +89,12 @@ public:
 	 * Multiple File_op's are created when a "file" subtree is data activated
 	 * and contains multiple data.
 	 *
+	 * \param logger the logger to use
 	 * \param ctx the context from which to access datatypes used
 	 * \param tree the "file" subtree
 	 * \return a vector containing all parsed File_op's
 	 */
-	static std::vector<File_op> parse(PDI::Context& ctx, PC_tree_t tree);
+	static std::vector<File_op> parse(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t tree);
 
 	File_op(File_op&&) = default;
 
@@ -129,9 +130,10 @@ public:
 
 	/** Executes the requested operation.
 	 *
+	 * \param logger the logger to use
 	 * \param ctx the context in which to operate
 	 */
-	void execute(PDI::Context& ctx);
+	void execute(PDI::Logger& logger, PDI::Context& ctx);
 };
 
 } // namespace decl_hdf5

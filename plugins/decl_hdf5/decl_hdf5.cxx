@@ -47,6 +47,7 @@ namespace {
 
 using PDI::Context;
 using PDI::each;
+using PDI::Logger;
 using PDI::opt_each;
 using PDI::Plugin;
 using PDI::Ref;
@@ -69,13 +70,13 @@ class decl_hdf5_plugin: public Plugin
 	unordered_map<string, vector<File_op>> m_data;
 
 public:
-	decl_hdf5_plugin(Context& ctx, PC_tree_t config)
-		: Plugin{ctx}
+	decl_hdf5_plugin(Logger& logger, Context& ctx, PC_tree_t config)
+		: Plugin{logger, ctx}
 	{
 		Hdf5_error_handler _;
 		if (0 > H5open()) handle_hdf5_err("Cannot initialize HDF5 library");
 		opt_each(config, [&](PC_tree_t elem) {
-			for (auto&& op: File_op::parse(ctx, elem)) {
+			for (auto&& op: File_op::parse(logger, ctx, elem)) {
 				auto&& events = op.event();
 				if (events.empty()) {
 					// if there are no event names, this is data triggered
@@ -103,20 +104,20 @@ public:
 		ctx.on_data([this](const std::string& name, Ref ref) { this->data(name, ref); });
 		ctx.on_event([this](const std::string& name) { this->event(name); });
 
-		ctx.logger().info("Plugin loaded successfully");
+		logger.info("Plugin loaded successfully");
 	}
 
 	~decl_hdf5_plugin()
 	{
 		if (0 > H5close()) handle_hdf5_err("Cannot finalize HDF5 library");
-		context().logger().info("Closing plugin");
+		logger().info("Closing plugin");
 	}
 
 	void data(const std::string& name, Ref ref)
 	{
 		Hdf5_error_handler _;
 		for (auto&& op: m_data[name]) {
-			op.execute(context());
+			op.execute(logger(), context());
 		}
 	}
 
@@ -124,7 +125,7 @@ public:
 	{
 		Hdf5_error_handler _;
 		for (auto&& op: m_events[event]) {
-			op.execute(context());
+			op.execute(logger(), context());
 		}
 	}
 

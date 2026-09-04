@@ -27,15 +27,15 @@
 
 namespace decl_netcdf {
 
-Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate)
+Dnc_variable::Dnc_variable(PDI::Logger& logger, PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate)
 	: m_ctx{ctx}
 	, m_path{path}
 	, m_deflate{std::move(deflate)}
 {
 	PC_tree_t attributes_node = PC_get(config, ".attributes");
 	if (!PC_status(attributes_node)) {
-		PDI::each(attributes_node, [this](PC_tree_t attr_name, PC_tree_t attr_value) {
-			this->m_attributes.emplace_back(this->m_ctx, PDI::to_string(attr_name), attr_value);
+		PDI::each(attributes_node, [this, &logger](PC_tree_t attr_name, PC_tree_t attr_value) {
+			this->m_attributes.emplace_back(logger, this->m_ctx, PDI::to_string(attr_name), attr_value);
 		});
 	}
 

@@ -31,6 +31,10 @@ and this project adheres to
 #### Changed
 * Merged `Callbacks` into `Global_context` and renamed the callback functions,
   as per [#720](https://github.com/pdidev/pdi/issues/720)
+* `Context` no longer has a `logger()` accessor. A plugin's constructor must
+  now accept an additional `PDI::Logger&` parameter (before `PDI::Context&`),
+  available afterwards through the inherited `Plugin::logger()` accessor.
+  Part of [#721](https://github.com/pdidev/pdi/issues/721)
 
 #### Deprecated
 
@@ -39,6 +43,8 @@ and this project adheres to
   intended as examples but provided only misleading information and prevented
   refactoring (Decl'HDF5 benchmarks remain for now). This partially answers
   [#733](https://github.com/pdidev/pdi/issues/733)
+* Removed the `Context_proxy` class. Part of
+  [#721](https://github.com/pdidev/pdi/issues/721)
 
 #### Fixed
 

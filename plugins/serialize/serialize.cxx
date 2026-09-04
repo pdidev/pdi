@@ -274,55 +274,55 @@ struct serialize_plugin: PDI::Plugin {
 	{
 		PDI::TimerEventHandler serialize_timer(context(), "serialize");
 		std::string serialized_name = m_desc_to_serialize[desc_name];
-		context().logger().debug("Serializing `{}` as `{}`", desc_name, serialized_name);
+		logger().debug("Serializing `{}` as `{}`", desc_name, serialized_name);
 		PDI::Datatype_sptr serialized_type = serialize_type(ref.type());
-		context().logger().debug("Type after serialization:\n {}", serialized_type->debug_string());
+		logger().debug("Type after serialization:\n {}", serialized_type->debug_string());
 
 		if (PDI::Ref_rw ref_rw = ref) {
-			context().logger().trace("PDI_INOUT -> allocate memory, serialize_copy, share PDI_INOUT, deserialize_copy on reclaim");
+			logger().trace("PDI_INOUT -> allocate memory, serialize_copy, share PDI_INOUT, deserialize_copy on reclaim");
 
-			context().logger().trace("Allocating memory: {} B", serialized_type->buffersize());
+			logger().trace("Allocating memory: {} B", serialized_type->buffersize());
 			PDI::Ref serialized_ref{operator new (serialized_type->buffersize()), [](void* p) { operator delete (p); }, serialized_type, true, true};
 
-			context().logger().trace("Copy data to `{}' descriptor", serialized_name);
+			logger().trace("Copy data to `{}' descriptor", serialized_name);
 			size_t bytes_copied = serialize_copy(ref.type(), PDI::Ref_w{serialized_ref}.get(), ref_rw.get());
 			if (bytes_copied != serialized_type->datasize()) {
 				throw PDI::Value_error{"Serialize plugin: `{}' Serialized {} B of {} B", desc_name, bytes_copied, serialized_type->buffersize()};
 			}
 
-			context().logger().trace("Sharing `{}' PDI_INOUT", serialized_name);
+			logger().trace("Sharing `{}' PDI_INOUT", serialized_name);
 			context().desc(serialized_name).share(serialized_ref, false, false);
 			std::function<void()> remove_callback
 				= context().on_data_remove([this](const std::string& desc_name, PDI::Ref ref) { release_serialized(desc_name, ref); }, desc_name);
 			m_serialized_remove_callback.emplace_back(serialized_name, remove_callback, PDI_INOUT);
 
 		} else if (PDI::Ref_r ref_r = ref) {
-			context().logger().trace("PDI_OUT -> allocate memory, serialize_copy, then share PDI_OUT");
+			logger().trace("PDI_OUT -> allocate memory, serialize_copy, then share PDI_OUT");
 
 			// allocate memory
-			context().logger().trace("Allocating memory: {} B", serialized_type->buffersize());
+			logger().trace("Allocating memory: {} B", serialized_type->buffersize());
 			PDI::Ref serialized_ref{operator new (serialized_type->buffersize()), [](void* p) { operator delete (p); }, serialized_type, true, true};
 
 			// copy
-			context().logger().trace("Copy data to `{}' descriptor", serialized_name);
+			logger().trace("Copy data to `{}' descriptor", serialized_name);
 			size_t bytes_copied = serialize_copy(ref.type(), PDI::Ref_w{serialized_ref}.get(), ref_r.get());
 			if (bytes_copied != serialized_type->datasize()) {
 				throw PDI::Value_error{"Serialize plugin: `{}' Serialized {} B of {} B ", desc_name, bytes_copied, serialized_type->buffersize()};
 			}
-			context().logger().trace("Sharing `{}' PDI_OUT", serialized_name);
+			logger().trace("Sharing `{}' PDI_OUT", serialized_name);
 			context().desc(serialized_name).share(serialized_ref, true, false);
 			std::function<void()> remove_callback
 				= context().on_data_remove([this](const std::string& desc_name, PDI::Ref ref) { release_serialized(desc_name, ref); }, desc_name);
 			m_serialized_remove_callback.emplace_back(serialized_name, remove_callback, PDI_OUT);
 
 		} else if (PDI::Ref_w ref_w{ref}) {
-			context().logger().trace("PDI_IN -> allocate memory, share PDI_IN, then deserialize_copy on reclaim");
+			logger().trace("PDI_IN -> allocate memory, share PDI_IN, then deserialize_copy on reclaim");
 
 			// allocate memory
-			context().logger().trace("Allocating memory: {} B", serialized_type->buffersize());
+			logger().trace("Allocating memory: {} B", serialized_type->buffersize());
 			PDI::Ref serialized_ref{operator new (serialized_type->buffersize()), [](void* p) { operator delete (p); }, serialized_type, false, true};
 
-			context().logger().trace("Sharing `{}' PDI_IN", serialized_name);
+			logger().trace("Sharing `{}' PDI_IN", serialized_name);
 			context().desc(serialized_name).share(serialized_ref, false, false);
 			std::function<void()> remove_callback
 				= context().on_data_remove([this](const std::string& desc_name, PDI::Ref ref) { release_serialized(desc_name, ref); }, desc_name);
@@ -382,19 +382,19 @@ struct serialize_plugin: PDI::Plugin {
 		PDI::each(config, [this](PC_tree_t key, PC_tree_t value) mutable {
 			std::string desc_name = PDI::to_string(key);
 			m_desc_to_serialize.emplace(desc_name, PDI::to_string(value));
-			context().logger().trace("`{}' will be serialized", desc_name);
+			logger().trace("`{}' will be serialized", desc_name);
 			context().on_data([this](const std::string& desc_name, PDI::Ref ref) { share_serialized(desc_name, ref); }, desc_name);
 		});
 	}
 
-	serialize_plugin(PDI::Context& ctx, PC_tree_t config)
-		: PDI::Plugin{ctx}
+	serialize_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t config)
+		: PDI::Plugin{logger, ctx}
 	{
 		load_config(config);
-		context().logger().info("Plugin loaded successfully");
+		logger.info("Plugin loaded successfully");
 	}
 
-	~serialize_plugin() { context().logger().info("Closing plugin"); }
+	~serialize_plugin() { logger().info("Closing plugin"); }
 
 	/** Pretty name for the plugin that will be shown in the logger
 	 *

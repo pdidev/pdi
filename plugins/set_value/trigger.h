@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -37,17 +38,17 @@ namespace set_value {
 
 class Trigger
 {
-	PDI::Context& m_ctx;
-
 	// operations to execute
 	std::vector<std::unique_ptr<Operation>> m_operations;
 
 public:
-	Trigger(PDI::Context& ctx, PC_tree_t value_node);
+	Trigger(PDI::Logger& logger, PC_tree_t value_node);
 
 	/** Sets/shares/exposes all values given in on_init/on_event/on_data
+     * \param[in] logger the logger to use
+     * \param[in] ctx context in which to run the operations
      */
-	void execute();
+	void execute(PDI::Logger& logger, PDI::Context& ctx);
 };
 
 } // namespace set_value

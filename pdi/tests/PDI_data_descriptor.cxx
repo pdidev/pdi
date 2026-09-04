@@ -33,7 +33,7 @@
 
 #include <data_descriptor_impl.h>
 
-#include "global_context.h"
+#include "data_store.h"
 
 using namespace PDI;
 using namespace std;
@@ -41,15 +41,15 @@ using namespace std;
 namespace PDI {
 //handler to private fields of Descriptor
 struct Descriptor_test_handler {
-	static unique_ptr<Data_descriptor> default_desc(Global_context& global_ctx)
+	static unique_ptr<Data_descriptor> default_desc(Data_store& data_store)
 	{
-		return unique_ptr<Data_descriptor>{new Data_descriptor_impl{global_ctx, "default_desc"}};
+		return unique_ptr<Data_descriptor>{new Data_descriptor_impl{data_store, "default_desc"}};
 	}
 
-	static Datatype_sptr desc_get_type(unique_ptr<Data_descriptor>& desc, Global_context& global_ctx)
+	static Datatype_sptr desc_get_type(unique_ptr<Data_descriptor>& desc, Data_store& data_store)
 	{
 		Datatype_template_sptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc.get())->m_type;
-		return desc_template->evaluate(global_ctx);
+		return desc_template->evaluate(data_store);
 	}
 
 	static int desc_get_refs_number(unique_ptr<Data_descriptor>& desc) { return dynamic_cast<Data_descriptor_impl*>(desc.get())->m_refs.size(); }
@@ -64,8 +64,8 @@ struct DataDescTest: public ::testing::Test {
 	PC_tree_t array_config{PC_parse_string("{ size: 10, type: array, subtype: int }")};
 	shared_ptr<Array_datatype> array_datatype{Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 10)};
 	PDI::Paraconf_wrapper fw;
-	Global_context global_ctx{PC_parse_string("")};
-	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(global_ctx);
+	Data_store data_store{PC_parse_string("")};
+	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(data_store);
 };
 
 /*
@@ -77,7 +77,7 @@ struct DataDescTest: public ::testing::Test {
  */
 TEST_F(DataDescTest, check_default_fields)
 {
-	Datatype_sptr desc_type = Descriptor_test_handler::desc_get_type(this->m_desc_default, global_ctx);
+	Datatype_sptr desc_type = Descriptor_test_handler::desc_get_type(this->m_desc_default, data_store);
 	shared_ptr<const Scalar_datatype> default_scalar = static_pointer_cast<const Scalar_datatype>(desc_type);
 	ASSERT_EQ(Scalar_kind::UNKNOWN, default_scalar->kind());
 	ASSERT_EQ(0, desc_type->datasize());
@@ -111,7 +111,7 @@ TEST_F(DataDescTest, default_type)
 {
 	Paraconf_wrapper fw;
 	this->m_desc_default->default_type(array_datatype);
-	Datatype_sptr datatype = Descriptor_test_handler::desc_get_type(this->m_desc_default, global_ctx);
+	Datatype_sptr datatype = Descriptor_test_handler::desc_get_type(this->m_desc_default, data_store);
 	ASSERT_EQ(10 * sizeof(int), datatype->datasize());
 	ASSERT_EQ(10 * sizeof(int), datatype->buffersize());
 }
