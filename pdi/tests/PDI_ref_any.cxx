@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,13 +37,16 @@
 #include "mocks/datatype_mock.h"
 
 using namespace PDI;
-using namespace std;
 
 using ::testing::Return;
 
 /*
  * Struct prepared for DataRefAnyTest.
  */
+using std::is_same;
+using std::unique_ptr;
+using std::vector;
+
 struct DataRefAnyTest
 	: public ::testing::Test
 	, Reference_base {

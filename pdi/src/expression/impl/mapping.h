@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,8 +23,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_EXPRESSION_IMPL_MAPPING_LITERAL_H_
-#define PDI_EXPRESSION_IMPL_MAPPING_LITERAL_H_
+#ifndef PDI_EXPRESSION_IMPL_MAPPING_H_
+#define PDI_EXPRESSION_IMPL_MAPPING_H_
 
 #include <memory>
 
@@ -57,4 +58,4 @@ struct PDI_NO_EXPORT Expression::Impl::Mapping: public Expression::Impl {
 
 } // namespace PDI
 
-#endif //PDI_EXPRESSION_IMPL_MAPPING_LITERAL_H_
+#endif //PDI_EXPRESSION_IMPL_MAPPING_H_

@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,12 +24,14 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include "config.h"
+
 #include <algorithm>
 
-#include <pdi/array_datatype.h>
-#include <pdi/python/tools.h>
-#include <pdi/record_datatype.h>
-#include <pdi/scalar_datatype.h>
+#include "pdi/array_datatype.h"
+#include "pdi/python/tools.h"
+#include "pdi/record_datatype.h"
+#include "pdi/scalar_datatype.h"
 
 #include "pdi/python/python_ref_wrapper.h"
 

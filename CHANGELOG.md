@@ -31,8 +31,19 @@ and this project adheres to
 #### Changed
 * Merged `Callbacks` into `Global_context` and renamed the callback functions,
   as per [#720](https://github.com/pdidev/pdi/issues/720)
+* Renamed `PDI::TimerEventHandler` to `PDI::Timer_event_handler` to follow the
+  class naming convention, part of
+  [#755](https://github.com/pdidev/pdi/issues/755)
+* Renamed the `PLUGIN_API_VERSION*` macros to `PDI_PLUGIN_API_VERSION*` to
+  follow the macro naming convention, part of
+  [#755](https://github.com/pdidev/pdi/issues/755)
 
 #### Deprecated
+* `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
+  `PLUGIN_API_VERSION_MAJOR`, `PLUGIN_API_VERSION_MINOR` and
+  `PLUGIN_API_VERSION_PATCH` macros are deprecated in favour of their
+  correctly named replacements, part of
+  [#755](https://github.com/pdidev/pdi/issues/755)
 
 #### Removed
 * Removed performance micro-benchmarks of the core PDI library that were
