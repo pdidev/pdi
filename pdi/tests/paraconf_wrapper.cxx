@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +29,6 @@
 #include "pdi/paraconf_wrapper.h"
 
 using namespace PDI;
-using namespace std;
 
 TEST(ParaconfWrapper, ToString)
 {

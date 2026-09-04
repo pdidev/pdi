@@ -1,6 +1,7 @@
 /*******************************************************************************
- * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +32,7 @@
  *
  * Description:         Tests simple write and read of scalar and array depending on `input' metadata
  */
-TEST(decl_netcdf_test, 01)
+TEST(DeclNetcdfTest, 01)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                     \n"
@@ -92,7 +93,7 @@ TEST(decl_netcdf_test, 01)
  *
  * Description:         Tests simple write and read of scalar and array depending on event
  */
-TEST(decl_netcdf_test, 02)
+TEST(DeclNetcdfTest, 02)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                     \n"
@@ -145,7 +146,7 @@ TEST(decl_netcdf_test, 02)
  *
  * Description:         Tests simple write and read of variables and groups attributes
  */
-TEST(decl_netcdf_test, 03)
+TEST(DeclNetcdfTest, 03)
 {
 	const char* CONFIG_YAML
 		= ".vars:                                                   \n"
@@ -322,7 +323,7 @@ TEST(decl_netcdf_test, 03)
  *
  * Description:         Tests group and variable definitions
  */
-TEST(decl_netcdf_test, 04)
+TEST(DeclNetcdfTest, 04)
 {
 	const char* CONFIG_YAML
 		= ".vars:                                                    \n"
@@ -476,7 +477,7 @@ TEST(decl_netcdf_test, 04)
  *
  * Description:         Tests variable selection on write and read
  */
-TEST(decl_netcdf_test, 05)
+TEST(DeclNetcdfTest, 05)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                  \n"
@@ -667,7 +668,7 @@ TEST(decl_netcdf_test, 05)
  *
  * Description:         Tests infinite dimension
  */
-TEST(decl_netcdf_test, 06)
+TEST(DeclNetcdfTest, 06)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                      \n"
@@ -744,7 +745,7 @@ TEST(decl_netcdf_test, 06)
  *
  * Description:         Tests yaml syntaxe with `write: data`
  */
-TEST(decl_netcdf_test, 07)
+TEST(DeclNetcdfTest, 07)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                      \n"
@@ -786,7 +787,7 @@ TEST(decl_netcdf_test, 07)
  *
  * Description:         Tests simple write and read of scalar and array depending on `input' metadata
  */
-TEST(decl_netcdf_test, size_of)
+TEST(DeclNetcdfTest, size_of)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                      \n"
@@ -856,7 +857,7 @@ TEST(decl_netcdf_test, size_of)
  *
  * Description:         Tests simple write and read of compressed variables
 */
-TEST(decl_netcdf_test, deflate)
+TEST(DeclNetcdfTest, deflate)
 {
 	constexpr char CONFIG_YAML[] = R"(
     logging: trace
@@ -1028,7 +1029,7 @@ TEST(decl_netcdf_test, deflate)
  *
  * Description:         Tests write and read of int with type mismatch
  */
-TEST(decl_netcdf_test, int_read)
+TEST(DeclNetcdfTest, int_read)
 {
 	constexpr char CONFIG_YAML[] = R"(
     logging: trace
@@ -1072,7 +1073,7 @@ TEST(decl_netcdf_test, int_read)
  *
  * Description:         Tests write and read of float/double with type mismatch
  */
-TEST(decl_netcdf_test, float_read)
+TEST(DeclNetcdfTest, float_read)
 {
 	constexpr char CONFIG_YAML[] = R"(
     logging: trace

@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,21 +58,21 @@ Error::~Error() noexcept = default;
 
 namespace impl {
 
-what_impl::what_impl(std::string what) noexcept
+What_impl::What_impl(std::string what) noexcept
 	: m_what{std::move(what)}
 {
 	// force inclusion of dtor
 	fmt::format_error("");
 }
 
-const char* what_impl::what() const noexcept
+const char* What_impl::what() const noexcept
 {
 	return m_what.c_str();
 }
 
 template <PDI_status_t STATUS>
 Error_impl<STATUS>::Error_impl(std::string what) noexcept
-	: what_impl(what)
+	: What_impl(what)
 {}
 
 template <PDI_status_t STATUS>
@@ -98,7 +99,7 @@ template class PDI_EXPORT impl::Error_impl<PDI_ERR_INVALIDACTION>;
 } // namespace impl
 
 Spectree_error::Spectree_error(std::optional<Yaml_region> location, std::string what)
-	: impl::what_impl(what)
+	: impl::What_impl(what)
 	, m_location(location)
 {}
 
@@ -130,7 +131,7 @@ std::string Spectree_error::full_msg() const
 }
 
 Multiple_errors::Multiple_errors(std::vector<std::exception_ptr> causes, std::string what) noexcept
-	: impl::what_impl(std::move(what))
+	: impl::What_impl(std::move(what))
 	, m_nested_ptrs(std::move(causes))
 {}
 
