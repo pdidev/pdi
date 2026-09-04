@@ -1,6 +1,7 @@
 /*******************************************************************************
- * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,8 +24,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_PLUGIN_LOADER_H_
-#define PDI_PLUGIN_LOADER_H_
+#ifndef PDI_PLUGIN_STORE_H_
+#define PDI_PLUGIN_STORE_H_
 
 #include <map>
 #include <memory>
@@ -39,7 +40,7 @@ namespace PDI {
 
 /** A store used to load a set of plugins
  */
-class Plugin_store
+class PDI_NO_EXPORT Plugin_store
 {
 	/// A factory function for a plugin
 	using plugin_factory_f = std::unique_ptr<Plugin> (*)(Context&, PC_tree_t);
@@ -133,4 +134,4 @@ public:
 
 } // namespace PDI
 
-#endif // PDI_PLUGIN_LOADER_H_
+#endif // PDI_PLUGIN_STORE_H_
