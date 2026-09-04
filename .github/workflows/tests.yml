@@ -38,6 +38,11 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - run: exec ./bin/test_indent
+  spell:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: crate-ci/typos@v1
   first: # do a first run so as not to needlessly use all resources for all to fail
     needs: indent
     runs-on: ubuntu-24.04

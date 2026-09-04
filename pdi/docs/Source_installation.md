@@ -172,7 +172,7 @@ cmake module.
 |`CMAKE_INSTALL_LIBDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |object code libraries|
 |`CMAKE_INSTALL_PREFIX`    |See [CMake doc](https://cmake.org/cmake/help/v3.22/variable/CMAKE_INSTALL_PREFIX.html).|Installation base|
 
-## List of dependencies {#dependecies}
+## List of dependencies {#dependencies}
 
 Here is a list of all dependencies required by one feature or another.
 All dependencies are provided in the distribution unless specified otherwise.

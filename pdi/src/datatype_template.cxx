@@ -464,10 +464,10 @@ vector<Tuple_template::Element> get_tuple_elements(Context& ctx, PC_tree_t eleme
 			result.emplace_back(disp, ctx.datatype(element_node));
 		}
 	} else {
-		throw Spectree_error{elements_node, "Tuple elements subtree must be a seqence or ordered mapping"};
+		throw Spectree_error{elements_node, "Tuple elements subtree must be a sequence or ordered mapping"};
 	}
 
-	// check if non or all of elements have diplacement defined
+	// check if non or all of elements have displacement defined
 	if (displacement_counter != 0 && displacement_counter != nb_elements) {
 		throw Spectree_error{elements_node, "None or all of tuple elements must to have `disp' defined"};
 	}

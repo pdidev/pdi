@@ -39,7 +39,7 @@ namespace PDI {
  * - colon (:): to get a raw colon that is not interpreted as a separator
  * 
  * \param unescaped the colon separated string array
- * \result the actuall arra of unescaped strings
+ * \result the actual array of unescaped strings
  */
 std::vector<std::string> string_array_parse(const std::string& unescaped);
 

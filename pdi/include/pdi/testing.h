@@ -76,7 +76,7 @@
 
 namespace PDI {
 
-/** An object is initializable_from<G> if it can be initalized using the init_from member function
+/** An object is initializable_from<G> if it can be initialized using the init_from member function
  * from a reference of G
  */
 template < class T, class G >

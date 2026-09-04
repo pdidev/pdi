@@ -161,7 +161,7 @@ extern const PDI_errhandler_t PDI_EXPORT PDI_WARN_HANDLER;
 extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
 
 
-/** Return a human-readabe message describing the last error that occured in PDI
+/** Return a human-readabe message describing the last error that occurred in PDI
  */
 const char PDI_EXPORT * PDI_errmsg(void);
 
@@ -213,9 +213,9 @@ PDI_status_t PDI_EXPORT PDI_version(unsigned long* provided, unsigned long expec
  * Access directions
  */
 typedef enum PDI_inout_e {
-	/// No data transfert
+	/// No data transfer
 	PDI_NONE = 0,
-	/// data tranfer from PDI to the main code
+	/// data transfer from PDI to the main code
 	PDI_IN = 1,
 	/// data transfer from the main code to PDI
 	PDI_OUT = 2,

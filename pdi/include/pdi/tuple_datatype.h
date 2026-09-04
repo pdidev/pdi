@@ -35,7 +35,7 @@
 namespace PDI {
 
 /** A Tuple_datatype is a Datatype that represents a fixed number of elements of
- * potentially different types layed out in a specific way in memory.
+ * potentially different types laid out in a specific way in memory.
  * Each element is given a index to access it.
  */
 class PDI_EXPORT Tuple_datatype: public Datatype

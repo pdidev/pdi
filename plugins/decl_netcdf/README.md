@@ -5,7 +5,7 @@ The Decl'NetCDF plugin was created to read from and write to NetCDF files in a d
 Decl'NetCDF plugin allows you to:
 1. Read/write data as NetCDF variables from/to NetCDF file.
 2. Define groups in the NetCDF file. Groups can be nested.
-3. Read/write variables and groups attributes. **Automatically read and written when openning the file.**
+3. Read/write variables and groups attributes. **Automatically read and written when opening the file.**
 4. Execute input/output operations on event.
 5. Execute input/output operations on data share (when the event is not defined).
 6. Define `UNLIMITED` dimension and dimensions names.
@@ -85,7 +85,7 @@ name or the array of events names (both examples presented below).
 
 |key       |value                                              |
 |:---------|:--------------------------------------------------|
-|`on_event`|string or array of string that cointain event names|
+|`on_event`|string or array of string that contain event names|
 
 Configuration examples:
 ```yaml
@@ -108,7 +108,7 @@ Defines the condition on which plugin will execute input/output operation on the
 
 |key   |value                                               |
 |:-----|:---------------------------------------------------|
-|`when`|`$-expression` condition evalueated to boolean value|
+|`when`|`$-expression` condition evaluated to boolean value|
 
 Configuration example:
 ```yaml
@@ -158,9 +158,9 @@ plugins:
 
 |key     |value                                                   |     |
 |:-------|:-------------------------------------------------------|-----|
-|deflate | Compression level (0-9) for all variables of the file (defalut=0). Can be overwritten by the content of `variables definition` | *optional* |
+|deflate | Compression level (0-9) for all variables of the file (default=0). Can be overwritten by the content of `variables definition` | *optional* |
 
-See \ref decl_netcdf_variables for more information about the `deflate` attribut.
+See \ref decl_netcdf_variables for more information about the `deflate` attribute.
 Configuration example:
 ```yaml
 plugins:
@@ -210,7 +210,7 @@ plugins:
 |type          |type of variable (defined the same way as other types in %PDI)|*optional*  |
 |dimensions    |array of dimensions names of variable                         |*optional*  |
 |attributes    |Map of \ref decl_netcdf_attr                                  |*optional*  |
-|deflate       |Compression level (0-9) of the variable (defalut=0)           |*optional*  |
+|deflate       |Compression level (0-9) of the variable (default=0)           |*optional*  |
 |chunking      |Chunk size of the variable for chunked storage                |*optional*  |
 
 `deflate` allows you to set the compression level of a variable. It uses the native netCDF compression. Using `deflate: 0` means no compression and it is the default setting.
@@ -310,7 +310,7 @@ Defines the condition on which plugin will read/write specific variable.
 
 |key   |value                                               |
 |:-----|:---------------------------------------------------|
-|`when`|`$-expression` condition evalueated to boolean value|
+|`when`|`$-expression` condition evaluated to boolean value|
 
 
 ### read subtree {#decl_netcdf_read}
@@ -337,7 +337,7 @@ The `read` subtree can have 2 definitions:
   |key                  |value                                                                |            |
   |:--------------------|:--------------------------------------------------------------------|------------|
   |`when`               |\ref decl_netcdf_io_when                                             |*optional*  |
-  |`size_of`            |Name of the variable for which we retrive its size                   |*optional*  |
+  |`size_of`            |Name of the variable for which we retrieve its size                   |*optional*  |
   |`variable`           |variable name to read (may be defined in \ref decl_netcdf_variables) |*optional*  |
   |`variable_selection` |\ref decl_netcdf_var_selection                                       |*optional*  |
 

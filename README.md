@@ -49,7 +49,7 @@ PDI distribution is made of the following submodules:
 * `plugins/trace/`: the Trace plugin,
 * `plugins/user_code/`: the user-code plugin,
 * `example/`: PDI examples,
-* `tests/api_tests/`: tests of PDI API (can be used with eith PDI or mock PDI),
+* `tests/api_tests/`: tests of PDI API (can be used with with PDI or mock PDI),
 * `tests/cmake_tests/`: test the installation of PDI from cmake,
 * `tests/combination_tests/`: tests that combine multiple plugins,
 * `tutorial/`: the PDI tutorial,

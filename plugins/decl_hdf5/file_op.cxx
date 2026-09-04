@@ -142,7 +142,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		});
 	} else if (!PC_status(read_tree)) { // it's a name:{config...} mapping
 		each(read_tree, [&](PC_tree_t name, PC_tree_t config) {
-			opt_each(config, [&](PC_tree_t value) { // each config is an independant op
+			opt_each(config, [&](PC_tree_t value) { // each config is an independent op
 				if (!PC_status(PC_get(value, ".attribute"))) {
 					attr_ops.emplace_back(Attribute_op::READ, to_string(name), default_when, value);
 				} else if (!PC_status(PC_get(value, ".size_of"))) {
@@ -172,11 +172,11 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 	} else if (!PC_status(write_tree)) { // it's a name:{config...} mapping
 		each(write_tree, [&](PC_tree_t name, PC_tree_t config) {
 			if (!PC_status(PC_get(config, ".attribute"))) {
-				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
+				opt_each(config, [&](PC_tree_t value) { // each config is an independent op
 					attr_ops.emplace_back(Attribute_op::WRITE, to_string(name), default_when, value);
 				});
 			} else {
-				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
+				opt_each(config, [&](PC_tree_t value) { // each config is an independent op
 					dset_ops.emplace_back(Dataset_op::WRITE, to_string(name), default_when, value, template_op.m_collision_policy);
 					if (deflate) {
 						dset_ops.back().deflate(ctx, deflate.to_long(ctx));

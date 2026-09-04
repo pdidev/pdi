@@ -12,7 +12,7 @@ It supports not only basic data types such as scalar, array, record, tuple, and 
 It ensures a JSON valid format at all times, even if the simulation crashes and PDI is not finalized, due to its incremental writing. **Warning:** this may result in increased disk bandwidth and may not be ideal for a performance-sensitive context. 
 <!-- You might then want to consider using the `xxxxx` option to use the open file once behavior, instead of rewriting at each call. This would cause invalid JSON if simulation crashes or PDI's finalization is not called. But then you are using JSON anyways ... -->
 
-Conditionnal writing is supported.
+Conditional writing is supported.
 
 The write to file is only triggered when a variable is shared to PDI with read permission given.
 
@@ -36,7 +36,7 @@ The second one starts with `- file: file_path.json` with arguments below
 |key|value|
 |:--|:----|
 |`"file"` (*mandatory*)| Name of the output file|
-|`"write"` (*mandatory*)| The variables to be writen|
+|`"write"` (*mandatory*)| The variables to be written|
 |`"when"` (*optional*)| Indicate some kind of condition|
 
 For example,
@@ -79,7 +79,7 @@ build/PDI_EXAMPLE/PDI_example_C example/json.yml
     Currently, the JSON plugin doesn't support reading variables, only writing them. To cover more use cases, the JSON plugin should be able to read variables as well as write them.
 - The ability to create an on-the-go structures for several variables to be produced in a single JSON object
 
-## The JSON plugin for custom formating {#json_custom_format}
+## The JSON plugin for custom formatting {#json_custom_format}
 
 For the sake of the example, let's imagine the following code, creating which performs a certain heat transfer simulation.
 
@@ -177,7 +177,7 @@ Mesh configuration was of {{mesh_config.dimensions}} dimensions and {{mesh_confi
 {{/temperature_datal}}
 ```
 
-Finaly, let's print it ! We execute the json to mustache converter ...
+Finally, let's print it ! We execute the json to mustache converter ...
 
 ```bash
 vendor/mustach/mustach data.json format.mstch

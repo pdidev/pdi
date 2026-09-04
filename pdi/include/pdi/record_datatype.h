@@ -35,7 +35,7 @@
 namespace PDI {
 
 /** A Record_datatype is a Datatype that represents a fixed number of
- * elements of potentially different types layed out in a specific way in
+ * elements of potentially different types laid out in a specific way in
  * memory. Each element is given a name to access it.
  */
 class PDI_EXPORT Record_datatype: public Datatype

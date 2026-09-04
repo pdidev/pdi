@@ -44,7 +44,7 @@ namespace decl_hdf5 {
  * This function looks at the latest HDF5 error and throws an informative
  * PDI:Error accordingly.
  *
- * \param message a message explaining the context where the HD5 error occured
+ * \param message a message explaining the context where the HD5 error occurred
  */
 [[noreturn]] void handle_hdf5_err(const char* message = NULL);
 
@@ -62,7 +62,7 @@ private:
 	/// The wrapped hid_t
 	hid_t m_value;
 
-	/// The destroyer function rto call, or null if none
+	/// The destroyer function to call, or null if none
 	Destroyer m_destroyer;
 
 	/// No copy possible (unique_ptr style)
@@ -72,13 +72,13 @@ private:
 	Raii_hid& operator= (const Raii_hid&) = delete;
 
 public:
-	/** Contructs an empty Raii_hid
+	/** Constructs an empty Raii_hid
 	 */
 	Raii_hid()
 		: m_destroyer{NULL}
 	{}
 
-	/** Contructs an Raii_hid
+	/** Constructs an Raii_hid
 	 *
 	 * \param value the hid_t
 	 * \param destroyer the destroyer function
