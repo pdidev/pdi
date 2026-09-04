@@ -31,6 +31,8 @@ and this project adheres to
 #### Changed
 * Merged `Callbacks` into `Global_context` and renamed the callback functions,
   as per [#720](https://github.com/pdidev/pdi/issues/720)
+* `<pdi/plugin.h>` no longer declares anything at global scope. Fixes
+  [#755](https://github.com/pdidev/pdi/issues/755)
 
 #### Deprecated
 
