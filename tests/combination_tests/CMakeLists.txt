@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -75,3 +76,43 @@ add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOUR
 set_tests_properties(test_05_C PROPERTIES DISABLED TRUE)
 
 endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
+
+
+# The First steps examples of the documentation.
+# They are built and run here rather than beside the documentation because they
+# load the Trace plugin, which is only available once the plugins have been
+# built.
+# Each of them reads its specification tree from its own directory.
+
+option(BUILD_TRACE_PLUGIN "Build Trace plugin" ON)
+
+if("${BUILD_TRACE_PLUGIN}")
+
+set(FIRST_STEPS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../pdi/docs/First_steps")
+
+foreach(FIRST_STEPS_EXAMPLE IN ITEMS hello_data hello_event hello_expose hello_multi_expose)
+	add_executable(First_steps_${FIRST_STEPS_EXAMPLE}_C "${FIRST_STEPS_DIR}/${FIRST_STEPS_EXAMPLE}.c")
+	target_link_libraries(First_steps_${FIRST_STEPS_EXAMPLE}_C paraconf::paraconf PDI::PDI_C)
+	if(EXISTS "${FIRST_STEPS_DIR}/${FIRST_STEPS_EXAMPLE}.output")
+		# the documentation shows the output of this one, check it did not go stale
+		add_test(NAME First_steps_${FIRST_STEPS_EXAMPLE}_C
+				COMMAND "${CMAKE_COMMAND}"
+					"-DEXAMPLE=$<TARGET_FILE:First_steps_${FIRST_STEPS_EXAMPLE}_C>"
+					"-DEXPECTED=${FIRST_STEPS_DIR}/${FIRST_STEPS_EXAMPLE}.output"
+					"-DWORKDIR=${FIRST_STEPS_DIR}"
+					-P "${FIRST_STEPS_DIR}/../run_and_compare.cmake")
+	else()
+		add_test(NAME First_steps_${FIRST_STEPS_EXAMPLE}_C
+				COMMAND "$<TARGET_FILE:First_steps_${FIRST_STEPS_EXAMPLE}_C>"
+				WORKING_DIRECTORY "${FIRST_STEPS_DIR}")
+	endif()
+endforeach()
+
+endif("${BUILD_TRACE_PLUGIN}")
+
+# The logging examples of the specification tree reference: their pattern names
+# the rank of the MPI communicator, that only the MPI plugin provides.
+find_package(MPI REQUIRED COMPONENTS C)
+add_executable(doc_logging doc_logging.cxx)
+target_link_libraries(doc_logging MPI::MPI_C PDI::PDI_C GTest::gtest GTest::gmock)
+add_test(NAME doc_logging COMMAND "$<TARGET_FILE:doc_logging>")

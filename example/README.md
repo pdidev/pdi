@@ -48,71 +48,40 @@ All the communications instructions are written in `exchange` function.
 
 ## PDI integration {#pdi_integration}
 
-Now, when we know the algorithm, we can focus on analysing `decl_hdf5.yaml` specification tree.
- Fisrt 3 maps defined will not
-be seen to %PDI:
-```yaml
-duration: 0.75
-datasize: [60, 12]
-parallelism: { height: 3, width: 1 }
-```
+Now that we know the algorithm, we can focus on analysing the specification tree.
+The first 3 maps it defines are not seen by %PDI, they configure the application itself:
+\snippet trace.yml app_config
 - `duration` is the value in seconds how long the application will run.
 - `datasize` is size of our global matrix.
 - `parallelism` defines the number of MPI processes in each dimension.
 
-Next, we have defined `data` and `metadata`:
-```yaml
-pdi:
-  metadata:
-    iter:   int
-    dsize:  { size: 2, type: array, subtype: int }
-    psize:  { size: 2, type: array, subtype: int }
-    pcoord: { size: 2, type: array, subtype: int }
-  data:
-    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
-```
+The `data` and `metadata` are defined in `pdi.yml`, that the `pdi` map includes:
+\snippet pdi.yml data_metadata
 
-In source file we will extract the `pdi` map and pass it as PDI_init argument.
+In the source file we extract the `pdi` map and pass it as the PDI_init argument.
 - `iter` will hold the current iteration number.
 - `dsize` will hold the size of local matrix of each MPI process.
 - `psize` will hold number of processes in dimensions.
 - `pcoord` will hold coordinates for each process.
-- `main_filed` is the local matrix for each process.
+- `main_field` is the local matrix for each process.
 
 Let's take a closer look at C source code.
 
-```C
-PDI_init(PC_get(conf, ".pdi"));
-```
+\snippet example.c pdi_init
 As mentioned before, we extract the `pdi` subtree and pass it to PDI_init.
 
 We did not defined `mpi_comm` data in yaml, so this line will have no effect:
-```C
-PDI_expose("mpi_comm", &main_comm, PDI_INOUT);
-```
+\snippet example.c mpi_comm
 The same goes for all %PDI calls with data we didn't defined.
 
-```C
-int dsize[2];
-PC_int(PC_get(conf, ".datasize[0]"), &longval); dsize[0] = longval;
-PC_int(PC_get(conf, ".datasize[1]"), &longval); dsize[1] = longval;
-```
+\snippet docs/read_datasize.c read_datasize
 Here we are reading global matrix size from specification tree. Similar with parallelism and duration.
 
 After calculating the local matrix sizes and coordinates, we expose them:
-```C
-PDI_expose("dsize", dsize, PDI_OUT);
-PDI_expose("psize", psize, PDI_OUT);
-PDI_expose("pcoord", pcoord, PDI_OUT);
-```
+\snippet example.c expose_sizes
 
 At the beginning of each iteration, we call multiexpose:
-```C
-PDI_multi_expose("newiter",
-				"iter", &ii, PDI_INOUT,
-				"main_field", cur, PDI_INOUT,
-				NULL);
-```
+\snippet example.c multi_expose
 Above instruction will share `iter` and `main_field`, call `newiter` event and then reclaim `main_field` and `iter`.
 This is the place when plugins will read/write our data.
 

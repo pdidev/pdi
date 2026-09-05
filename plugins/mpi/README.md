@@ -8,7 +8,7 @@ MPI plugin defines 2 types in PDI:
 * `MPI_Comm_f` - Fortran MPI_Comm type
 
 MPI plugin exposes several metadata that correspond with mpi library.
-* `MPI_COMM_WORLD.rank` - an integer value, represents the rank of the proccess
+* `MPI_COMM_WORLD_rank` - an integer value, represents the rank of the proccess
   in the MPI_COMM_WORLD
 * `MPI_COMM_WORLD` - a MPI_Comm, MPI_COMM_WORLD for C language
 * `MPI_COMM_SELF` - a MPI_Comm, MPI_COMM_SELF for C language
@@ -32,13 +32,5 @@ and in value the name of data where to write transtyped communicator.
 
 Example:
 
-```yaml
-data:
-  mpi_comm: MPI_Comm
-  mpi_comm_f: MPI_Comm_f
-plugins:
-  mpi:
-    transtype:
-      mpi_comm: m_mpi_comm_f
-      mpi_comm_f: m_mpi_comm
-```
+\snippet mpi/docs/mpi_examples.cxx example
+

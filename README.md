@@ -70,6 +70,7 @@ PDI distribution is made of the following submodules:
 * `tests/api_tests/`: tests of PDI API (can be used with either PDI or mock PDI),
 * `tests/cmake_tests/`: test the installation of PDI from cmake,
 * `tests/combination_tests/`: tests that combine multiple plugins,
+* `tests/installation_tests/`: test the installation commands the documentation shows,
 * `tutorial/`: the PDI tutorial,
 * `vendor/`: source for vendored PDI dependencies.
 * `ACKNOWLEDGMENTS.md`, `AUTHORS`, `bin/`, `CHANGELOG.md`, `cmake/`,

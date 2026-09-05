@@ -1,9 +1,11 @@
+#! [app_config]
 # duration in seconds
 duration: 0.75
 # global [height, width] (excluding boundary conditions or ghosts)
 datasize: [60, 12]
 # degree of parallelism
 parallelism: { height: 3, width: 1 }
+#! [app_config]
 
 # only the following config is passed to PDI
 pdi:

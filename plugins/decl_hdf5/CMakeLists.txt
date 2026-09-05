@@ -97,6 +97,7 @@ install(TARGETS pdi_decl_hdf5_plugin
 
 # Tests
 if("${BUILD_TESTING}")
+	add_subdirectory(docs/)
 	add_subdirectory(tests/)
 endif()
 

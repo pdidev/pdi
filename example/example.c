@@ -25,9 +25,11 @@
 #include <mpi.h>
 #include <assert.h>
 #include <math.h>
+//! [ifdef_include]
 #ifndef WITHOUT_PARACONF
 #include <paraconf.h>
 #endif
+//! [ifdef_include]
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -160,16 +162,22 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
+	//! [ifdef_parse]
 #ifndef WITHOUT_PARACONF
 	PC_tree_t conf = PC_parse_path(argv[1]);
 #endif
+	//! [ifdef_parse]
 
 	MPI_Comm main_comm = MPI_COMM_WORLD;
 #ifndef WITHOUT_PARACONF
+	//! [pdi_init]
 	PDI_init(PC_get(conf, ".pdi"));
+	//! [pdi_init]
 #endif
 
+	//! [mpi_comm]
 	PDI_expose("mpi_comm", &main_comm, PDI_INOUT);
+	//! [mpi_comm]
 
 	int psize_1d;
 	MPI_Comm_size(main_comm, &psize_1d);
@@ -210,12 +218,15 @@ int main(int argc, char* argv[])
 #endif
 	psize[1] = longval;
 
+	//! [ifdef_paraconf_use]
 	double duration;
 #ifndef WITHOUT_PARACONF
 	PC_double(PC_get(conf, ".duration"), &duration);
 #else
+	// if we don't have paraconf available, we use a default, because... why not.
 	duration = 0.1;
 #endif
+	//! [ifdef_paraconf_use]
 
 	// get local & add ghosts to sizes
 	assert(dsize[0] % psize[0] == 0);
@@ -233,9 +244,11 @@ int main(int argc, char* argv[])
 
 	int ii = 0;
 	PDI_expose("iter", &ii, PDI_OUT);
+	//! [expose_sizes]
 	PDI_expose("dsize", dsize, PDI_OUT);
 	PDI_expose("psize", psize, PDI_OUT);
 	PDI_expose("pcoord", pcoord, PDI_OUT);
+	//! [expose_sizes]
 
 	double(*cur)[dsize[1]] = malloc(sizeof(double) * dsize[1] * dsize[0]);
 	double(*next)[dsize[1]] = malloc(sizeof(double) * dsize[1] * dsize[0]);
@@ -246,7 +259,9 @@ int main(int argc, char* argv[])
 	double start = MPI_Wtime();
 	int next_reduce = 0;
 	for (ii = 0;; ++ii) {
+		//! [multi_expose]
 		PDI_multi_expose("newiter", "iter", &ii, PDI_INOUT, "main_field", cur, PDI_INOUT, NULL);
+		//! [multi_expose]
 
 		iter(dsize, cur, next);
 		exchange(cart_com, dsize, next);

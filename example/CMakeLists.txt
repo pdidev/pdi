@@ -42,7 +42,9 @@ option(BUILD_JSON_PLUGIN        "Build JSON plug-in"         OFF)
 option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in"       OFF)
 option(BUILD_PYTHON             "Build with Python support"  OFF)
 option(BUILD_TIMER_PLUGIN       "Build Timer plugin"         OFF)
-option(DISABLE_PDI              "Disable the use of both PDI and Paraconf in the project" OFF)
+#! [disable_pdi_option]
+option(DISABLE_PDI "Disable the use of both PDI and Paraconf in the project" OFF)
+#! [disable_pdi_option]
 
 if("${BUILD_FORTRAN}")
 	enable_language(Fortran)
@@ -92,6 +94,8 @@ end module
 	endif()
 endif()
 
+
+add_subdirectory(docs)
 
 add_executable(PDI_example_C example.c)
 target_link_libraries(PDI_example_C PRIVATE PDI::PDI_C paraconf::paraconf MPI::MPI_C m)

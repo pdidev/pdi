@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <filesystem>
 #include <fstream>
 
 #include <pdi/testing.h>
@@ -318,4 +319,63 @@ metadata:
 
 	int constexpr array_size = 7;
 	PDI_expose("array_size", &array_size, PDI_OUT);
+}
+
+// The forms of the `include' keyword that \ref include_node documents, checked
+// here so that the reference cannot show a syntax PDI would reject.
+TEST_F(IncludeTest, DocumentedForms)
+{
+	{
+		std::filesystem::create_directories("my");
+		std::ofstream("my/file.yaml") << R"==(
+metadata:
+  my_int: int
+pdi:
+  metadata:
+    my_other_int: int
+)==";
+		std::ofstream("relative_file.yaml") << R"==(
+- metadata: {first_int: int}
+- metadata: {second_int: int}
+)==";
+	}
+
+	// a scalar is a shortcut for a file with an empty subtree
+	//! [include_scalar]
+	// "my/file.yaml"
+	//! [include_scalar]
+
+	InitPdi(PC_parse_string(R"==(
+#! [include_explicit]
+include:
+  file: "my/file.yaml"
+  subtree: ""
+#! [include_explicit]
+)=="));
+
+	InitPdi(PC_parse_string(R"==(
+#! [include_with_subtree]
+include:
+  file: "my/file.yaml"
+  subtree: ".pdi"
+#! [include_with_subtree]
+)=="));
+
+	// a single include is a shortcut for a sequence holding it
+	InitPdi(PC_parse_string(R"==(
+#! [include_seq]
+include:
+  - file: "my/file.yaml"
+    subtree: ".pdi"
+#! [include_seq]
+)=="));
+
+	// a subtree can also select an element of a sequence
+	InitPdi(PC_parse_string(R"==(
+#! [include_subtree_index]
+include:
+  file: "relative_file.yaml"
+  subtree: "[1]"
+#! [include_subtree_index]
+)=="));
 }

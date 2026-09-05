@@ -60,6 +60,29 @@ jobs:
       uses: ./.github/actions/test/
       with: 
         image: 'ghcr.io/pdidev/ubuntu/jammy/openmpi/mini:v4'
+  installation:
+    # The installation procedure of the documentation, run for real: it downloads
+    # the latest release and builds & installs it with the very commands the page
+    # shows.
+    # The `all' spack image is the one that fits: its spack tree provides `curl',
+    # a parallel HDF5 & NetCDF and every other dependency, so the release builds
+    # against them instead of compiling its embedded copies and the whole job
+    # takes about 4 minutes.
+    needs: indent
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v6
+    - name: Test the documented installation
+      run: |
+        docker run --rm -v "${PWD}:/src:ro" \
+          ghcr.io/pdidev/spack/latest/gcc/openmpi/all:v4 \
+          bash -c '
+            set -ex
+            cd /tmp
+            cmake -S /src/tests/installation_tests -B installation_tests
+            ctest --output-on-failure --timeout 3600 --test-dir installation_tests
+          '
   spack:
     needs: second
     strategy:

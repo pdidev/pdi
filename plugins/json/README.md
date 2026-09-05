@@ -25,11 +25,8 @@ The JSON plugin doesn't yet support the function of waiting for multiple variabl
 There are two syntax for the JSON configuration file:
 First one is `var_name: file_path.json`, as for example :
 
-```yaml
-plugins:
-  json:
-    data1: file_path.json 
-```
+\snippet json/docs/json_examples.cxx example_1
+
 
 The second one starts with `- file: file_path.json` with arguments below
 
@@ -41,13 +38,8 @@ The second one starts with `- file: file_path.json` with arguments below
 
 For example,
 
-```yaml
-plugins:
-  json:
-    - file: file_path.json
-      when: iteration % 10 = 0 # This is optional
-      write: [data1, data2, ...]
-```
+\snippet json/docs/json_examples.cxx example_2
+
 
 Note : By default, if the key "when" is not specified, a true condition is set so that the variable is written every time PDI is granted read permission.
 Examples of those two syntax are given in `example/json.yml`.
@@ -87,81 +79,20 @@ For the sake of the example, let's imagine the following code, creating which pe
 
 <!-- \image html json_simulation_code_light.png width=800px -->
 
-```C
-    PDI_multi_expose("init",
-        "simulation_name", &simulation_name, PDI_OUT,
-        "max_steps", &max_steps, PDI_OUT,
-        "mesh_config", &mesh_config, PDI_OUT,
-        "rank", &rank, PDI_OUT,
-        NULL) ;
-
-    // main loop
-    for (int step = 0; step < nb_steps; ++step) {
-        do_compute(temp, MPI_COMM_WORLD) ;
-
-        // share data at every iteration
-        PDI_multi_expose("iter",
-            "step", &step, PDI_OUT,
-            "temp", temp, PDI_OUT,
-            NULL) ;
-        MPI_Barrier(MPI_COMM_WORLD);
-        ...
-    }
-```
+\snippet json/docs/json_simulation.cxx simulation
 
 ### The related YAML configuration
 <!-- \image html simulation_yaml_light.png width=800px -->
 
-```yaml
-types: # [...] including config_t description
-    metadata: {rank: int, step: int}
-    data:
-        simulation_name: { type: array, subtype: char, size: 512 }
-        max_steps: int
-        mesh_config:
-            type: struct
-            members:
-            - dimensions: { type: array, subtype: int, size: 3}
-            - spacings: { type: array, subtype: int, size: 3}
+\snippet json/docs/json_examples.cxx example_3
 
-        temp: # the main temperature field
-        - type: array
-        - subtype: double
-        - size: '$mesh_config.dimensions'
-
-plugins:
-    json:
-    - file: data-$rank.json
-      write: [step, temp]
-      when: '$step > 0
-```
 
 ### JSON output
 If we run this code as is, the following JSON file would get generated.
 
 <!-- \image html json_json_light.png width=800px -->
 
-```json
-[{
-    "simulation_name": "Heat_transfer_simulation",
-    "max_steps": 10,
-    "mesh_config": {
-        "dimensions": [100, 100, 50],
-        "spacing": [0.1, 0.1, 0.1]
-    },
-    "rank": 7,
-},
-{
-    "step" : 1,
-    "temp": [75.3, 74.7, 76.1, ..., 54.2, 55.6]
-},
-{
-    "step" :2,
-    "temp" :[01.8, 89.6, 92.7, ..., 12.5, 13.7]
-},
-...
-]
-```
+\include json/docs/simulation.expected.json
 
 We can use this output json file to generate our custom format. For example, we can rely on [mustache](https://mustache.github.io/) to do so.
 
@@ -173,8 +104,8 @@ Simulation {{simulation_name}} of {{max_steps}} iterations.
 Mesh configuration was of {{mesh_config.dimensions}} dimensions and {{mesh_config.spacing}} spacings
 {{#temperature_data}}
     At step {{step}}:
-    temp was [{{#temp}}{{.}}{{#last}}{{^last}},{{/last}}{{/temp}}]
-{{/temperature_datal}}
+    temp was [{{#temp}}{{.}}{{^last}},{{/last}}{{/temp}}]
+{{/temperature_data}}
 ```
 
 Finaly, let's print it ! We execute the json to mustache converter ...
@@ -192,5 +123,5 @@ Simulation Heat_transfer_simulation of 10 iterations.
 Mesh configuration was of [100, 100, 50] dimensions and [0.1, 0.1, 0.1] spacings
 At step 1, temp was [75.3, 74.7, 76.1, ..., 54.2, 55.6]
 At step 2, temp was [91.8, 89.6, 92.7, ..., 12.5, 13.7]
-...
+# ...
 ```

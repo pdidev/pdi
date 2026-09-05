@@ -21,46 +21,17 @@ The serialize configuration is made of only:
 
 ## Plugin examples {#serialize_plugin_examples}
 
-```yaml
-data:
-  sparse_array:
-    type: array
-    subtype: int
-    size: 8
-    start: 2
-    subsize: 4
-plugins:
-  serialize:
-    logging: debug
-    sparse_array: dense_array
-```
+\snippet serialize/docs/serialize_examples.cxx sparse_array
+
 On each `sparse_array` data share, the plugin will share serialized data under the `dense_array` name.
 The `dense_array` will be of type:
-```yaml
-type: array
-subtype: int
-size: 4
-```
+\snippet serialize/docs/serialize_examples.cxx dense_type
+
 
 Another example:
-```yaml
-data:
-  pointer_to_sparse_array:
-    type: pointer
-    subtype:
-      type: array
-      subtype: int
-      size: 8
-      start: 2
-      subsize: 4
-plugins:
-  serialize:
-    pointer_to_sparse_array: dense_array
-```
+\snippet serialize/docs/serialize_examples.cxx pointer_to_sparse
+
 On each `pointer_to_sparse_array` data share, the plugin will share serialized data under the `dense_array` name.
 The `dense_array` again will be of type:
-```yaml
-type: array
-subtype: int
-size: 4
-```
+\snippet serialize/docs/serialize_examples.cxx dense_type_2
+

@@ -50,5 +50,6 @@ install(TARGETS pdi_user_code_plugin
 
 # Tests
 if("${BUILD_TESTING}")
+	add_subdirectory(docs/)
 	add_subdirectory(tests/)
 endif()

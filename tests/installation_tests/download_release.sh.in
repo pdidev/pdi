@@ -1,0 +1,72 @@
+#!/bin/bash
+#=============================================================================
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# * Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# * Neither the names of CEA, nor the names of the contributors may be used to
+#   endorse or promote products derived from this software without specific
+#   prior written  permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#=============================================================================
+
+# Checks that the download, build and install commands shown in the source
+# installation documentation really work for the latest release.
+#
+# The version below is substituted by cmake from the content of the
+# `RELEASED_VERSION' file, so that this script names the latest release without
+# anybody having to keep a copy of the version up to date; `bin/release' only
+# updates `RELEASED_VERSION'.
+# Both this test and the documentation use the *configured* file from the binary
+# directory, so the two can never disagree.
+#
+# The commands are run for real, in a throw-away directory: `HOME' is pointed at
+# it so that the `${HOME}/.local/' prefix the page shows installs there rather
+# than in the home of whoever runs the test suite.
+
+set -e -o pipefail
+
+WORKDIR="$(mktemp -d)"
+trap 'rm -rf "${WORKDIR}"' EXIT
+cd "${WORKDIR}"
+
+# the page installs to `${HOME}/.local/', keep that out of the real home
+export HOME="${WORKDIR}"
+
+#! [download]
+curl -LO https://github.com/pdidev/pdi/archive/refs/tags/@PDI_RELEASED_VERSION@.tar.gz
+tar -xzf @PDI_RELEASED_VERSION@.tar.gz
+#! [download]
+
+# the archive really holds the release the documentation names
+test -d "pdi-@PDI_RELEASED_VERSION@"
+test -f "pdi-@PDI_RELEASED_VERSION@/CMakeLists.txt"
+
+#! [build]
+mkdir pdi-@PDI_RELEASED_VERSION@/build
+cd pdi-@PDI_RELEASED_VERSION@/build
+cmake -DCMAKE_INSTALL_PREFIX="${HOME}/.local/" ..   # configuration
+make install   # compilation and installation
+#! [build]
+
+# the commands really produced an installation a user can load
+test -f "${HOME}/.local/bin/pdirun"
+test -d "${HOME}/.local/include"

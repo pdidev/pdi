@@ -35,25 +35,13 @@ If you have instrumented your code using %PDI but no %PDI installation is availa
 
 To compile C/C++ applications, cmake must find the `C` component from %PDI package and the `PDI::PDI_C` target must be linked to the application target:
 Because in order to initialize %PDI, you also have to use Paraconf, you should do the same for Paraconf component `C` and target `paraconf::paraconf`.
-```CMake
-find_package(paraconf REQUIRED COMPONENTS C)
-find_package(PDI REQUIRED COMPONENTS C)
-
-add_executable(exec_file source_files.c)
-target_link_libraries(exec_file PRIVATE PDI::PDI_C paraconf::paraconf)
-```
+\snippet cmake_tests/documented_usage/CMakeLists.txt c_usage
 
 ### Fortran compilation {#fortan_compiling_by_cmake_application}
 
 To compile Fortran applications, cmake must find the `C` component from %PDI and the `PDI::PDI_f90` target must be linked to the application target.
 Because in order to initialize %PDI, you also have to use Paraconf, you should do the same for Paraconf component `f90` and target `paraconf::paraconf_f90`.
-```CMake
-find_package(paraconf REQUIRED COMPONENTS f90)
-find_package(PDI REQUIRED COMPONENTS f90)
-
-add_executable(exec_file source_files.c)
-target_link_libraries(exec_file PRIVATE PDI::PDI_f90 paraconf::paraconf_f90)
-```
+\snippet cmake_tests/documented_usage/CMakeLists.txt f90_usage
 
 ## Running the application {#running_app}
 
@@ -93,20 +81,12 @@ I you do not or can not do it, have a look at the \ref MockFind "\"MockFind\" ap
 
 To use "SubdirMock", your need to introduce a new cmake option in your project.
 For example, in the %PDI `example`, the option is called `DISABLE_PDI`.
-```CMake
-option(DISABLE_PDI "Disable the use of both PDI and Paraconf in the project" OFF)
-```
+\snippet example/CMakeLists.txt disable_pdi_option
 
 Then, where you used to look for %PDI, you will have to replace the call to `find_package` by a call to `add_subdirectory`.
 As parameter, pass the location where you copied the `mock_pdi` directory in your project.
 
-```CMake
-if("${DISABLE_PDI}")
-	add_subdirectory(<path/to>/mock_pdi mock_pdi)
-else()
-	find_package(PDI REQUIRED)
-endif()
-```
+\snippet cmake_tests/documented_usage/subdirmock.cmake.in subdirmock
 
 With this approach, your code should be able to compile without %PDI.
 Please note, that it will still require Paraconf however.
@@ -125,15 +105,7 @@ If you want to go further and make Paraconf optional too:
 1. set `PDI_MOCK_PARACONF_TARGET` to true before the `add_subdirectory` call, and
 2. put Paraconf `find_package` in the same place as the one for %PDI that is not called in case your disabling option is set.
 
-```CMake
-if("${DISABLE_PDI}")
-	set(PDI_MOCK_PARACONF_TARGET TRUE)
-	add_subdirectory(<path/to>/mock_pdi mock_pdi)
-else()
-	find_package(paraconf REQUIRED)
-	find_package(PDI REQUIRED)
-endif()
-```
+\snippet cmake_tests/documented_usage/subdirmock.cmake.in subdirmock_without_paraconf
 \remark
 Again, in your code, you can check the `WITHOUT_PDI` macro.
 This time, you can also check and handle the case where Paraconf is disabled by checking the `WITHOUT_PARACONF` macro.
@@ -147,17 +119,9 @@ The two uses you most definitely make in your code are
 2. the one to provide the `PC_tree_t` to %PDI.
 These should be `#ifdef`ed out.
 
-```C
-#ifndef WITHOUT_PARACONF
-#include <paraconf.h>
-#endif
-```
+\snippet example/example.c ifdef_include
 
-```C
-#ifndef WITHOUT_PARACONF
-	PDI_init(PC_parse_path(config_file]));
-#endif
-```
+\snippet example/example.c ifdef_parse
 
 And if your only use of Paraconf is for %PDI, that's all you have to do.
 
@@ -165,15 +129,7 @@ If you use Paraconf beyond %PDI, you will have to `#ifdef` out those usages too.
 Here you are on your own to provide sensible values instead of the one read from YAML by Paraconf.
 
 For example:
-```C++
-	double duration;
-#ifndef WITHOUT_PARACONF
-	PC_double(PC_get(conf, ".duration"), &duration);
-#else
-	// if we don't have paraconf available, we use 10 as duration, because... why not.
-	duration = 10;
-#endif
-```
+\snippet example/example.c ifdef_paraconf_use
 
 You can find a full example of this approach in the `example` directory.
 

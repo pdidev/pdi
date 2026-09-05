@@ -28,17 +28,7 @@ At its root, the Set_value configuration is made of:
 Specifies a list of operation to do in \ref PDI_init function.
 `on_init` is a list of \ref value_operation s.
 
-```yaml
-plugins:
-  set_value:
-    on_init:
-      - set: ... # value_list
-      - share: ... # value_list
-      - expose: ... # value_list
-      - release: ... # value_list
-      - event: ... # value
-      - logger: ... # logger_map
-```
+\snippet set_value/docs/set_value_examples.cxx grammar_on_init
 
 ### on_event {#on_event_map_node}
 
@@ -49,23 +39,7 @@ Specifies a map of events that will trigger the values set.
 |:--|:----|
 |`".*"` (*optional*)|a list of \ref value_operation|
 
-```yaml
-plugins:
-  set_value:
-    on_event:
-      event_1_name:
-        - set: ... # value_list
-        - share: ... # value_list
-        - expose: ... # value_list
-        - release: ... # value_list
-        - event: ... # value
-      event_2_name:
-        - set: ... # value_list
-        - share: ... # value_list
-        - expose: ... # value_list
-        - release: ... # value_list
-        - event: ... # value
-```
+\snippet set_value/docs/set_value_examples.cxx grammar_on_event
 
 ### on_data {#on_data_map_node}
 
@@ -76,43 +50,14 @@ Specifies a map of data that on share will trigger the values set.
 |:--|:----|
 |`".*"` (*optional*)|a list of \ref value_operation|
 
-```yaml
-metadata:
-  metadata_1_name: ... # metadata_type
-data:
-  data_1_name: ...  # data_type
-plugins:
-  set_value:
-    on_data:
-      data_1_name:
-        - set: ... # value_list
-        - share: ... # value_list
-        - expose: ... # value_list
-        - release: ... # value_list
-        - event: ... # value
-      metadata_1_name:
-        - set: ... # value_list
-        - share: ... # value_list
-        - expose: ... # value_list
-        - release: ... # value_list
-        - event: ... # value
-```
+\snippet set_value/docs/set_value_examples.cxx grammar_on_data
 
 ### on_finalize {#on_finalize_list_node}
 
 Specifies a list of operation to do in \ref PDI_finalize function.
 `on_finalize` is a list of \ref value_operation s.
 
-```yaml
-plugins:
-  set_value:
-    on_finalize:
-      - set: ... # value_list
-      - share: ... # value_list
-      - expose: ... # value_list
-      - release: ... # value_list
-      - event: ... # value
-```
+\snippet set_value/docs/set_value_examples.cxx grammar_on_finalize
 
 ### value operation {#value_operation}
 A value operation is specified as a key-value pair (a **mapping** whose content
@@ -152,14 +97,8 @@ Is a map of descriptor name as a key, and a value to set as a value:
 |:--|:----|
 |`".*"` (*optional*)|a scalar value to set|
 
-```yaml
-metadata:
-  scalar_name: int
-set_value:
-  on_init:
-    - expose:
-      - scalar_name: 42
-```
+\snippet set_value/docs/set_value_examples.cxx example_1
+
 
 ### array value {#array_value}
 Is a map of descriptor name as a key, and a list of values to set as a value:
@@ -168,19 +107,8 @@ Is a map of descriptor name as a key, and a list of values to set as a value:
 |:--|:----|
 |`".*"` (*optional*)|a list of value to set|
 
-```yaml
-metadata:
-  array_name:
-    type: array
-    size: 4
-    subtype: int
+\snippet set_value/docs/set_value_examples.cxx example_2
 
-plugins:
-  set_value:
-    on_init:
-      - expose:
-        - array_name: [2, 3, 4, 5]
-```
 
 ### record value {#record_value}
 Is a map of descriptor name as a key, and a list of members to set as a value.
@@ -191,28 +119,8 @@ but the plugin will set the values to the members in the same order.
 |:--|:----|
 |`".*"` (*optional*)|a map with member name as key and a value to set as value|
 
-```yaml
-metadata:
-  record_name:
-    type: record
-    buffersize: 16
-    members:
-      member_1:
-        disp: 0
-        type: array
-        size: 3
-        subtype: int
-      member_2:
-        disp: 12
-        type: int
+\snippet set_value/docs/set_value_examples.cxx example_3
 
-set_value:
-  on_init:
-    - expose:
-      - record_name:
-          member_2: 3 # int member
-          member_1: [1, 2, 3] # array of ints member
-```
 
 ### logger map {#logger_map}
 Defines settings for global PDI logger.
@@ -224,115 +132,30 @@ Defines settings for global PDI logger.
 
 ## full configuration example {#full_config}
 
-```yaml
-metadata:
-  array_size: int64
+\snippet set_value/docs/set_value_examples.cxx example_4
 
-data:
-  record_data:
-    type: record
-    buffersize: 36
-    members:
-      scalar_data: 
-        disp: 0
-        type: int
-      array_data:
-        disp: 4
-        type: array
-        size: $array_size
-        subtype: int
-
-plugins:
-  set_value:
-    on_init:
-      - expose:
-        - array_size: 3
-      - share:
-        - record_data:
-          - scalar_data: 0
-          - array_data: [0, 0, 0]
-    on_event:
-      event_1_name:
-        - set:
-          - record_data:
-            - scalar_data: 3
-            - array_data: [1, 2, 3]
-    on_finalize:
-      - release: [record_data]
-```
 
 ## Using old values to set new {#old_to_new}
 ### Increment value {#increment}
 The set_value plugin allows to use the old values to set new values, you can use even the same
 descriptor, for example to increment a scalar. 
 
-```yaml
-data:
-  value_int:
-    type: int
-  int_array:
-    size: 3
-    subtype: int
-    type: array
-plugins:
-  set_value:
-    on_event:
-      init:
-        - share:
-          - value_int: 0
-          - int_array: [1, 2, 3]
-      increment:
-        - set:
-          - value_int: "$value_int + 1"
-          - int_array: ["$int_array[0] + 1", "$int_array[1] + 1", "$int_array[2] + 1"]
-    on_finalize:
-      - release: [value_int, int_array]
-```
+\snippet set_value/docs/set_value_examples.cxx example_5
+
 After calling `init` and `increment` event, `value_int` will be equal 1, and `int_array` to [2, 3, 4].
 
 ### Getting old value {#increment_in_array}
 The new value is set at the end of processing the whole descriptors. This means, that if
 you want to update the array element depending on other element, the old value will be set:
 
-```yaml
-metadata:
-  int_array:
-    size: 3
-    subtype: int
-    type: array
-plugins:
-  set_value:
-    on_event:
-      init:
-        - expose:
-          - int_array: [0, 0, 0]
-      increment:
-        - expose:
-          - int_array: ["$int_array[0] + 1", "$int_array[0] + 1", "$int_array[1] + 1"]
-```
+\snippet set_value/docs/set_value_examples.cxx example_6
+
 After calling `init` and `increment` event, all values in `int_array` will equal `1`. 
 This is because the `int_array[0]` was updated after setting all the elements.
 
 ### Getting new value {#update_array_after_scalar}
 
-```yaml
-metadata:
-  int_scalar: int
-  int_array:
-    size: 3
-    subtype: int
-    type: array
-plugins:
-  set_value:
-    on_event:
-      init:
-        - expose:
-          - int_scalar: 0
-          - int_array: [0, 0, 0]
-      increment:
-        - expose:
-          - int_scalar: $int_scalar+1
-          - int_array: ["$int_scalar", "$int_scalar", "$int_scalar"]
-```
+\snippet set_value/docs/set_value_examples.cxx example_7
+
 After calling `init` and `increment` event, all values in `int_array` will equal `1`. 
 This is because the `int_scalar` is set and then the `int_array` is updated after the `int_scalar` has a new value.

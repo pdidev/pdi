@@ -44,6 +44,7 @@ int main(int argc, char* argv[])
 	);
 	PDI_init(conf);
 
+	//! [example]
 	int a[3] = {1, 2, 3};
 
 	printf(" * [C] starting with $a = [%d %d %d]\n", a[0], a[1], a[2]);
@@ -53,6 +54,7 @@ int main(int argc, char* argv[])
 	PDI_reclaim("a");
 
 	printf(" * [C] now I see     $a = [%d %d %d]\n", a[0], a[1], a[2]);
+	//! [example]
 	if (a[0] != 1 || a[1] != 7 || a[2] != 3) {
 		fprintf(stderr, "*** Error: expected [1, 7, 3]!\n");
 		exit(1);

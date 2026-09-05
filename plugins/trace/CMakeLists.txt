@@ -26,6 +26,7 @@ cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_trace_plugin LANGUAGES C CXX)
 
 # Includes
+include(CTest)
 include(GNUInstallDirs)
 
 # PDI
@@ -41,3 +42,9 @@ set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${P
 install(TARGETS pdi_trace_plugin
 		LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}"
 )
+
+
+# Tests
+if("${BUILD_TESTING}")
+	add_subdirectory(docs/)
+endif()

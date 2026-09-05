@@ -27,23 +27,9 @@ The root of Decl'NetCDF plugin configuration (named `decl_netcdf`), is a diction
 |`read`         |\ref decl_netcdf_read      |*optional*  |
 
 Configuration examples:
-```yaml
-plugins:
-  decl_netcdf:
-    file: ""file_name.nc""
-    write: ...
-```
+\snippet decl_netcdf/docs/decl_netcdf_examples.cxx overview_1
 
-```yaml
-plugins:
-  decl_netcdf:
-    - file: ""file_name.nc""
-      write: ...
-    - file: "file_name_2.nc"
-      write: ...
-    - file: ""file_name.nc""
-      read: ...
-```
+\snippet decl_netcdf/docs/decl_netcdf_examples.cxx overview_2
 
 ### file subtree {#decl_netcdf_file}
 
@@ -54,11 +40,8 @@ Defines name (path) of the input/output file.
 |`file`|string containing filename (can have `$-expressions`)|
 
 Configuration example:
-```yaml
-plugins:
-  decl_netcdf:
-    file: "file_name_${i}.nc"
-```
+\snippet decl_netcdf/docs/decl_netcdf_examples.cxx example_1
+
 
 ### communicator subtree {#decl_netcdf_comm}
 
@@ -71,12 +54,8 @@ Enables parallel NetCDF input/output. Defines communicator to use on read/write 
 |`communicator`|`$-expression` to valid MPI_comm |
 
 Configuration example:
-```yaml
-plugins:
-  decl_netcdf:
-    file: ""file_name.nc""
-    communicator: $MPI_COMM_WORLD
-```
+\snippet decl_netcdf/docs/decl_netcdf_examples.cxx example_2
+
 
 ### on_event subtree {#decl_netcdf_on_event}
 
@@ -88,19 +67,11 @@ name or the array of events names (both examples presented below).
 |`on_event`|string or array of string that cointain event names|
 
 Configuration examples:
-```yaml
-plugins:
-  decl_netcdf:
-    file: "file_name.nc"
-    on_event: "event"
-```
+\snippet decl_netcdf/docs/decl_netcdf_examples.cxx example_3
 
-```yaml
-plugins:
-  decl_netcdf:
-    file: "file_name.nc"
-    on_event: ["event_1", "event_2"]
-```
+
+\snippet decl_netcdf/docs/decl_netcdf_examples.cxx example_4
+
 
 ### when subtree {#decl_netcdf_when}
 
@@ -111,12 +82,8 @@ Defines the condition on which plugin will execute input/output operation on the
 |`when`|`$-expression` condition evalueated to boolean value|
 
 Configuration example:
-```yaml
-plugins:
-  decl_netcdf:
-    file: "file_name.nc"
-    when: "$i < 10"
-```
+\snippet decl_netcdf/docs/decl_netcdf_examples.cxx example_5
+
 
 ### groups subtree {#decl_netcdf_groups}
 
@@ -129,24 +96,8 @@ If group won't have any attributes, this subtree can be omitted. Decl'NetCDF plu
 |`groups`|Map of \ref decl_netcdf_groups_name |
 
 Configuration example:
-```yaml
-plugins:
-  decl_netcdf:
-    file: "file_name.nc"
-    groups:
-      group1:
-        attributes:
-          attr1: 
-            value: $value1
-          attr2: 
-            value: $value2
-      group1/group2:
-        attributes:
-          attr1: 
-            value: $value3
-          attr2: 
-            value: $value4
-```
+\snippet decl_netcdf/docs/decl_netcdf_examples.cxx example_6
+
 
 #### group name subtree {#decl_netcdf_groups_name}
 
@@ -162,12 +113,8 @@ plugins:
 
 See \ref decl_netcdf_variables for more information about the `deflate` attribut.
 Configuration example:
-```yaml
-plugins:
-  decl_netcdf:
-    - file: "compressed_file.nc"
-      deflate: 6
-```
+\snippet decl_netcdf/docs/decl_netcdf_examples.cxx example_7
+
 
 ### variables subtree {#decl_netcdf_variables}
 
@@ -186,21 +133,8 @@ Defines variables in the NetCDF file. Mainly used to define dimensions names and
 |variable path |\ref decl_netcdf_variables_value |
 
 Configuration example:
-```yaml
-plugins:
-  decl_netcdf:
-    file: "file_name.nc"
-    variables:
-      group1/group2/variable_name:
-        type: array
-        subtype: double
-        size: [0, $value, $value] # 0 -> UNLIMITED dimension
-        dimensions: ["time", "height", "width"]
-        deflate: 6
-        chunking: [10, 100, 100]
-        attributes:
-          attr1: $value
-```
+\snippet decl_netcdf/docs/decl_netcdf_examples.cxx example_8
+
 
 
 #### variable definition subtree {#decl_netcdf_variables_value}
@@ -371,73 +305,5 @@ The `read` subtree can have 2 definitions:
 
 ### Full yaml example {#decl_netcdf_full_config}
 
-```yaml
-metadata:
-  var_attr: float
-  group1_attr: float
-  group1_data_attr: float
-data:
-  int_submatrix_top:
-    type: array
-    subtype: int
-    size: [4, 8]
-  int_submatrix_bottom:
-    type: array
-    subtype: int
-    size: [4, 8]
-plugins:
-  decl_netcdf:
-    - file: "example.nc"
-      on_event: "write"
-      groups:
-        group_1:
-          attributes:
-            some_attr: $group1_attr
-        group_1/data:
-          attributes:
-            some_attr: $group1_data_attr
-      variables:
-        group_1/data/int_matrix:
-          type: array
-          subtype: int
-          size: [8, 8]
-          dimensions: ["height", "width"]
-          attributes:
-            custom_attr: $var_attr
-      write: 
-        int_submatrix_top:
-          variable: group_1/data/int_matrix
-          variable_selection:
-            start: [0, 0]
-            subsize: [4, 8]
-        int_submatrix_bottom:
-          variable: group_1/data/int_matrix
-          variable_selection:
-            start: [4, 0]
-            subsize: [4, 8]
-    - file: "example.nc"
-      on_event: "read"
-      groups:
-        group_1/data:
-          attributes:
-            some_attr: $custom_attr
-      variables:
-        group_1/data/int_matrix:
-          type: array
-          subtype: int
-          size: [8, 8]
-          dimensions: ["height", "width"]
-          attributes:
-            custom_attr: $var_attr
-      read: 
-        int_submatrix_top:
-          variable: group_1/data/int_matrix
-          variable_selection:
-            start: [0, 0]
-            subsize: [4, 8]
-        int_submatrix_bottom:
-          variable: group_1/data/int_matrix
-          variable_selection:
-            start: [4, 0]
-            subsize: [4, 8]
-```
+\snippet decl_netcdf/docs/decl_netcdf_examples.cxx example_9
+

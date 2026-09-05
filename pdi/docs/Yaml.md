@@ -7,14 +7,7 @@ specification tree.
 A YAML file is a text format file that represents a tree.
 
 For example, the following file:
-```yaml
-tree_1:
-  array_1:
-    - scalar_1
-    - scalar_2
-  array_2: [1, 2, 3]
-tree_2: {subtree_1: scalar_1, subtree_2: scalar_2}
-```
+\snippet Yaml/yaml_examples.cxx yaml_tree
 
 Represents the following tree:
 ![Graphical representation of the YAML Tree](yaml_example.jpg)
@@ -48,13 +41,7 @@ Two variants of the syntax are available for sequences (see the
 complete syntax).
 * in-line sequence: `[1, 2, 3, hello, "world"]`
 * multi-line sequence:
-```
-- 1
-- 2
-- 3
-- hello
-- world
-```
+\snippet Yaml/yaml_examples.cxx sequence
 
 Sequences are represented in yellow in the graphical representation.
 
@@ -69,11 +56,7 @@ Two variants of the syntax are available for mapping (see the
 complete syntax).
 * in-line mapping: `{1: one, 2: "two", "three": 3}`
 * multi-line mapping:
-```
-1: one
-2: two
-"three": 3
-```
+\snippet Yaml/yaml_examples.cxx mapping
 
 Mapping are represented in blue in the graphical representation.
 
@@ -96,11 +79,7 @@ Two variants of the syntax are available for ordered mapping (see the
 complete syntax).
 * in-line ordered mapping: `[{1: one}, {2: "two"}, {"three": 3}]`
 * multi-line ordered mapping:
-```
-- 1: one
-- 2: two
-- "three": 3
-```
+\snippet Yaml/yaml_examples.cxx ordered_mapping
 
 ## YAML Parsing with Paraconf
 
@@ -108,56 +87,20 @@ The PDI_init function gets as parameter a tree with `include`, `logging`,
 `types`, `metadata`, `data`, `plugin_path`, and `plugins` keys defined in its
 root.
 
-```yaml
-metadata:
-  iteration: int
-data:
-  main_field: double
-plugins:
-  decl_hdf5:
-       ...
-```
+\snippet Yaml/yaml_examples.cxx whole_file
 
 C source code:
-```C
-PDI_init(PC_parse_path("example.yaml"));
-```
+\snippet Yaml/yaml_examples.cxx init_whole_file
 
 Fortran source code:
-```Fortran
-type(PC_tree_t), target :: yaml_tree
-
-call PC_parse_path("example.yaml", yaml_tree)
-call PDI_init(yaml_tree)
-```
+\snippet Yaml/yaml_examples.f90 init_whole_file
 
 If one wants to store additional information unrelated to %PDI in the same
 file, it is possible to pass only the subtree to %PDI:
-```yaml
-duration: 0.75
-size: [64, 64]
-parallelism: { height: 4, width: 4 }
-
-## only the following config will be passed to PDI
-pdi_subtree:
-  metadata:
-    iteration: int
-  data:
-    main_field: double
-  plugins:
-    decl_hdf5:
-       ...
-```
+\snippet Yaml/yaml_examples.cxx subtree
 
 C source code:
-```C
-PDI_init(PC_get(PC_parse_path("example.yaml"), ".pdi_subtree"));
-```
+\snippet Yaml/yaml_examples.cxx init_subtree
 
 Fortran source code:
-```Fortran
-type(PC_tree_t),target :: root
-
-call PC_parse_path("example.yaml", root)
-call PDI_init(PC_get(root, ".pdi_subtree"))
-```
+\snippet Yaml/yaml_examples.f90 init_subtree

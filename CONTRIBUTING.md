@@ -57,8 +57,8 @@ Bugs and feature requests are tracked at https://github.com/pdidev/pdi/issues
 ## Setting up a development build
 
 The dependencies and the supported compiler versions are listed in the [source installation
-documentation](pdi/docs/Source_installation.md); that page is the authoritative list and is kept up
-to date as dependencies change.
+documentation](pdi/docs/Source_installation.md); that page is the authoritative list and is
+kept up to date as dependencies change.
 
 Some components are git submodules, so clone recursively (or initialise them afterwards):
 
@@ -140,8 +140,8 @@ other job:
 ```
 
 It configures and builds the distribution from scratch, runs the whole test suite, installs it,
-then configures, builds and runs `tests/cmake_tests` against that installation, so it also checks
-that the installed package is usable through `find_package`.
+then configures, builds and runs `tests/cmake_tests` against that installation, so it also
+checks that the installed package is usable through `find_package`.
 It takes no argument and builds in a fresh `pdibuild.XXXXX` directory created in the current
 directory, so it leaves your own build tree alone.
 Set `TEST_DIR` to build somewhere specific, `MAKEFLAGS` to control the parallelism, and
@@ -217,7 +217,7 @@ A plugin defines a `class <name>_plugin: public PDI::Plugin` with a constructor 
 `(PDI::Logger&, PDI::Context&, PC_tree_t)` and invokes the `PDI_PLUGIN(<name>)` macro, which emits
 the loader together with the optional `dependencies()` and `pretty_name()` hooks.
 Plugins do their work by registering callbacks on the context from their constructor.
-`pdi/docs/How_to_create_plugin.md` is the reference for writing one.
+`pdi/docs/How_to_create_a_plugin.md` is the reference for writing one.
 
 ### Tests
 
@@ -227,6 +227,8 @@ There are several test suites, each with a different purpose:
 * `tests/api_tests/` exercise the public API against either PDI or mock PDI;
 * `tests/combination_tests/` cover interactions between plugins;
 * `tests/cmake_tests/` verify that a real installation can be consumed through `find_package`;
+* `tests/installation_tests/` download, build and install the latest release the way the source
+  installation page tells a user to, so those commands cannot go stale;
 * `example/` doubles as an integration test suite.
 
 ## Making a change
@@ -249,7 +251,7 @@ Four rules follow from that:
   Judge every change against the latest release, not against the branch.
 * **Pick the section by who is affected, not by which code you touched.**
   *For users* is the application or library consumer: someone writing YAML configuration or calling
-  `pdi.h` / `pdi.F90`.
+  `pdi.h` / the Fortran module.
   *For plugin developers* is whoever writes a `PDI::Plugin` subclass or otherwise codes against the
   public plugin API.
   A change confined to the library-wide or file-local levels of the [API levels](#api-levels) table
@@ -276,6 +278,49 @@ Four rules follow from that:
 * New CMake options, changes to the YAML configuration and changes to the API must be documented in
   `pdi/docs/`.
 * Document any new or changed function or class with doxygen.
+
+#### Make the examples testable
+
+The user documentation in `pdi/docs/` and in the `README.md` of each plugin is built by doxygen.
+An example written inline in a fenced ```` ``` ```` block is a copy that nothing checks: it silently
+goes stale as the code, the specification tree grammar or the log format change around it.
+
+**Write examples in files that are built and run, and pull them into the documentation with the
+doxygen `\snippet` command.**
+Everything under `pdi/docs/` and `plugins/*/docs/` is compiled, and most of it is run, by the test
+suite that CI executes, so an example that stops working breaks the build rather than misleading a
+reader.
+Delimit the region to show with a `//! [label]` comment on either side, and refer to it as
+`\snippet <path> label`.
+The markers themselves never appear in the rendered page.
+
+Prefer one file holding several labelled regions over one file per snippet, so that examples that
+belong together are compiled together; `pdi/docs/First_steps/hello_expose.c` shows two regions in a
+single program.
+
+How to make each kind of block testable:
+
+* **Code** is the simple case: put it in a file the documentation `\snippet`s and that a
+  `CMakeLists.txt` beside it builds.
+  Compiling is enough for an example that only illustrates the syntax of an API.
+* **A specification tree** goes in the example that loads it, as a raw string passed to
+  `PC_parse_string`, so that a single file holds both, as in
+  `plugins/pycall/docs/pycall_examples.cxx`.
+  Put the markers *inside* the `R"PDIYAML( ... )PDIYAML"` delimiters, written as the YAML comments
+  `#! [label]`: the parser ignores them and doxygen shows the tree alone, without the C++ raw string
+  around it.
+  A `#! [label]` marker is part of the string, so never let a region that holds one sit inside
+  another region the documentation shows: the marker would appear in that enclosing listing.
+  An example that must stay C keeps its tree in a separate `.yml` file that the documentation
+  `\snippet`s on its own, as in `plugins/user_code/docs/hello_world.c` and `hello_world.yml`.
+* **Feed a specification tree to `PDI_init`, not to paraconf alone.**
+  Paraconf only tells that a tree is valid YAML; PDI tells that it is a valid specification tree,
+  which is what catches a misspelled type or a key in the wrong place.
+  `pdi/docs/Specification_tree_ref/spec_tree_examples.cxx` does.
+* **An expected output** goes in a `.output` file that the documentation `\snippet`s and that the
+  test compares the run against, so that the same text is shown and asserted.
+  `pdi/docs/run_and_compare.cmake` runs an example and does that comparison; see
+  `plugins/user_code/docs/hello_world.output` for the shape of such a file.
 
 ### Copyright and authorship
 

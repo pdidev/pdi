@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -60,3 +61,24 @@ target_link_libraries(hello_expose_C PDI::PDI_C)
 
 add_executable(hello_multi_expose_C hello_multi_expose.c)
 target_link_libraries(hello_multi_expose_C PDI::PDI_C)
+
+
+# The examples read their specification tree from the current directory and
+# only `hello_access` works without any plugin, the others are executed from
+# the combination tests, once the plugins they use have been built.
+
+if("${BUILD_TESTING}")
+	# the output of the C version is the one the documentation shows
+	add_test(NAME First_steps_hello_access_C
+			COMMAND "${CMAKE_COMMAND}"
+				"-DEXAMPLE=$<TARGET_FILE:hello_access_C>"
+				"-DEXPECTED=${CMAKE_CURRENT_SOURCE_DIR}/hello_access.output"
+				"-DWORKDIR=${CMAKE_CURRENT_SOURCE_DIR}"
+				-P "${CMAKE_CURRENT_SOURCE_DIR}/../run_and_compare.cmake")
+
+	if("${BUILD_FORTRAN}")
+		add_test(NAME First_steps_hello_access_F
+				COMMAND "$<TARGET_FILE:hello_access.f90>"
+				WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+	endif()
+endif()

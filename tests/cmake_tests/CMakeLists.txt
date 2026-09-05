@@ -89,6 +89,9 @@ add_subdirectory(../../tests/combination_tests/ combination_tests)
 message("++ add_subdirectory(subdir)")
 add_subdirectory(subdir)
 
+message(STATUS "Testing the cmake shown in the documentation")
+add_subdirectory(documented_usage)
+
 message(STATUS "Testing multiple find_package(PDI)")
 
 message("++ 1st find_package")

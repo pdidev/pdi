@@ -1,3 +1,4 @@
+#! [data_metadata]
 metadata: # type of small values for which PDI keeps a copy
   iter:   int                    # current iteration id
   dsize:  { size: 2, type: array, subtype: int } # local data size including ghosts/boundary
@@ -7,3 +8,4 @@ metadata: # type of small values for which PDI keeps a copy
   mpi_size: int
 data: # type of values for which PDI does not keep a copy
   main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
+#! [data_metadata]

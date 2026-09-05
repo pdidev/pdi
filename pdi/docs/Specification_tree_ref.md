@@ -37,24 +37,7 @@ The *specification tree root* is a **mapping** that contains the following keys:
 
 ### Example:
 
-```{.python}
-include: my_other_configuration_file.yml
-logging: trace
-types:
-  metadata_t: int
-metadata:
-  my_metadata: metadata_t
-data:
-  my_data:
-    type: array
-    subtype: double
-    size: $my_metadata
-plugin_path:
-  - /usr/lib/pdi
-plugins:
-  decl_hdf5: #...
-  mpi: #...
-```
+\snippet doc_logging.cxx root_tree
 
 
 ## array_type {#array_type_node}
@@ -88,17 +71,9 @@ A *array_type_node* represents a potentially multi-dimensional array where:
 
 ### Example:
 
-```{.python}
-type: array
-subtype: double
-size: 5
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx array_type
 
-```{.python}
-type: array
-subtype: { type: character, kind: 4 }
-size: [ '$size_1d', '$size_2d' ]
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx array_type_2
 
 
 ## byte_type {#byte_type_node}
@@ -117,9 +92,7 @@ It accepts no parameter.
 
 **Example:**
 
-```{.python}
-type: byte
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx byte_type
 
 
 ## char_type {#char_type_node}
@@ -137,9 +110,7 @@ A *char_type* represents the C `char` datatype; it accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: char
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx char_type
 
 
 ## character_type {#character_type_node}
@@ -161,14 +132,9 @@ A *character_type_node* represents the Fortran `character` datatype, where:
 
 ### Example:
 
-```{.python}
-type: character
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx character_type
 
-```{.python}
-type: character
-kind: 4
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx character_type_2
 
 
 ## data_map {#data_map_node}
@@ -184,10 +150,7 @@ type.
 
 ### Example:
 
-```{.python}
-my_data_1: int
-my_data_2: {type: array, subtype: double, size: 5}
-```
+\snippet PDI_doc_datatype.cxx data_map
 
 
 ## datatype {#datatype_node}
@@ -263,13 +226,7 @@ plugins.
 
 ### Example:
 
-```{.yaml}
-  data_name:
-    type: int
-    +first_attr: attr_value_1
-    +second_attr: [attr, value]
-    +third_attr: {key_0: 0, key_1: 1}
-```
+\snippet PDI_doc_datatype.cxx attributes
 
 ## datatype_with_disp {#datatype_with_disp_node}
 
@@ -302,9 +259,7 @@ A *double_type* represents the C `double` type; it accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: double
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx double_type
 
 
 ## $-expression {#expression_node}
@@ -353,28 +308,21 @@ The following strings can also be interpreted as a boolean integer values:
 
 ### Example:
 
-```{.python}
-'$my_data'
-```
+\snippet PDI_doc_expression.cxx simple_reference
 
-```{.python}
-'($my_data + 3) % 6'
-```
+\snippet PDI_doc_expression.cxx operation
 
-```{.python}
-'${my_data.subarray[0]} * 42'
-```
+\snippet PDI_doc_expression.cxx subscript
 
-```{.python}
-'my name is ${my_name}'
-```
+\snippet PDI_doc_expression.cxx in_string
 
-```{.python}
-'${my_data:05d}'
-'${my_data:b}'
-'${my_data:1.5f}'
-'${my_data:>15s}'
-```
+\snippet PDI_doc_expression.cxx format_int
+
+\snippet PDI_doc_expression.cxx format_binary
+
+\snippet PDI_doc_expression.cxx format_float
+
+\snippet PDI_doc_expression.cxx format_string
 
 
 ## float_type {#float_type_node}
@@ -393,9 +341,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: float
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx float_type
 
 
 ## include {#include_node}
@@ -409,15 +355,10 @@ In that context, a scalar is interpreted as a shortcut for a
 to an empty string.
 
 ### Example:
-```yaml
-"/my/file.yaml"
-```
+\snippet include.cxx include_scalar
 
 is interpreted as if it was:
-```yaml
-file: "/my/file.yaml"
-subtree: ""
-```
+\snippet include.cxx include_explicit
 
 
 ## include_or_seq {#include_or_seq_node}
@@ -430,16 +371,10 @@ In that context, a single \ref include_node is interpreted as a shortcut for a
 sequence containing a single \ref include_node.
 
 For example, the following:
-```
-file: "/my/file.yaml"
-subtree: ".pdi"
-```
+\snippet include.cxx include_with_subtree
 
 is interpreted as if it was:
-```
-- file: "/my/file.yaml"
-  subtree: ".pdi"
-```
+\snippet include.cxx include_seq
 
 
 ## include_seq {#include_seq_node}
@@ -467,15 +402,9 @@ The subtree ypath is expanded according to the ypath specification of paraconf:
 * access to a mapping element value by index using chevrons: *e.g.* `.map<1>`
 
 ### Example:
-```yaml
-file: "/my/file.yaml"
-subtree: ".pdi"
-```
+\snippet include.cxx include_with_subtree
 or
-```yaml
-file: "relative_file.yaml"
-subtree: "[1]"
-```
+\snippet include.cxx include_subtree_index
 
 It references a subtree in another file.
 
@@ -495,9 +424,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int_type
 
 
 ## int16_type {#int16_type_node}
@@ -517,9 +444,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int16
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int16_type
 
 
 ## int32_type {#int32_type_node}
@@ -539,9 +464,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int32
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int32_type
 
 
 ## int64_type {#int64_type_node}
@@ -561,9 +484,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int64
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int64_type
 
 
 ## int8_type {#int8_type_node}
@@ -583,9 +504,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int8
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int8_type
 
 
 ## integer_type {#integer_type_node}
@@ -607,14 +526,9 @@ A *integer_type* represents the Fortran `integer` datatype.
 
 ### Example:
 
-```{.python}
-type: integer
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx integer_type
 
-```{.python}
-type: integer
-kind: 2
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx integer_type_2
 
 
 ## intexpr_or_seq {#intexpr_or_seq_node}
@@ -627,14 +541,10 @@ In that context, a simple \ref expression_node is interpreted as a shortcut for
 a sequence containing a single \ref expression_node.
 
 For example, the following value:
-```
-"$x + 2"
-```
+\snippet PDI_doc_expression.cxx expr_seq_scalar
 
 is interpreted as if it was:
-```
-[ "$x + 2" ]
-```
+\snippet PDI_doc_expression.cxx expr_seq_expanded
 
 
 ## intexpr_seq {#intexpr_seq_node}
@@ -644,9 +554,7 @@ a \ref expression_node "integer-valued $-expression".
 
 ### Example:
 
-```{.python}
-[ 1, '2', '$size', '$other_size + 2' ]
-```
+\snippet PDI_doc_expression.cxx intexpr_seq
 
 
 ## int_fast16_type {#int_fast16_type_node}
@@ -666,9 +574,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int_fast16
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int_fast16_type
 
 
 ## int_fast32_type {#int_fast32_type_node}
@@ -688,9 +594,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int_fast32
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int_fast32_type
 
 
 ## int_fast64_type {#int_fast64_type_node}
@@ -710,9 +614,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int_fast64
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int_fast64_type
 
 
 ## int_fast8_type {#int_fast8_type_node}
@@ -732,9 +634,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int_fast8
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int_fast8_type
 
 
 ## int_least16_type {#int_least16_type_node}
@@ -754,9 +654,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int_least16
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int_least16_type
 
 
 ## int_least32_type {#int_least32_type_node}
@@ -776,9 +674,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int_least32
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int_least32_type
 
 
 ## int_least64_type {#int_least64_type_node}
@@ -798,9 +694,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int_least64
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int_least64_type
 
 
 ## int_least8_type {#int_least8_type_node}
@@ -820,9 +714,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: int_least8
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx int_least8_type
 
 ## intmax_type {#intmax_type_node}
 
@@ -841,9 +733,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: intmax
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx intmax_type
 
 
 ## intptr_type {#intptr_type_node}
@@ -863,9 +753,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: intptr
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx intptr_type
 
 
 ## logging {#logging_node}
@@ -894,9 +782,7 @@ A *logging_level* is a scalar which determines verbosity level. It can be set to
 
 Examples:
 
-```yaml
-logging: "debug"
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx logging_level
 
 * by default `level` is set to `info`
 
@@ -922,17 +808,13 @@ A *logging_map* is a **mapping** that contains the following keys:
   ```
   for serial execution and:
   ```
-  [%T][%{MPI_COMM_WORLD.rank:06d}][%n] *** %^%l%$: %v
+  [%T][%{MPI_COMM_WORLD_rank:06d}][%n] *** %^%l%$: %v
   ```
   when running application with MPI/
 
 Example:
 
-```yaml
-logging:
-  level: "debug"
-  pattern: "[%{MPI_COMM_WORLD.rank:04d}][%n][%l]"
-```
+\snippet doc_logging.cxx logging_map
 
 
 ## logging_output_map {#logging_output_map_node}
@@ -948,31 +830,13 @@ A *logging_output_map* is a **mapping** that contains the following keys:
 
 Example:
 
-```yaml
-logging:
-  level: "debug"
-  output:
-    file: "test.log"
-    console: "on"
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx logging_output_map
 
 ### Example:
 
-```{.python}
-type: struct
-members:
-  - my_char: char
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx logging_output_map_2
 
-```{.python}
-type: struct
-members:
-  - my_long: int64
-  - my_array:
-      type: array
-      subtype: int64
-      size: [10, 10]
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx logging_output_map_3
 
 See \ref struct_type_node for more examples.
 
@@ -996,14 +860,9 @@ A *logical_type* represents the Fortran `logical` datatype.
 
 ### Example:
 
-```{.python}
-type: logical
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx logical_type
 
-```{.python}
-type: logical
-kind: 1
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx logical_type_2
 
 
 ## long_type {#long_type_node}
@@ -1022,9 +881,7 @@ It accepts no parameter.
 
 **Example:**
 
-```{.python}
-type: long
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx long_type
 
 
 ## long_long_type {#long_long_type_node}
@@ -1043,9 +900,7 @@ It accepts no parameter.
 
 **Example:**
 
-```{.python}
-type: long long
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx long_long_type
 
 
 ## plugin_map {#plugin_map_node}
@@ -1068,15 +923,11 @@ See \ref root_node for an example.
 
 A path to directory where %PDI should search for plugins. It can be single path:
 
-```yaml
-plugin_path: "/home/user123/plugins"
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx plugin_path
 
 or array of paths (%PDI will take first match):
 
-```yaml
-plugin_path: ["/home/user123/plugins", "/usr/lib/pdi/plugins"]
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx plugin_path_2
 
 
 ## pointer_type {#pointer_type_node}
@@ -1098,15 +949,9 @@ stored (a pointer) where:
 
 ### Example:
 
-```{.python}
-type: pointer
-subtype: double
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx pointer_type
 
-```{.python}
-type: pointer
-subtype: { type: pointer, subtype: int }
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx pointer_type_2
 
 
 ## ptrdiff_t_type {#ptrdiff_t_type_node}
@@ -1126,9 +971,7 @@ It accepts no parameter.
 
 **Example:**
 
-```{.python}
-type: ptrdiff_t
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx ptrdiff_t_type
 
 ## real_type {#real_type_node}
 
@@ -1149,14 +992,9 @@ A *real_type* represents the Fortran `real` datatype.
 
 ### Example:
 
-```{.python}
-type: real
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx real_type
 
-```{.python}
-type: real
-kind: 8
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx real_type_2
 
 
 ## record_members_map {#record_members_map_node}
@@ -1193,40 +1031,11 @@ A \ref record_type_node represents a "record" where:
 
 ### Examples:
 
-```{.python}
-type: record
-buffersize: 8
-members:
-  first_int:
-    disp: 0
-    type: int32
-  second_int:
-    disp: 4
-    type: int32
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx record_type
 
-```{.python}
-type: record
-buffersize: 1
-members:
-  my_char:
-        disp: 0
-        type: char
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx record_type_2
 
-```{.python}
-type: record
-buffersize: 808 
-members:
-  my_long:
-    disp: 0
-    type: int64
-  my_array:
-    disp: 8
-    type: array
-    subtype: int64
-    size: [10, 10]
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx record_type_3
 
 
 ## short_type {#short_type_node}
@@ -1245,9 +1054,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: short
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx short_type
 
 
 ## simple_datatype {#simple_datatype_node}
@@ -1259,14 +1066,10 @@ single key `type` whose value is the provided scalar and therefore another
 \ref datatype_node.
 
 For example, the following value:
-```
-"my_type"
-```
+\snippet PDI_doc_datatype.cxx type_shortcut
 
 is interpreted as if it was:
-```
-{ type: "my_type" }
-```
+\snippet PDI_doc_datatype.cxx type_expanded
 
 
 ## size_t_type {#size_t_type_node}
@@ -1286,9 +1089,7 @@ It accepts no parameter.
 
 **Example:**
 
-```{.python}
-type: size_t
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx size_t_type
 
 
 ## struct_members_omap {#struct_members_omap_node}
@@ -1323,20 +1124,10 @@ C memory layout, where:
   anything (**scalar**, **sequence** or **mapping**).
 
 ### Example:
-```{.python}
-type: struct
-members:
-  - first_int: int32
-  - second_int: int32
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx struct_type
 
 matches:
-```C
-struct {
-  int32_t first_int;
-  int32_t second_int;
-};
-```
+\snippet PDI_doc_datatype.cxx struct_c
 
 
 ## tuple_element {#tuple_element_node}
@@ -1379,20 +1170,9 @@ A \ref tuple_type_node represents a "tuple", where:
 
 ### Example:
 
-```yaml
-type: tuple
-buffersize: 16
-elements:
-  - integer_value: {disp: 0, type: int32}
-  - double_value: {disp: 8, type: double}
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx tuple_type
 
-```yaml
-type: tuple
-elements:
-  - integer_value: int32
-  - double_value: double
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx tuple_type_2
 
 
 ## types_map {#types_map_node}
@@ -1424,9 +1204,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint16
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint16_type
 
 
 ## uint32_type {#uint32_type_node}
@@ -1446,9 +1224,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint32
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint32_type
 
 
 ## uint64_type {#uint64_type_node}
@@ -1468,9 +1244,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint64
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint64_type
 
 
 ## uint8_type {#uint8_type_node}
@@ -1490,9 +1264,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint8
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint8_type
 
 
 ## uint_fast16_type {#uint_fast16_type_node}
@@ -1512,9 +1284,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint_fast16
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint_fast16_type
 
 
 ## uint_fast32_type {#uint_fast32_type_node}
@@ -1534,9 +1304,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint_fast32
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint_fast32_type
 
 
 ## uint_fast64_type {#uint_fast64_type_node}
@@ -1556,9 +1324,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint_fast64
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint_fast64_type
 
 
 ## uint_fast8_type {#uint_fast8_type_node}
@@ -1578,9 +1344,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint_fast8
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint_fast8_type
 
 
 ## uint_least16_type {#uint_least16_type_node}
@@ -1600,9 +1364,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint_least16
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint_least16_type
 
 
 ## uint_least32_type {#uint_least32_type_node}
@@ -1622,9 +1384,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint_least32
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint_least32_type
 
 
 ## uint_least64_type {#uint_least64_type_node}
@@ -1644,9 +1404,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint_least64
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint_least64_type
 
 
 ## uint_least8_type {#uint_least8_type_node}
@@ -1666,9 +1424,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uint_least8
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uint_least8_type
 
 
 ## uintmax_type {#uintmax_type_node}
@@ -1688,9 +1444,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uintmax
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uintmax_type
 
 
 ## uintptr_type {#uintptr_type_node}
@@ -1710,9 +1464,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: uintptr
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx uintptr_type
 
 
 ## unsigned_long_type {#unsigned_long_type_node}
@@ -1731,9 +1483,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: unsigned long
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx unsigned_long_type
 
 
 ## unsigned_long_long_type {#unsigned_long_long_type_node}
@@ -1752,9 +1502,7 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: unsigned long long
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx unsigned_long_long_type
 
 
 ## unsigned_short_type {#unsigned_short_type_node}
@@ -1774,6 +1522,4 @@ It accepts no parameter.
 
 ### Example:
 
-```{.python}
-type: unsigned short
-```
+\snippet Specification_tree_ref/spec_tree_examples.cxx unsigned_short_type

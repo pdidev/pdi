@@ -16,8 +16,8 @@ The %PDI source distribution includes:
 To download the sources, have a look at the list of all releases at 
 https://github.com/pdidev/pdi/releases/
 
-For example, release 1.12.0 can be downloaded from
-https://github.com/pdidev/pdi/archive/refs/tags/1.12.0.tar.gz
+For example, release @PDI_RELEASED_VERSION@ can be downloaded from
+https://github.com/pdidev/pdi/archive/refs/tags/@PDI_RELEASED_VERSION@.tar.gz
 
 ## Default installation {#default_installation}
 
@@ -42,18 +42,15 @@ external dependencies are:
 This list of dependencies can be further reduced or extended by changing the
 set of features compiled.
 
-For example, release 1.12.0 can be installed by following these instructions (but
-look for the latest release at
+For example, release @PDI_RELEASED_VERSION@ can be installed by following these
+instructions (but look for the latest release at
 https://github.com/pdidev/pdi/releases ):
 
-```bash
-wget https://github.com/pdidev/pdi/archive/refs/tags/1.12.0.tar.gz
-tar -xjf 1.12.0.tar.gz
-mkdir 1.12.0/build
-cd 1.12.0/build
-cmake -DCMAKE_INSTALL_PREFIX="${HOME}/.local/" ..   # configuration
-make install   # compilation and installation
-```
+\snippet download_release.sh download
+
+then, to build and install it:
+
+\snippet download_release.sh build
 
 \attention
 The `cmake` command must be followed by the path to the `pdi` directory, here
