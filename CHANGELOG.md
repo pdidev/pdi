@@ -20,6 +20,7 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* Fix typographical error in test and String_literal false_values, and asserts never satisfied [#753](https://github.com/pdidev/pdi/issues/753)
 
 #### Security
 
