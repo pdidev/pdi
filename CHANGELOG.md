@@ -12,7 +12,7 @@ and this project adheres to
 ### For users
 
 #### Added
-* CI step dedicated to typographical check, fix [#749](https://github.com/pdidev/pdi/issues/749)
+* Fixed multiple typos in the documentation, fix [#749](https://github.com/pdidev/pdi/issues/749)
 
 #### Changed
 

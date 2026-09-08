@@ -1,8 +1,9 @@
-[files]
-extend-exclude = [
-    "vendor/",
-    "pdi/docs/_template/",
-    "pdi/tests/PDI_expression.cxx",
+[default]
+extend-ignore-re = [
+    '(?Rm)^.*(#|//)\s*typos:disable-line$',
+    '(?m)^.*typos:ignore.*$',
+    '(#|//)\s*typos:ignore-next-line\n.*',
+    '(?s)(#|//)\s*typos:off.*?\n\s*(#|//)\s*typos:on'
 ]
 
 [default.extend-words]
@@ -10,3 +11,9 @@ ND = "ND"
 iy = "iy"
 iz = "iz"
 cpy = "cpy"
+
+[files]
+extend-exclude = [
+    "vendor/",
+    "pdi/docs/_template/",
+]

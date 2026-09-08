@@ -67,7 +67,7 @@ string Expression::Impl::String_literal::to_string(Context& ctx) const
 long Expression::Impl::String_literal::to_long(Context& ctx) const
 {
 	static const unordered_set<string> true_values{"y", "Y", "yes", "Yes", "YES", "true", "True", "TRUE", "on", "On", "ON"};
-	static const unordered_set<string> false_values{"n", "N", "no", "No", "NO", "false", "False", "FALSE", "Off", "Off", "OFF"};
+	static const unordered_set<string> false_values{"n", "N", "no", "No", "NO", "false", "False", "FALSE", "off", "Off", "OFF"};
 	string src_string = to_string(ctx);
 	if (true_values.find(src_string) != true_values.end()) {
 		return 1L;
