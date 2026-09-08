@@ -21,9 +21,8 @@ and this project adheres to
 
 #### Fixed
 * Fix an unreachable condition, [#758](https://github.com/pdidev/pdi/issues/758)
-* Adding stream output operator for a struct in `decl_netcdf_test_08`
- [#739](https://github.com/pdidev/pdi/issues/739)
-
+* Improved the error message if test `decl_netcdf_test_08` in Decl'NetCDF fails
+  [#739](https://github.com/pdidev/pdi/issues/739)
 
 #### Security
 
