@@ -51,10 +51,11 @@ std::ostream& operator<< (std::ostream& out, Record_t const & r)
 {
 	out << "Record_t(int_scalar=" << r.int_scalar << ", double_array=(";
 
-	for (auto&& value: r.double_array) {
-		out << " " << value << ",";
-	}
-	out.seekp(-1, std::ios_base::end); // to replace "," by ")" at the end.
+    const char* sep = "";
+    for (auto&& value: r.double_array) {
+        out << sep << value;
+        sep = ", ";
+    }
 	out << "))";
 
 	return out;
