@@ -51,11 +51,11 @@ std::ostream& operator<< (std::ostream& out, Record_t const & r)
 {
 	out << "Record_t(int_scalar=" << r.int_scalar << ", double_array=(";
 
-    const char* sep = "";
-    for (auto&& value: r.double_array) {
-        out << sep << value;
-        sep = ", ";
-    }
+	const char* sep = "";
+	for (auto&& value: r.double_array) {
+		out << sep << value;
+		sep = ", ";
+	}
 	out << "))";
 
 	return out;
