@@ -134,11 +134,13 @@ private:
 	/// @brief name of event use to call catalyst_initialize
 	std::string m_pdi_initialize_event_name;
 
+#ifdef CATALYST_IS_PARALLEL
 	/// @brief communicator use in catalyst
 	PDI::Expression m_communicator;
+#endif
 
 	/// @brief when condition for catalyst_execute
-	PDI::Expression m_when = 1L;
+	PDI::Expression m_when;
 
 	// end variable read from the config
 	/////////////////////////////////////////////////////////

@@ -3,7 +3,6 @@
 
 #include "catalyst.hpp"
 
-#include <iostream>
 #include <stack>
 #include <vector>
 
@@ -201,7 +200,8 @@ public:
 				}
 			}
 		} else {
-			std::cout << " Error in the creation of the vtkGhostType for the users: The dimension for the mesh must be 2 or 3." << std::endl;
+			// not implemented
+			throw PDI::Impl_error{"Error in the creation of the vtkGhostType for the users: The dimension for the mesh must be 2 or 3."};
 		}
 	}
 
@@ -276,6 +276,8 @@ public:
 			throw PDI::Spectree_error(msg_tree, "");
 		} else {
 			if (conduit_cpp::cpp_node(parent_node).has_path(path_to_dims)) {
+				// Remark: we don't check here the typos error of the user in the dimension field "ii" instead of "i"
+				// Question: Added in a new Release
 				std::list<std::string> list_dims{"i", "j", "k"};
 				for (auto&& elem: list_dims) {
 					// verify dims/{elem} exist in the node m_ghost_tree
