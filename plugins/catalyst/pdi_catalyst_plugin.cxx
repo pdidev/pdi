@@ -11,7 +11,6 @@
 #include "catalyst.hpp"
 
 #include <cstdlib> // need to retrive the environement variable
-#include <iostream>
 #include <stack>
 #include <unordered_map>
 #include <vector>
@@ -36,6 +35,10 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 	} else {
 		// case communicator is given:
 		//	- call catalyst_initialize on event given in initialize_on_event
+
+		//===========================================
+		// Add m_communicator here
+		//===========================================
 		auto initialize_event_spec = PC_get(m_spec_tree, ".initialize_on_event");
 		if (PC_status(initialize_event_spec)) {
 			throw PDI::Spectree_error{m_spec_tree, "Catalyst: A communicator is given without specified initialize_on_event"};
@@ -49,7 +52,10 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 	auto when_spec = PC_get(m_spec_tree, ".when");
 	if (!PC_status(when_spec)) {
 		m_when = PDI::to_string(when_spec);
+	} else {
+		m_when = PDI::Expression{1L};
 	}
+
 	// get event for catalyst_execute
 	m_pdi_execute_event_name = read_pdi_execute_event_name();
 	ctx.callbacks().add_event_callback(
@@ -169,7 +175,7 @@ void catalyst_plugin::run_catalyst_initialize()
 
 	if (env_catalyst_backend == nullptr) {
 		context().logger().warn("No CATALYST_IMPLEMENTATION_NAME is given");
-		context().logger().warn("The communicator correspond to MPI_COMM_WORD.");
+		context().logger().warn("The communicator correspond to MPI_COMM_WORLD.");
 	} else {
 		std::string st_env_catalyst_backend = env_catalyst_backend;
 		if (st_env_catalyst_backend == "paraview") {
@@ -195,10 +201,10 @@ void catalyst_plugin::run_catalyst_initialize()
 			} else {
 				// context().logger().warn("value of the communicator is {}:", static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
 				//throw PDI::Spectree_error{communicator_spec, "No communicator is given."};
-				context().logger().warn("No communicator is given by default the communicator is MPI_COMM_WORD.");
+				context().logger().warn("No communicator is given by default the communicator is MPI_COMM_WORLD.");
 			}
 		} else if (st_env_catalyst_backend == "stub") {
-			context().logger().warn("The communicator correspond to MPI_COMM_WORD.");
+			context().logger().warn("The communicator correspond to MPI_COMM_WORLD.");
 		} else {
 			throw PDI::System_error("CATALYST_IMPLEMENTATION_NAME is not recognized: `{}'", env_catalyst_backend);
 		}
@@ -244,6 +250,8 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 		conduit_node* parent_node;
 	};
 
+	const std::list<std::string> name_to_skip{"coordsets", "topologies", "fields", "matsets", "adjsets", "state"};
+
 	// value to keep the parent tree of the current.tree
 	PC_tree_t current_parent_tree;
 
@@ -278,7 +286,6 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 		} else {
 			if (current.tree.node->type == YAML_MAPPING_NODE) {
 				int data_tree_size = PDI::len(current.tree);
-				std::list<std::string> name_to_skip{"coordsets", "topologies", "fields", "matsets", "adjsets", "state"};
 
 				// reverse order to get the correct order when poping the stack.
 				for (int index = data_tree_size - 1; index >= 0; --index) {
@@ -438,7 +445,6 @@ void catalyst_plugin::run_catalyst_execute()
 
 	context().logger().debug("Read Ghost layers for creating vtk_ghost_type");
 	// read information to create the vtkGhostType for paraview (read "ghost_layers" node in the yaml file)
-	// create_node_for_mask_ghost( node_pointer, execute_spec, list_vtkGhostType_to_create);
 	read_info_for_creating_vtk_ghost(node_pointer, execute_spec, list_vtkGhostType_to_create);
 
 	// creation vtkGhostType vector
