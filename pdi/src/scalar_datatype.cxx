@@ -277,9 +277,4 @@ shared_ptr<Scalar_datatype> Scalar_datatype::make(
 	return make_shared<Shared_enabler>(kind, size, align, dense_size, copy, destroy, attributes);
 }
 
-bool Scalar_datatype::is_nulltype() const
-{
-	return nulltype(*this);
-}
-
 } // namespace PDI

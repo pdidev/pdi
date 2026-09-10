@@ -690,7 +690,7 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	}
 	nc_id var_id = var_it->second;
 
-	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type()->evaluate(m_ctx))) {
+	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type())) {
 		nc_type var_nc_type;
 		size_t var_nc_type_size;
 		nc_try(nc_inq_vartype(src_id, var_id, &var_nc_type), "cannot get type of `{}' from file", variable.path());
@@ -751,16 +751,15 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 			}
 		} else if ((*scalar_type) == (*PDI::UNDEF_TYPE)) {
 			throw PDI::Type_error{
-				"Can not read `{}' : Invalid type in Decl_netcdf plugin: "
-				"The exposed data `{}' is not defined in yaml (meta)data section.",
+				"can not read `{}', the type of the exposed data `{}' is undefined (likely not "
+				"listed in (meta)data section of the specification tree).",
 				variable_name,
 				ref_name
 			};
 		} else {
-			throw PDI::Type_error{
-				"Can not read `{}' : Invalid type in Decl_netcdf plugin: "
-				"The exposed data `{}' is defined with an unsupported unknown"
-				" scalar datatype: {}.",
+			throw PDI::Impl_error{
+				"can not read `{}', the type of the exposed data `{}' is unsupported by the "
+				"plugin: {}",
 				variable_name,
 				ref_name,
 				scalar_type->debug_string()

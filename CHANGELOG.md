@@ -12,10 +12,10 @@ and this project adheres to
 ### For users
 
 #### Added
-* Improved error message in type check in Decl'NetCDF when reading scalar variable from file
-[#731]https://github.com/pdidev/pdi/issues/731
 
 #### Changed
+* Improved error message in type check in Decl'NetCDF when reading scalar variable from file
+ [#731]https://github.com/pdidev/pdi/issues/731
 
 #### Deprecated
 
@@ -117,6 +117,7 @@ and this project adheres to
 
 #### Fixed
 * Fixed the build failure of a test in 1.11.1
+
 
 
 ## [1.11.1] - 2026-06-23
