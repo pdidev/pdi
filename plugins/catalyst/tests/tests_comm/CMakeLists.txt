@@ -1,7 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-# Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-#
+# Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -45,9 +43,6 @@ if(${CATALYST_USE_MPI})
   set(CATALYST_SCRIPT_FOLDER ${CMAKE_SOURCE_DIR}/tests/tests_comm)
   configure_file(catalyst_comm.yml.in pdi.yml)
 
-  find_package(Python3 COMPONENTS Interpreter)
-
-  add_test(NAME TestPDICatalystComm COMMAND "${RUNTEST_DIR}" ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests/tests_comm/run_test_mpi.py" "${CMAKE_BINARY_DIR}/tests/tests_comm/" "${CMAKE_SOURCE_DIR}/tests/tests_comm/" "${MPIEXEC_EXECUTABLE}") 
-  set_property(TEST TestPDICatalystComm PROPERTY TIMEOUT 3)
-
+  # Remark: [ISSUE] This test needs to use the paraview backend of catalyst to see if it works
+  #         as we want to test another communicator than MPI_COMM_WORLD.
 endif()
