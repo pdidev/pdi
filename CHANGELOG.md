@@ -12,7 +12,6 @@ and this project adheres to
 ### For users
 
 #### Added
-* Fixed multiple typos in the documentation, fix [#749](https://github.com/pdidev/pdi/issues/749)
 
 #### Changed
 
@@ -22,6 +21,7 @@ and this project adheres to
 
 #### Fixed
 * Fix an unreachable condition, [#758](https://github.com/pdidev/pdi/issues/758)
+* Fix multiple typos in the documentation, [#749](https://github.com/pdidev/pdi/issues/749)
 
 #### Security
 

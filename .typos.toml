@@ -1,8 +1,12 @@
 [default]
 extend-ignore-re = [
+    # Ignore the current line if it ends with // typos:disable-line or # typos:disable-line
     '(?Rm)^.*(#|//)\s*typos:disable-line$',
+    # Ignore any line that contains "typos:ignore" anywhere on the line
     '(?m)^.*typos:ignore.*$',
+    # Ignore the line directly after a // typos:ignore-next-line comment
     '(#|//)\s*typos:ignore-next-line\n.*',
+    # Ignore multi-line blocks between // typos:off and // typos:on
     '(?s)(#|//)\s*typos:off.*?\n\s*(#|//)\s*typos:on'
 ]
 
