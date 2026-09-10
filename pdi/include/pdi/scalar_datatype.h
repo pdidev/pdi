@@ -184,9 +184,6 @@ public:
 		std::function<void(void*) > destroy,
 		const Attributes_map& attributes = {}
 	);
-
-	/// return if the scalar datatype is a nulltype
-	bool is_nulltype() const;
 };
 
 const auto UNDEF_TYPE = Scalar_datatype::make(Scalar_kind::UNKNOWN, 0);
