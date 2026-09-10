@@ -22,6 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+// Remark: [ISSUE] Remove the ghost to have better understanding of the code
+
 #include <mpi.h>
 #include <assert.h>
 #include <math.h>

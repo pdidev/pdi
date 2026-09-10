@@ -38,11 +38,8 @@ public:
 	~catalyst_plugin() noexcept(false);
 
 private:
-	/// @brief callback to trigger action of catalyst_initialize
-	void process_pdi_init();
-
 	/// @brief callback to trigger action of catalyst_execute when an event occur
-	/// @param event_name: name of the current event
+	/// @param event_name: name of the event
 	void process_event(const std::string& event_name);
 
 	/// @brief callback to trigger action of catalyst_initialize when an event occur
@@ -126,13 +123,10 @@ private:
 	PC_tree_t m_spec_tree;
 
 	/////////////////////////////////////////////////////////
-	// variable read from the config
-
-	/// @brief name of event use to call catalyst_execute
-	std::string m_pdi_execute_event_name;
+	// variable read from the specification tree
 
 	/// @brief name of event use to call catalyst_initialize
-	std::string m_pdi_initialize_event_name;
+	std::string m_pdi_initialize_event_name; // keep only for logger message
 
 #ifdef CATALYST_IS_PARALLEL
 	/// @brief communicator use in catalyst
@@ -142,7 +136,7 @@ private:
 	/// @brief when condition for catalyst_execute
 	PDI::Expression m_when;
 
-	// end variable read from the config
+	// end variable read from the specification tree
 	/////////////////////////////////////////////////////////
 };
 

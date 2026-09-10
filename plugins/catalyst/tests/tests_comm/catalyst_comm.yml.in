@@ -49,7 +49,7 @@ pdi:
                   type: "uniform"
                   coordset: "my_coords"
               fields:
-                temperature:
+                element_rank:
                   association: "element"
                   topology: "my_mesh"
                   volume_dependent: "false"
