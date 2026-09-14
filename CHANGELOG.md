@@ -29,6 +29,8 @@ and this project adheres to
 #### Added
 
 #### Changed
+* The in-tree `pdirun` that the tests use no longer sets `LD_LIBRARY_PATH`, and no longer prints
+  every command it runs.
 * Merged `Callbacks` into `Global_context` and renamed the callback functions,
   as per [#720](https://github.com/pdidev/pdi/issues/720)
 
