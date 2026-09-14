@@ -20,6 +20,9 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* The source installation guide lists Doxygen, says that the distribution provides
+  pybind11, ans states that the `Devel` profile selects the `Debug` build type,
+  as described in [#774](https://github.com/pdidev/pdi/issues/774).
 
 #### Security
 
