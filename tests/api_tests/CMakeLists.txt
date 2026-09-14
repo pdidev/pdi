@@ -33,8 +33,14 @@ include(CTest)
 
 
 if("FIND" STREQUAL "${API_TESTS_PDI}")
-	find_package(paraconf REQUIRED COMPONENTS C)
-	find_package(PDI REQUIRED COMPONENTS C)
+	# TODO: drop the guards once CMake 3.24 is the minimum; the embedding build can then use
+	#       FetchContent_Declare(... OVERRIDE_FIND_PACKAGE) instead.
+	if(NOT TARGET paraconf::paraconf)
+		find_package(paraconf REQUIRED COMPONENTS C)
+	endif()
+	if(NOT TARGET PDI::PDI_C)
+		find_package(PDI REQUIRED COMPONENTS C)
+	endif()
 elseif("MOCK" STREQUAL "${API_TESTS_PDI}")
 	set(PDI_MOCK_PARACONF_TARGET TRUE)
 	add_subdirectory(../../mock_pdi mock_pdi)

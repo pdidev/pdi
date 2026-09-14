@@ -48,6 +48,7 @@ and this project adheres to
   `bin/build_and_run_all_tests` builds and runs the example and the API tests against the
   installation instead.
 * The combination tests are built as part of the distribution's CMake project.
+* The distribution builds the API tests project as a subdirectory of its own CMake project.
 * Merged `Callbacks` into `Global_context` and renamed the callback functions,
   as per [#720](https://github.com/pdidev/pdi/issues/720)
 * Renamed `PDI::TimerEventHandler` to `PDI::Timer_event_handler` to follow the
