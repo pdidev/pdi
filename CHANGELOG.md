@@ -20,6 +20,8 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* The example project asks for the Fortran component of Paraconf when it is built with Fortran
+  support.
 
 #### Security
 
