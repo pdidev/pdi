@@ -140,7 +140,7 @@ install(EXPORT PDI_plugins_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_PDICM
 
 file(COPY scripts/pdirun_intree DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
 add_executable(pdirun IMPORTED)
-add_executable(PDI::pdirun IMPORTED)
+add_executable(PDI::pdirun IMPORTED GLOBAL)
 set_target_properties(pdirun PDI::pdirun PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/pdirun_intree")
 install(PROGRAMS scripts/pdirun
 		DESTINATION "${CMAKE_INSTALL_BINDIR}"
