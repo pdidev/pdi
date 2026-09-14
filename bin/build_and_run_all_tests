@@ -115,7 +115,7 @@ cmake --install tests_distribution
 
 printf "\n\n\n\e[1;36m *** Configure, build & test pdi example with SubdirMock PDI\e[m\n\n"
 
-cmake -DDISABLE_PDI=ON -S "${SRCDIR}/example" -B tests_example_subdirmock
+cmake -DEXAMPLE_MOCK_PDI=ON -S "${SRCDIR}/example" -B tests_example_subdirmock
 cmake --build tests_example_subdirmock -- ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_example_subdirmock.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_example_subdirmock
 
