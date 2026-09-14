@@ -275,9 +275,9 @@ if(NOT "x${MPI_COMPONENTS}x" STREQUAL "xx")
 endif()
 
 if("${BUILD_PYTHON}")
-	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter Development)
+	find_package(Python3 "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter Development)
 elseif("${BUILD_FORTRAN}")
-	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter)
+	find_package(Python3 "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter)
 endif()
 
 if("${BUILD_TESTING}")
@@ -301,6 +301,10 @@ if("${BUILD_FORTRAN}")
 	string(REGEX REPLACE "^([0-9]*\\.[0-9]*)\\..*$" "\\1" Fortran_COMPILER_MINOR_VERSION "${CMAKE_Fortran_COMPILER_VERSION}")
 	set(INSTALL_FMODDIR "${CMAKE_INSTALL_LIBDIR}/pdi/finclude/${CMAKE_Fortran_COMPILER_ID}-${Fortran_COMPILER_MINOR_VERSION}"
 		CACHE PATH "Fortran module directory (LIBDIR/pdi/finclude/<compiler>-<version>)")
+endif()
+
+if("${BUILD_PYTHON}")
+	include(Python3InstallDirs)
 endif()
 
 set(INSTALL_PDIPLUGINDIR "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "PDI plugins (LIBDIR/pdi/plugins_<version>)")

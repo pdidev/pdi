@@ -14,6 +14,7 @@ and this project adheres to
 #### Added
 * A `PDI_SUPERBUILD` CMake option can be set to `OFF` to build PDI only, against dependencies that
   are already available, instead of the whole distribution.
+* An `INSTALL_PYTHON3_SITEARCHDIR` CMake variable sets where the PDI Python module is installed.
 
 #### Changed
 * The `INSTALL_CMAKEDIR` CMake variable, which sets where the PDI CMake package files are installed,
