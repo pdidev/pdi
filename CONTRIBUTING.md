@@ -168,11 +168,11 @@ A few directories remain projects of their own, each for a reason the distributi
 * `tests/cmake_tests/multiple_find/` is a configure-only test that consumes an installed PDI through
   `find_package`, to validate the generated `PDIConfig.cmake`.
 
-When the superbuild is on it wraps the whole thing in a single `PDI_pkg` target that can be rebuilt
+When the superbuild is on it wraps the whole thing in a single `PDI` target that can be rebuilt
 with the command:
 
 ```bash
-cmake --build .build --target PDI_pkg
+cmake --build .build --target PDI
 ```
 
 Dependencies are declared with `sbuild_add_dependency(<name> AUTO|SYSTEM|EMBEDDED ...)`: they are

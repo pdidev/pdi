@@ -52,6 +52,7 @@ and this project adheres to
 #### Added
 
 #### Changed
+* With the superbuild, the target that rebuilds PDI is named `PDI` instead of `PDI_pkg`.
 * The API tests project chooses how it gets PDI with `API_TESTS_PDI`, `FIND` or `MOCK`, instead of
   the `DISABLE_PDI` option.
 * `tests/cmake_tests` only checks the installed CMake package now.

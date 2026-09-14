@@ -28,6 +28,9 @@ cmake_minimum_required(VERSION 3.22...4.2)
 include(GNUInstallDirs)
 include(ExternalProject)
 
+# Where the dependencies are installed while the distribution is built, and copied from on install.
+set(_SBUILD_STAGING "${CMAKE_BINARY_DIR}/staging")
+
 ### Generate a build command to build a subproject with access to its dependencies
 # 
 # \param #1 the variable in which to store the result
@@ -56,11 +59,15 @@ function(__sbuild_build_command _SBUILD_OUTVAR)
 endfunction()
 
 
-### Generate a list of all cache variables to forward to subprojects
-# 
+### Generate a list of all cache variables to forward to a subproject
+#
+# The cache as it stands, plus the prefix path the staged dependencies live at.
+# This is what every subproject wants, PDI included; _sbuild_dependency_policy() below holds what
+# only a vendored dependency wants.
+#
 # \param #1 the variable in which to store the result
 ###
-function(__sbuild_collect_variables _SBUILD_OUTVAR)
+function(_sbuild_collect_variables _SBUILD_OUTVAR)
 	set(_SBUILD_RESULT)
 	
 	# append all current variables
@@ -74,12 +81,42 @@ function(__sbuild_collect_variables _SBUILD_OUTVAR)
 		endif()
 	endforeach()
 	
-	set(_SBUILD_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_BINARY_DIR}/staging")
+	set(_SBUILD_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${_SBUILD_STAGING}")
+	list(APPEND _SBUILD_RESULT "-DCMAKE_PREFIX_PATH:PATH=${_SBUILD_PREFIX_PATH}")
+	
+	set("${_SBUILD_OUTVAR}" "${_SBUILD_RESULT}" PARENT_SCOPE)
+endfunction()
+
+
+### Generate the settings that apply to a vendored dependency and to nothing else
+#
+# These are policy rather than a sweep of what the user asked for, and PDI itself wants none of
+# them: it installs to the final prefix rather than to a staging tree, and it sets its own
+# BUILD_SHARED_LIBS.  Keeping them apart is what saves the PDI call site from having to undo them
+# afterwards.
+#
+# \param #1 the variable to append the result to
+###
+function(_sbuild_dependency_policy _SBUILD_OUTVAR)
+	set(_SBUILD_RESULT "${${_SBUILD_OUTVAR}}")
+	
 	list(APPEND _SBUILD_RESULT
-			#TODO: STAGING_PREFIX is not a very good solution, package may not be relocatable (see python) and it prevents RPATH (replace it by INSTALL_PREFIX)
-			# setting INSTALL_PREFIX at install time would be slightly better
+			# CMAKE_STAGING_PREFIX makes CMake bake CMAKE_INSTALL_PREFIX into what it generates while
+			# writing the files under <INSTALL_DIR>, which is what lets a dependency be used from the
+			# staging tree during the build and still be correct once copied to the final prefix.
+			# The price is that RPATHs point at the final prefix rather than at the staging tree, so
+			# a staged dependency is only loadable from where it will eventually live.
+			# PDI itself no longer pays it -- see sbuild_add_self() -- but a dependency has two
+			# locations to satisfy and one configure cannot bake both.
+			# Fixing that means re-configuring each dependency with the final prefix at install time;
+			# it is also what keeps NetCDF from being relocatable, see
+			# https://github.com/pdidev/pdi/issues/644
+			# <INSTALL_DIR> is an ExternalProject placeholder, and means nothing anywhere else.
 			"-DCMAKE_STAGING_PREFIX:PATH=<INSTALL_DIR>"
-			"-DCMAKE_PREFIX_PATH:PATH=${_SBUILD_PREFIX_PATH}")
+			# PDI is only ever linked against shared, position-independent dependencies; neither
+			# setting reaches them from the cache sweep, so both are stated here.
+			"-DBUILD_SHARED_LIBS:BOOL=ON"
+			"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON")
 	
 	set("${_SBUILD_OUTVAR}" "${_SBUILD_RESULT}" PARENT_SCOPE)
 endfunction()
@@ -159,6 +196,7 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	
 	if(NOT "${_SBUILD_TOBUILD}")
 		add_custom_target("${_SBUILD_NAME}_pkg")
+		set_property(GLOBAL APPEND PROPERTY _SBUILD_DEPENDENCY_TARGETS "${_SBUILD_NAME}_pkg")
 		set("${_SBUILD_NAME}_FOUND" TRUE PARENT_SCOPE)
 		foreach(_SBUILD_VAR ${_SBUILD_MODULE_VARS})
 			set("${_SBUILD_VAR}" "${${_SBUILD_VAR}}" PARENT_SCOPE)
@@ -177,9 +215,8 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 		return()
 	endif()
 	
-	__sbuild_collect_variables(_SBUILD_VARS)
-	# PDI is only ever linked against shared, position-independent dependencies.
-	list(APPEND _SBUILD_VARS "-DBUILD_SHARED_LIBS:BOOL=ON" "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON")
+	_sbuild_collect_variables(_SBUILD_VARS)
+	_sbuild_dependency_policy(_SBUILD_VARS)
 	set(_SBUILD_CMAKE_CACHE_ARGS ${_SBUILD_VARS} ${_SBUILD_CMAKE_CACHE_ARGS})
 	
 	__sbuild_build_command(_SBUILD_BUILD_COMMAND)
@@ -202,80 +239,46 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 		DEPENDS "${_SBUILD_DEPENDS}"
 		CMAKE_CACHE_ARGS "${_SBUILD_CMAKE_CACHE_ARGS}"
 		BUILD_COMMAND ${_SBUILD_BUILD_COMMAND}
-		INSTALL_DIR "${CMAKE_BINARY_DIR}/staging"
+		INSTALL_DIR "${_SBUILD_STAGING}"
 	)
+	set_property(GLOBAL APPEND PROPERTY _SBUILD_DEPENDENCY_TARGETS "${_SBUILD_NAME}_pkg")
 endfunction()
 
 
-### Add a personal module to the project
-# 
+### Add this very project as a sub-project, configured with the superbuild off
+#
+# The sub-project is built after every dependency added before the call, so call it last.
+# It is installed by our own install step, and its tests are run by our own ctest.
 ###
-function(sbuild_add_module _SBUILD_NAME)
-	cmake_parse_arguments(PARSE_ARGV 1 _SBUILD "NO_INSTALL" "SOURCE_DIR;ENABLE_BUILD;ENABLE_BUILD_FLAG" "CMAKE_CACHE_ARGS;DEPENDS;SUBSTEPS;INSTALL_COMMAND")
-	
-	if(DEFINED _SBUILD_ENABLE_BUILD_FLAG AND NOT "${${_SBUILD_ENABLE_BUILD_FLAG}}")
-		message(STATUS " **Module**: DISABLED ${_SBUILD_NAME} (-D${_SBUILD_ENABLE_BUILD_FLAG}=OFF)")
-		return()
-	elseif(DEFINED _SBUILD_ENABLE_BUILD_FLAG)
-		message(STATUS " **Module**: ENABLED  ${_SBUILD_NAME} (-D${_SBUILD_ENABLE_BUILD_FLAG}=ON)")
-	elseif(DEFINED _SBUILD_ENABLE_BUILD AND NOT "${_SBUILD_ENABLE_BUILD}")
-		message(STATUS " **Module**: DISABLED ${_SBUILD_NAME}")
-		return()
-	else()
-		message(STATUS " **Module**: ENABLED  ${_SBUILD_NAME}")
-	endif()
-	__sbuild_collect_variables(_SBUILD_VARS)
-	set(_SBUILD_CMAKE_CACHE_ARGS ${_SBUILD_VARS} ${_SBUILD_CMAKE_CACHE_ARGS})
+function(sbuild_add_self)
+	_sbuild_collect_variables(_SBUILD_CACHE_ARGS)
+	list(APPEND _SBUILD_CACHE_ARGS "-DPDI_SUPERBUILD:BOOL=OFF")
+	get_property(_SBUILD_DEPENDS GLOBAL PROPERTY _SBUILD_DEPENDENCY_TARGETS)
 	
 	__sbuild_build_command(_SBUILD_BUILD_COMMAND)
-	
-	if(DEFINED _SBUILD_INSTALL_COMMAND OR "${_SBUILD_NO_INSTALL}")
-		if("xx" STREQUAL "x${_SBUILD_INSTALL_COMMAND}x")
-			set(_SBUILD_INSTALL_COMMAND "INSTALL_COMMAND" "${CMAKE_COMMAND}" "-E" "echo" "No install step for ${_SBUILD_NAME}_pkg")
-		else()
-			list(INSERT _SBUILD_INSTALL_COMMAND 0 "INSTALL_COMMAND")
-		endif()
-	endif()
-	
-	unset(_SBUILD_DEPENDS_NEW)
-	foreach(_SBUILD_ONE_DEPENDS IN LISTS _SBUILD_DEPENDS)
-		list(APPEND _SBUILD_DEPENDS_NEW "${_SBUILD_ONE_DEPENDS}_pkg")
-	endforeach()
-	set(_SBUILD_DEPENDS "${_SBUILD_DEPENDS_NEW}")
-	
 	sbuild_get_env(_SBUILD_ENV_LD_LIBRARY_PATH LD_LIBRARY_PATH)
 	sbuild_get_env(_SBUILD_ENV_DYLD_LIBRARY_PATH DYLD_LIBRARY_PATH)
 	set(_SBUILD_CMAKE_COMMAND "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${_SBUILD_ENV_LD_LIBRARY_PATH}" "DYLD_LIBRARY_PATH=${_SBUILD_ENV_DYLD_LIBRARY_PATH}" "${CMAKE_COMMAND}")
 	
-	ExternalProject_Add("${_SBUILD_NAME}_pkg"
+	ExternalProject_Add("${PROJECT_NAME}"
 		CMAKE_COMMAND "${_SBUILD_CMAKE_COMMAND}"
-		PREFIX "${CMAKE_BINARY_DIR}/${_SBUILD_NAME}"
-		SOURCE_DIR "${_SBUILD_SOURCE_DIR}"
+		PREFIX "${CMAKE_BINARY_DIR}/${PROJECT_NAME}"
+		SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
 		BUILD_ALWAYS TRUE
 		DEPENDS "${_SBUILD_DEPENDS}"
-		CMAKE_CACHE_ARGS "${_SBUILD_CMAKE_CACHE_ARGS}"
+		CMAKE_CACHE_ARGS "${_SBUILD_CACHE_ARGS}"
 		BUILD_COMMAND ${_SBUILD_BUILD_COMMAND}
-		INSTALL_DIR "${CMAKE_BINARY_DIR}/staging"
-		${_SBUILD_INSTALL_COMMAND}
+		# Building must not install anything: this is done in the SuperBuild install phase below.
+		INSTALL_COMMAND ""
 	)
-	if(DEFINED _SBUILD_SUBSTEPS)
-		ExternalProject_Add_StepTargets("${_SBUILD_NAME}_pkg" "configure")
-		ExternalProject_Get_Property("${_SBUILD_NAME}_pkg" BINARY_DIR)
-	endif()
+	ExternalProject_Get_Property("${PROJECT_NAME}" BINARY_DIR)
 	
-	foreach(_SBUILD_ST_NAME ${_SBUILD_SUBSTEPS})
-		if("${_SBUILD_ST_NAME}" STREQUAL "test" AND "${BUILD_TESTING}")
-			file(APPEND "${CMAKE_BINARY_DIR}/SubTests.cmake" "subdirs([=[${BINARY_DIR}]=])\n")
-			continue()
-		elseif(TARGET "${_SBUILD_ST_NAME}")
-			__sbuild_build_command(_SBUILD_BUILD_COMMAND "${_SBUILD_ST_NAME}")
-			add_custom_command(TARGET "${_SBUILD_ST_NAME}" POST_BUILD
-				COMMAND ${_SBUILD_BUILD_COMMAND}
-				WORKING_DIRECTORY "${BINARY_DIR}"
-				COMMENT "Doing ${_SBUILD_ST_NAME} for '${_SBUILD_NAME}_pkg'")
-			add_dependencies("${_SBUILD_ST_NAME}" "${_SBUILD_NAME}_pkg-configure")
-		endif()
-	endforeach()
+	# Run the sub-project's install script from ours.
+	install(SCRIPT "${BINARY_DIR}/cmake_install.cmake")
+	
+	# Run the sub-project's tests from ours; this does nothing unless the caller enabled testing.
+	set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" APPEND PROPERTY TEST_INCLUDE_FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}Tests.cmake")
+	file(WRITE "${CMAKE_BINARY_DIR}/${PROJECT_NAME}Tests.cmake" "subdirs([=[${BINARY_DIR}]=])\n")
 endfunction()
 
 
@@ -326,4 +329,6 @@ endif()
 
 ## Installation
 
-install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/staging/" DESTINATION "." USE_SOURCE_PERMISSIONS)
+# The staging tree only fills up with the dependencies that are built, so create it for when none is.
+file(MAKE_DIRECTORY "${_SBUILD_STAGING}")
+install(DIRECTORY "${_SBUILD_STAGING}/" DESTINATION "." USE_SOURCE_PERMISSIONS)

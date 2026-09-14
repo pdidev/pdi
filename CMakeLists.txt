@@ -640,24 +640,6 @@ if("${BUILD_JSON_PLUGIN}")
 endif()
 
 
-### Own modules
+### The main PDI sub-project
 
-set(PDI_DEPENDS_LIST paraconf spdlog)
-if("${BUILD_PYTHON}")
-	list(APPEND PDI_DEPENDS_LIST pybind11)
-endif()
-if("${BUILD_JSON_PLUGIN}")
-	list(APPEND PDI_DEPENDS_LIST JSON)
-endif()
-if("${BUILD_DECL_HDF5_PLUGIN}")
-	list(APPEND PDI_DEPENDS_LIST HDF5)
-endif()
-if("${BUILD_DECL_NETCDF_PLUGIN}")
-	list(APPEND PDI_DEPENDS_LIST NetCDF)
-endif()
-sbuild_add_module(PDI
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
-	CMAKE_CACHE_ARGS "-DPDI_SUPERBUILD:BOOL=OFF"
-	DEPENDS ${PDI_DEPENDS_LIST}
-	SUBSTEPS test
-)
+sbuild_add_self()
