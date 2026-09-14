@@ -129,6 +129,9 @@ cmake --install tests_distribution
 printf "\n\n\n\e[1;36m *** Unit test the generated CMake configuration\e[m\n\n"
 ./install/bin/pdirun cmake -S "${SRCDIR}/tests/cmake_tests/multiple_find" -B tests_cmake_multiple_find
 
+printf "\n\n\n\e[1;36m *** Build the plugins against the installed pdi\e[m\n\n"
+conf_build_and_run ./install/bin/pdirun plugins_only "${SRCDIR}" -DDIST_PROFILE=Devel -DPDI_SUPERBUILD=OFF -DPDI_BUILD_PDI_CORE=OFF
+
 printf "\n\n\n\e[1;36m *** Run the API tests against the installed pdi\e[m\n\n"
 conf_build_and_run ./install/bin/pdirun api_installed "${SRCDIR}/tests/api_tests"
 

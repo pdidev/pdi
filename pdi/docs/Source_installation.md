@@ -103,6 +103,7 @@ The following general flags are useful to configure the distribution as a whole.
 |`PDI_BUILD_UNSTABLE`  |`OFF`       |Whether to build the unstable parts of the distribution, either `ON` or `OFF`.|
 |`CMAKE_BUILD_TYPE`    |`Release`   |Optimization level and debug verbosity. The possible values are `Release` and `Debug`. Defaults to `Debug` with the `Devel` profile.|
 |`PDI_SUPERBUILD`      |`ON`        |Whether to build the dependencies shipped in the distribution before %PDI itself. With `OFF`, only %PDI and its plug-ins are built and every dependency is expected to be available already. Defaults to `OFF` when the distribution is embedded in another project.|
+|`PDI_BUILD_PDI_CORE`  |`ON`        |Whether to build the %PDI core library. With `OFF`, the plug-ins are built against an already installed %PDI instead.|
 
 The following flags define which features of the distribution to enable or not.
 

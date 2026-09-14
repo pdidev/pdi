@@ -137,6 +137,7 @@ pdi_option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
 pdi_option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 pdi_option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
 pdi_option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
+pdi_option(BUILD_PDI_CORE           "Build the PDI core library" ON)
 pdi_option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${PDI_BUILD_UNSTABLE}")
 pdi_option(BUILD_PYTHON             "Build with Python support" "${PDI_BUILD_UNSTABLE}")
 pdi_option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
@@ -288,6 +289,19 @@ if("${PDI_BUILD_TESTING}" AND NOT TARGET Threads::Threads)
 	find_package(Threads REQUIRED)
 endif()
 
+# PDI itself as a dependency when we are not the ones building it
+if(NOT "${PDI_BUILD_PDI_CORE}" AND NOT TARGET PDI::PDI_C)
+	message(STATUS " **Module**: DISABLED PDI (-DPDI_BUILD_PDI_CORE=OFF), looking for an installed one")
+	set(PDI_FIND_COMPONENT_LIST C plugins)
+	if("${PDI_BUILD_FORTRAN}")
+		list(APPEND PDI_FIND_COMPONENT_LIST f90)
+	endif()
+	if("${PDI_BUILD_PYTHON}" OR "${PDI_BUILD_PYCALL_PLUGIN}")
+		list(APPEND PDI_FIND_COMPONENT_LIST pysupport)
+	endif()
+	find_package(PDI REQUIRED COMPONENTS ${PDI_FIND_COMPONENT_LIST})
+endif()
+
 
 
 ### Installation directories
@@ -311,7 +325,11 @@ if("${PDI_BUILD_PYTHON}")
 	include(Python3InstallDirs)
 endif()
 
-set(INSTALL_PDIPLUGINDIR "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "PDI plugins (LIBDIR/pdi/plugins_<version>)")
+if("${PDI_BUILD_PDI_CORE}")
+	set(INSTALL_PDIPLUGINDIR "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "PDI plugins (LIBDIR/pdi/plugins_<version>)")
+else()
+	set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
+endif()
 
 
 
@@ -321,7 +339,7 @@ if(NOT "${PDI_SUPERBUILD}")
 
 	## The vendored dependencies
 
-	if(NOT TARGET paraconf::paraconf)
+	if(("${PDI_BUILD_PDI_CORE}" OR "${PDI_BUILD_TESTING}") AND NOT TARGET paraconf::paraconf)
 		set(PARACONF_COMPONENTS C)
 		if("${PDI_BUILD_FORTRAN}")
 			list(APPEND PARACONF_COMPONENTS f90)
@@ -329,7 +347,7 @@ if(NOT "${PDI_SUPERBUILD}")
 		find_package(paraconf "${PDI_REQUIRED_PARACONF_VERSION}" REQUIRED COMPONENTS ${PARACONF_COMPONENTS})
 	endif()
 
-	if(NOT TARGET spdlog::spdlog)
+	if("${PDI_BUILD_PDI_CORE}" AND NOT TARGET spdlog::spdlog)
 		find_package(spdlog "${PDI_REQUIRED_SPDLOG_VERSION}" REQUIRED)
 	endif()
 
@@ -372,7 +390,7 @@ if(NOT "${PDI_SUPERBUILD}")
 		find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 	endif()
 
-	if(("${PDI_BUILD_FORTRAN}" OR "${PDI_BUILD_DOCUMENTATION}") AND NOT DEFINED ZPP_EXECUTABLE)
+	if("${PDI_BUILD_PDI_CORE}" AND ("${PDI_BUILD_FORTRAN}" OR "${PDI_BUILD_DOCUMENTATION}") AND NOT DEFINED ZPP_EXECUTABLE)
 		add_subdirectory("${PDI_VENDORED_ZPP_DIR}" vendor/zpp)
 	endif()
 
@@ -396,7 +414,7 @@ if(NOT "${PDI_SUPERBUILD}")
 
 	include(GenerateExportHeader)
 
-	if("${PDI_BUILD_FORTRAN}")
+	if("${PDI_BUILD_PDI_CORE}" AND "${PDI_BUILD_FORTRAN}")
 		include(DefaultKind)
 	endif()
 
@@ -416,8 +434,10 @@ if(NOT "${PDI_SUPERBUILD}")
 
 	## and now for the actual content
 
-	message(STATUS " **Module**: ENABLED  PDI")
-	add_subdirectory(pdi)
+	if("${PDI_BUILD_PDI_CORE}")
+		message(STATUS " **Module**: ENABLED  PDI (-DPDI_BUILD_PDI_CORE=ON)")
+		add_subdirectory(pdi)
+	endif()
 
 	set(PDI_PLUGIN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/plugins")
 	foreach(PDI_PLUGIN IN ITEMS DECL_HDF5 DECL_NETCDF JSON MPI PYCALL SERIALIZE SET_VALUE TIMER TRACE USER_CODE)
@@ -447,48 +467,41 @@ endif()
 include(SuperBuild)
 
 
-## Yaml
+if("${PDI_BUILD_PDI_CORE}" OR "${PDI_BUILD_TESTING}")
+	sbuild_add_dependency(yaml "${PDI_USE_DEFAULT}"
+		EMBEDDED_PATH "${PDI_VENDORED_YAML_DIR}"
+		CMAKE_CACHE_ARGS
+			"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream libyaml is updated (https://github.com/yaml/libyaml/pull/314)
+			"-DINSTALL_BIN_DIR:STRING=${CMAKE_INSTALL_BINDIR}"
+			"-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
+			"-DINSTALL_INCLUDE_DIR:STRING=${CMAKE_INSTALL_INCLUDEDIR}"
+			"-DINSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}"
+		VERSION "${PDI_REQUIRED_YAML_VERSION}"
+	)
 
-# if ( paraconf )
-sbuild_add_dependency(yaml "${PDI_USE_DEFAULT}"
-	EMBEDDED_PATH "${PDI_VENDORED_YAML_DIR}"
-	CMAKE_CACHE_ARGS
-		"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream libyaml is updated (https://github.com/yaml/libyaml/pull/314)
-		"-DINSTALL_BIN_DIR:STRING=${CMAKE_INSTALL_BINDIR}"
-		"-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
-		"-DINSTALL_INCLUDE_DIR:STRING=${CMAKE_INSTALL_INCLUDEDIR}"
-		"-DINSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}"
-	VERSION "${PDI_REQUIRED_YAML_VERSION}"
-)
-
-
-## Paraconf
-
-set(PARACONF_COMPONENTS "C")
-if("${PDI_BUILD_FORTRAN}")
-	list(APPEND PARACONF_COMPONENTS "f90")
+	set(PARACONF_COMPONENTS "C")
+	if("${PDI_BUILD_FORTRAN}")
+		list(APPEND PARACONF_COMPONENTS "f90")
+	endif()
+	sbuild_add_dependency(paraconf "${PDI_USE_DEFAULT}"
+		EMBEDDED_PATH "${PDI_VENDORED_PARACONF_DIR}"
+		COMPONENTS ${PARACONF_COMPONENTS}
+		DEPENDS "yaml"
+		VERSION "${PDI_REQUIRED_PARACONF_VERSION}"
+	)
 endif()
-# if ( PDI or ... )
-sbuild_add_dependency(paraconf "${PDI_USE_DEFAULT}"
-	EMBEDDED_PATH "${PDI_VENDORED_PARACONF_DIR}"
-	COMPONENTS ${PARACONF_COMPONENTS}
-	DEPENDS "yaml"
-	VERSION "${PDI_REQUIRED_PARACONF_VERSION}"
-)
 
-
-## spdlog
-
-# if ( PDI or ... )
-sbuild_add_dependency(spdlog "${PDI_USE_DEFAULT}"
-	EMBEDDED_PATH "${PDI_VENDORED_SPDLOG_DIR}"
-	CMAKE_CACHE_ARGS
-		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
-		"-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF"
-		"-DSPDLOG_BUILD_TESTS:BOOL=OFF"
-		"-DSPDLOG_FMT_EXTERNAL:BOOL=OFF"
-	VERSION "${PDI_REQUIRED_SPDLOG_VERSION}"
-)
+if("${PDI_BUILD_PDI_CORE}")
+	sbuild_add_dependency(spdlog "${PDI_USE_DEFAULT}"
+		EMBEDDED_PATH "${PDI_VENDORED_SPDLOG_DIR}"
+		CMAKE_CACHE_ARGS
+			"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
+			"-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF"
+			"-DSPDLOG_BUILD_TESTS:BOOL=OFF"
+			"-DSPDLOG_FMT_EXTERNAL:BOOL=OFF"
+		VERSION "${PDI_REQUIRED_SPDLOG_VERSION}"
+	)
+endif()
 
 
 ## HDF5
