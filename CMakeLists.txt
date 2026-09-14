@@ -102,8 +102,7 @@ endif()
 set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can be 1) EMBEDDED to use the provided version, 2) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 3) AUTO to use SYSTEM if available and EMBEDDED otherwise")
 
 # With the superbuild on, this file builds the vendored dependencies and then re-invokes itself as a single ExternalProject with the flag off.
-# With it off, this is a normal project, dependencies are expected to be already available and the components that joined it are added with
-# add_subdirectory; the superbuild still builds the others as projects of their own.
+# With it off, this is a normal project, dependencies are expected to be already available and every module is added with add_subdirectory.
 option(PDI_SUPERBUILD "Build the vendored dependencies, then PDI itself as a sub-project" ON)
 if("${PDI_SUPERBUILD}")
 	message(STATUS " **Profile**: Superbuild mode is: `ON' (-DPDI_SUPERBUILD=ON)")

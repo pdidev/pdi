@@ -27,14 +27,13 @@ documentation at https://pdi.dev
 A few things about this repository are worth knowing before you start, because they are not what you
 might expect and they shape everything else.
 
-**This is a superbuild, not a single CMake project.**
-The top-level `CMakeLists.txt` does not `add_subdirectory` the components.
-Instead, each of them, the PDI library, every plugin, the examples, the test suites, is declared as
-an *independent* CMake project assembled with `ExternalProject_Add`, and each is built and installed
-into a staging tree that the others then find through `find_package(PDI)`.
-The practical consequences are covered in [Project structure](#project-structure); the one to
-remember now is that a component can also be configured and built on its own against an already
-installed PDI.
+**This is a self-recursive superbuild.**
+A single `CMakeLists.txt` plays two roles, chosen by `PDI_SUPERBUILD`.
+When `ON`, it builds the dependencies the distribution ships and then re-invokes *itself* with
+the flag off.
+When `OFF`, it is the project root and the PDI library, the plugins, examples, and tests are added
+with `add_subdirectory` and configured in a single pass.
+The practical consequences are covered in [Project structure](#project-structure).
 
 **Most functionality lives in plugins.**
 The PDI core deliberately knows nothing about HDF5, NetCDF, Python or MPI.
@@ -106,15 +105,12 @@ is fixed, as `CMakeUserPresets.json` is.
 
 ## Running the tests
 
-**Run `ctest` from the top-level build directory, not from a sub-build.**
-The tests themselves live in the individual component builds, but the top-level
-`CTestTestfile.cmake` pulls them in through a generated `SubTests.cmake`, which is also what sets
-`LD_LIBRARY_PATH` to point at the staging tree.
-Running `ctest` inside a sub-build skips that setup.
+Whether in SuperBuild or direct mode, it always works to run `ctest` from the top-level build
+directory.
 
 ```bash
 ctest --test-dir .build --output-on-failure --timeout 90
-ctest --test-dir .build -N                       # list the tests
+ctest --test-dir .build -N                                    # list the tests
 ctest --test-dir .build -R '^decl_hdf5' --output-on-failure   # run a subset
 ```
 
@@ -154,17 +150,30 @@ This section covers what that listing cannot: how the pieces relate.
 
 ### Components and their targets
 
-Each component is a standalone CMake project with its own `CMakeLists.txt` that finds PDI with
-`find_package(PDI)` against the staging tree.
-The superbuild wraps each one in a `<NAME>_pkg` target, so a single component can be rebuilt with,
-for instance:
+The library, plugins, tests, and benchmarks are directories of one single project.
+The distribution selects what to build with the `BUILD_*` options.
+The root `CMakeLists.txt` handles all dependencies.
+
+A few directories remain projects of their own, each for a reason the distribution cannot absorb:
+
+* `example/` is what a user builds against an installed PDI, and shows both ways of mocking PDI; the
+  distribution also adds it as an integration test suite.
+* `mock_pdi/` is meant to be copied into an application, so it has to work with nothing from the
+  distribution around it.
+* `tests/api_tests/` gets PDI in either of the ways a project can, chosen with `API_TESTS_PDI`:
+  `FIND` it (installed, or the mock through `PDI_ROOT`), or `MOCK` it with `mock_pdi/` as a
+  subdirectory.
+  Built against the mock, it checks that `mock_pdi/pdi.h` keeps up with `pdi/include/pdi.h`; the
+  distribution adds it as well.
+* `tests/cmake_tests/multiple_find/` is a configure-only test that consumes an installed PDI through
+  `find_package`, to validate the generated `PDIConfig.cmake`.
+
+When the superbuild is on it wraps the whole thing in a single `PDI_pkg` target that can be rebuilt
+with the command:
 
 ```bash
-cmake --build .build --target TRACE_PLUGIN_pkg
+cmake --build .build --target PDI_pkg
 ```
-
-Sub-builds install into `<build>/staging` and are declared `BUILD_ALWAYS`, so they are
-reconsidered on every build of the top-level project.
 
 Dependencies are declared with `sbuild_add_dependency(<name> AUTO|SYSTEM|EMBEDDED ...)`: they are
 either found on the system or built from `vendor/`.
