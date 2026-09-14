@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -30,7 +31,6 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
-set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 # Add the plugin path to PDI_PLUGIN_PATH
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
@@ -44,26 +44,6 @@ set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_mpi_plugin>:\${PDI_PLUGIN_PATH
 endif()
 "
 )
-
-if("${BUILD_FORTRAN}")
-	if(NOT "${MPI_Fortran_HAVE_F90_MODULE}")
-		if("${MPI_Fortran_HAVE_F77_HEADER}")
-			file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/mpi.F90" [=[
-module mpi
-implicit none
-include "mpif.h"
-end module
-]=])
-			add_library(MPI_with_mod STATIC "${CMAKE_CURRENT_BINARY_DIR}/mpi.F90")
-			target_link_libraries(MPI_with_mod MPI::MPI_Fortran)
-		else()
-			message(FATAL_ERROR "Unable to compile a MPI program either with F90 module or F77 include")
-		endif()
-	else()
-		add_library(MPI_with_mod INTERFACE)
-		target_link_libraries(MPI_with_mod INTERFACE MPI::MPI_Fortran)
-	endif()
-endif()
 
 
 # MPI plugin test
