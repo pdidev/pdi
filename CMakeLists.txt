@@ -328,17 +328,45 @@ if(NOT "${PDI_SUPERBUILD}")
 		find_package(pybind11 "${PDI_REQUIRED_PYBIND11_VERSION}" REQUIRED)
 	endif()
 
+	if("${BUILD_DECL_HDF5_PLUGIN}")
+		set(HDF5_USE_STATIC_LIBRARIES OFF)
+		set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
+		find_package(HDF5 REQUIRED COMPONENTS C)
+		if("${HDF5_VERSION}" VERSION_LESS "${PDI_REQUIRED_HDF5_VERSION}")
+			message(FATAL_ERROR "HDF5 version ${PDI_REQUIRED_HDF5_VERSION} at least required, HDF5 ${HDF5_VERSION} found.")
+		endif()
+		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
+			message(FATAL_ERROR "Parallel HDF5 required, sequential HDF5 only found. Please set -DBUILD_HDF5_PARALLEL=OFF to disable parallel HDF5")
+		endif()
+	endif()
+
 	if("${BUILD_JSON_PLUGIN}")
 		find_package(nlohmann_json "${PDI_REQUIRED_JSON_VERSION}" REQUIRED)
+	endif()
+
+	# parallel HDF5 still needs MPI, even if we didn't ask for parallel support. Look for it if we didn't before.
+	if("${HDF5_IS_PARALLEL}" AND NOT TARGET MPI::MPI_C)
+		list(APPEND MPI_COMPONENTS C CXX)
+		if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
+			list(APPEND MPI_COMPONENTS Fortran)
+		endif()
+		find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 	endif()
 
 	if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
 		add_subdirectory("${PDI_VENDORED_ZPP_DIR}" vendor/zpp)
 	endif()
 
-	if("${BUILD_TESTING}")
+	if("${BUILD_TESTING}" OR ("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_BENCHMARKING}"))
 		option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
 		add_subdirectory("${PDI_VENDORED_GOOGLETEST_DIR}" vendor/googletest EXCLUDE_FROM_ALL)
+	endif()
+
+	if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_BENCHMARKING}")
+		option(BENCHMARK_ENABLE_TESTING "Enable testing of the benchmark library." OFF)
+		option(BENCHMARK_ENABLE_WERROR "Build Release candidates with -Werror." OFF)
+		option(BENCHMARK_ENABLE_INSTALL "Enable installation of benchmark. (Projects embedding benchmark may want to turn this OFF.)" OFF)
+		add_subdirectory("${PDI_VENDORED_BENCHMARK_DIR}" vendor/benchmark EXCLUDE_FROM_ALL)
 	endif()
 
 
@@ -369,7 +397,7 @@ if(NOT "${PDI_SUPERBUILD}")
 	add_subdirectory(pdi)
 
 	set(PDI_PLUGIN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/plugins")
-	foreach(PDI_PLUGIN IN ITEMS JSON MPI PYCALL SERIALIZE SET_VALUE TRACE USER_CODE)
+	foreach(PDI_PLUGIN IN ITEMS DECL_HDF5 JSON MPI PYCALL SERIALIZE SET_VALUE TRACE USER_CODE)
 		if("${BUILD_${PDI_PLUGIN}_PLUGIN}")
 			message(STATUS " **Module**: ENABLED  ${PDI_PLUGIN}_PLUGIN (-DBUILD_${PDI_PLUGIN}_PLUGIN=ON)")
 			string(TOLOWER "${PDI_PLUGIN}" PDI_PLUGIN_DIR)
@@ -608,6 +636,9 @@ endif()
 if("${BUILD_JSON_PLUGIN}")
 	list(APPEND PDI_DEPENDS_LIST JSON)
 endif()
+if("${BUILD_DECL_HDF5_PLUGIN}")
+	list(APPEND PDI_DEPENDS_LIST HDF5)
+endif()
 sbuild_add_module(PDI
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
 	CMAKE_CACHE_ARGS "-DPDI_SUPERBUILD:BOOL=OFF"
@@ -615,13 +646,6 @@ sbuild_add_module(PDI
 	SUBSTEPS test
 )
 
-
-sbuild_add_module(DECL_HDF5_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_DECL_HDF5_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5"
-	DEPENDS PDI HDF5
-	SUBSTEPS test
-)
 
 sbuild_add_module(DECL_NETCDF_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DECL_NETCDF_PLUGIN

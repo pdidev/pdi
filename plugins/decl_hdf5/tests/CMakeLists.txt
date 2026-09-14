@@ -2,6 +2,7 @@
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # Copyright (C) 2022-2026 Centre National de Recherche Scientifique (CNRS)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,12 +30,6 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.22...4.2)
-
-if(NOT TARGET GTest::gtest)
-	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
-	add_subdirectory("../../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
-endif()
-include(GoogleTest)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
