@@ -199,7 +199,11 @@ Additional dependencies for **the Python support**:
 
 * the PDI library,
 * **the [python](https://www.python.org/) development environment version 3.10 or above (not provided)**,
-* the [pybind11](https://pybind11.readthedocs.io/en/stable) library version 2.9 or above.
+* the [pybind11](https://pybind11.readthedocs.io/en/stable) library version 2.9 or above (provided).
+
+Additional dependencies for **the documentation**:
+
+* **[Doxygen](https://www.doxygen.nl/) version 1.9 or above (not provided)**.
 
 Dependencies of **the Decl'HDF5 plugin**:
 
