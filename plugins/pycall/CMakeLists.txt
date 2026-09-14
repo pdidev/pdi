@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -46,8 +47,7 @@ find_package(PDI REQUIRED COMPONENTS pysupport)
 
 # The plugin
 add_library(pdi_pycall_plugin MODULE pycall.cxx)
-# link against Python3::Python to workaround https://github.com/pybind/pybind11/issues/2664
-target_link_libraries(pdi_pycall_plugin PDI::PDI_pysupport pybind11::embed Python3::Python)
+target_link_libraries(pdi_pycall_plugin PDI::PDI_pysupport pybind11::embed)
 set_target_properties(pdi_pycall_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # installation
