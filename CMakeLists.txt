@@ -33,12 +33,27 @@
 ### Project header
 
 cmake_minimum_required(VERSION 3.22...4.2)
-project(PDI_DIST LANGUAGES NONE)
+project(PDI LANGUAGES NONE)
+
+## Version handling
+file(READ VERSION PDI_VERSION)
+string(STRIP "${PDI_VERSION}" PDI_VERSION)
+string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${PDI_VERSION}")
+set(PDI_VERSION_MAJOR "${CMAKE_MATCH_1}")
+set(PDI_VERSION_MINOR "${CMAKE_MATCH_2}")
+set(PDI_VERSION_PATCH "${CMAKE_MATCH_3}")
+set(PDI_VERSION_MODIF "${CMAKE_MATCH_5}")
+if("git" STREQUAL "${PDI_VERSION_MODIF}" OR "alpha" STREQUAL "${PDI_VERSION_MODIF}")
+	execute_process(COMMAND "${CMAKE_CURRENT_LIST_DIR}/cmake/version-uid" "${PDI_VERSION_MODIF}" WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+set(PDI_VERSION "${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
+set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
 
 
 
 ## Required versions of the dependencies
 
+# PDIConfig.cmake.in reads these too, so that an installed PDI asks for the same versions it was built against.
 # pdi/docs/Source_installation.md is the authoritative list: keep both in sync.
 set(PDI_REQUIRED_DOXYGEN_VERSION  1.9)
 set(PDI_REQUIRED_HDF5_VERSION     1.10)
@@ -85,6 +100,14 @@ else()
 endif()
 
 set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can be 1) EMBEDDED to use the provided version, 2) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 3) AUTO to use SYSTEM if available and EMBEDDED otherwise")
+
+# With the superbuild on, this file builds the vendored dependencies and then re-invokes itself as a single ExternalProject with the flag off.
+# With it off, this is a normal project, dependencies are expected to be already available and the components that joined it are added with
+# add_subdirectory; the superbuild still builds the others as projects of their own.
+option(PDI_SUPERBUILD "Build the vendored dependencies, then PDI itself as a sub-project" ON)
+if("${PDI_SUPERBUILD}")
+	message(STATUS " **Profile**: Superbuild mode is: `ON' (-DPDI_SUPERBUILD=ON)")
+endif()
 
 # Modules to build
 
@@ -206,33 +229,29 @@ endif()
 
 
 
-### Dependencies
-
-include(GNUInstallDirs)
-include(SuperBuild)
-sbuild_get_env(SBUILD_PATH PATH)
-sbuild_get_env(SBUILD_CPATH CPATH)
-sbuild_get_env(SBUILD_LIBRARY_PATH LIBRARY_PATH)
-sbuild_get_env(SBUILD_LD_LIBRARY_PATH LD_LIBRARY_PATH)
-
-
-## Python3
-
-if("${BUILD_PYTHON}")
-	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter Development)
-elseif("${BUILD_FORTRAN}")
-	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter)
-endif()
-
-
-## Threads
+### Testing
 
 if("${BUILD_TESTING}")
-	find_package(Threads REQUIRED)
+	include(CTest)
 endif()
 
 
-## MPI
+
+### Dependencies common to both modes
+
+if("${BUILD_TESTING}")
+	find_program(ZSH_PROGRAM zsh)
+	if(EXISTS "${ZSH_PROGRAM}")
+		set(ZSH_PROGRAM_FOUND ON)
+	else()
+		set(ZSH_PROGRAM_FOUND OFF)
+	endif()
+	option(ENABLE_ZSH "Enable test of ZSH for env script" "${ZSH_PROGRAM_FOUND}")
+endif()
+
+if("${BUILD_DOCUMENTATION}")
+	find_package(Doxygen "${PDI_REQUIRED_DOXYGEN_VERSION}" REQUIRED OPTIONAL_COMPONENTS dot)
+endif()
 
 set(MPI_COMPONENTS)
 if("${BUILD_TESTING}")
@@ -254,6 +273,105 @@ if(NOT "x${MPI_COMPONENTS}x" STREQUAL "xx")
 	list(REMOVE_DUPLICATES MPI_COMPONENTS)
 	find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 endif()
+
+if("${BUILD_PYTHON}")
+	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter Development)
+elseif("${BUILD_FORTRAN}")
+	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter)
+endif()
+
+if("${BUILD_TESTING}")
+	find_package(Threads REQUIRED)
+endif()
+
+
+
+### Installation directories
+
+include(GNUInstallDirs)
+set(INSTALL_PDIDATADIR  "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
+set(INSTALL_PDICMAKEDIR "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "PDI cmake modules (PDIDATADIR/cmake)")
+# GNUInstallDirs defaults DOCDIR to DATAROOTDIR/doc/PDI after PROJECT_NAME; replace only that default, not a value the user cached.
+if("" STREQUAL "$CACHE{CMAKE_INSTALL_DOCDIR}")
+	set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATAROOTDIR}/doc/pdi")
+endif()
+
+if("${BUILD_FORTRAN}")
+	# Expect compilers to provide compatible modules at the minor release level at least, hence the version truncated to its first two components.
+	string(REGEX REPLACE "^([0-9]*\\.[0-9]*)\\..*$" "\\1" Fortran_COMPILER_MINOR_VERSION "${CMAKE_Fortran_COMPILER_VERSION}")
+	set(INSTALL_FMODDIR "${CMAKE_INSTALL_LIBDIR}/pdi/finclude/${CMAKE_Fortran_COMPILER_ID}-${Fortran_COMPILER_MINOR_VERSION}"
+		CACHE PATH "Fortran module directory (LIBDIR/pdi/finclude/<compiler>-<version>)")
+endif()
+
+set(INSTALL_PDIPLUGINDIR "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "PDI plugins (LIBDIR/pdi/plugins_<version>)")
+
+
+
+### Direct mode, the part that acts as a normal CMake project
+
+if(NOT "${PDI_SUPERBUILD}")
+
+	## The vendored dependencies
+
+	set(PARACONF_COMPONENTS C)
+	if("${BUILD_FORTRAN}")
+		list(APPEND PARACONF_COMPONENTS f90)
+	endif()
+	find_package(paraconf "${PDI_REQUIRED_PARACONF_VERSION}" REQUIRED COMPONENTS ${PARACONF_COMPONENTS})
+
+	find_package(spdlog "${PDI_REQUIRED_SPDLOG_VERSION}" REQUIRED)
+
+	if("${BUILD_PYTHON}")
+		# Ensure pybind11 finds the same python as us.
+		set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency")
+		set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules")
+		find_package(pybind11 "${PDI_REQUIRED_PYBIND11_VERSION}" REQUIRED)
+	endif()
+
+	if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
+		add_subdirectory("${PDI_VENDORED_ZPP_DIR}" vendor/zpp)
+	endif()
+
+	if("${BUILD_TESTING}")
+		option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+		add_subdirectory("${PDI_VENDORED_GOOGLETEST_DIR}" vendor/googletest EXCLUDE_FROM_ALL)
+	endif()
+
+
+
+	## The CMake modules
+
+	include(CMakePackageConfigHelpers)
+
+	include(GenerateExportHeader)
+
+	if("${BUILD_FORTRAN}")
+		include(DefaultKind)
+	endif()
+
+	if("${BUILD_TESTING}")
+		include(GoogleTest)
+	endif()
+
+
+
+	## and now for the actual content
+
+	message(STATUS " **Module**: ENABLED  PDI")
+	add_subdirectory(pdi)
+
+	return()
+endif()
+
+
+
+### Dependencies
+
+include(SuperBuild)
+sbuild_get_env(SBUILD_PATH PATH)
+sbuild_get_env(SBUILD_CPATH CPATH)
+sbuild_get_env(SBUILD_LIBRARY_PATH LIBRARY_PATH)
+sbuild_get_env(SBUILD_LD_LIBRARY_PATH LD_LIBRARY_PATH)
 
 
 ## Yaml
@@ -302,13 +420,6 @@ sbuild_add_dependency(spdlog "${USE_DEFAULT}"
 		"-DSPDLOG_FMT_EXTERNAL:BOOL=OFF"
 	VERSION "${PDI_REQUIRED_SPDLOG_VERSION}"
 )
-
-
-## Doxygen
-
-if("${BUILD_DOCUMENTATION}")
-	find_package(Doxygen "${PDI_REQUIRED_DOXYGEN_VERSION}" REQUIRED OPTIONAL_COMPONENTS dot)
-endif()
 
 
 ## HDF5
@@ -476,7 +587,8 @@ if("${BUILD_PYTHON}")
 	list(APPEND PDI_DEPENDS_LIST pybind11)
 endif()
 sbuild_add_module(PDI
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/pdi"
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
+	CMAKE_CACHE_ARGS "-DPDI_SUPERBUILD:BOOL=OFF"
 	DEPENDS ${PDI_DEPENDS_LIST}
 	SUBSTEPS test
 )

@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -181,7 +182,7 @@ IMPLICIT_DIR_DOCS      = NO
 INCLUDED_BY_GRAPH      = NO
 INCLUDE_FILE_PATTERNS  =
 INCLUDE_GRAPH          = NO
-INCLUDE_PATH           = pdi/include/ @PDI_BINARY_DIR@
+INCLUDE_PATH           = pdi/include/ @PDI_BINARY_DIR@/pdi
 INHERIT_DOCS           = YES
 INLINE_GROUPED_CLASSES = NO
 INLINE_INFO            = YES

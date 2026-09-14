@@ -28,82 +28,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.22...4.2)
-project(PDI LANGUAGES CXX C)
-list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
-
-
-# Version
-
-file(READ ../VERSION PDI_VERSION)
-string(STRIP "${PDI_VERSION}" PDI_VERSION)
-string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${PDI_VERSION}")
-set(PDI_VERSION_MAJOR "${CMAKE_MATCH_1}")
-set(PDI_VERSION_MINOR "${CMAKE_MATCH_2}")
-set(PDI_VERSION_PATCH "${CMAKE_MATCH_3}")
-set(PDI_VERSION_MODIF "${CMAKE_MATCH_5}")
-if("git" STREQUAL "${PDI_VERSION_MODIF}" OR "alpha" STREQUAL "${PDI_VERSION_MODIF}")
-	execute_process(COMMAND "${PDI_SOURCE_DIR}/cmake/version-uid" "${PDI_VERSION_MODIF}" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
-set(PDI_VERSION "${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
-set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
-
-
-# Build options
-
-option(BUILD_DOCUMENTATION "Build documentation" ON)
-option(BUILD_TESTING       "Build tests" ON)
-option(BUILD_FORTRAN       "Enable Fortran support" ON)
-option(BUILD_PYTHON        "Enable Python support" "${BUILD_UNSTABLE}")
-
-
-# Language support
-
-if("${BUILD_FORTRAN}")
-	enable_language(Fortran)
-endif()
-
-
-# Includes
-
-include(CTest)
-include(CMakePackageConfigHelpers)
-if("${BUILD_FORTRAN}")
-	include(DefaultKind)
-endif()
-include(GenerateExportHeader)
-set(_REAL_PROJECT_NAME "${PROJECT_NAME}")
-set(PROJECT_NAME pdi)
-include(GNUInstallDirs)
-set(PROJECT_NAME "${_REAL_PROJECT_NAME}")
-set(INSTALL_PDIDATADIR  "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
-set(INSTALL_PDICMAKEDIR "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "PDI cmake modules (PDIDATADIR/cmake)")
-set(INSTALL_PDIPLUGINDIR  "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "cmake modules (LIBDIR/pdi/plugins_${PDI_VERSION})")
-
-
-# Dependencies
-
-set(PARACONF_COMPONENTS "C")
-if("${BUILD_FORTRAN}")
-	list(APPEND PARACONF_COMPONENTS "f90")
-endif()
-set(PDI_REQUIRED_PARACONF_VERSION 1.0) # used in PDIConfig too
-find_package(paraconf "${PDI_REQUIRED_PARACONF_VERSION}" REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
-set(PDI_REQUIRED_SPDLOG_VERSION 1.9) # used in PDIConfig too
-find_package(spdlog "${PDI_REQUIRED_SPDLOG_VERSION}" REQUIRED) # must match PDIConfig.cmake.in
-if("${BUILD_PYTHON}")
-	set(PDI_REQUIRED_PYTHON_VERSION 3.10) # used in PDIConfig too
-	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter Development)
-	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
-	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
-	set(PDI_REQUIRED_PYBIND11_VERSION 2.9) # used in PDIConfig too
-	find_package(pybind11 "${PDI_REQUIRED_PYBIND11_VERSION}" REQUIRED)
-endif()
-if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
-	add_subdirectory("../vendor/zpp-1.1.2/" "zpp")
-endif()
-
-
 # Check for some portability stuff and generate config.h
 
 if(IS_ABSOLUTE "${INSTALL_PDIPLUGINDIR}")
@@ -158,8 +82,8 @@ set(PDI_C_SRC
 add_library(PDI_C SHARED ${PDI_C_SRC})
 generate_export_header(PDI_C BASE_NAME pdi EXPORT_FILE_NAME pdi/export.h)
 target_include_directories(PDI_C
-		PUBLIC "$<BUILD_INTERFACE:${PDI_BINARY_DIR}>"  "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include/>"
-		PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>")
+		PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>"
+		PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>")
 target_link_libraries(PDI_C
 		PUBLIC paraconf::paraconf ${CMAKE_DL_LIBS}
 		PRIVATE spdlog::spdlog)
@@ -181,13 +105,13 @@ install(TARGETS PDI_C EXPORT PDI_C_EXPORT
 		INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 install(FILES
-		"${PDI_SOURCE_DIR}/include/pdi.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/include/pdi.h"
 		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 		COMPONENT Development
 )
 install(FILES
-		"${PDI_BINARY_DIR}/pdi/export.h"
-		"${PDI_BINARY_DIR}/pdi/version.h"
+		"${CMAKE_CURRENT_BINARY_DIR}/pdi/export.h"
+		"${CMAKE_CURRENT_BINARY_DIR}/pdi/version.h"
 		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pdi"
 		COMPONENT Development
 )
@@ -204,7 +128,7 @@ install(TARGETS PDI_plugins EXPORT PDI_plugins_EXPORT
 		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Development
 		INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
-install(DIRECTORY "${PDI_SOURCE_DIR}/include/pdi"
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/pdi"
 		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 		COMPONENT Development
 		FILES_MATCHING PATTERN *.h PATTERN python/*.h EXCLUDE
@@ -214,10 +138,10 @@ install(EXPORT PDI_plugins_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_PDICM
 
 # pdirun
 
-file(COPY scripts/pdirun_intree DESTINATION "${CMAKE_BINARY_DIR}/")
+file(COPY scripts/pdirun_intree DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
 add_executable(pdirun IMPORTED)
 add_executable(PDI::pdirun IMPORTED)
-set_target_properties(pdirun PDI::pdirun PROPERTIES IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/pdirun_intree")
+set_target_properties(pdirun PDI::pdirun PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/pdirun_intree")
 install(PROGRAMS scripts/pdirun
 		DESTINATION "${CMAKE_INSTALL_BINDIR}"
 		COMPONENT Runtime
@@ -229,8 +153,8 @@ if("${BUILD_PYTHON}")
 	# C++ python support library
 	add_library(PDI_pysupport SHARED src/python/python_ref_wrapper.cxx src/python/tools.cxx)
 	target_include_directories(PDI_pysupport PUBLIC
-			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include>"
-			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
+			"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+			PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
 	)
 	target_link_libraries(PDI_pysupport PUBLIC pybind11::pybind11 pybind11::python_link_helper PDI::PDI_plugins)
 	set_property(TARGET PDI_pysupport PROPERTY LIBRARY_OUTPUT_NAME "pdi_pysupport")
@@ -248,7 +172,7 @@ if("${BUILD_PYTHON}")
 			ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Development
 			INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 	)
-	install(DIRECTORY "${PDI_SOURCE_DIR}/include/pdi/python"
+	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/pdi/python"
 			DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pdi"
 			COMPONENT Development
 	)
@@ -260,8 +184,8 @@ if("${BUILD_PYTHON}")
 	pybind11_add_module(PDI_python MODULE src/python/pdi.cxx)
 	target_link_libraries(PDI_python PRIVATE PDI::PDI_pysupport)
 	target_include_directories(PDI_python PRIVATE
-			"${PDI_SOURCE_DIR}/include"
-			"${PDI_SOURCE_DIR}/src"
+			"${CMAKE_CURRENT_SOURCE_DIR}/include"
+			"${CMAKE_CURRENT_SOURCE_DIR}/src"
 	)
 	set_property(TARGET PDI_python PROPERTY LIBRARY_OUTPUT_NAME "_pdi")
 	set_property(TARGET PDI_python PROPERTY ENABLE_EXPORTS TRUE)
@@ -284,10 +208,10 @@ endif()
 # Fortran API library
 
 if("${BUILD_FORTRAN}")
-	file(MAKE_DIRECTORY "${PDI_BINARY_DIR}/fmoddir")
+	file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/fmoddir")
 	zpp_preprocess(OUTPUT PDIF_H SOURCES src/fortran/pdif.h.zpp)
 	add_custom_target(mv_zpp_files # we put in in fmoddir because pdif.h is compiler dependant
-			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PDIF_H}" "${PDI_BINARY_DIR}/fmoddir/pdif.h"
+			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PDIF_H}" "${CMAKE_CURRENT_BINARY_DIR}/fmoddir/pdif.h"
 			DEPENDS "${PDIF_H}"
 			VERBATIM
 	)
@@ -296,27 +220,21 @@ if("${BUILD_FORTRAN}")
 	target_link_libraries(PDI_f90 PUBLIC PDI::PDI_C paraconf::paraconf_f90 PRIVATE PDI::PDI_plugins)
 	add_dependencies(PDI_f90 mv_zpp_files)
 	target_include_directories(PDI_f90 PUBLIC
-			"$<BUILD_INTERFACE:${PDI_BINARY_DIR}/fmoddir>"
-			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
+			"$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fmoddir>"
+			PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
 	)
 	set_property(TARGET PDI_f90 PROPERTY LIBRARY_OUTPUT_NAME "pdi_f90")
 	set_property(TARGET PDI_f90 PROPERTY VERSION ${PDI_VERSION})
 	set_property(TARGET PDI_f90 PROPERTY SOVERSION ${PDI_VERSION_MAJOR})
 	set_property(TARGET PDI_f90 PROPERTY PDI_MAJOR_VERSION ${PDI_VERSION_MAJOR})
 	set_property(TARGET PDI_f90 APPEND PROPERTY COMPATIBLE_INTERFACE_STRING PDI_MAJOR_VERSION)
-	set_property(TARGET PDI_f90 PROPERTY Fortran_MODULE_DIRECTORY "${PDI_BINARY_DIR}/fmoddir/")
-	# Expect compilers to provide compatible modules at the minor release level at least
-	string(REGEX REPLACE "^([0-9]*\\.[0-9]*)\\..*$" "\\1" Fortran_COMPILER_MINOR_VERSION "${CMAKE_Fortran_COMPILER_VERSION}")
-	set(INSTALL_FMODDIR
-		"${CMAKE_INSTALL_LIBDIR}/pdi/finclude/${CMAKE_Fortran_COMPILER_ID}-${Fortran_COMPILER_MINOR_VERSION}"
-		CACHE PATH
-		"Fortran module directory (LIBDIR/pdi/finclude/${CMAKE_Fortran_COMPILER_ID}-${Fortran_COMPILER_MINOR_VERSION})")
+	set_property(TARGET PDI_f90 PROPERTY Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/fmoddir/")
 	install(TARGETS PDI_f90 EXPORT pdi_f90_EXPORT
 			LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT COMPONENT Runtime NAMELINK_COMPONENT Development
 			ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Development
 			INCLUDES DESTINATION "${INSTALL_FMODDIR}"
 	)
-	install(DIRECTORY "${PDI_BINARY_DIR}/fmoddir/"
+	install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/fmoddir/"
 			DESTINATION "${INSTALL_FMODDIR}"
 			COMPONENT Development
 	)
@@ -346,22 +264,22 @@ configure_file(scripts/env.sh.in env.sh @ONLY)
 configure_file(scripts/env.xsh env.bash @ONLY)
 configure_file(scripts/env.xsh env.zsh @ONLY)
 install(FILES
-			"${PDI_BINARY_DIR}/env.bash"
-			"${PDI_BINARY_DIR}/env.sh"
-			"${PDI_BINARY_DIR}/env.zsh"
+			"${CMAKE_CURRENT_BINARY_DIR}/env.bash"
+			"${CMAKE_CURRENT_BINARY_DIR}/env.sh"
+			"${CMAKE_CURRENT_BINARY_DIR}/env.zsh"
 		DESTINATION "${INSTALL_PDIDATADIR}"
 		COMPONENT Runtime
 )
 
 
 configure_file(cmake/PDIConfig.cmake.in PDIConfig.cmake @ONLY)
-write_basic_package_version_file("${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/PDIConfigVersion.cmake"
 		VERSION "${PDI_VERSION}"
 		COMPATIBILITY AnyNewerVersion
 )
 install(FILES
-		"${PDI_BINARY_DIR}/PDIConfig.cmake"
-		"${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
+		"${CMAKE_CURRENT_BINARY_DIR}/PDIConfig.cmake"
+		"${CMAKE_CURRENT_BINARY_DIR}/PDIConfigVersion.cmake"
 		DESTINATION "${INSTALL_PDICMAKEDIR}"
 		COMPONENT Development
 )

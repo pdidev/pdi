@@ -29,13 +29,6 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
-find_package(Threads REQUIRED)
-if(NOT TARGET GTest::gtest)
-	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
-	add_subdirectory("../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
-endif()
-include(GoogleTest)
-
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 
@@ -107,18 +100,7 @@ target_link_libraries(PDI_unit_tests PDI::PDI_plugins Threads::Threads GTest::gt
 target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 gtest_discover_tests(PDI_unit_tests)
 
-find_program(ZSH_PROGRAM zsh)
-if(EXISTS "${ZSH_PROGRAM}")
-	set(ZSH_PROGRAM_FOUND ON)
-else()
-	set(ZSH_PROGRAM_FOUND OFF)
-endif()
-option(ENABLE_ZSH "Enable test of ZSH for env script" "${ZSH_PROGRAM_FOUND}")
-if("${ENABLE_ZSH}" STREQUAL "AUTO")
-	set(ENABLE_ZSH "${ZSH_PROGRAM_FOUND}")
-endif()
-
-add_test(NAME PDI_test_env_zsh COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/test_env_sh" "${PDI_BINARY_DIR}/env.bash")
+add_test(NAME PDI_test_env_zsh COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/test_env_sh" "${PDI_BINARY_DIR}/pdi/env.bash")
 if(NOT "${ENABLE_ZSH}")
 	set_property(TEST PDI_test_env_zsh PROPERTY DISABLED TRUE)
 endif()

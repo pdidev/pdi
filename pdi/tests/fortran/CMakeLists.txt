@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -29,10 +30,6 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.22...4.2)
-enable_language(Fortran)
-
-# Includes
-include(CTest)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
