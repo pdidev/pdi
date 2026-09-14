@@ -392,6 +392,10 @@ if(NOT "${PDI_SUPERBUILD}")
 		include(GoogleTest)
 	endif()
 
+	if("${BUILD_TESTING}" OR ("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_BENCHMARKING}"))
+		include(RuntestDir)
+	endif()
+
 	if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 		include(MPIWithMod)
 	endif()

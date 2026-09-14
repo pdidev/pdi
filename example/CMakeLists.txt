@@ -80,6 +80,8 @@ else()
 endif()
 find_library(LIB_M m DOC "The math library")
 
+include(RuntestDir)
+
 # Default standard in the project is C11
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
@@ -94,7 +96,7 @@ add_executable(PDI_example_F example.F90)
 target_link_libraries(PDI_example_F PRIVATE PDI::PDI_f90 paraconf::paraconf_f90 MPI_with_mod m)
 endif()
 
-set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/runtest-dir" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/pdi.yml")
+set(RUNTEST_DIR "$<TARGET_FILE:runtest_dir>" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/pdi.yml")
 
 if("${BUILD_DECL_HDF5_PLUGIN}")
 add_test(NAME PDI_example_decl_hdf5_C COMMAND ${RUNTEST_DIR} "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5.yml")
