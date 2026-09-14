@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2023-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,7 +41,9 @@ endif()
 function(build_test_compare TEST_NAME)
     # File locations
     set(EXPECTED_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}_expected.json")
-    set(ACTUAL_OUTPUT_PATH "${CMAKE_BINARY_DIR}/tests/${TEST_NAME}.json")
+    # The test writes beside itself, in this directory; CMAKE_BINARY_DIR would be the whole
+    # distribution's build root now that the plugin is not a project of its own.
+    set(ACTUAL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.json")
 
     # Test
     add_executable(${TEST_NAME} "${TEST_NAME}.c")
