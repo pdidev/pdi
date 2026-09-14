@@ -86,6 +86,16 @@ cmake -DPDI_DIST_PROFILE=Devel -S . -B .build
 cmake --build .build -j
 ```
 
+`PDI_SUPERBUILD` selects between the three ways of building the distribution:
+
+| What you want | How |
+|---|---|
+| Build the dependencies too, then PDI | `cmake -DPDI_SUPERBUILD=ON -S . -B <build>` |
+| Build PDI alone, against dependencies you already have | `cmake -DPDI_SUPERBUILD=OFF -S . -B <build>` |
+| Embed the distribution in another project | `add_subdirectory(<pdi>)`, which selects direct mode on its own |
+
+Switching an existing build directory between those modes is not supported; configure a fresh one.
+
 PDI should work without any specific environment set up when installed to a standard system path,
 like any other library.
 However, if installed to a non-standard location, the generated `pdirun` wrapper
@@ -143,8 +153,9 @@ other job:
 
 It builds, tests and installs the distribution from scratch, in a fresh `pdibuild.XXXXX` directory
 created in the current directory, so it leaves your own build tree alone.
-It then builds and tests the ways a project can consume PDI, installed and mocked; the banner it
-prints before each step says which.
+It then builds and tests the ways a project can consume PDI: installed, mocked and, when the
+dependencies are installed on the system (`PDI_LIBS=provided`), embedded; the banner it prints
+before each step says which.
 Set `TEST_DIR` to build somewhere specific, `MAKEFLAGS` to control the parallelism,
 `EXCLUDED_PDI_TESTS` to skip tests, and `CMAKE_FLAGS` to pass configure flags of your own, which
 take precedence over those the script chooses.
@@ -171,13 +182,15 @@ A few directories remain projects of their own, each for a reason the distributi
   values already set, and on its own the unprefixed names still provide the defaults.
 * `mock_pdi/` is meant to be copied into an application, so it has to work with nothing from the
   distribution around it.
-* `tests/api_tests/` gets PDI in either of the ways a project can, chosen with `API_TESTS_PDI`:
-  `FIND` it (installed, or the mock through `PDI_ROOT`), or `MOCK` it with `mock_pdi/` as a
-  subdirectory.
+* `tests/api_tests/` gets PDI in any of the ways a project can, chosen with `API_TESTS_PDI`: `FIND`
+  it (installed, or the mock through `PDI_ROOT`), `MOCK` it with `mock_pdi/` as a subdirectory, or
+  `EMBED` a source directory (the distribution, or `mock_pdi/`).
   Built against the mock, it checks that `mock_pdi/pdi.h` keeps up with `pdi/include/pdi.h`; the
   distribution adds it as well.
 * `tests/cmake_tests/multiple_find/` is a configure-only test that consumes an installed PDI through
   `find_package`, to validate the generated `PDIConfig.cmake`.
+* `tests/cmake_tests/embedded/` is a configure-only test that embeds the distribution with
+  `add_subdirectory` to test this mode of consumption.
 
 When the superbuild is on it wraps the whole thing in a single `PDI` target that can be rebuilt
 with the command:
@@ -241,10 +254,12 @@ Plugins do their work by registering callbacks on the context from their constru
 There are several test suites, each with a different purpose:
 
 * `pdi/tests/` and `plugins/*/tests/` are the per-component tests, including the C++ unit tests;
-* `tests/api_tests/` exercise the public API against either PDI or mock PDI;
+* `tests/api_tests/` exercise the public API against an installed, a mock or an embedded PDI;
 * `tests/combination_tests/` cover interactions between plugins;
 * `tests/cmake_tests/multiple_find/` verify that a real installation can be consumed through
   `find_package`;
+* `tests/cmake_tests/embedded/` verify that the distribution can be embedded with
+  `add_subdirectory`;
 * `example/` doubles as an integration test suite.
 
 ## Making a change

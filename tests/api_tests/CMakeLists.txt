@@ -26,8 +26,9 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_test_api LANGUAGES C CXX)
 
-set(API_TESTS_PDI "FIND" CACHE STRING "How to get PDI: FIND it (installed, or the mock through PDI_ROOT), or MOCK it with mock_pdi as a subdirectory, Paraconf's target included")
-set_property(CACHE API_TESTS_PDI PROPERTY STRINGS FIND MOCK)
+set(API_TESTS_PDI "FIND" CACHE STRING "How to get PDI: FIND it (installed, or the mock through PDI_ROOT), MOCK it with mock_pdi as a subdirectory, Paraconf's target included, or EMBED API_TESTS_PDI_SOURCE_DIR as a subdirectory")
+set_property(CACHE API_TESTS_PDI PROPERTY STRINGS FIND MOCK EMBED)
+set(API_TESTS_PDI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." CACHE PATH "The source directory EMBED adds: the PDI distribution, or mock_pdi")
 
 include(CTest)
 
@@ -44,8 +45,15 @@ if("FIND" STREQUAL "${API_TESTS_PDI}")
 elseif("MOCK" STREQUAL "${API_TESTS_PDI}")
 	set(PDI_MOCK_PARACONF_TARGET TRUE)
 	add_subdirectory(../../mock_pdi mock_pdi)
+elseif("EMBED" STREQUAL "${API_TESTS_PDI}")
+	# The distribution would otherwise add its test projects, this very one included.
+	set(PDI_BUILD_TESTING OFF)
+	if(NOT TARGET paraconf::paraconf)
+		find_package(paraconf REQUIRED COMPONENTS C)
+	endif()
+	add_subdirectory("${API_TESTS_PDI_SOURCE_DIR}" pdi)
 else()
-	message(FATAL_ERROR "API_TESTS_PDI should be set to one of: FIND, MOCK")
+	message(FATAL_ERROR "API_TESTS_PDI should be set to one of: FIND, MOCK, EMBED")
 endif()
 
 

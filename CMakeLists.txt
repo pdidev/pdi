@@ -105,11 +105,14 @@ if("User" STREQUAL "${PDI_DIST_PROFILE}")
 	pdi_option(BUILD_TESTING       "Build tests" OFF)
 	pdi_option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" OFF)
 	set(DEFAULT_BUILD_TYPE "Release")
+	# Defaults to ON (superbuild) when PDI is top level (called directly), but to OFF (direct mode) when added with `add_subdirectory` by a user.
+	set(DEFAULT_SUPERBUILD "${PROJECT_IS_TOP_LEVEL}")
 elseif("Devel" STREQUAL "${PDI_DIST_PROFILE}")
 	pdi_option(BUILD_DOCUMENTATION "Build documentation" ON)
 	pdi_option(BUILD_TESTING       "Build tests" ON)
 	pdi_option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" ON)
 	set(DEFAULT_BUILD_TYPE "Debug")
+	set(DEFAULT_SUPERBUILD "${PROJECT_IS_TOP_LEVEL}")
 else()
 	message(FATAL_ERROR "PDI_DIST_PROFILE should be set to one of: User, Devel")
 endif()
@@ -119,7 +122,7 @@ pdi_setting(USE_DEFAULT "Default version of libraries to use; this can be 1) EMB
 
 # With the superbuild on, this file builds the vendored dependencies and then re-invokes itself as a single ExternalProject with the flag off.
 # With it off, this is a normal project, dependencies are expected to be already available and every module is added with add_subdirectory.
-option(PDI_SUPERBUILD "Build the vendored dependencies, then PDI itself as a sub-project" ON)
+option(PDI_SUPERBUILD "Build the vendored dependencies, then PDI itself as a sub-project" "${DEFAULT_SUPERBUILD}")
 if("${PDI_SUPERBUILD}")
 	message(STATUS " **Profile**: Superbuild mode is: `ON' (-DPDI_SUPERBUILD=ON)")
 endif()
@@ -147,7 +150,7 @@ pdi_option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 
 ### Default build type
 
-if(NOT DEFINED CMAKE_BUILD_TYPE AND "${CMAKE_CONFIGURATION_TYPES}" STREQUAL "")
+if("${PROJECT_IS_TOP_LEVEL}" AND NOT DEFINED CMAKE_BUILD_TYPE AND "${CMAKE_CONFIGURATION_TYPES}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel ...")
 	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS None Debug Release RelWithDebInfo MinSizeRel)
 endif()
