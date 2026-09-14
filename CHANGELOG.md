@@ -23,6 +23,8 @@ and this project adheres to
 * The build type the distribution profile selects is now actually applied: `DIST_PROFILE=User`
   builds `Release` and `Devel` builds `Debug`, as per
   [#773](https://github.com/pdidev/pdi/issues/773).
+* The source installation guide says that the `Devel` profile selects the `Debug` build type, part
+  of [#774](https://github.com/pdidev/pdi/issues/774).
 
 #### Security
 
