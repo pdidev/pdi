@@ -75,7 +75,7 @@ the unprefixed name is ignored, as it then belongs to the enclosing project.
 
 `PDI_DIST_PROFILE` is the switch that distinguishes a developer build from a user build.
 Setting it to `Devel` turns on `PDI_BUILD_TESTING`, `PDI_BUILD_DOCUMENTATION` and
-`PDI_BUILD_UNSTABLE`, and defaults the build type to `Debug`.
+`PDI_BUILD_UNSTABLE`, defaults the build type to `Debug`, and leaves the superbuild off.
 
 So in order to build a development version of PDI, you should use the following command, where
 `<build>` denotes your build directory. The examples use `.build`, but you are free to put it
@@ -94,6 +94,9 @@ cmake --build .build -j
 | Build PDI alone, against dependencies you already have | `cmake -DPDI_SUPERBUILD=OFF -S . -B <build>` |
 | Embed the distribution in another project | `add_subdirectory(<pdi>)`, which selects direct mode on its own |
 
+Its default follows the profile.
+`User` builds the dependencies whenever PDI is the top-level project, which is what a distribution
+is for; `Devel` expects them to be there already.
 Switching an existing build directory between those modes is not supported; configure a fresh one.
 
 PDI should work without any specific environment set up when installed to a standard system path,
@@ -198,6 +201,9 @@ with the command:
 ```bash
 cmake --build .build --target PDI
 ```
+
+Under the `Devel` profile the superbuild is off by default, so there is no such target and no inner
+build tree: the distribution is one plain project and `cmake --build .build` builds all of it.
 
 Dependencies are declared with `sbuild_add_dependency(<name> AUTO|SYSTEM|EMBEDDED ...)`: they are
 either found on the system or built from `vendor/`.

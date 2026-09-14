@@ -58,18 +58,32 @@ cd "${TEST_DIR}"
 
 MAKEFLAGS="${MAKEFLAGS:--j}"
 EXCLUDED_PDI_TESTS=""
+if [[ "x${PDI_LIBS}" = "xprovided" ]]
+then
+	DEPENDENCY_ACCESS="${DEPENDENCY_ACCESS:-SYSTEM}"
+else
+	DEPENDENCY_ACCESS="${DEPENDENCY_ACCESS:-EMBEDDED}"
+fi
 
 if [[ -n "${PDI_PLUGIN_PATH}" ]]
 then
 	CMAKE_FLAGS="-DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH} ${CMAKE_FLAGS}"
 fi
 
-if [[ "x${PDI_LIBS}" = "xprovided" ]]
-then
-	CMAKE_FLAGS="-DUSE_DEFAULT=SYSTEM ${CMAKE_FLAGS}"
-else
-	CMAKE_FLAGS="-DUSE_DEFAULT=EMBEDDED ${CMAKE_FLAGS}"
-fi
+# PDI_SUPERBUILD is only passed to the distribution run: the projects that embed PDI read it too.
+case "${DEPENDENCY_ACCESS}" in
+"SYSTEM"|"EMBEDDED"|"AUTO")
+	SUPERBUILD="ON"
+	CMAKE_FLAGS="-DUSE_DEFAULT=${DEPENDENCY_ACCESS} ${CMAKE_FLAGS}"
+;;
+"NO_SUPERBUILD")
+	SUPERBUILD="OFF"
+;;
+*)
+	echo "ERROR: invalid value for DEPENDENCY_ACCESS. Expected SYSTEM, EMBEDDED, AUTO or NO_SUPERBUILD."
+	exit 1
+;;
+esac
 
 
 
@@ -120,7 +134,7 @@ conf_build_and_run() {
 printf "\n\n\n\e[1;36m *** Configure, build, test & install the whole pdi distribution\e[m\n\n"
 
 mkdir -p install/include install/lib # Workaround for https://github.com/pdidev/pdi/issues/644
-conf_build_and_run "" distribution "${SRCDIR}" --install-prefix "${PWD}/install" -DDIST_PROFILE=Devel
+conf_build_and_run "" distribution "${SRCDIR}" --install-prefix "${PWD}/install" -DDIST_PROFILE=Devel -DPDI_SUPERBUILD="${SUPERBUILD}"
 cmake --install tests_distribution
 
 
