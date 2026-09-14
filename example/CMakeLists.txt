@@ -33,6 +33,9 @@ cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_examples LANGUAGES C)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake")
+if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/4.3")
+endif()
 
 set(MPI_COMPONENTS C)
 set(PARACONF_COMPONENTS C)

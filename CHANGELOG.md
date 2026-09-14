@@ -40,6 +40,8 @@ and this project adheres to
   [#773](https://github.com/pdidev/pdi/issues/773).
 * The example project asks for the Fortran component of Paraconf when it is built with Fortran
   support.
+* The distribution no longer forces `CMAKE_MODULE_PATH` into the cache, where it grew by the same
+  directories at every configuration.
 
 #### Security
 

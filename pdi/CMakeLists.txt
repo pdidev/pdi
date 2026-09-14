@@ -272,7 +272,7 @@ install(FILES
 )
 
 
-configure_file(cmake/PDIConfig.cmake.in PDIConfig.cmake @ONLY)
+configure_file("${PROJECT_SOURCE_DIR}/cmake/PDIConfig.cmake.in" PDIConfig.cmake @ONLY)
 write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/PDIConfigVersion.cmake"
 		VERSION "${PDI_VERSION}"
 		COMPATIBILITY AnyNewerVersion
