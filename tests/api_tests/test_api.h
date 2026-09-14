@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #endif
-#ifndef WITHOUT_PARACONF
+#ifndef PDI_WITHOUT_PARACONF
 #include <paraconf.h>
 #endif
 
@@ -127,12 +128,12 @@ int tests(int argc, char* argv[])
 		  "  to_multi_expose: {type: array, subtype: int, size: 2}				\n"
 		  "  to_multi_expose_two: {type: array, subtype: int, size: 2}			\n";
 
-#ifndef WITHOUT_PARACONF
+#ifndef PDI_WITHOUT_PARACONF
 	if (PDI_OK != PDI_init(PC_parse_string(CONFIG_YAML))) {
 		fprintf(stderr, "*** Error in PDI_initialisation\n");
 		exit(EXIT_FAILURE);
 	}
-#endif // WITHOUT_PARACONF
+#endif // PDI_WITHOUT_PARACONF
 
 	const char* errmsg = PDI_errmsg();
 	if (strcmp(errmsg, "") != 0) {

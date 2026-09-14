@@ -112,9 +112,9 @@ With this approach, your code should be able to compile without %PDI.
 Please note, that it will still require Paraconf however.
 
 \remark
-In your code, you can check and handle the case where %PDI is disabled specifically by checking the `WITHOUT_PDI` macro:
+In your code, you can check and handle the case where %PDI is disabled specifically by checking the `PDI_IS_MOCK` macro:
 ```C
-#ifdef WITHOUT_PDI
+#ifdef PDI_IS_MOCK
 do_something_specific_for_mock_pdi();
 #endif
 ```
@@ -135,8 +135,12 @@ else()
 endif()
 ```
 \remark
-Again, in your code, you can check the `WITHOUT_PDI` macro.
-This time, you can also check and handle the case where Paraconf is disabled by checking the `WITHOUT_PARACONF` macro.
+Again, in your code, you can check the `PDI_IS_MOCK` macro.
+This time, you can also check and handle the case where Paraconf is disabled by checking the `PDI_WITHOUT_PARACONF` macro.
+
+\note
+`PDI_IS_MOCK` and `PDI_WITHOUT_PARACONF` used to be named `WITHOUT_PDI` and `WITHOUT_PARACONF`.
+The mock %PDI still defines the old names, but they are deprecated.
 
 This will take care of your cmake.
 But while the `paraconf::paraconf` target will be provided that way, Paraconf itself will not be mocked.
@@ -148,13 +152,13 @@ The two uses you most definitely make in your code are
 These should be `#ifdef`ed out.
 
 ```C
-#ifndef WITHOUT_PARACONF
+#ifndef PDI_WITHOUT_PARACONF
 #include <paraconf.h>
 #endif
 ```
 
 ```C
-#ifndef WITHOUT_PARACONF
+#ifndef PDI_WITHOUT_PARACONF
 	PDI_init(PC_parse_path(config_file]));
 #endif
 ```
@@ -167,7 +171,7 @@ Here you are on your own to provide sensible values instead of the one read from
 For example:
 ```C++
 	double duration;
-#ifndef WITHOUT_PARACONF
+#ifndef PDI_WITHOUT_PARACONF
 	PC_double(PC_get(conf, ".duration"), &duration);
 #else
 	// if we don't have paraconf available, we use 10 as duration, because... why not.

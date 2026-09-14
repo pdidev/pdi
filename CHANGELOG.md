@@ -16,6 +16,8 @@ and this project adheres to
 #### Changed
 
 #### Deprecated
+* The `WITHOUT_PDI` and `WITHOUT_PARACONF` macros defined by the mock PDI are deprecated in favour
+  of `PDI_IS_MOCK` and `PDI_WITHOUT_PARACONF`.
 
 #### Removed
 
