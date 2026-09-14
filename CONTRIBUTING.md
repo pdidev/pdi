@@ -144,8 +144,9 @@ then configures, builds and runs `tests/cmake_tests` against that installation, 
 that the installed package is usable through `find_package`.
 It takes no argument and builds in a fresh `pdibuild.XXXXX` directory created in the current
 directory, so it leaves your own build tree alone.
-Set `TEST_DIR` to build somewhere specific, `MAKEFLAGS` to control the parallelism, and
-`EXCLUDED_PDI_TESTS` to skip tests.
+Set `TEST_DIR` to build somewhere specific, `MAKEFLAGS` to control the parallelism,
+`EXCLUDED_PDI_TESTS` to skip tests, and `CMAKE_FLAGS` to pass configure flags of your own, which
+take precedence over those the script chooses.
 CI runs that same script inside the project docker images across a matrix of compilers, MPI
 implementations and dependency sources, so running it before submitting is the closest you can get
 to knowing CI will pass.

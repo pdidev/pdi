@@ -60,14 +60,14 @@ EXCLUDED_PDI_TESTS=""
 
 if [[ -n "${PDI_PLUGIN_PATH}" ]]
 then
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH}"
+	CMAKE_FLAGS="-DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH} ${CMAKE_FLAGS}"
 fi
 
 if [[ "x${PDI_LIBS}" = "xprovided" ]]
 then
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=SYSTEM"
+	CMAKE_FLAGS="-DUSE_DEFAULT=SYSTEM ${CMAKE_FLAGS}"
 else
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=EMBEDDED"
+	CMAKE_FLAGS="-DUSE_DEFAULT=EMBEDDED ${CMAKE_FLAGS}"
 fi
 
 
@@ -83,7 +83,7 @@ fi
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_LIBS}" = "xprovided" ]]
 then
 	# Workaround: parallel NetCDF detection broken in debuntu (and absent in mpich case)
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
+	CMAKE_FLAGS="-DBUILD_NETCDF_PARALLEL=OFF ${CMAKE_FLAGS}"
 fi
 
 
@@ -92,7 +92,7 @@ then
 	# Workaround: spdlog mismatch between the vendored version and dependency of doxygen
 	#             https://github.com/pdidev/test_env/issues/30
 	#             (see  https://github.com/pdidev/test_env/actions/runs/27519792247/job/81335351522)
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_spdlog=SYSTEM"
+	CMAKE_FLAGS="-DUSE_spdlog=SYSTEM ${CMAKE_FLAGS}"
 fi
 
 # And now for the actual tests
