@@ -415,7 +415,8 @@ if(NOT "${PDI_SUPERBUILD}")
 	endforeach()
 
 	if("${BUILD_TESTING}")
-		message(STATUS " **Module**: ENABLED  the test modules (-DBUILD_TESTING=ON)")
+		message(STATUS " **Module**: ENABLED  the example and test modules (-DBUILD_TESTING=ON)")
+		add_subdirectory(example)
 		add_subdirectory(tests/api_tests)
 		add_subdirectory(tests/combination_tests)
 	endif()
@@ -661,13 +662,3 @@ sbuild_add_module(PDI
 	DEPENDS ${PDI_DEPENDS_LIST}
 	SUBSTEPS test
 )
-
-
-sbuild_add_module(PDI_EXAMPLE
-	ENABLE_BUILD_FLAG BUILD_TESTING
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/example"
-	DEPENDS PDI
-	INSTALL_COMMAND ""
-	SUBSTEPS test
-)
-

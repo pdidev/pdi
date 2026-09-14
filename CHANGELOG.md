@@ -16,6 +16,8 @@ and this project adheres to
   are already available, instead of the whole distribution.
 
 #### Changed
+* Replaced the multiple independent CMake projects by a single large project.
+  The superbuild mode only builds the vendored dependencies separately now.
 * The `INSTALL_CMAKEDIR` CMake variable, which sets where the PDI CMake package files are installed,
   is renamed `INSTALL_PDICMAKEDIR`.
 * The `DISABLE_PDI` CMake option of the example project, which builds it against the mock PDI, is

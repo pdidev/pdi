@@ -32,6 +32,8 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_examples LANGUAGES C)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake")
+
 set(MPI_COMPONENTS C)
 set(PARACONF_COMPONENTS C)
 set(PDI_COMPONENTS C)
@@ -60,38 +62,27 @@ endif()
 # Includes
 include(CTest)
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
+if("${BUILD_FORTRAN}")
+	include(MPIWithMod)
+endif()
 if("${EXAMPLE_MOCK_PDI}")
 	set(PDI_MOCK_PARACONF_TARGET TRUE)
 	add_subdirectory(../mock_pdi mock_pdi)
 else()
-	find_package(paraconf REQUIRED COMPONENTS ${PARACONF_COMPONENTS})
-	find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
+	if(NOT TARGET paraconf::paraconf OR ("${BUILD_FORTRAN}" AND NOT TARGET paraconf::paraconf_f90))
+		find_package(paraconf REQUIRED COMPONENTS ${PARACONF_COMPONENTS})
+	endif()
+	# TODO: drop the guard once CMake 3.24 is the minimum; the embedding build can then use
+	#       FetchContent_Declare(... OVERRIDE_FIND_PACKAGE) instead.
+	if(NOT TARGET PDI::PDI_C)
+		find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
+	endif()
 endif()
 find_library(LIB_M m DOC "The math library")
 
 # Default standard in the project is C11
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
-
-if("${BUILD_FORTRAN}")
-	if(NOT "${MPI_Fortran_HAVE_F90_MODULE}")
-		if("${MPI_Fortran_HAVE_F77_HEADER}")
-			file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/mpi.F90" [=[
-module mpi
-implicit none
-include "mpif.h"
-end module
-]=])
-			add_library(MPI_with_mod STATIC "${CMAKE_CURRENT_BINARY_DIR}/mpi.F90")
-			target_link_libraries(MPI_with_mod PUBLIC MPI::MPI_Fortran)
-		else()
-			message(FATAL_ERROR "Unable to compile a MPI program either with F90 module or F77 include")
-		endif()
-	else()
-		add_library(MPI_with_mod INTERFACE)
-		target_link_libraries(MPI_with_mod INTERFACE MPI::MPI_Fortran)
-	endif()
-endif()
 
 
 add_executable(PDI_example_C example.c)
