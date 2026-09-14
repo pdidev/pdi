@@ -20,6 +20,7 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* The Spack environment of `spack.yaml` provides nlohmann-json, which the JSON plugin requires.
 
 #### Security
 
