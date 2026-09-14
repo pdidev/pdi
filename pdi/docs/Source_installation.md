@@ -161,10 +161,10 @@ cmake module.
 
 |Flag                      |Default                                                                                |Description|
 |:-------------------------|:--------------------------------------------------------------------------------------|:----------|
-|`INSTALL_CMAKEDIR`        |`PDIDATADIR/cmake`                                                                     |Cmake modules.|
-|`INSTALL_FMODDIR`         |`LIBDIR/pdi/finclude/${COMPILER_VERSION}`                                              |Fortran modules|
-|`INSTALL_PDIDATADIR`      |`DATADIR/pdi`                                                                          |PDI data|
-|`INSTALL_PDIPLUGINDIR`    |`LIBDIR/pdi/plugins_${PDI_VERSION}`                                                    |PDI plugins|
+|`INSTALL_FMODDIR`     |`LIBDIR/pdi/finclude/${COMPILER_VERSION}`                                              |Fortran modules|
+|`INSTALL_PDICMAKEDIR` |`PDIDATADIR/cmake`                                                                     |Cmake modules.|
+|`INSTALL_PDIDATADIR`  |`DATADIR/pdi`                                                                          |PDI data|
+|`INSTALL_PDIPLUGINDIR`|`LIBDIR/pdi/plugins_${PDI_VERSION}`                                                    |PDI plugins|
 |`CMAKE_INSTALL_BINDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |user executables|
 |`CMAKE_INSTALL_DATADIR`   |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |read-only architecture-independent data|
 |`CMAKE_INSTALL_DOCDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |documentation root|
