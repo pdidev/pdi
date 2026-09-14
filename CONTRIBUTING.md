@@ -139,11 +139,10 @@ other job:
 ./bin/build_and_run_all_tests
 ```
 
-It configures and builds the distribution from scratch, runs the whole test suite, installs it,
-then configures, builds and runs `tests/cmake_tests` against that installation, so it also checks
-that the installed package is usable through `find_package`.
-It takes no argument and builds in a fresh `pdibuild.XXXXX` directory created in the current
-directory, so it leaves your own build tree alone.
+It builds, tests and installs the distribution from scratch, in a fresh `pdibuild.XXXXX` directory
+created in the current directory, so it leaves your own build tree alone.
+It then builds and tests the ways a project can consume PDI, installed and mocked; the banner it
+prints before each step says which.
 Set `TEST_DIR` to build somewhere specific, `MAKEFLAGS` to control the parallelism,
 `EXCLUDED_PDI_TESTS` to skip tests, and `CMAKE_FLAGS` to pass configure flags of your own, which
 take precedence over those the script chooses.
@@ -227,7 +226,8 @@ There are several test suites, each with a different purpose:
 * `pdi/tests/` and `plugins/*/tests/` are the per-component tests, including the C++ unit tests;
 * `tests/api_tests/` exercise the public API against either PDI or mock PDI;
 * `tests/combination_tests/` cover interactions between plugins;
-* `tests/cmake_tests/` verify that a real installation can be consumed through `find_package`;
+* `tests/cmake_tests/multiple_find/` verify that a real installation can be consumed through
+  `find_package`;
 * `example/` doubles as an integration test suite.
 
 ## Making a change

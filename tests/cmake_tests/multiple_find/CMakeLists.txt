@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -28,66 +29,24 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.22...4.2)
-project(pdi_cmake_tests)
+project(pdi_cmake_tests_multiple_find)
 
-include(CTest)
+# Configure-only: find the installed PDI from several directory scopes, and several times in the same one.
+include("${CMAKE_CURRENT_SOURCE_DIR}/../assert.cmake")
 
-## Global options
-
-set(DIST_PROFILE "User" CACHE STRING "Profile to use for PDI distribution build. Options are: User, Devel")
-set_property(CACHE DIST_PROFILE PROPERTY STRINGS User Devel)
-
-if(User STREQUAL "${DIST_PROFILE}")
-	option(BUILD_DOCUMENTATION "Build documentation" OFF)
-	option(BUILD_TESTING       "Build tests" OFF)
-	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" OFF)
-elseif(Devel STREQUAL "${DIST_PROFILE}")
-	option(BUILD_DOCUMENTATION "Build documentation" ON)
-	option(BUILD_TESTING       "Build tests" ON)
-	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" ON)
-else()
-	message(FATAL_ERROR "DIST_PROFILE should be set to one of: User, Devel")
-endif()
-
-option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
-option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
-option(BUILD_FORTRAN            "Build with Fortran support" ON)
-option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
-option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
-option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
-option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
-option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
-option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
-option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
-option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
-option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
-option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
+# The components to check, which have to match those the distribution installed.
+option(BUILD_FORTRAN "Check the Fortran component" ON)
+option(BUILD_PYTHON  "Check the Python components" ON)
 
 
+# check subdirectory scopes
+message(STATUS "checking subdirectory scopes")
 
-function(assert)
-    string(REPLACE ";" " " ASSERT_TEXT "${ARGN}")
-    message(STATUS "assert(${ASSERT_TEXT})")
-    if(NOT ( ${ARGN} ))
-        message(FATAL_ERROR "Assertion failed: ${ASSERT_TEXT}")
-    endif ()
-endfunction()
+message("++ add_subdirectory(c_component)")
+add_subdirectory(c_component)
 
-
-# check subdirectory scope
-message(STATUS "checking subdirectory scope")
-
-message("++ add_subdirectory(example)")
-add_subdirectory(../../example example)
-
-message("++ add_subdirectory(api_tests)")
-add_subdirectory(../../tests/api_tests/ api_tests)
-
-message("++ add_subdirectory(tests)")
-add_subdirectory(../../tests/combination_tests/ combination_tests)
-
-message("++ add_subdirectory(subdir)")
-add_subdirectory(subdir)
+message("++ add_subdirectory(all_components)")
+add_subdirectory(all_components)
 
 message(STATUS "Testing multiple find_package(PDI)")
 

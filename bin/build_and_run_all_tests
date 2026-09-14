@@ -124,8 +124,18 @@ cmake --install tests_distribution
 
 # The runs that check the installation
 
-printf "\n\n\n\e[1;36m *** Use the installed pdi from an external project\e[m\n\n"
-conf_build_and_run ./install/bin/pdirun from_install "${SRCDIR}/tests/cmake_tests" -DDIST_PROFILE=Devel
+printf "\n\n\n\e[1;36m *** Unit test the generated CMake configuration\e[m\n\n"
+./install/bin/pdirun cmake -S "${SRCDIR}/tests/cmake_tests/multiple_find" -B tests_cmake_multiple_find
+
+printf "\n\n\n\e[1;36m *** Run the API tests against the installed pdi\e[m\n\n"
+conf_build_and_run ./install/bin/pdirun api_installed "${SRCDIR}/tests/api_tests"
+
+printf "\n\n\n\e[1;36m *** Run the examples against the installed pdi\e[m\n\n"
+# The example expects no plugin unless told otherwise: enable those the distribution builds by default.
+conf_build_and_run ./install/bin/pdirun example_installed "${SRCDIR}/example" \
+	-DBUILD_DECL_HDF5_PLUGIN=ON -DBUILD_DECL_NETCDF_PLUGIN=ON -DBUILD_FORTRAN=ON -DBUILD_HDF5_PARALLEL=ON -DBUILD_MPI_PLUGIN=ON \
+	-DBUILD_NETCDF_PARALLEL=ON -DBUILD_PYCALL_PLUGIN=ON -DBUILD_PYTHON=ON -DBUILD_SERIALIZE_PLUGIN=ON -DBUILD_SET_VALUE_PLUGIN=ON \
+	-DBUILD_TIMER_PLUGIN=ON -DBUILD_TRACE_PLUGIN=ON -DBUILD_USER_CODE_PLUGIN=ON
 
 
 # The runs that use no installation
