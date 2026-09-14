@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -22,22 +23,14 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.22...4.2)
-project(pdi_trace_plugin LANGUAGES C CXX)
-
-# Includes
-include(GNUInstallDirs)
-
-# PDI
-find_package(PDI REQUIRED COMPONENTS plugins)
 
 # The plugin
 add_library(pdi_trace_plugin MODULE trace.cxx)
 target_link_libraries(pdi_trace_plugin PDI::PDI_plugins)
 set_target_properties(pdi_trace_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
+set_target_properties(pdi_trace_plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PDI_PLUGIN_OUTPUT_DIRECTORY}")
 
 # installation
-set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_trace_plugin
 		LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}"
 )

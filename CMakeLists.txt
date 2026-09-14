@@ -360,6 +360,17 @@ if(NOT "${PDI_SUPERBUILD}")
 	message(STATUS " **Module**: ENABLED  PDI")
 	add_subdirectory(pdi)
 
+	set(PDI_PLUGIN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/plugins")
+	foreach(PDI_PLUGIN IN ITEMS TRACE)
+		if("${BUILD_${PDI_PLUGIN}_PLUGIN}")
+			message(STATUS " **Module**: ENABLED  ${PDI_PLUGIN}_PLUGIN (-DBUILD_${PDI_PLUGIN}_PLUGIN=ON)")
+			string(TOLOWER "${PDI_PLUGIN}" PDI_PLUGIN_DIR)
+			add_subdirectory("plugins/${PDI_PLUGIN_DIR}")
+		else()
+			message(STATUS " **Module**: DISABLED ${PDI_PLUGIN}_PLUGIN (-DBUILD_${PDI_PLUGIN}_PLUGIN=OFF)")
+		endif()
+	endforeach()
+
 	return()
 endif()
 
@@ -644,13 +655,6 @@ sbuild_add_module(SERIALIZE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/serialize"
 	DEPENDS PDI
 	SUBSTEPS test
-)
-
-
-sbuild_add_module(TRACE_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_TRACE_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace"
-	DEPENDS PDI
 )
 
 
