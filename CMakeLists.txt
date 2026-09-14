@@ -428,10 +428,6 @@ endif()
 ### Dependencies
 
 include(SuperBuild)
-sbuild_get_env(SBUILD_PATH PATH)
-sbuild_get_env(SBUILD_CPATH CPATH)
-sbuild_get_env(SBUILD_LIBRARY_PATH LIBRARY_PATH)
-sbuild_get_env(SBUILD_LD_LIBRARY_PATH LD_LIBRARY_PATH)
 
 
 ## Yaml

@@ -78,9 +78,10 @@ cmake -DDIST_PROFILE=Devel -S . -B .build
 cmake --build .build -j
 ```
 
-Anything that links PDI needs its runtime environment set up.
-Use the generated `pdirun` wrapper (`<install>/bin/pdirun <command>`) or source the generated
-`env.bash`.
+PDI should work without any specific environment set up when installed to a standard system path,
+like any other library.
+However, if installed to a non-standard location, the generated `pdirun` wrapper
+(`<install>/bin/pdirun <command>`) and `env.sh` set the required path to use it.
 
 ### Keeping your working copy clean
 

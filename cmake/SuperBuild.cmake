@@ -23,40 +23,183 @@
 # THE SOFTWARE.
 ################################################################################
 
+# This file is included twice: from the project at configure time, and from the install script, which
+# only wants sbuild_strip_staging_rpath().  The functions it needs come first and are script-safe;
+# everything else follows a check of the role CMake runs in.
+# A function runs under the policies in force where it is defined, so this comes before all of them.
 cmake_minimum_required(VERSION 3.22...4.2)
+
+include_guard(GLOBAL)
+
+
+## Install time
+#
+# A vendored dependency is used out of the staging tree while the distribution builds, so it carries runtime path entries naming that tree: see where
+# _sbuild_dependency_policy() injects them.  Once the tree is copied to the final prefix they point into a build directory that may be gone, so every
+# entry containing the staging directory is removed, and every other one is kept in its original order: whatever the user asked for, whatever the
+# toolchain added.
+#
+# ELF is rewritten with file(RPATH_SET) from the whole filtered value.  file(RPATH_CHANGE) is not used to drop a single entry: it replaces only the
+# matched text and leaves the separators around it, and an empty entry makes the dynamic loader search the current working directory.  Empty entries
+# are dropped as well in a file that has to be rewritten anyway, for that same reason.
+# The rewrite is in place.  That is only safe because the injected value ends with an entry ending in "/", which no symbol name can share the tail of.
+#
+# Mach-O keeps one LC_RPATH load command per entry, so each matching one is deleted with install_name_tool, as CMake's own install rules do.
+
+### Remove the runtime path entries naming the staging tree from one ELF file
+#
+# \param #1 the file
+# \param #2 the text an entry has to contain to be removed
+###
+function(_sbuild_strip_elf_rpath _SBUILD_FILE _SBUILD_NEEDLE)
+	# Only an ELF file is worth a file(READ_ELF): up to at least CMake 3.22 it fails outright on any other file, CAPTURE_ERROR or not.
+	file(READ "${_SBUILD_FILE}" _SBUILD_MAGIC LIMIT 4 HEX)
+	if(NOT "7f454c46" STREQUAL "${_SBUILD_MAGIC}")
+		return()
+	endif()
+
+	# file(READ_ELF) sets its outputs only when it has something to report
+	unset(_SBUILD_ERROR)
+	unset(_SBUILD_RPATH)
+	unset(_SBUILD_RUNPATH)
+	file(READ_ELF "${_SBUILD_FILE}" CAPTURE_ERROR _SBUILD_ERROR RPATH _SBUILD_RPATH RUNPATH _SBUILD_RUNPATH)
+	if(DEFINED _SBUILD_ERROR)
+		return() #< an ELF file CMake cannot parse
+	endif()
+	if(DEFINED _SBUILD_RUNPATH)
+		set(_SBUILD_CURRENT "${_SBUILD_RUNPATH}")
+		if(DEFINED _SBUILD_RPATH AND NOT "${_SBUILD_RPATH}" STREQUAL "${_SBUILD_RUNPATH}")
+			# file(RPATH_SET) writes the same value to both
+			message(WARNING "Not removing the staging runtime path from \"${_SBUILD_FILE}\": its RPATH and RUNPATH differ")
+			return()
+		endif()
+	elseif(DEFINED _SBUILD_RPATH)
+		set(_SBUILD_CURRENT "${_SBUILD_RPATH}")
+	else()
+		return()
+	endif()
+
+	# file(READ_ELF) returns the entries as a list, empty ones included
+	set(_SBUILD_KEPT)
+	set(_SBUILD_FOUND FALSE)
+	foreach(_SBUILD_ENTRY IN LISTS _SBUILD_CURRENT)
+		string(FIND "${_SBUILD_ENTRY}" "${_SBUILD_NEEDLE}" _SBUILD_AT)
+		if(NOT "${_SBUILD_AT}" EQUAL -1)
+			set(_SBUILD_FOUND TRUE)
+		elseif(NOT "${_SBUILD_ENTRY}" STREQUAL "")
+			list(APPEND _SBUILD_KEPT "${_SBUILD_ENTRY}")
+		endif()
+	endforeach()
+	if(NOT "${_SBUILD_FOUND}")
+		return()
+	endif()
+
+	# an empty value removes the entry altogether
+	list(JOIN _SBUILD_KEPT ":" _SBUILD_NEW)
+	file(RPATH_SET FILE "${_SBUILD_FILE}" NEW_RPATH "${_SBUILD_NEW}")
+endfunction()
+
+
+### Remove the runtime path entries naming the staging tree from one Mach-O file
+#
+# \param #1 the file
+# \param #2 the text an entry has to contain to be removed
+# \param #3 the otool program
+# \param #4 the install_name_tool program
+###
+function(_sbuild_strip_macho_rpath _SBUILD_FILE _SBUILD_NEEDLE _SBUILD_OTOOL _SBUILD_INSTALL_NAME_TOOL)
+	# Spare an otool run on every header and data file: only a Mach-O or universal binary is worth one.
+	file(READ "${_SBUILD_FILE}" _SBUILD_MAGIC LIMIT 4 HEX)
+	if(NOT "${_SBUILD_MAGIC}" MATCHES "^(feedface|cefaedfe|feedfacf|cffaedfe|cafebabe|bebafeca)$")
+		return()
+	endif()
+
+	execute_process(COMMAND "${_SBUILD_OTOOL}" -l "${_SBUILD_FILE}"
+		OUTPUT_VARIABLE _SBUILD_LOAD_COMMANDS
+		ERROR_QUIET
+		RESULT_VARIABLE _SBUILD_RESULT)
+	if(NOT "${_SBUILD_RESULT}" EQUAL 0)
+		return()
+	endif()
+
+	# An LC_RPATH load command prints as "cmd LC_RPATH", "cmdsize <n>", then "path <entry> (offset <n>)".
+	string(REPLACE "\n" ";" _SBUILD_LINES "${_SBUILD_LOAD_COMMANDS}")
+	set(_SBUILD_IN_RPATH FALSE)
+	set(_SBUILD_ARGS)
+	foreach(_SBUILD_LINE IN LISTS _SBUILD_LINES)
+		if("${_SBUILD_LINE}" MATCHES "^ *cmd ")
+			set(_SBUILD_IN_RPATH FALSE)
+			if("${_SBUILD_LINE}" MATCHES "^ *cmd LC_RPATH$")
+				set(_SBUILD_IN_RPATH TRUE)
+			endif()
+		elseif("${_SBUILD_IN_RPATH}" AND "${_SBUILD_LINE}" MATCHES "^ *path (.*) \\(offset [0-9]+\\)$")
+			set(_SBUILD_ENTRY "${CMAKE_MATCH_1}")
+			string(FIND "${_SBUILD_ENTRY}" "${_SBUILD_NEEDLE}" _SBUILD_AT)
+			if(NOT "${_SBUILD_AT}" EQUAL -1)
+				list(APPEND _SBUILD_ARGS -delete_rpath "${_SBUILD_ENTRY}")
+			endif()
+		endif()
+	endforeach()
+	if("${_SBUILD_ARGS}" STREQUAL "")
+		return()
+	endif()
+
+	# install_name_tool re-applies the linker's ad hoc signature itself, which CMake's own install rules rely on too.
+	execute_process(COMMAND "${_SBUILD_INSTALL_NAME_TOOL}" ${_SBUILD_ARGS} "${_SBUILD_FILE}" COMMAND_ERROR_IS_FATAL ANY)
+	message(STATUS "Removed staging runtime path from \"${_SBUILD_FILE}\"")
+endfunction()
+
+
+### Remove the runtime path entries naming the staging tree from everything installed out of it
+#
+# \param #1 the binary format: ELF, MACHO or NONE
+# \param #2 the staging directory the files were copied from
+# \param #3 the directory they were copied to, DESTDIR included
+# \param #4 (MACHO only) the otool program
+# \param #5 (MACHO only) the install_name_tool program
+###
+function(sbuild_strip_staging_rpath _SBUILD_FORMAT _SBUILD_STAGING _SBUILD_DESTINATION)
+	if("${_SBUILD_FORMAT}" STREQUAL "NONE")
+		return()
+	endif()
+	if("${_SBUILD_FORMAT}" STREQUAL "MACHO")
+		if("${ARGC}" LESS 5 OR "${ARGV3}" STREQUAL "" OR "${ARGV4}" STREQUAL "")
+			message(WARNING "otool or install_name_tool not found, the installed dependencies keep runtime path entries into \"${_SBUILD_STAGING}\"")
+			return()
+		endif()
+	endif()
+
+	# Only what the copy put there: the destination may be a shared prefix holding other files.
+	file(GLOB_RECURSE _SBUILD_FILES LIST_DIRECTORIES false RELATIVE "${_SBUILD_STAGING}" "${_SBUILD_STAGING}/*")
+	foreach(_SBUILD_FILE IN LISTS _SBUILD_FILES)
+		set(_SBUILD_FILE "${_SBUILD_DESTINATION}/${_SBUILD_FILE}")
+		# a link is visited through the file it points to
+		if(IS_SYMLINK "${_SBUILD_FILE}" OR NOT EXISTS "${_SBUILD_FILE}")
+			continue()
+		endif()
+		if("${_SBUILD_FORMAT}" STREQUAL "MACHO")
+			_sbuild_strip_macho_rpath("${_SBUILD_FILE}" "${_SBUILD_STAGING}/" "${ARGV3}" "${ARGV4}")
+		else()
+			_sbuild_strip_elf_rpath("${_SBUILD_FILE}" "${_SBUILD_STAGING}/")
+		endif()
+	endforeach()
+endfunction()
+
+
+# The install script stops here: nothing below can run outside a project.
+get_property(_SBUILD_ROLE GLOBAL PROPERTY CMAKE_ROLE)
+if(NOT "${_SBUILD_ROLE}" STREQUAL "PROJECT")
+	return()
+endif()
+
+
+## Configure time
 
 include(GNUInstallDirs)
 include(ExternalProject)
 
 # Where the dependencies are installed while the distribution is built, and copied from on install.
 set(_SBUILD_STAGING "${CMAKE_BINARY_DIR}/staging")
-
-### Generate a build command to build a subproject with access to its dependencies
-# 
-# \param #1 the variable in which to store the result
-# \param #2 (optional) the target to build
-###
-function(__sbuild_build_command _SBUILD_OUTVAR)
-	set(_SBUILD_MK_TARGET)
-	set(_SBUILD_CM_TARGET)
-	if ("${ARGC}" GREATER 1)
-		set(_SBUILD_MK_TARGET "${ARGV1}")
-		set(_SBUILD_CM_TARGET --target "${ARGV1}")
-	endif()
-	sbuild_get_env(_SBUILD_ENV_LD_LIBRARY_PATH LD_LIBRARY_PATH)
-	sbuild_get_env(_SBUILD_ENV_DYLD_LIBRARY_PATH DYLD_LIBRARY_PATH)
-	set(_SBUILD_RESULT "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${_SBUILD_ENV_LD_LIBRARY_PATH}" "DYLD_LIBRARY_PATH=${_SBUILD_ENV_DYLD_LIBRARY_PATH}")
-	if("${CMAKE_GENERATOR}" MATCHES "Make") #< Use recursive make.
-		list(APPEND _SBUILD_RESULT "\$(MAKE)" ${_SBUILD_MK_TARGET})
-	else() #< Drive the project with "cmake --build".
-		list(APPEND _SBUILD_RESULT "${CMAKE_COMMAND}" --build "." ${_SBUILD_CM_TARGET})
-		get_property(_SBUILD_IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-		if(_SBUILD_IS_MULTICONFIG)
-			list(APPEND _SBUILD_RESULT --config $<CONFIG>)
-		endif()
-	endif()
-	set("${_SBUILD_OUTVAR}" ${_SBUILD_RESULT} PARENT_SCOPE)
-endfunction()
 
 
 ### Generate a list of all cache variables to forward to a subproject
@@ -91,14 +234,32 @@ endfunction()
 ### Generate the settings that apply to a vendored dependency and to nothing else
 #
 # These are policy rather than a sweep of what the user asked for, and PDI itself wants none of
-# them: it installs to the final prefix rather than to a staging tree, and it sets its own
-# BUILD_SHARED_LIBS.  Keeping them apart is what saves the PDI call site from having to undo them
-# afterwards.
+# them: it installs to the final prefix rather than to a staging tree, and it gets its own build
+# RPATH and sets its own BUILD_SHARED_LIBS.  Keeping them apart is what saves the PDI call site from
+# having to undo them afterwards.
 #
 # \param #1 the variable to append the result to
 ###
 function(_sbuild_dependency_policy _SBUILD_OUTVAR)
 	set(_SBUILD_RESULT "${${_SBUILD_OUTVAR}}")
+	
+	# A dependency is used from the stage while the distribution is built, and its own dependencies
+	# sit beside it there, so it needs an RPATH of its own: DT_RUNPATH is not consulted for what *it*
+	# pulls in, so the RPATH the sub-project gets does not help.
+	# The staging directories come first, so that they win during the build, and the user's own
+	# CMAKE_INSTALL_RPATH follows them rather than being overridden.  They are absolute, so that no
+	# user could have asked for the same entry: sbuild_strip_staging_rpath() removes every entry naming
+	# the staging tree once it is installed, and only those.
+	set(_SBUILD_RPATH "${_SBUILD_STAGING}/${CMAKE_INSTALL_LIBDIR}" "${_SBUILD_STAGING}/lib")
+	list(REMOVE_DUPLICATES _SBUILD_RPATH)
+	list(APPEND _SBUILD_RPATH $CACHE{CMAKE_INSTALL_RPATH})
+	if(NOT "${APPLE}")
+		# The strip rewrites the string in place, which corrupts any symbol name the linker made share
+		# its tail (https://gitlab.kitware.com/cmake/cmake/-/work_items/18821).  An entry ending in "/"
+		# leaves nothing to share: no symbol name ends that way.  It names a directory already listed,
+		# which the loader skips.  Mach-O stores no RPATH among the symbol names.
+		list(APPEND _SBUILD_RPATH "${_SBUILD_STAGING}/${CMAKE_INSTALL_LIBDIR}/")
+	endif()
 	
 	list(APPEND _SBUILD_RESULT
 			# CMAKE_STAGING_PREFIX makes CMake bake CMAKE_INSTALL_PREFIX into what it generates while
@@ -116,21 +277,13 @@ function(_sbuild_dependency_policy _SBUILD_OUTVAR)
 			# PDI is only ever linked against shared, position-independent dependencies; neither
 			# setting reaches them from the cache sweep, so both are stated here.
 			"-DBUILD_SHARED_LIBS:BOOL=ON"
-			"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON")
+			"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
+			# holds the user's own value, which the cache sweep also forwards, and wins by coming later
+			"-DCMAKE_INSTALL_RPATH:STRING=${_SBUILD_RPATH}")
 	
 	set("${_SBUILD_OUTVAR}" "${_SBUILD_RESULT}" PARENT_SCOPE)
 endfunction()
 
-
-### 
-###
-function(__sbuild_env_append _SBUILD_VAR _SBUILD_SUBPATH)
-	if("xx" STREQUAL "x${${_SBUILD_VAR}}x")
-		set("${_SBUILD_VAR}" "${CMAKE_BINARY_DIR}/staging/${_SBUILD_SUBPATH}" PARENT_SCOPE)
-	else()
-		set("${_SBUILD_VAR}" "${CMAKE_BINARY_DIR}/staging/${_SBUILD_SUBPATH}:${${_SBUILD_VAR}}" PARENT_SCOPE)
-	endif()
-endfunction()
 
 
 ### Add a dependency, either found on the system or built into the staging tree
@@ -219,30 +372,23 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	_sbuild_dependency_policy(_SBUILD_VARS)
 	set(_SBUILD_CMAKE_CACHE_ARGS ${_SBUILD_VARS} ${_SBUILD_CMAKE_CACHE_ARGS})
 	
-	__sbuild_build_command(_SBUILD_BUILD_COMMAND)
-	
 	unset(_SBUILD_DEPENDS_NEW)
 	foreach(_SBUILD_ONE_DEPENDS IN LISTS _SBUILD_DEPENDS)
 		list(APPEND _SBUILD_DEPENDS_NEW "${_SBUILD_ONE_DEPENDS}_pkg")
 	endforeach()
 	set(_SBUILD_DEPENDS "${_SBUILD_DEPENDS_NEW}")
 	
-	sbuild_get_env(_SBUILD_ENV_LD_LIBRARY_PATH LD_LIBRARY_PATH)
-	sbuild_get_env(_SBUILD_ENV_DYLD_LIBRARY_PATH DYLD_LIBRARY_PATH)
-	set(_SBUILD_CMAKE_COMMAND "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${_SBUILD_ENV_LD_LIBRARY_PATH}" "DYLD_LIBRARY_PATH=${_SBUILD_ENV_DYLD_LIBRARY_PATH}" "${CMAKE_COMMAND}")
-	
 	ExternalProject_Add("${_SBUILD_NAME}_pkg"
-		CMAKE_COMMAND "${_SBUILD_CMAKE_COMMAND}"
 		PREFIX "${CMAKE_BINARY_DIR}/${_SBUILD_NAME}"
 		${_SBUILD_PATH_DATA}
 		EXCLUDE_FROM_ALL 1
 		DEPENDS "${_SBUILD_DEPENDS}"
 		CMAKE_CACHE_ARGS "${_SBUILD_CMAKE_CACHE_ARGS}"
-		BUILD_COMMAND ${_SBUILD_BUILD_COMMAND}
 		INSTALL_DIR "${_SBUILD_STAGING}"
 	)
 	set_property(GLOBAL APPEND PROPERTY _SBUILD_DEPENDENCY_TARGETS "${_SBUILD_NAME}_pkg")
 endfunction()
+
 
 
 ### Add this very project as a sub-project, configured with the superbuild off
@@ -252,22 +398,19 @@ endfunction()
 ###
 function(sbuild_add_self)
 	_sbuild_collect_variables(_SBUILD_CACHE_ARGS)
-	list(APPEND _SBUILD_CACHE_ARGS "-DPDI_SUPERBUILD:BOOL=OFF")
+	# Add a BUILD_RPATH to find the dependencies in the staging area at test time.
+	set(_SBUILD_BUILD_RPATH "${_SBUILD_STAGING}/${CMAKE_INSTALL_LIBDIR}" "${_SBUILD_STAGING}/lib")
+	list(REMOVE_DUPLICATES _SBUILD_BUILD_RPATH)
+	list(APPEND _SBUILD_BUILD_RPATH $CACHE{CMAKE_BUILD_RPATH})
+	list(APPEND _SBUILD_CACHE_ARGS "-DPDI_SUPERBUILD:BOOL=OFF" "-DCMAKE_BUILD_RPATH:STRING=${_SBUILD_BUILD_RPATH}")
 	get_property(_SBUILD_DEPENDS GLOBAL PROPERTY _SBUILD_DEPENDENCY_TARGETS)
 	
-	__sbuild_build_command(_SBUILD_BUILD_COMMAND)
-	sbuild_get_env(_SBUILD_ENV_LD_LIBRARY_PATH LD_LIBRARY_PATH)
-	sbuild_get_env(_SBUILD_ENV_DYLD_LIBRARY_PATH DYLD_LIBRARY_PATH)
-	set(_SBUILD_CMAKE_COMMAND "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${_SBUILD_ENV_LD_LIBRARY_PATH}" "DYLD_LIBRARY_PATH=${_SBUILD_ENV_DYLD_LIBRARY_PATH}" "${CMAKE_COMMAND}")
-	
 	ExternalProject_Add("${PROJECT_NAME}"
-		CMAKE_COMMAND "${_SBUILD_CMAKE_COMMAND}"
 		PREFIX "${CMAKE_BINARY_DIR}/${PROJECT_NAME}"
 		SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
 		BUILD_ALWAYS TRUE
 		DEPENDS "${_SBUILD_DEPENDS}"
 		CMAKE_CACHE_ARGS "${_SBUILD_CACHE_ARGS}"
-		BUILD_COMMAND ${_SBUILD_BUILD_COMMAND}
 		# Building must not install anything: this is done in the SuperBuild install phase below.
 		INSTALL_COMMAND ""
 	)
@@ -282,53 +425,24 @@ function(sbuild_add_self)
 endfunction()
 
 
-###
-#
-###
-function(sbuild_get_env _SBUILD_VAR _SBUILD_ENV_NAME)
-	set(_SBUILD_ENV_VAL "$ENV{${_SBUILD_ENV_NAME}}")
-	if("LD_LIBRARY_PATH" STREQUAL "${_SBUILD_ENV_NAME}" OR "DYLD_LIBRARY_PATH" STREQUAL "${_SBUILD_ENV_NAME}" OR "LIBRARY_PATH" STREQUAL "${_SBUILD_ENV_NAME}")
-		__sbuild_env_append(_SBUILD_ENV_VAL "${CMAKE_INSTALL_LIBDIR}")
-		__sbuild_env_append(_SBUILD_ENV_VAL "lib")
-	elseif("CPATH" STREQUAL "${_SBUILD_ENV_NAME}")
-		__sbuild_env_append(_SBUILD_ENV_VAL "${CMAKE_INSTALL_INCLUDEDIR}")
-	elseif("PATH" STREQUAL "${_SBUILD_ENV_NAME}")
-		__sbuild_env_append(_SBUILD_ENV_VAL "${CMAKE_INSTALL_BINDIR}")
-	else()
-		message(FATAL_ERROR "sbuild_get_env called with unsupported Environment variable name: `${_SBUILD_ENV_NAME}'")
-	endif()
-	set("${_SBUILD_VAR}" "${_SBUILD_ENV_VAL}" PARENT_SCOPE)
-endfunction()
-
-
-
-## Testing handling
-
-if("${BUILD_TESTING}")
-	enable_testing()
-	set_property(DIRECTORY "${CMAKE_SOURCE_DIR}" APPEND PROPERTY TEST_INCLUDE_FILES "${CMAKE_BINARY_DIR}/SubTests.cmake")
-	file(WRITE "${CMAKE_BINARY_DIR}/SubTests.cmake"
-	"set(ADDPATH [=[${CMAKE_BINARY_DIR}/staging/${CMAKE_INSTALL_LIBDIR}:${CMAKE_BINARY_DIR}/staging/lib]=])\n"
-	[===[
-set(LD_LIBRARY_PATH "$ENV{LD_LIBRARY_PATH}")
-if("x${LD_LIBRARY_PATH}x" STREQUAL xx)
-	set(ENV{LD_LIBRARY_PATH} "${ADDPATH}")
-else()
-	set(ENV{LD_LIBRARY_PATH} "${ADDPATH}:${LD_LIBRARY_PATH}")
-endif()
-set(DYLD_LIBRARY_PATH "$ENV{DYLD_LIBRARY_PATH}")
-if("x${DYLD_LIBRARY_PATH}x" STREQUAL xx)
-	set(ENV{DYLD_LIBRARY_PATH} "${ADDPATH}")
-else()
-	set(ENV{DYLD_LIBRARY_PATH} "${ADDPATH}:${DYLD_LIBRARY_PATH}")
-endif()
-]===]
-	)
-endif()
-
 
 ## Installation
 
 # The staging tree only fills up with the dependencies that are built, so create it for when none is.
 file(MAKE_DIRECTORY "${_SBUILD_STAGING}")
 install(DIRECTORY "${_SBUILD_STAGING}/" DESTINATION "." USE_SOURCE_PERMISSIONS)
+
+# Strip the runtime path entries into the staging tree in the same install run as the copy, so that no build tree can be deleted in between.
+# The destination is only known at install time: `cmake --install --prefix` and DESTDIR both change it.
+if("${APPLE}")
+	find_program(PDI_OTOOL NAMES otool llvm-otool)
+	mark_as_advanced(PDI_OTOOL)
+	set(_SBUILD_STRIP_ARGS MACHO "[==[${_SBUILD_STAGING}]==]" "\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\""
+		"[==[${PDI_OTOOL}]==]" "[==[${CMAKE_INSTALL_NAME_TOOL}]==]")
+elseif("${WIN32}")
+	set(_SBUILD_STRIP_ARGS NONE "[==[${_SBUILD_STAGING}]==]" "\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\"")
+else()
+	set(_SBUILD_STRIP_ARGS ELF "[==[${_SBUILD_STAGING}]==]" "\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\"")
+endif()
+list(JOIN _SBUILD_STRIP_ARGS " " _SBUILD_STRIP_ARGS)
+install(CODE "include([==[${CMAKE_CURRENT_LIST_FILE}]==])\nsbuild_strip_staging_rpath(${_SBUILD_STRIP_ARGS})")
