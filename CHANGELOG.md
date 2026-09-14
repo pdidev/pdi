@@ -20,6 +20,9 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* A parallel NetCDF found through its own CMake configuration is no longer taken for a sequential
+  one when no prefix path points at its headers, as per
+  [#771](https://github.com/pdidev/pdi/issues/771).
 
 #### Security
 

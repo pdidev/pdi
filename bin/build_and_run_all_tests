@@ -2,6 +2,7 @@
 #=============================================================================
 # Copyright (C) 2022-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -83,6 +84,7 @@ fi
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_LIBS}" = "xprovided" ]]
 then
 	# Workaround: parallel NetCDF detection broken in debuntu (and absent in mpich case)
+	# TODO: However netcdf-parallel 1:4.10.1-1 might have fixed it. the flag should be removed in this case
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
 fi
 

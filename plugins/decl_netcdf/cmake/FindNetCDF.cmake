@@ -1,17 +1,18 @@
 ################################################################################
 # Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-#     * Redistributions of source code must retain the above copyright
-#     notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above copyright
-#     notice, this list of conditions and the following disclaimer in the
-#     documentation and/or other materials provided with the distribution.
-#     * Neither the name of the <organization> nor the
-#     names of its contributors may be used to endorse or promote products
-#     derived from this software without specific prior written permission.
+# * Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in the
+#   documentation and/or other materials provided with the distribution.
+# * Neither the name of CEA nor the names of its contributors may be used to
+#   endorse or promote products derived from this software without specific
+#   prior written permission.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -208,6 +209,14 @@ function(_NetCDF_find_CMAKE)
 				message(STATUS "Found NetCDF CMAKE target ${netCDF_LIBRARIES}")
 			endif()
 			set(NetCDF_LINK_LIBRARIES ${netCDF_LIBRARIES})
+			# netcdf_meta.h is where the features are read from, netCDFConfig.cmake does not provide PARALLEL4
+			get_target_property(NetCDF_INCLUDE_DIRECTORIES "${netCDF_LIBRARIES}" INTERFACE_INCLUDE_DIRECTORIES)
+			if("${NetCDF_INCLUDE_DIRECTORIES}" MATCHES "-NOTFOUND$")
+				set(NetCDF_INCLUDE_DIRECTORIES "${netCDF_INCLUDE_DIR}")
+			else()
+				list(APPEND NetCDF_INCLUDE_DIRECTORIES "${netCDF_INCLUDE_DIR}")
+				list(REMOVE_DUPLICATES NetCDF_INCLUDE_DIRECTORIES)
+			endif()
 		else()
 			_NetCDF_target_from_flags("" "${netCDF_INCLUDE_DIR}" "" "" "${netCDF_LIB_DIR}" "${netCDF_LIBRARIES}")
 		endif()
