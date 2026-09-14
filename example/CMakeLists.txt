@@ -76,13 +76,21 @@ if("${PDI_BUILD_FORTRAN}")
 endif()
 
 if("${PDI_BUILD_PYTHON}")
-	find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+	if(NOT TARGET Python3::Interpreter)
+		find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+	endif()
 	list(APPEND PDI_COMPONENTS python)
 endif()
 
 include(CTest)
 
-find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
+# One target is not enough to skip the lookup here: whoever found MPI before us may have asked for fewer languages.
+foreach(MPI_COMPONENT IN LISTS MPI_COMPONENTS)
+	if(NOT TARGET "MPI::MPI_${MPI_COMPONENT}")
+		find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
+		break()
+	endif()
+endforeach()
 if("${PDI_BUILD_FORTRAN}")
 	include(MPIWithMod)
 endif()

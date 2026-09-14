@@ -1,17 +1,18 @@
 ################################################################################
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-#     * Redistributions of source code must retain the above copyright
-#     notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above copyright
-#     notice, this list of conditions and the following disclaimer in the
-#     documentation and/or other materials provided with the distribution.
-#     * Neither the name of the <organization> nor the
-#     names of its contributors may be used to endorse or promote products
-#     derived from this software without specific prior written permission.
+# * Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in the
+#   documentation and/or other materials provided with the distribution.
+# * Neither the name of CEA nor the names of its contributors may be used to
+#   endorse or promote products derived from this software without specific
+#   prior written permission.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -30,19 +31,19 @@ function(get_default_kind TYPE DEFAULT_KIND_VAR)
 		return()
 	endif()
 	message(STATUS "Checking default Fortran kind for ${TYPE}")
-	set(TEST_FILE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/cmake_test_kind${TYPE}.f90")
+	set(TEST_FILE "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/cmake_test_kind${TYPE}.f90")
 	file(WRITE "${TEST_FILE}" "
 program test_kind${TYPE}
   ${TYPE} :: def_knd_var
   print *, 'KINDOF ', kind(def_knd_var), ' ENDKINDOF'
 end program test_kind${TYPE}
 ")
-	try_run(RUN_RES CMP_RES "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}" "${TEST_FILE}"
+	try_run(RUN_RES CMP_RES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}" "${TEST_FILE}"
 			COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT
 			RUN_OUTPUT_VARIABLE RUN_OUTPUT
 	)
 	if("${CMP_RES}" AND "${RUN_RES}" EQUAL 0)
-		file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
+		file(APPEND ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
 				"Kind detection program for ${TYPE} successfully compiled and run:\n"
 				"   ===> Compilation\n"
 				"${COMPILE_OUTPUT}\n"
@@ -52,7 +53,7 @@ end program test_kind${TYPE}
 		string(REGEX MATCH "KINDOF *[0-9]* *ENDKINDOF" "${DEFAULT_KIND_VAR}" "${RUN_OUTPUT}")
 		string(REGEX MATCH "[0-9]+" "${DEFAULT_KIND_VAR}" "${${DEFAULT_KIND_VAR}}")
 	else()
-		file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+		file(APPEND ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
 				"Kind detection program for ${TYPE} failed to compile or run:\n"
 				"   ===> Compilation (${CMP_RES})\n"
 				"${COMPILE_OUTPUT}\n"
