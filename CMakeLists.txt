@@ -340,12 +340,19 @@ if(NOT "${PDI_SUPERBUILD}")
 		endif()
 	endif()
 
+	if("${BUILD_DECL_NETCDF_PLUGIN}")
+		find_package(NetCDF "${PDI_REQUIRED_NETCDF_VERSION}" REQUIRED)
+		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
+			message(FATAL_ERROR "Parallel NetCDF required, sequential NetCDF only found. Please set -DBUILD_NETCDF_PARALLEL=OFF to disable parallel NetCDF")
+		endif()
+	endif()
+
 	if("${BUILD_JSON_PLUGIN}")
 		find_package(nlohmann_json "${PDI_REQUIRED_JSON_VERSION}" REQUIRED)
 	endif()
 
-	# parallel HDF5 still needs MPI, even if we didn't ask for parallel support. Look for it if we didn't before.
-	if("${HDF5_IS_PARALLEL}" AND NOT TARGET MPI::MPI_C)
+	# parallel HDF5 or NetCDF still needs MPI, even if we didn't ask for parallel support. Look for it if we didn't before.
+	if(("${HDF5_IS_PARALLEL}" OR "PARALLEL4" IN_LIST NetCDF_FEATURES) AND NOT TARGET MPI::MPI_C)
 		list(APPEND MPI_COMPONENTS C CXX)
 		if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 			list(APPEND MPI_COMPONENTS Fortran)
@@ -397,7 +404,7 @@ if(NOT "${PDI_SUPERBUILD}")
 	add_subdirectory(pdi)
 
 	set(PDI_PLUGIN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/plugins")
-	foreach(PDI_PLUGIN IN ITEMS DECL_HDF5 JSON MPI PYCALL SERIALIZE SET_VALUE TRACE USER_CODE)
+	foreach(PDI_PLUGIN IN ITEMS DECL_HDF5 DECL_NETCDF JSON MPI PYCALL SERIALIZE SET_VALUE TRACE USER_CODE)
 		if("${BUILD_${PDI_PLUGIN}_PLUGIN}")
 			message(STATUS " **Module**: ENABLED  ${PDI_PLUGIN}_PLUGIN (-DBUILD_${PDI_PLUGIN}_PLUGIN=ON)")
 			string(TOLOWER "${PDI_PLUGIN}" PDI_PLUGIN_DIR)
@@ -639,18 +646,13 @@ endif()
 if("${BUILD_DECL_HDF5_PLUGIN}")
 	list(APPEND PDI_DEPENDS_LIST HDF5)
 endif()
+if("${BUILD_DECL_NETCDF_PLUGIN}")
+	list(APPEND PDI_DEPENDS_LIST NetCDF)
+endif()
 sbuild_add_module(PDI
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
 	CMAKE_CACHE_ARGS "-DPDI_SUPERBUILD:BOOL=OFF"
 	DEPENDS ${PDI_DEPENDS_LIST}
-	SUBSTEPS test
-)
-
-
-sbuild_add_module(DECL_NETCDF_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_DECL_NETCDF_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf"
-	DEPENDS PDI NetCDF
 	SUBSTEPS test
 )
 

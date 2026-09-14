@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,12 +27,6 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
-if(NOT TARGET GTest::gtest)
-	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
-	add_subdirectory("../../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
-endif()
-include(GoogleTest)
-
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 # Add the plugin path to PDI_PLUGIN_PATH
@@ -54,7 +49,6 @@ target_compile_features(decl_netcdf_tests PUBLIC cxx_std_20)
 gtest_discover_tests(decl_netcdf_tests)
 
 if("${BUILD_NETCDF_PARALLEL}")
-     find_package(MPI REQUIRED COMPONENTS C)
      add_executable(netcdf_mpi_tests decl_netcdf_mpi_tests.c)
      target_link_libraries(netcdf_mpi_tests PDI::PDI_C MPI::MPI_C)
      target_compile_features(netcdf_mpi_tests PUBLIC cxx_std_20)

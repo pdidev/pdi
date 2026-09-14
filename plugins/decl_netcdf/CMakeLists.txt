@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -28,34 +29,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.22...4.2)
-project(pdi_decl_netcdf_plugin LANGUAGES C CXX)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
-    # Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
-	# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/4.3")
-endif()
-
-option(BUILD_NETCDF_PARALLEL "Build Decl'NetCDF in parallel mode" ON)
-
-# Includes
-include(CTest)
-include(GNUInstallDirs)
-
-# MPI
-if("${BUILD_NETCDF_PARALLEL}")
-	find_package(MPI REQUIRED COMPONENTS C CXX)
-endif()
-
-# NetCDF
-find_package(NetCDF 4.8 REQUIRED)
-if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
-	message(FATAL_ERROR "Parallel NetCDF required, sequential NetCDF only found. Please set -DBUILD_NETCDF_PARALLEL=OFF to disable parallel NetCDF")
-endif()
-
-# PDI
-find_package(PDI REQUIRED COMPONENTS plugins)
 
 # The plugin
 add_library(pdi_decl_netcdf_plugin MODULE
@@ -71,9 +44,9 @@ if("${BUILD_NETCDF_PARALLEL}")
 	target_link_libraries(pdi_decl_netcdf_plugin PUBLIC MPI::MPI_CXX)
 endif()
 set_target_properties(pdi_decl_netcdf_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
+set_target_properties(pdi_decl_netcdf_plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PDI_PLUGIN_OUTPUT_DIRECTORY}")
 
 # installation
-set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_decl_netcdf_plugin
 		LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}"
 )
