@@ -51,14 +51,9 @@ set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
 # Build options
 
 option(BUILD_DOCUMENTATION "Build documentation" ON)
-option(BUILD_SHARED_LIBS   "Build shared libraries rather than static ones" ON)
 option(BUILD_TESTING       "Build tests" ON)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
 option(BUILD_PYTHON        "Enable Python support" "${BUILD_UNSTABLE}")
-
-if(NOT "${BUILD_SHARED_LIBS}") 
-	message(FATAL_ERROR "Building PDI as a static lib is not supported currently")
-endif()
 
 
 # Language support
@@ -159,7 +154,7 @@ set(PDI_C_SRC
 		src/string_tools.cxx
 		src/tuple_datatype.cxx
 )
-add_library(PDI_C ${PDI_C_SRC})
+add_library(PDI_C SHARED ${PDI_C_SRC})
 generate_export_header(PDI_C BASE_NAME pdi EXPORT_FILE_NAME pdi/export.h)
 target_include_directories(PDI_C
 		PUBLIC "$<BUILD_INTERFACE:${PDI_BINARY_DIR}>"  "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include/>"
@@ -231,7 +226,7 @@ install(PROGRAMS scripts/pdirun
 if("${BUILD_PYTHON}")
 	
 	# C++ python support library
-	add_library(PDI_pysupport src/python/python_ref_wrapper.cxx src/python/tools.cxx)
+	add_library(PDI_pysupport SHARED src/python/python_ref_wrapper.cxx src/python/tools.cxx)
 	target_include_directories(PDI_pysupport PUBLIC
 			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include>"
 			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
@@ -296,7 +291,7 @@ if("${BUILD_FORTRAN}")
 			VERBATIM
 	)
 	zpp_preprocess(OUTPUT PDI_F90 SOURCES src/fortran/pdi.f90.zpp)
-	add_library(PDI_f90 ${PDI_F90} src/fortran/pdi_c.f90)
+	add_library(PDI_f90 SHARED ${PDI_F90} src/fortran/pdi_c.f90)
 	target_link_libraries(PDI_f90 PUBLIC PDI::PDI_C paraconf::paraconf_f90 PRIVATE PDI::PDI_plugins)
 	add_dependencies(PDI_f90 mv_zpp_files)
 	target_include_directories(PDI_f90 PUBLIC

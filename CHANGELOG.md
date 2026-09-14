@@ -18,6 +18,8 @@ and this project adheres to
 #### Deprecated
 
 #### Removed
+* The `BUILD_SHARED_LIBS` CMake option is no longer read: the PDI libraries are always shared, where
+  setting it to `OFF` used to stop the configuration.
 
 #### Fixed
 

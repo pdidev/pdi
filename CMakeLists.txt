@@ -73,7 +73,6 @@ option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
 option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
 option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
-option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
 option(BUILD_TIMER_PLUGIN       "Build Timer plugin" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
@@ -126,14 +125,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" CACHE STRING "" FORCE)
 
 
 ### Sanity check
-
-if(NOT "${BUILD_SHARED_LIBS}")
-	message(FATAL_ERROR "Building PDI as a static lib is not supported. Please add the flag `BUILD_SHARED_LIBS=ON` to the cmake command line.")
-else()
-	set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "" FORCE)
-	set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
-	mark_as_advanced(CMAKE_POSITION_INDEPENDENT_CODE BUILD_SHARED_LIBS)
-endif()
 
 if("${BUILD_PYCALL_PLUGIN}" AND NOT "${BUILD_PYTHON}")
 	message(FATAL_ERROR
@@ -263,7 +254,6 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 	EMBEDDED_PATH "vendor/paraconf-1.0.3"
 	COMPONENTS ${PARACONF_COMPONENTS}
 	CMAKE_CACHE_ARGS
-		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=TRUE"
 		"-DUSE_yaml:STRING=SYSTEM"
 		"-DBUILD_TESTING:BOOL=OFF"
 	DEPENDS "yaml"
@@ -277,7 +267,6 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 sbuild_add_dependency(spdlog "${USE_DEFAULT}"
 	EMBEDDED_PATH "vendor/spdlog-1.15.3"
 	CMAKE_CACHE_ARGS
-		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
 		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
 		"-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF"
 		"-DSPDLOG_BUILD_TESTS:BOOL=OFF"

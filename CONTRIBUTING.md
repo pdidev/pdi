@@ -79,9 +79,6 @@ cmake -DDIST_PROFILE=Devel -S . -B .build
 cmake --build .build -j
 ```
 
-Building PDI as a static library is not supported: `BUILD_SHARED_LIBS` must stay `ON`, and the
-configure step fails outright if it is not.
-
 Anything that links PDI needs its runtime environment set up.
 Use the generated `pdirun` wrapper (`<install>/bin/pdirun <command>`) or source the generated
 `env.bash`.
