@@ -41,6 +41,6 @@ install(TARGETS pdi_user_code_plugin
 )
 
 # Tests
-if("${BUILD_TESTING}")
+if("${PDI_BUILD_TESTING}")
 	add_subdirectory(tests/)
 endif()

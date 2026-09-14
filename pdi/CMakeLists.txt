@@ -36,7 +36,7 @@ else()
 	file(RELATIVE_PATH PDI_DEFAULT_PLUGIN_PATH "/${CMAKE_INSTALL_LIBDIR}" "/${INSTALL_PDIPLUGINDIR}" )
 endif()
 
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 	get_default_kind(INTEGER   PDI_INTEGER_DEFAULT_KIND)
 	get_default_kind(CHARACTER PDI_CHARACTER_DEFAULT_KIND)
 	get_default_kind(REAL      PDI_REAL_DEFAULT_KIND)
@@ -148,7 +148,7 @@ install(PROGRAMS scripts/pdirun
 )
 
 
-if("${BUILD_PYTHON}")
+if("${PDI_BUILD_PYTHON}")
 	
 	# C++ python support library
 	add_library(PDI_pysupport SHARED src/python/python_ref_wrapper.cxx src/python/tools.cxx)
@@ -207,7 +207,7 @@ endif()
 
 # Fortran API library
 
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 	file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/fmoddir")
 	zpp_preprocess(OUTPUT PDIF_H SOURCES src/fortran/pdif.h.zpp)
 	add_custom_target(mv_zpp_files # we put in in fmoddir because pdif.h is compiler dependant
@@ -247,14 +247,14 @@ endif()
 
 # Documentation
 
-if("${BUILD_DOCUMENTATION}")
+if("${PDI_BUILD_DOCUMENTATION}")
 	add_subdirectory(docs docs)
 endif()
 
 
 # Tests
 
-if("${BUILD_TESTING}")
+if("${PDI_BUILD_TESTING}")
 	add_subdirectory(tests tests)
 endif()
 

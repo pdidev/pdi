@@ -54,7 +54,7 @@ target_link_libraries(decl_hdf5_deflate PDI::PDI_C GTest::gtest GTest::gtest_mai
 gtest_discover_tests(decl_hdf5_deflate)
 
 # PDI_import/PDI_export
-if("${BUILD_HDF5_PARALLEL}")
+if("${PDI_BUILD_HDF5_PARALLEL}")
 	add_executable(decl_hdf5_mpi_01_C decl_hdf5_mpi_test_01.c)
 	target_link_libraries(decl_hdf5_mpi_01_C PDI::PDI_C MPI::MPI_C)
 	add_test(NAME decl_hdf5_mpi_01_C COMMAND "$<TARGET_FILE:runtest_dir>" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_01_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_mpi_test_01.yml")
@@ -63,7 +63,7 @@ if("${BUILD_HDF5_PARALLEL}")
 endif()
 
 # parallel read/write
-if("${BUILD_HDF5_PARALLEL}")
+if("${PDI_BUILD_HDF5_PARALLEL}")
 	add_executable(decl_hdf5_mpi_02_C decl_hdf5_mpi_test_02.c)
 	target_link_libraries(decl_hdf5_mpi_02_C PDI::PDI_C MPI::MPI_C)
 	add_test(NAME decl_hdf5_mpi_02_C COMMAND "$<TARGET_FILE:runtest_dir>" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_02_C>" ${MPIEXEC_POSTFLAGS})
@@ -72,7 +72,7 @@ if("${BUILD_HDF5_PARALLEL}")
 endif()
 
 # scalars default options
-if("${BUILD_HDF5_PARALLEL}")
+if("${PDI_BUILD_HDF5_PARALLEL}")
 	add_executable(decl_hdf5_mpi_03_C decl_hdf5_mpi_test_03.c)
 	target_link_libraries(decl_hdf5_mpi_03_C PDI::PDI_C MPI::MPI_C)
 	add_test(NAME decl_hdf5_mpi_03_C COMMAND "$<TARGET_FILE:runtest_dir>" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_03_C>" ${MPIEXEC_POSTFLAGS})
@@ -80,7 +80,7 @@ if("${BUILD_HDF5_PARALLEL}")
 	set_property(TEST decl_hdf5_mpi_03_C PROPERTY PROCESSORS 4)
 endif()
 
-if("${BUILD_HDF5_PARALLEL}")
+if("${PDI_BUILD_HDF5_PARALLEL}")
 	add_executable(decl_hdf5_mpi_04_C decl_hdf5_mpi_test_04.c)
 	target_link_libraries(decl_hdf5_mpi_04_C PDI::PDI_C MPI::MPI_C)
 	add_test(NAME decl_hdf5_mpi_04_C COMMAND "$<TARGET_FILE:runtest_dir>" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_04_C>" ${MPIEXEC_POSTFLAGS})
@@ -89,7 +89,7 @@ if("${BUILD_HDF5_PARALLEL}")
 endif()
 
 # communicator as a reference
-if("${BUILD_HDF5_PARALLEL}")
+if("${PDI_BUILD_HDF5_PARALLEL}")
 	add_executable(decl_hdf5_mpi_05_C decl_hdf5_mpi_test_05.c)
 	target_link_libraries(decl_hdf5_mpi_05_C PDI::PDI_C MPI::MPI_C)
 	add_test(NAME decl_hdf5_mpi_05_C COMMAND "$<TARGET_FILE:runtest_dir>" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 8 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_05_C>" ${MPIEXEC_POSTFLAGS})
@@ -98,7 +98,7 @@ if("${BUILD_HDF5_PARALLEL}")
 endif()
 
 # scalars default options
-if("${BUILD_HDF5_PARALLEL}")
+if("${PDI_BUILD_HDF5_PARALLEL}")
 	add_executable(decl_hdf5_mpi_06_C decl_hdf5_mpi_test_06.c)
 	target_link_libraries(decl_hdf5_mpi_06_C PDI::PDI_C MPI::MPI_C)
 	add_test(NAME decl_hdf5_mpi_06_C COMMAND "$<TARGET_FILE:runtest_dir>" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_06_C>" ${MPIEXEC_POSTFLAGS})
@@ -107,7 +107,7 @@ if("${BUILD_HDF5_PARALLEL}")
 endif()
 
 # mpio dataset attribute
-if("${BUILD_HDF5_PARALLEL}")
+if("${PDI_BUILD_HDF5_PARALLEL}")
 	add_executable(decl_hdf5_mpi_07_C decl_hdf5_mpi_test_07.c)
 	target_link_libraries(decl_hdf5_mpi_07_C PDI::PDI_C MPI::MPI_C)
 	add_test(NAME decl_hdf5_mpi_07_C COMMAND "$<TARGET_FILE:runtest_dir>" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_07_C>" ${MPIEXEC_POSTFLAGS})
@@ -117,7 +117,7 @@ endif()
 
 # case datasets is defined as a regex.
 # The data is writing in //. This data is defined with a dataset_selection and a dataset that depends on a regex
-if("${BUILD_HDF5_PARALLEL}")
+if("${PDI_BUILD_HDF5_PARALLEL}")
 	add_executable(decl_hdf5_mpi_08_C decl_hdf5_mpi_test_08.c)
 	target_link_libraries(decl_hdf5_mpi_08_C PDI::PDI_C MPI::MPI_C)
 	add_test(NAME decl_hdf5_mpi_08_C COMMAND "$<TARGET_FILE:runtest_dir>" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_08_C>" ${MPIEXEC_POSTFLAGS})
@@ -131,7 +131,7 @@ target_link_libraries(decl_hdf5_IO_options_C PDI::PDI_C  ${HDF5_DEPS})
 add_test(NAME decl_hdf5_IO_options_C COMMAND "$<TARGET_FILE:runtest_dir>" "$<TARGET_FILE:decl_hdf5_IO_options_C>")
 set_property(TEST decl_hdf5_IO_options_C PROPERTY TIMEOUT 15)
 
-if("${BUILD_HDF5_PARALLEL}")
+if("${PDI_BUILD_HDF5_PARALLEL}")
 	add_executable(decl_hdf5_mpi_subfiling decl_hdf5_mpi_subfiling.cxx)
 	target_link_libraries(decl_hdf5_mpi_subfiling PDI::PDI_C MPI::MPI_C ${HDF5_DEPS})
 	target_compile_features(decl_hdf5_mpi_subfiling PUBLIC cxx_std_17)
@@ -141,9 +141,9 @@ if("${BUILD_HDF5_PARALLEL}")
 
 endif()
 
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 	add_subdirectory(fortran/)
-endif("${BUILD_FORTRAN}")
+endif("${PDI_BUILD_FORTRAN}")
 
 
 add_subdirectory("compatibility_tests/")

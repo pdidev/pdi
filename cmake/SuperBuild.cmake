@@ -196,6 +196,7 @@ endif()
 ## Configure time
 
 include(GNUInstallDirs)
+include("${CMAKE_CURRENT_LIST_DIR}/PDIOptions.cmake")
 include(ExternalProject)
 
 # Where the dependencies are installed while the distribution is built, and copied from on install.
@@ -274,10 +275,12 @@ function(_sbuild_dependency_policy _SBUILD_OUTVAR)
 			# https://github.com/pdidev/pdi/issues/644
 			# <INSTALL_DIR> is an ExternalProject placeholder, and means nothing anywhere else.
 			"-DCMAKE_STAGING_PREFIX:PATH=<INSTALL_DIR>"
-			# PDI is only ever linked against shared, position-independent dependencies; neither
-			# setting reaches them from the cache sweep, so both are stated here.
+			# PDI is only ever linked against shared, position-independent dependencies, and it never
+			# runs their test suites; none of the three reaches them from the cache sweep, so each is
+			# stated here.
 			"-DBUILD_SHARED_LIBS:BOOL=ON"
 			"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
+			"-DBUILD_TESTING:BOOL=OFF"
 			# holds the user's own value, which the cache sweep also forwards, and wins by coming later
 			"-DCMAKE_INSTALL_RPATH:STRING=${_SBUILD_RPATH}")
 	
@@ -289,7 +292,7 @@ endfunction()
 ### Add a dependency, either found on the system or built into the staging tree
 #
 # \param #1 the name of the dependency, as find_package() knows it
-# \param #2 the default of USE_<name>
+# \param #2 the default of PDI_USE_<name>
 # \param EMBEDDED_PATH the source directory or tarball of the copy shipped with the distribution
 # \param VERSION (optional) the minimum version of a system copy
 # \param COMPONENTS (optional) the components to find on the system
@@ -303,7 +306,7 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	if(NOT DEFINED _SBUILD_EMBEDDED_PATH)
 		message(FATAL_ERROR "sbuild_add_dependency(${_SBUILD_NAME}) requires an EMBEDDED_PATH")
 	endif()
-	set("USE_${_SBUILD_NAME}" "${_SBUILD_DEFAULT}" CACHE STRING "version of ${_SBUILD_NAME} to use, this can be 1) a path to the library source, 2) EMBEDDED to use the provided version, 3) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 4) AUTO to use SYSTEM if available and EMBEDDED otherwise")
+	pdi_setting("USE_${_SBUILD_NAME}" "version of ${_SBUILD_NAME} to use, this can be 1) a path to the library source, 2) EMBEDDED to use the provided version, 3) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 4) AUTO to use SYSTEM if available and EMBEDDED otherwise" "${_SBUILD_DEFAULT}")
 	
 	set(_SBUILD_TOBUILD FALSE)
 	
@@ -314,15 +317,15 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	endif()
 	
 	
-	if("${USE_${_SBUILD_NAME}}" STREQUAL SYSTEM)
+	if("${PDI_USE_${_SBUILD_NAME}}" STREQUAL "SYSTEM")
 		# use the preinstalled dep, should be available in the default path
 		find_package("${_SBUILD_NAME}" ${_SBUILD_VERSION} REQUIRED ${_SBUILD_COMPONENTS})
-		message(STATUS " **Dependency**: ${_SBUILD_NAME}, using SYSTEM version (-DUSE_${_SBUILD_NAME}=${USE_${_SBUILD_NAME}})")
-	elseif("${USE_${_SBUILD_NAME}}" STREQUAL EMBEDDED)
+		message(STATUS " **Dependency**: ${_SBUILD_NAME}, using SYSTEM version (-DPDI_USE_${_SBUILD_NAME}=${PDI_USE_${_SBUILD_NAME}})")
+	elseif("${PDI_USE_${_SBUILD_NAME}}" STREQUAL "EMBEDDED")
 		# use the dependency as provided in the distribution
 		set(_SBUILD_TOBUILD TRUE)
-		message(STATUS " **Dependency**: ${_SBUILD_NAME}, using EMBEDDED version (-DUSE_${_SBUILD_NAME}=${USE_${_SBUILD_NAME}})")
-	elseif("${USE_${_SBUILD_NAME}}" STREQUAL AUTO)
+		message(STATUS " **Dependency**: ${_SBUILD_NAME}, using EMBEDDED version (-DPDI_USE_${_SBUILD_NAME}=${PDI_USE_${_SBUILD_NAME}})")
+	elseif("${PDI_USE_${_SBUILD_NAME}}" STREQUAL "AUTO")
 		# try to behave like SYSTEM, but fallback on EMBEDDED if unavailable
 		find_package("${_SBUILD_NAME}" ${_SBUILD_VERSION} QUIET ${_SBUILD_COMPONENTS})
 		string(TOUPPER "${_SBUILD_NAME}_FOUND" _SBUILD_IS_FOUND)
@@ -332,16 +335,16 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 			if(DEFINED _SBUILD_VERSION)
 				set(_SBUILD_VERSION_MSG " in version \"${_SBUILD_VERSION}\"")
 			endif()
-			message(STATUS " **Dependency**: ${_SBUILD_NAME} using EMBEDDED version (SYSTEM not found${_SBUILD_VERSION_MSG}) (-DUSE_${_SBUILD_NAME}=${USE_${_SBUILD_NAME}})")
+			message(STATUS " **Dependency**: ${_SBUILD_NAME} using EMBEDDED version (SYSTEM not found${_SBUILD_VERSION_MSG}) (-DPDI_USE_${_SBUILD_NAME}=${PDI_USE_${_SBUILD_NAME}})")
 		else()
 			find_package("${_SBUILD_NAME}" ${_SBUILD_VERSION} REQUIRED ${_SBUILD_COMPONENTS})
-			message(STATUS " **Dependency**: ${_SBUILD_NAME} found and using SYSTEM version (-DUSE_${_SBUILD_NAME}=${USE_${_SBUILD_NAME}})")
+			message(STATUS " **Dependency**: ${_SBUILD_NAME} found and using SYSTEM version (-DPDI_USE_${_SBUILD_NAME}=${PDI_USE_${_SBUILD_NAME}})")
 		endif()
 	else()
 		# use the provided path as:
 		# 1. the path to the source of the library
 		# 2. the path to a tarball of the library source
-		set("_SBUILD_EMBEDDED_PATH" "${USE_${_SBUILD_NAME}}")
+		set("_SBUILD_EMBEDDED_PATH" "${PDI_USE_${_SBUILD_NAME}}")
 	
 		set(_SBUILD_TOBUILD TRUE)
 		message(STATUS " **Dependency**: ${_SBUILD_NAME} (PROVIDED), using PROVIDED version (${_SBUILD_EMBEDDED_PATH})")

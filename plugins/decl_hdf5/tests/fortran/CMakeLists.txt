@@ -38,7 +38,7 @@ set_target_properties(decl_hdf5_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_
 add_test(NAME decl_hdf5_01_F COMMAND "$<TARGET_FILE:runtest_dir>" "$<TARGET_FILE:decl_hdf5_01_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_01.yml")
 set_property(TEST decl_hdf5_01_F PROPERTY TIMEOUT 15)
 
-if("${BUILD_HDF5_PARALLEL}")
+if("${PDI_BUILD_HDF5_PARALLEL}")
     add_executable(decl_hdf5_02_F decl_hdf5_test_02.F90)
     target_link_libraries(decl_hdf5_02_F PDI::PDI_f90 MPI_with_mod)
     string(RANDOM TMP_MODULE_DIRECTORY)
@@ -58,7 +58,7 @@ if("${BUILD_HDF5_PARALLEL}")
     add_test(NAME decl_hdf5_04_F COMMAND "$<TARGET_FILE:runtest_dir>" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04.yml")
     set_property(TEST decl_hdf5_04_F PROPERTY TIMEOUT 15)
     set_property(TEST decl_hdf5_04_F PROPERTY PROCESSORS 4)
-endif("${BUILD_HDF5_PARALLEL}")
+endif("${PDI_BUILD_HDF5_PARALLEL}")
 
 add_executable(decl_hdf5_05_F decl_hdf5_test_05.F90)
 target_link_libraries(decl_hdf5_05_F PDI::PDI_f90)

@@ -29,6 +29,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+# # Project header
+
 cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_examples LANGUAGES C)
 
@@ -37,42 +39,59 @@ if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/4.3")
 endif()
 
+
+# # The options
+
+# The distribution's own PDI_-prefixed settings: added from it, this project reads the values it already has; built on its own, the unprefixed
+# spelling still provides the default.
+include(PDIOptions)
+pdi_option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" OFF)
+pdi_option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" OFF)
+pdi_option(BUILD_FORTRAN            "Build with Fortran support" OFF)
+pdi_option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" OFF)
+pdi_option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
+pdi_option(BUILD_MPI_PLUGIN         "Build MPI plug-in" OFF)
+pdi_option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" OFF)
+pdi_option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" OFF)
+pdi_option(BUILD_PYTHON             "Build with Python support" OFF)
+pdi_option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" OFF)
+pdi_option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" OFF)
+pdi_option(BUILD_TIMER_PLUGIN       "Build Timer plugin" OFF)
+pdi_option(BUILD_TRACE_PLUGIN       "Build Trace plugin" OFF)
+pdi_option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" OFF)
+option(EXAMPLE_MOCK_PDI "Disable the use of both PDI and Paraconf in the project" OFF)
+
+
+# # Inclusion and package detection
+
 set(MPI_COMPONENTS C)
 set(PARACONF_COMPONENTS C)
 set(PDI_COMPONENTS C)
 
-option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in"    OFF)
-option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in"  OFF)
-option(BUILD_FORTRAN            "Build with Fortran support" OFF)
-option(BUILD_JSON_PLUGIN        "Build JSON plug-in"         OFF)
-option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in"       OFF)
-option(BUILD_PYTHON             "Build with Python support"  OFF)
-option(BUILD_TIMER_PLUGIN       "Build Timer plugin"         OFF)
-option(EXAMPLE_MOCK_PDI         "Disable the use of both PDI and Paraconf in the project" OFF)
-
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 	enable_language(Fortran)
 	list(APPEND MPI_COMPONENTS Fortran)
 	list(APPEND PARACONF_COMPONENTS f90)
 	list(APPEND PDI_COMPONENTS f90)
 endif()
 
-if("${BUILD_PYTHON}")
+if("${PDI_BUILD_PYTHON}")
 	find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
 	list(APPEND PDI_COMPONENTS python)
 endif()
 
-# Includes
 include(CTest)
+
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 	include(MPIWithMod)
 endif()
+
 if("${EXAMPLE_MOCK_PDI}")
 	set(PDI_MOCK_PARACONF_TARGET TRUE)
 	add_subdirectory(../mock_pdi mock_pdi)
 else()
-	if(NOT TARGET paraconf::paraconf OR ("${BUILD_FORTRAN}" AND NOT TARGET paraconf::paraconf_f90))
+	if(NOT TARGET paraconf::paraconf OR ("${PDI_BUILD_FORTRAN}" AND NOT TARGET paraconf::paraconf_f90))
 		find_package(paraconf REQUIRED COMPONENTS ${PARACONF_COMPONENTS})
 	endif()
 	# TODO: drop the guard once CMake 3.24 is the minimum; the embedding build can then use
@@ -81,86 +100,96 @@ else()
 		find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
 	endif()
 endif()
+
 find_library(LIB_M m DOC "The math library")
 
 include(RuntestDir)
 
-# Default standard in the project is C11
+
+
+# # The example project itself
+
+# ## some defaults for our targets
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
 
 
+# ## our targets
+
 add_executable(PDI_example_C example.c)
 target_link_libraries(PDI_example_C PRIVATE PDI::PDI_C paraconf::paraconf MPI::MPI_C m)
 
-
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 add_executable(PDI_example_F example.F90)
 target_link_libraries(PDI_example_F PRIVATE PDI::PDI_f90 paraconf::paraconf_f90 MPI_with_mod m)
 endif()
 
+
+# ## the tests
+
 set(RUNTEST_DIR "$<TARGET_FILE:runtest_dir>" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/pdi.yml")
 
-if("${BUILD_DECL_HDF5_PLUGIN}")
+if("${PDI_BUILD_DECL_HDF5_PLUGIN}")
 add_test(NAME PDI_example_decl_hdf5_C COMMAND ${RUNTEST_DIR} "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5.yml")
 set_property(TEST PDI_example_decl_hdf5_C PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_decl_hdf5_C PROPERTY PROCESSORS 3)
 
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 add_test(NAME PDI_example_decl_hdf5_F COMMAND ${RUNTEST_DIR} "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5.yml")
 set_property(TEST PDI_example_decl_hdf5_F PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_decl_hdf5_F PROPERTY PROCESSORS 3)
-endif("${BUILD_FORTRAN}")
+endif("${PDI_BUILD_FORTRAN}")
 
-if("${BUILD_PYTHON}")
+if("${PDI_BUILD_PYTHON}")
 add_test(NAME PDI_example_decl_hdf5_P COMMAND ${RUNTEST_DIR} "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5.yml")
 set_property(TEST PDI_example_decl_hdf5_P PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_decl_hdf5_P PROPERTY PROCESSORS 3)
-endif("${BUILD_PYTHON}")
-endif("${BUILD_DECL_HDF5_PLUGIN}")
+endif("${PDI_BUILD_PYTHON}")
+endif("${PDI_BUILD_DECL_HDF5_PLUGIN}")
 
-if("${BUILD_DECL_NETCDF_PLUGIN}")
+if("${PDI_BUILD_DECL_NETCDF_PLUGIN}")
 add_test(NAME PDI_example_decl_netcdf_C_serial COMMAND ${RUNTEST_DIR} "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_serial.yml")
 set_property(TEST PDI_example_decl_netcdf_C_serial PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_decl_netcdf_C_serial PROPERTY PROCESSORS 1)
 
-if("${BUILD_NETCDF_PARALLEL}")
+if("${PDI_BUILD_NETCDF_PARALLEL}")
 add_test(NAME PDI_example_decl_netcdf_C COMMAND ${RUNTEST_DIR} "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf.yml")
 set_property(TEST PDI_example_decl_netcdf_C PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_decl_netcdf_C PROPERTY PROCESSORS 3)
-endif("${BUILD_NETCDF_PARALLEL}")
-endif("${BUILD_DECL_NETCDF_PLUGIN}")
+endif("${PDI_BUILD_NETCDF_PARALLEL}")
+endif("${PDI_BUILD_DECL_NETCDF_PLUGIN}")
 
-if("${BUILD_JSON_PLUGIN}")
+if("${PDI_BUILD_JSON_PLUGIN}")
 add_test(NAME PDI_example_json_C COMMAND ${RUNTEST_DIR} "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/json.yml")
 set_property(TEST PDI_example_json_C PROPERTY TIMEOUT 30)
 set_property(TEST PDI_example_json_C PROPERTY PROCESSORS 6)
 
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 add_test(NAME PDI_example_json_F COMMAND ${RUNTEST_DIR} "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/json.yml")
 set_property(TEST PDI_example_json_F PROPERTY TIMEOUT 30)
 set_property(TEST PDI_example_json_F PROPERTY PROCESSORS 6)
-endif("${BUILD_FORTRAN}")
-endif("${BUILD_JSON_PLUGIN}")
+endif("${PDI_BUILD_FORTRAN}")
+endif("${PDI_BUILD_JSON_PLUGIN}")
 
 add_test(NAME PDI_example_trace_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 set_property(TEST PDI_example_trace_C PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_trace_C PROPERTY PROCESSORS 3)
 
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 add_test(NAME PDI_example_trace_F COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 set_property(TEST PDI_example_trace_F PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_trace_F PROPERTY PROCESSORS 3)
-endif("${BUILD_FORTRAN}")
+endif("${PDI_BUILD_FORTRAN}")
 
-if("${BUILD_PYTHON}")
+if("${PDI_BUILD_PYTHON}")
 add_test(NAME PDI_example_trace_P COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 set_property(TEST PDI_example_trace_P PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_trace_P PROPERTY PROCESSORS 3)
-endif("${BUILD_PYTHON}")
+endif("${PDI_BUILD_PYTHON}")
 
-if("${BUILD_TIMER_PLUGIN}" AND "${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}" AND "${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}")
+if("${PDI_BUILD_TIMER_PLUGIN}" AND "${PDI_BUILD_DECL_HDF5_PLUGIN}" AND "${PDI_BUILD_HDF5_PARALLEL}" AND "${PDI_BUILD_DECL_NETCDF_PLUGIN}" AND "${PDI_BUILD_NETCDF_PARALLEL}")
 add_test(NAME PDI_example_timer COMMAND ${RUNTEST_DIR} "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/timer.yml")
 set_property(TEST PDI_example_timer PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_timer PROPERTY PROCESSORS 3)
-endif("${BUILD_TIMER_PLUGIN}" AND "${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}" AND "${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}")
+endif("${PDI_BUILD_TIMER_PLUGIN}" AND "${PDI_BUILD_DECL_HDF5_PLUGIN}" AND "${PDI_BUILD_HDF5_PARALLEL}" AND "${PDI_BUILD_DECL_NETCDF_PLUGIN}" AND "${PDI_BUILD_NETCDF_PARALLEL}")

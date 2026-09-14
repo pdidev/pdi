@@ -29,7 +29,7 @@ add_executable(integration_tests include.cxx)
 target_link_libraries(integration_tests PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest GTest::gtest_main)
 gtest_discover_tests(integration_tests)
 
-if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
+if("${PDI_BUILD_DECL_HDF5_PLUGIN}" AND "${PDI_BUILD_SERIALIZE_PLUGIN}")
 
 add_executable(test_01_C test_01.c)
 target_link_libraries(test_01_C paraconf::paraconf PDI::PDI_C)
@@ -47,8 +47,8 @@ add_executable(test_04_C test_04.c)
 target_link_libraries(test_04_C paraconf::paraconf PDI::PDI_C)
 add_test(NAME test_04_C COMMAND "$<TARGET_FILE:test_04_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_04.yml")
 
-endif("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
-if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
+endif("${PDI_BUILD_DECL_HDF5_PLUGIN}" AND "${PDI_BUILD_SERIALIZE_PLUGIN}")
+if("${PDI_BUILD_DECL_NETCDF_PLUGIN}" AND "${PDI_BUILD_SERIALIZE_PLUGIN}")
 
 add_executable(test_05_C test_05.c)
 target_link_libraries(test_05_C paraconf::paraconf PDI::PDI_C)
@@ -56,4 +56,4 @@ add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOUR
 #TODO: NetCDF error https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/433
 set_tests_properties(test_05_C PROPERTIES DISABLED TRUE)
 
-endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
+endif("${PDI_BUILD_DECL_NETCDF_PLUGIN}" AND "${PDI_BUILD_SERIALIZE_PLUGIN}")

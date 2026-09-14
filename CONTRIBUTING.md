@@ -45,7 +45,7 @@ Adding support for a new I/O library is therefore a new plugin, not a change to 
 `include/pdi.h` is C, but the implementation behind it is C++.
 The Fortran bindings are *generated* at build time from `.zpp` sources, so do not edit the generated
 `.F90`; edit the `.zpp`.
-The Python bindings use pybind11 and are only built when `BUILD_PYTHON` is on.
+The Python bindings use pybind11 and are only built when `PDI_BUILD_PYTHON` is on.
 
 ## Getting in touch
 
@@ -67,14 +67,22 @@ git clone --recurse-submodules https://github.com/pdidev/pdi.git
 git submodule update --init
 ```
 
-`DIST_PROFILE` is the switch that distinguishes a developer build from a user build.
-Setting it to `Devel` turns on `BUILD_TESTING`, `BUILD_DOCUMENTATION` and `BUILD_UNSTABLE`, and
-defaults the build type to `Debug`.
-`<build>` denotes your build directory throughout this guide; the examples use `.build`, but you
-are free to put it wherever you like:
+Every build setting of the distribution is named with a `PDI_` prefix, so that the distribution can
+be embedded in another project without its settings colliding with variables of the same name there.
+While PDI is the top-level project the historical unprefixed spelling still works and provides the
+default of its prefixed counterpart, so existing command lines keep working; when PDI is embedded
+the unprefixed name is ignored, as it then belongs to the enclosing project.
+
+`PDI_DIST_PROFILE` is the switch that distinguishes a developer build from a user build.
+Setting it to `Devel` turns on `PDI_BUILD_TESTING`, `PDI_BUILD_DOCUMENTATION` and
+`PDI_BUILD_UNSTABLE`, and defaults the build type to `Debug`.
+
+So in order to build a development version of PDI, you should use the following command, where
+`<build>` denotes your build directory. The examples use `.build`, but you are free to put it
+wherever you like:
 
 ```bash
-cmake -DDIST_PROFILE=Devel -S . -B .build
+cmake -DPDI_DIST_PROFILE=Devel -S . -B .build
 cmake --build .build -j
 ```
 
@@ -152,13 +160,15 @@ This section covers what that listing cannot: how the pieces relate.
 ### Components and their targets
 
 The library, plugins, tests, and benchmarks are directories of one single project.
-The distribution selects what to build with the `BUILD_*` options.
+The distribution selects what to build with the `PDI_BUILD_*` options.
 The root `CMakeLists.txt` handles all dependencies.
 
 A few directories remain projects of their own, each for a reason the distribution cannot absorb:
 
 * `example/` is what a user builds against an installed PDI, and shows both ways of mocking PDI; the
   distribution also adds it as an integration test suite.
+  It declares the same `PDI_`-prefixed options as the distribution, so that when added it reads the
+  values already set, and on its own the unprefixed names still provide the defaults.
 * `mock_pdi/` is meant to be copied into an application, so it has to work with nothing from the
   distribution around it.
 * `tests/api_tests/` gets PDI in either of the ways a project can, chosen with `API_TESTS_PDI`:
@@ -178,8 +188,8 @@ cmake --build .build --target PDI
 
 Dependencies are declared with `sbuild_add_dependency(<name> AUTO|SYSTEM|EMBEDDED ...)`: they are
 either found on the system or built from `vendor/`.
-`USE_DEFAULT` sets the global policy and `USE_<name>` overrides it for a single dependency, e.g.
-`-DUSE_spdlog=EMBEDDED`.
+`PDI_USE_DEFAULT` sets the global policy and `PDI_USE_<name>` overrides it for a single dependency,
+e.g. `-DPDI_USE_spdlog=EMBEDDED`.
 
 ### The core library
 

@@ -85,7 +85,7 @@ if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_LIBS}" = "xprovided" ]]
 then
 	# Workaround: parallel NetCDF detection broken in debuntu (and absent in mpich case)
 	# TODO: However netcdf-parallel 1:4.10.1-1 might have fixed it. the flag should be removed in this case
-	CMAKE_FLAGS="-DBUILD_NETCDF_PARALLEL=OFF ${CMAKE_FLAGS}"
+	CMAKE_FLAGS="-DPDI_BUILD_NETCDF_PARALLEL=OFF ${CMAKE_FLAGS}"
 fi
 
 

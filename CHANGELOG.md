@@ -19,6 +19,10 @@ and this project adheres to
 #### Changed
 * Replaced the multiple independent CMake projects by a single large project.
   The superbuild mode only builds the vendored dependencies separately now.
+* Every PDI CMake build option (except for installation paths) is now named with a `PDI_` prefix,
+  `BUILD_FORTRAN` becomes `PDI_BUILD_FORTRAN`, `DIST_PROFILE` becomes `PDI_DIST_PROFILE` and
+  `USE_HDF5` becomes `PDI_USE_HDF5`.
+  The unprefixed names keep working when PDI is built on its own for compatibility.
 * The `INSTALL_CMAKEDIR` CMake variable, which sets where the PDI CMake package files are installed,
   is renamed `INSTALL_PDICMAKEDIR`.
 * The `DISABLE_PDI` CMake option of the example project, which builds it against the mock PDI, is
@@ -40,7 +44,7 @@ and this project adheres to
   setting it to `OFF` used to stop the configuration.
 
 #### Fixed
-* The build type the distribution profile selects is now actually applied: `DIST_PROFILE=User`
+* The build type the distribution profile selects is now actually applied: `PDI_DIST_PROFILE=User`
   builds `Release` and `Devel` builds `Debug`, as per
   [#773](https://github.com/pdidev/pdi/issues/773).
 * A parallel NetCDF found through its own CMake configuration is no longer taken for a sequential
@@ -52,6 +56,8 @@ and this project adheres to
   of [#774](https://github.com/pdidev/pdi/issues/774).
 * The distribution no longer forces `CMAKE_MODULE_PATH` into the cache, where it grew by the same
   directories at every configuration.
+* The source installation guide gives the right default of the option that builds the tests: `OFF`,
+  or `ON` with the `Devel` profile, part of [#774](https://github.com/pdidev/pdi/issues/774).
 
 #### Security
 

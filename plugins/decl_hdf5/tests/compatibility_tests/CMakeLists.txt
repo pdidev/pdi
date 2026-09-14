@@ -27,7 +27,7 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 
 set(ALL_TEST_NAMES array dataset group struct variables)
-if("${BUILD_HDF5_PARALLEL}")
+if("${PDI_BUILD_HDF5_PARALLEL}")
     list(APPEND ALL_TEST_NAMES mpi mpi_independent)
 endif()
 

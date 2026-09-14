@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -29,7 +30,7 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 	add_executable(hello_access.f90 hello_access.f90)
 	target_link_libraries(hello_access.f90 PDI::PDI_Fortran)
 

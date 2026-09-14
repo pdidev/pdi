@@ -78,6 +78,17 @@ For example, the installation directory can be changed with the following comman
 cmake -DCMAKE_INSTALL_PREFIX=/home/user/ ..
 ```
 
+Every flag the %PDI distribution defines is named with a `PDI_` prefix, so that the
+distribution can be embedded in a larger CMake project without its flags
+colliding with variables of the same name there.
+While %PDI is built on its own, the historical unprefixed spelling still works and
+provides the default of its prefixed counterpart, so existing command lines keep
+working; when %PDI is embedded with `add_subdirectory`, only the prefixed spelling
+is read.
+The installation directories are the exception, keeping the unprefixed names that
+[GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)
+uses for its own beside them: everything installs to one prefix, and a directory
+layout is not a per-project setting the way the build options are.
 %PDI is only supported as a shared library, so `BUILD_SHARED_LIBS` is not a choice
 the distribution offers; every library it builds says so for itself.
 
@@ -87,32 +98,31 @@ The following general flags are useful to configure the distribution as a whole.
 |:---------------------|:-----------|:----------|
 |`CMAKE_INSTALL_PREFIX`|`/usr/local`|The path where to install the distribution.|
 |`CMAKE_PREFIX_PATH`   |            |A semicolon-separated list of prefix where to look for %PDI dependencies in addition to system path.|
-|`DIST_PROFILE`        |`User`      |Sets the default values of other flags. The possible values are `User` for the %PDI use profile and `Devel` for the developer profile.|
-|`USE_DEFAULT`         |`AUTO`      |Whether to compile the embedded versions of the dependencies. The possible values are `SYSTEM` to use the system versions, `EMBEDDED` to compile the version provided in the distribution and `AUTO` to prefer a system version but fall-back on the embedded version if unavailable.|
-|`BUILD_UNSTABLE`      |`OFF`       |Whether to build the unstable parts of the distribution, either `ON` or `OFF`.|
+|`PDI_DIST_PROFILE`    |`User`      |Sets the default values of other flags. The possible values are `User` for the %PDI use profile and `Devel` for the developer profile.|
+|`PDI_USE_DEFAULT`     |`AUTO`      |Whether to compile the embedded versions of the dependencies. The possible values are `SYSTEM` to use the system versions, `EMBEDDED` to compile the version provided in the distribution and `AUTO` to prefer a system version but fall-back on the embedded version if unavailable.|
+|`PDI_BUILD_UNSTABLE`  |`OFF`       |Whether to build the unstable parts of the distribution, either `ON` or `OFF`.|
 |`CMAKE_BUILD_TYPE`    |`Release`   |Optimization level and debug verbosity. The possible values are `Release` and `Debug`. Defaults to `Debug` with the `Devel` profile.|
 |`PDI_SUPERBUILD`      |`ON`        |Whether to build the dependencies shipped in the distribution before %PDI itself. With `OFF`, only %PDI and its plug-ins are built and every dependency is expected to be available already.|
-|`PDI_PLUGIN_PATH`     |same as PDI |Path where to install all plugins. If not defined, will install relative to PDI.|
 
 The following flags define which features of the distribution to enable or not.
 
 |Flag                       |Default|Description|
 |:--------------------------|:------|:----------|
-|`BUILD_BENCHMARKING`       |`ON`   |Build the benchmarks.|
-|`BUILD_DECL_HDF5_PLUGIN`   |`ON`   |Build the Decl'HDF5 plug-in.|
-|`BUILD_DECL_NETCDF_PLUGIN` |`ON`   |Build the Decl'NetCDF plug-in.|
-|`BUILD_FORTRAN`            |`ON`   |Build the Fortran interface.|
-|`BUILD_HDF5_PARALLEL`      |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|
-|`BUILD_JSON_PLUGIN`        |`OFF`  |Build the Json plug-in.|
-|`BUILD_MPI_PLUGIN`         |`ON`   |Build the MPI plug-in.|
-|`BUILD_NETCDF_PARALLEL`    |`ON`   |Build the parallel version of the Decl'NetCDF plugin instead of the sequential one.|
-|`BUILD_TESTING`            |`ON`   |Build the tests.|
-|`BUILD_TRACE_PLUGIN`       |`ON`   |Build the Trace plug-in.|
-|`BUILD_USER_CODE_PLUGIN`   |`ON`   |Build the User-code plug-in.|
-|`BUILD_DOCUMENTATION`      |`OFF`  |Build the documentation website. (devel profile)|
-|`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
-|`BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
-|`ENABLE_BENCHMARKING`      |`OFF`  |Run benchmarks as part of the test suite.|
+|`PDI_BUILD_BENCHMARKING`       |`ON`   |Build the benchmarks.|
+|`PDI_BUILD_DECL_HDF5_PLUGIN`   |`ON`   |Build the Decl'HDF5 plug-in.|
+|`PDI_BUILD_DECL_NETCDF_PLUGIN` |`ON`   |Build the Decl'NetCDF plug-in.|
+|`PDI_BUILD_FORTRAN`            |`ON`   |Build the Fortran interface.|
+|`PDI_BUILD_HDF5_PARALLEL`      |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|
+|`PDI_BUILD_JSON_PLUGIN`        |`OFF`  |Build the Json plug-in.|
+|`PDI_BUILD_MPI_PLUGIN`         |`ON`   |Build the MPI plug-in.|
+|`PDI_BUILD_NETCDF_PARALLEL`    |`ON`   |Build the parallel version of the Decl'NetCDF plugin instead of the sequential one.|
+|`PDI_BUILD_TESTING`            |`OFF`  |Build the tests. (devel profile)|
+|`PDI_BUILD_TRACE_PLUGIN`       |`ON`   |Build the Trace plug-in.|
+|`PDI_BUILD_USER_CODE_PLUGIN`   |`ON`   |Build the User-code plug-in.|
+|`PDI_BUILD_DOCUMENTATION`      |`OFF`  |Build the documentation website. (devel profile)|
+|`PDI_BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
+|`PDI_BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
+|`PDI_ENABLE_BENCHMARKING`      |`OFF`  |Run benchmarks as part of the test suite.|
 
 
 The following flags define whether to:
@@ -127,13 +137,13 @@ The following flags define whether to:
 
 |Flag           |Default   |Description|
 |:--------------|:---------|:----------|
-|`USE_HDF5`     |`AUTO`    |The [HDF5](https://www.hdfgroup.org/solutions/hdf5) library.|
-|`USE_JSON`     |`AUTO`    |The [Json](https://github.com/nlohmann/json) library.|
-|`USE_NetCDF`   |`AUTO`    |The [NetCDF](https://www.unidata.ucar.edu/software/netcdf) library.|
-|`USE_paraconf` |`AUTO`    |The [paraconf](https://github.com/pdidev/paraconf) library.|
-|`USE_pybind11` |`AUTO`    |The [pybind11](https://pybind11.readThedocs.io/en/stable) library.|
-|`USE_spdlog`   |`AUTO`    |The [spdlog](https://github.com/gabime/spdlog) library.|
-|`USE_yaml`     |`AUTO`    |The [yaml](https://github.com/yaml/libyaml) library.|
+|`PDI_USE_HDF5`     |`AUTO`    |The [HDF5](https://www.hdfgroup.org/solutions/hdf5) library.|
+|`PDI_USE_JSON`     |`AUTO`    |The [Json](https://github.com/nlohmann/json) library.|
+|`PDI_USE_NetCDF`   |`AUTO`    |The [NetCDF](https://www.unidata.ucar.edu/software/netcdf) library.|
+|`PDI_USE_paraconf` |`AUTO`    |The [paraconf](https://github.com/pdidev/paraconf) library.|
+|`PDI_USE_pybind11` |`AUTO`    |The [pybind11](https://pybind11.readThedocs.io/en/stable) library.|
+|`PDI_USE_spdlog`   |`AUTO`    |The [spdlog](https://github.com/gabime/spdlog) library.|
+|`PDI_USE_yaml`     |`AUTO`    |The [yaml](https://github.com/yaml/libyaml) library.|
 
 When looking for `SYSTEM` version of libraries, the standard CMake variables are
 adhered to, such as

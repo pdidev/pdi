@@ -92,26 +92,30 @@ set(PDI_VENDORED_ZPP_DIR        "vendor/zpp-1.1.2")
 
 ### Build options
 
+include(PDIOptions)
+
+
 ## Global options
 
-set(DIST_PROFILE "User" CACHE STRING "Profile to use for PDI distribution build. Options are: User, Devel")
-set_property(CACHE DIST_PROFILE PROPERTY STRINGS User Devel)
+pdi_setting(DIST_PROFILE "Profile to use for PDI distribution build. Options are: User, Devel" "User")
+set_property(CACHE PDI_DIST_PROFILE PROPERTY STRINGS User Devel)
 
-if(User STREQUAL "${DIST_PROFILE}")
-	option(BUILD_DOCUMENTATION "Build documentation" OFF)
-	option(BUILD_TESTING       "Build tests" OFF)
-	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" OFF)
+if("User" STREQUAL "${PDI_DIST_PROFILE}")
+	pdi_option(BUILD_DOCUMENTATION "Build documentation" OFF)
+	pdi_option(BUILD_TESTING       "Build tests" OFF)
+	pdi_option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" OFF)
 	set(DEFAULT_BUILD_TYPE "Release")
-elseif(Devel STREQUAL "${DIST_PROFILE}")
-	option(BUILD_DOCUMENTATION "Build documentation" ON)
-	option(BUILD_TESTING       "Build tests" ON)
-	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" ON)
+elseif("Devel" STREQUAL "${PDI_DIST_PROFILE}")
+	pdi_option(BUILD_DOCUMENTATION "Build documentation" ON)
+	pdi_option(BUILD_TESTING       "Build tests" ON)
+	pdi_option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" ON)
 	set(DEFAULT_BUILD_TYPE "Debug")
 else()
-	message(FATAL_ERROR "DIST_PROFILE should be set to one of: User, Devel")
+	message(FATAL_ERROR "PDI_DIST_PROFILE should be set to one of: User, Devel")
 endif()
 
-set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can be 1) EMBEDDED to use the provided version, 2) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 3) AUTO to use SYSTEM if available and EMBEDDED otherwise")
+pdi_setting(USE_DEFAULT "Default version of libraries to use; this can be 1) EMBEDDED to use the provided version, 2) SYSTEM to use an already\
+ installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 3) AUTO to use SYSTEM if available and EMBEDDED otherwise" AUTO)
 
 # With the superbuild on, this file builds the vendored dependencies and then re-invokes itself as a single ExternalProject with the flag off.
 # With it off, this is a normal project, dependencies are expected to be already available and every module is added with add_subdirectory.
@@ -122,22 +126,22 @@ endif()
 
 # Modules to build
 
-option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
-option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
-option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
-option(BUILD_FORTRAN            "Build with Fortran support" ON)
-option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
-option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
-option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
-option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
-option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
-option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
-option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
-option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
-option(BUILD_TIMER_PLUGIN       "Build Timer plugin" ON)
-option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
-option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
-option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
+pdi_option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
+pdi_option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
+pdi_option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
+pdi_option(BUILD_FORTRAN            "Build with Fortran support" ON)
+pdi_option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
+pdi_option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
+pdi_option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
+pdi_option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
+pdi_option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${PDI_BUILD_UNSTABLE}")
+pdi_option(BUILD_PYTHON             "Build with Python support" "${PDI_BUILD_UNSTABLE}")
+pdi_option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
+pdi_option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
+pdi_option(BUILD_TIMER_PLUGIN       "Build Timer plugin" ON)
+pdi_option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
+pdi_option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
+pdi_option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 
 
 
@@ -147,59 +151,59 @@ if(NOT DEFINED CMAKE_BUILD_TYPE AND "${CMAKE_CONFIGURATION_TYPES}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel ...")
 	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS None Debug Release RelWithDebInfo MinSizeRel)
 endif()
-message(STATUS " **Profile**: Distribution profile is: `${DIST_PROFILE}' (-DDIST_PROFILE=${DIST_PROFILE})")
+message(STATUS " **Profile**: Distribution profile is: `${PDI_DIST_PROFILE}' (-DPDI_DIST_PROFILE=${PDI_DIST_PROFILE})")
 message(STATUS " **Profile**: Build type is: `${CMAKE_BUILD_TYPE}' (-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})")
 message(STATUS " **Profile**: Prefix path is: `${CMAKE_PREFIX_PATH}' (-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH})")
-message(STATUS " **Profile**: Default use is: `${USE_DEFAULT}' (-DUSE_DEFAULT=${USE_DEFAULT})")
-message(STATUS " **Profile**: Unstable activation is: `${BUILD_UNSTABLE}' (-DBUILD_UNSTABLE=${BUILD_UNSTABLE})")
+message(STATUS " **Profile**: Default use is: `${PDI_USE_DEFAULT}' (-DPDI_USE_DEFAULT=${PDI_USE_DEFAULT})")
+message(STATUS " **Profile**: Unstable activation is: `${PDI_BUILD_UNSTABLE}' (-DPDI_BUILD_UNSTABLE=${PDI_BUILD_UNSTABLE})")
 foreach(FEATURE FORTRAN HDF5_PARALLEL PYTHON TESTING)
 	set(FEATURE_ENABLED "DISABLED")
-	if(${BUILD_${FEATURE}})
+	if(${PDI_BUILD_${FEATURE}})
 		set(FEATURE_ENABLED "ENABLED ")
 	endif()
-	message(STATUS " **Feature**: ${FEATURE_ENABLED} ${FEATURE} (-DBUILD_${FEATURE}=${BUILD_${FEATURE}})")
+	message(STATUS " **Feature**: ${FEATURE_ENABLED} ${FEATURE} (-DPDI_BUILD_${FEATURE}=${PDI_BUILD_${FEATURE}})")
 endforeach()
 
 
 
 ### Sanity check
 
-if("${BUILD_PYCALL_PLUGIN}" AND NOT "${BUILD_PYTHON}")
+if("${PDI_BUILD_PYCALL_PLUGIN}" AND NOT "${PDI_BUILD_PYTHON}")
 	message(FATAL_ERROR
 		"The Pycall plugin is enabled but Python support is disabled.\n"
 		"    you have the following options:\n"
-		"     * enable Python support => pass `-DBUILD_PYTHON=ON' to cmake\n"
-		"     * do not build the Pycall plugin => pass `-DBUILD_PYCALL_PLUGIN=OFF' to cmake"
+		"     * enable Python support => pass `-DPDI_BUILD_PYTHON=ON' to cmake\n"
+		"     * do not build the Pycall plugin => pass `-DPDI_BUILD_PYCALL_PLUGIN=OFF' to cmake"
 	)
 endif()
 
-if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}" AND NOT "${BUILD_MPI_PLUGIN}")
+if("${PDI_BUILD_DECL_HDF5_PLUGIN}" AND "${PDI_BUILD_HDF5_PARALLEL}" AND NOT "${PDI_BUILD_MPI_PLUGIN}")
 	message(FATAL_ERROR
 		"Parallel support is enabled for the Decl'HDF5 plugin but the MPI plugin is disabled.\n"
 		"    you have the following options:\n"
-		"     * build the MPI plugin => pass `-DBUILD_MPI_PLUGIN=ON' to cmake\n"
-		"     * build Decl'HDF5 without parallel support => pass `-DBUILD_HDF5_PARALLEL=OFF' to cmake\n"
-		"     * do not build the Decl'HDF5 at all => pass `-DBUILD_DECL_HDF5_PLUGIN=OFF' to cmake"
+		"     * build the MPI plugin => pass `-DPDI_BUILD_MPI_PLUGIN=ON' to cmake\n"
+		"     * build Decl'HDF5 without parallel support => pass `-DPDI_BUILD_HDF5_PARALLEL=OFF' to cmake\n"
+		"     * do not build the Decl'HDF5 at all => pass `-DPDI_BUILD_DECL_HDF5_PLUGIN=OFF' to cmake"
 	)
 endif()
 
-if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}" AND NOT "${BUILD_DECL_HDF5_PLUGIN}")
+if("${PDI_BUILD_DECL_NETCDF_PLUGIN}" AND "${PDI_BUILD_NETCDF_PARALLEL}" AND NOT "${PDI_BUILD_DECL_HDF5_PLUGIN}")
 	message(FATAL_ERROR
 		"Parallel support is enabled for the Decl'NetCDF plugin but parallel support for HDF5 disabled.\n"
 		"    you have the following options:\n"
-		"     * enable HDF5 parallel support => pass `-DBUILD_HDF5_PARALLEL=ON' to cmake\n"
-		"     * build Decl'NetCDF without parallel support => pass `-DBUILD_NETCDF_PARALLEL=OFF' to cmake\n"
-		"     * do not build the Decl'NetCDF at all => pass `-DBUILD_DECL_NETCDF_PLUGIN=OFF' to cmake"
+		"     * enable HDF5 parallel support => pass `-DPDI_BUILD_HDF5_PARALLEL=ON' to cmake\n"
+		"     * build Decl'NetCDF without parallel support => pass `-DPDI_BUILD_NETCDF_PARALLEL=OFF' to cmake\n"
+		"     * do not build the Decl'NetCDF at all => pass `-DPDI_BUILD_DECL_NETCDF_PLUGIN=OFF' to cmake"
 	)
 endif()
 
-if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}" AND NOT "${BUILD_MPI_PLUGIN}")
+if("${PDI_BUILD_DECL_NETCDF_PLUGIN}" AND "${PDI_BUILD_NETCDF_PARALLEL}" AND NOT "${PDI_BUILD_MPI_PLUGIN}")
 	message(FATAL_ERROR
 		"Parallel support is enabled for the Decl'NetCDF plugin but the MPI plugin is disabled.\n"
 		"    you have the following options:\n"
-		"     * build the MPI plugin => pass `-DBUILD_MPI_PLUGIN=ON' to cmake\n"
-		"     * build Decl'NetCDF without parallel support => pass `-DBUILD_NETCDF_PARALLEL=OFF' to cmake\n"
-		"     * do not build the Decl'NetCDF at all => pass `-DBUILD_DECL_NETCDF_PLUGIN=OFF' to cmake"
+		"     * build the MPI plugin => pass `-DPDI_BUILD_MPI_PLUGIN=ON' to cmake\n"
+		"     * build Decl'NetCDF without parallel support => pass `-DPDI_BUILD_NETCDF_PARALLEL=OFF' to cmake\n"
+		"     * do not build the Decl'NetCDF at all => pass `-DPDI_BUILD_DECL_NETCDF_PLUGIN=OFF' to cmake"
 	)
 endif()
 
@@ -210,7 +214,7 @@ endif()
 # This has to come after the build type is settled and before any try_compile or include(GNUInstallDirs).
 enable_language(C)
 enable_language(CXX)
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 	enable_language(Fortran)
 endif()
 
@@ -218,7 +222,8 @@ endif()
 
 ### Testing
 
-if("${BUILD_TESTING}")
+if("${PDI_BUILD_TESTING}")
+	set(BUILD_TESTING ON)
 	include(CTest)
 endif()
 
@@ -226,34 +231,34 @@ endif()
 
 ### Dependencies common to both modes
 
-if("${BUILD_TESTING}")
+if("${PDI_BUILD_TESTING}")
 	find_program(ZSH_PROGRAM zsh)
 	if(EXISTS "${ZSH_PROGRAM}")
 		set(ZSH_PROGRAM_FOUND ON)
 	else()
 		set(ZSH_PROGRAM_FOUND OFF)
 	endif()
-	option(ENABLE_ZSH "Enable test of ZSH for env script" "${ZSH_PROGRAM_FOUND}")
+	pdi_option(ENABLE_ZSH "Enable test of ZSH for env script" "${ZSH_PROGRAM_FOUND}")
 endif()
 
-if("${BUILD_DOCUMENTATION}")
+if("${PDI_BUILD_DOCUMENTATION}")
 	find_package(Doxygen "${PDI_REQUIRED_DOXYGEN_VERSION}" REQUIRED OPTIONAL_COMPONENTS dot)
 endif()
 
 set(MPI_COMPONENTS)
-if("${BUILD_TESTING}")
+if("${PDI_BUILD_TESTING}")
 	list(APPEND MPI_COMPONENTS CXX C)
-	if("${BUILD_FORTRAN}")
+	if("${PDI_BUILD_FORTRAN}")
 		list(APPEND MPI_COMPONENTS Fortran)
 	endif()
 endif()
-if( ("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}") OR ("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}") )
+if( ("${PDI_BUILD_DECL_HDF5_PLUGIN}" AND "${PDI_BUILD_HDF5_PARALLEL}") OR ("${PDI_BUILD_DECL_NETCDF_PLUGIN}" AND "${PDI_BUILD_NETCDF_PARALLEL}") )
 	list(APPEND MPI_COMPONENTS CXX C)
-	if("${BUILD_FORTRAN}")
+	if("${PDI_BUILD_FORTRAN}")
 		list(APPEND MPI_COMPONENTS Fortran)
 	endif()
 endif()
-if("${BUILD_MPI_PLUGIN}")
+if("${PDI_BUILD_MPI_PLUGIN}")
 	list(APPEND MPI_COMPONENTS CXX)
 endif()
 if(NOT "x${MPI_COMPONENTS}x" STREQUAL "xx")
@@ -261,13 +266,13 @@ if(NOT "x${MPI_COMPONENTS}x" STREQUAL "xx")
 	find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 endif()
 
-if("${BUILD_PYTHON}")
+if("${PDI_BUILD_PYTHON}")
 	find_package(Python3 "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter Development)
-elseif("${BUILD_FORTRAN}")
+elseif("${PDI_BUILD_FORTRAN}")
 	find_package(Python3 "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter)
 endif()
 
-if("${BUILD_TESTING}")
+if("${PDI_BUILD_TESTING}")
 	find_package(Threads REQUIRED)
 endif()
 
@@ -283,14 +288,14 @@ if("" STREQUAL "$CACHE{CMAKE_INSTALL_DOCDIR}")
 	set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATAROOTDIR}/doc/pdi")
 endif()
 
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 	# Expect compilers to provide compatible modules at the minor release level at least, hence the version truncated to its first two components.
 	string(REGEX REPLACE "^([0-9]*\\.[0-9]*)\\..*$" "\\1" Fortran_COMPILER_MINOR_VERSION "${CMAKE_Fortran_COMPILER_VERSION}")
 	set(INSTALL_FMODDIR "${CMAKE_INSTALL_LIBDIR}/pdi/finclude/${CMAKE_Fortran_COMPILER_ID}-${Fortran_COMPILER_MINOR_VERSION}"
 		CACHE PATH "Fortran module directory (LIBDIR/pdi/finclude/<compiler>-<version>)")
 endif()
 
-if("${BUILD_PYTHON}")
+if("${PDI_BUILD_PYTHON}")
 	include(Python3InstallDirs)
 endif()
 
@@ -305,62 +310,62 @@ if(NOT "${PDI_SUPERBUILD}")
 	## The vendored dependencies
 
 	set(PARACONF_COMPONENTS C)
-	if("${BUILD_FORTRAN}")
+	if("${PDI_BUILD_FORTRAN}")
 		list(APPEND PARACONF_COMPONENTS f90)
 	endif()
 	find_package(paraconf "${PDI_REQUIRED_PARACONF_VERSION}" REQUIRED COMPONENTS ${PARACONF_COMPONENTS})
 
 	find_package(spdlog "${PDI_REQUIRED_SPDLOG_VERSION}" REQUIRED)
 
-	if("${BUILD_PYTHON}")
+	if("${PDI_BUILD_PYTHON}")
 		# Ensure pybind11 finds the same python as us.
 		set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency")
 		set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules")
 		find_package(pybind11 "${PDI_REQUIRED_PYBIND11_VERSION}" REQUIRED)
 	endif()
 
-	if("${BUILD_DECL_HDF5_PLUGIN}")
+	if("${PDI_BUILD_DECL_HDF5_PLUGIN}")
 		set(HDF5_USE_STATIC_LIBRARIES OFF)
-		set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
+		set(HDF5_PREFER_PARALLEL "${PDI_BUILD_HDF5_PARALLEL}")
 		find_package(HDF5 REQUIRED COMPONENTS C)
 		if("${HDF5_VERSION}" VERSION_LESS "${PDI_REQUIRED_HDF5_VERSION}")
 			message(FATAL_ERROR "HDF5 version ${PDI_REQUIRED_HDF5_VERSION} at least required, HDF5 ${HDF5_VERSION} found.")
 		endif()
-		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
-			message(FATAL_ERROR "Parallel HDF5 required, sequential HDF5 only found. Please set -DBUILD_HDF5_PARALLEL=OFF to disable parallel HDF5")
+		if("${PDI_BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
+			message(FATAL_ERROR "Parallel HDF5 required, sequential HDF5 only found. Please set -DPDI_BUILD_HDF5_PARALLEL=OFF to disable parallel HDF5")
 		endif()
 	endif()
 
-	if("${BUILD_DECL_NETCDF_PLUGIN}")
+	if("${PDI_BUILD_DECL_NETCDF_PLUGIN}")
 		find_package(NetCDF "${PDI_REQUIRED_NETCDF_VERSION}" REQUIRED)
-		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
-			message(FATAL_ERROR "Parallel NetCDF required, sequential NetCDF only found. Please set -DBUILD_NETCDF_PARALLEL=OFF to disable parallel NetCDF")
+		if("${PDI_BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
+			message(FATAL_ERROR "Parallel NetCDF required, sequential NetCDF only found. Please set -DPDI_BUILD_NETCDF_PARALLEL=OFF to disable parallel NetCDF")
 		endif()
 	endif()
 
-	if("${BUILD_JSON_PLUGIN}")
+	if("${PDI_BUILD_JSON_PLUGIN}")
 		find_package(nlohmann_json "${PDI_REQUIRED_JSON_VERSION}" REQUIRED)
 	endif()
 
 	# parallel HDF5 or NetCDF still needs MPI, even if we didn't ask for parallel support. Look for it if we didn't before.
 	if(("${HDF5_IS_PARALLEL}" OR "PARALLEL4" IN_LIST NetCDF_FEATURES) AND NOT TARGET MPI::MPI_C)
 		list(APPEND MPI_COMPONENTS C CXX)
-		if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
+		if("${PDI_BUILD_TESTING}" AND "${PDI_BUILD_FORTRAN}")
 			list(APPEND MPI_COMPONENTS Fortran)
 		endif()
 		find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 	endif()
 
-	if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
+	if("${PDI_BUILD_FORTRAN}" OR "${PDI_BUILD_DOCUMENTATION}")
 		add_subdirectory("${PDI_VENDORED_ZPP_DIR}" vendor/zpp)
 	endif()
 
-	if("${BUILD_TESTING}" OR ("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_BENCHMARKING}"))
+	if("${PDI_BUILD_TESTING}" OR ("${PDI_BUILD_DECL_HDF5_PLUGIN}" AND "${PDI_BUILD_BENCHMARKING}"))
 		option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
 		add_subdirectory("${PDI_VENDORED_GOOGLETEST_DIR}" vendor/googletest EXCLUDE_FROM_ALL)
 	endif()
 
-	if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_BENCHMARKING}")
+	if("${PDI_BUILD_DECL_HDF5_PLUGIN}" AND "${PDI_BUILD_BENCHMARKING}")
 		option(BENCHMARK_ENABLE_TESTING "Enable testing of the benchmark library." OFF)
 		option(BENCHMARK_ENABLE_WERROR "Build Release candidates with -Werror." OFF)
 		option(BENCHMARK_ENABLE_INSTALL "Enable installation of benchmark. (Projects embedding benchmark may want to turn this OFF.)" OFF)
@@ -375,19 +380,19 @@ if(NOT "${PDI_SUPERBUILD}")
 
 	include(GenerateExportHeader)
 
-	if("${BUILD_FORTRAN}")
+	if("${PDI_BUILD_FORTRAN}")
 		include(DefaultKind)
 	endif()
 
-	if("${BUILD_TESTING}")
+	if("${PDI_BUILD_TESTING}")
 		include(GoogleTest)
 	endif()
 
-	if("${BUILD_TESTING}" OR ("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_BENCHMARKING}"))
+	if("${PDI_BUILD_TESTING}" OR ("${PDI_BUILD_DECL_HDF5_PLUGIN}" AND "${PDI_BUILD_BENCHMARKING}"))
 		include(RuntestDir)
 	endif()
 
-	if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
+	if("${PDI_BUILD_TESTING}" AND "${PDI_BUILD_FORTRAN}")
 		include(MPIWithMod)
 	endif()
 
@@ -400,17 +405,17 @@ if(NOT "${PDI_SUPERBUILD}")
 
 	set(PDI_PLUGIN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/plugins")
 	foreach(PDI_PLUGIN IN ITEMS DECL_HDF5 DECL_NETCDF JSON MPI PYCALL SERIALIZE SET_VALUE TIMER TRACE USER_CODE)
-		if("${BUILD_${PDI_PLUGIN}_PLUGIN}")
-			message(STATUS " **Module**: ENABLED  ${PDI_PLUGIN}_PLUGIN (-DBUILD_${PDI_PLUGIN}_PLUGIN=ON)")
+		if("${PDI_BUILD_${PDI_PLUGIN}_PLUGIN}")
+			message(STATUS " **Module**: ENABLED  ${PDI_PLUGIN}_PLUGIN (-DPDI_BUILD_${PDI_PLUGIN}_PLUGIN=ON)")
 			string(TOLOWER "${PDI_PLUGIN}" PDI_PLUGIN_DIR)
 			add_subdirectory("plugins/${PDI_PLUGIN_DIR}")
 		else()
-			message(STATUS " **Module**: DISABLED ${PDI_PLUGIN}_PLUGIN (-DBUILD_${PDI_PLUGIN}_PLUGIN=OFF)")
+			message(STATUS " **Module**: DISABLED ${PDI_PLUGIN}_PLUGIN (-DPDI_BUILD_${PDI_PLUGIN}_PLUGIN=OFF)")
 		endif()
 	endforeach()
 
-	if("${BUILD_TESTING}")
-		message(STATUS " **Module**: ENABLED  the example and test modules (-DBUILD_TESTING=ON)")
+	if("${PDI_BUILD_TESTING}")
+		message(STATUS " **Module**: ENABLED  the example and test modules (-DPDI_BUILD_TESTING=ON)")
 		add_subdirectory(example)
 		add_subdirectory(tests/api_tests)
 		add_subdirectory(tests/combination_tests)
@@ -429,10 +434,9 @@ include(SuperBuild)
 ## Yaml
 
 # if ( paraconf )
-sbuild_add_dependency(yaml "${USE_DEFAULT}"
+sbuild_add_dependency(yaml "${PDI_USE_DEFAULT}"
 	EMBEDDED_PATH "${PDI_VENDORED_YAML_DIR}"
 	CMAKE_CACHE_ARGS
-		"-DBUILD_TESTING:BOOL=OFF"
 		"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream libyaml is updated (https://github.com/yaml/libyaml/pull/314)
 		"-DINSTALL_BIN_DIR:STRING=${CMAKE_INSTALL_BINDIR}"
 		"-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
@@ -445,15 +449,13 @@ sbuild_add_dependency(yaml "${USE_DEFAULT}"
 ## Paraconf
 
 set(PARACONF_COMPONENTS "C")
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 	list(APPEND PARACONF_COMPONENTS "f90")
 endif()
 # if ( PDI or ... )
-sbuild_add_dependency(paraconf "${USE_DEFAULT}"
+sbuild_add_dependency(paraconf "${PDI_USE_DEFAULT}"
 	EMBEDDED_PATH "${PDI_VENDORED_PARACONF_DIR}"
 	COMPONENTS ${PARACONF_COMPONENTS}
-	CMAKE_CACHE_ARGS
-		"-DBUILD_TESTING:BOOL=OFF"
 	DEPENDS "yaml"
 	VERSION "${PDI_REQUIRED_PARACONF_VERSION}"
 )
@@ -462,7 +464,7 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 ## spdlog
 
 # if ( PDI or ... )
-sbuild_add_dependency(spdlog "${USE_DEFAULT}"
+sbuild_add_dependency(spdlog "${PDI_USE_DEFAULT}"
 	EMBEDDED_PATH "${PDI_VENDORED_SPDLOG_DIR}"
 	CMAKE_CACHE_ARGS
 		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
@@ -475,11 +477,11 @@ sbuild_add_dependency(spdlog "${USE_DEFAULT}"
 
 ## HDF5
 
-if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
+if("${PDI_BUILD_DECL_HDF5_PLUGIN}" OR "${PDI_BUILD_DECL_NETCDF_PLUGIN}")
 	
 	set(HDF5_CMAKE_CACHE_ARGS)
 	
-	if("${BUILD_HDF5_PARALLEL}")
+	if("${PDI_BUILD_HDF5_PARALLEL}")
 		set(HDF5_PREFER_PARALLEL ON)
 		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_ENABLE_PARALLEL:BOOL=ON")
 	else()
@@ -487,7 +489,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_ENABLE_PARALLEL:BOOL=OFF")
 	endif()
 	
-	if("${BUILD_DECL_NETCDF_PLUGIN}")
+	if("${PDI_BUILD_DECL_NETCDF_PLUGIN}")
 		set(HDF5_COMPONENTS C HL)
 		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=ON")
 	else()
@@ -495,7 +497,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=OFF")
 	endif()
 	
-	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
+	sbuild_add_dependency(HDF5 "${PDI_USE_DEFAULT}"
 		EMBEDDED_PATH "${PDI_VENDORED_HDF5_DIR}"
 		COMPONENTS ${HDF5_COMPONENTS}
 		MODULE_VARS HDF5_IS_PARALLEL HDF5_VERSION
@@ -515,20 +517,20 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 		if("${HDF5_VERSION}" VERSION_LESS "${PDI_REQUIRED_HDF5_VERSION}")
 			message(FATAL_ERROR "HDF5 version ${PDI_REQUIRED_HDF5_VERSION} at least required, HDF5 ${HDF5_VERSION} found.")
 		endif()
-		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
+		if("${PDI_BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 			message(FATAL_ERROR
-				"You requested a parallel HDF5 build (-DBUILD_HDF5_PARALLEL=ON) but a sequential SYSTEM version has been found\n"
+				"You requested a parallel HDF5 build (-DPDI_BUILD_HDF5_PARALLEL=ON) but a sequential SYSTEM version has been found\n"
 				"    you have the following options:\n"
-				"     * build with this sequential HDF5 => pass `-DBUILD_HDF5_PARALLEL=OFF' to cmake\n"
-				"     * build the EMBEDDED HDF5 from PDI distribution => pass `-DUSE_HDF5=EMBEDDED' to cmake\n"
+				"     * build with this sequential HDF5 => pass `-DPDI_BUILD_HDF5_PARALLEL=OFF' to cmake\n"
+				"     * build the EMBEDDED HDF5 from PDI distribution => pass `-DPDI_USE_HDF5=EMBEDDED' to cmake\n"
 				"     * use another version of HDF5 from the system => pass `-DHDF5_ROOT=/path/to/hdf5/root/' to cmake"
 			)
 		endif()
-	elseif(NOT "EMBEDDED" STREQUAL "${USE_HDF5}")
+	elseif(NOT "EMBEDDED" STREQUAL "${PDI_USE_HDF5}")
 		message(FATAL_ERROR
 			"HDF5 setup failed: A suitable SYSTEM version (>= ${PDI_REQUIRED_HDF5_VERSION}) could not be found.\n"
 			"    you have the following options:\n"
-			"     * build the EMBEDDED HDF5 from PDI distribution => pass `-DUSE_HDF5=EMBEDDED' to cmake\n"
+			"     * build the EMBEDDED HDF5 from PDI distribution => pass `-DPDI_USE_HDF5=EMBEDDED' to cmake\n"
 			"     * use another version of HDF5 from the system => pass `-DHDF5_ROOT=/path/to/hdf5/root/' to cmake"
 		)
 	endif()
@@ -537,16 +539,16 @@ endif()
 
 ## NetCDF
 
-if("${BUILD_DECL_NETCDF_PLUGIN}")
+if("${PDI_BUILD_DECL_NETCDF_PLUGIN}")
 	
-	if("${BUILD_HDF5_PARALLEL}")
+	if("${PDI_BUILD_HDF5_PARALLEL}")
 		set(NETCDF_CC "${MPI_C_COMPILER}")
 	else()
 		set(NETCDF_CC "${CMAKE_C_COMPILER}")
 	endif()
 	
 	set(NETCDF_CMAKE_CACHE_ARGS)
-	if("${BUILD_NETCDF_PARALLEL}")
+	if("${PDI_BUILD_NETCDF_PARALLEL}")
 		list(APPEND NETCDF_CMAKE_CACHE_ARGS "-DENABLE_PARALLEL4:BOOL=ON")
 	else()
 		list(APPEND NETCDF_CMAKE_CACHE_ARGS "-DENABLE_PARALLEL4:BOOL=OFF")
@@ -558,7 +560,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 		string(REPLACE ";" " -I" NETCDF_CFLAGS "-I ${ZLIB_INCLUDE_DIRS}")
 	endif()
 	
-	sbuild_add_dependency(NetCDF "${USE_DEFAULT}"
+	sbuild_add_dependency(NetCDF "${PDI_USE_DEFAULT}"
 		EMBEDDED_PATH "${PDI_VENDORED_NETCDF_DIR}"
 		DEPENDS HDF5
 		MODULE_VARS NetCDF_FEATURES
@@ -578,22 +580,22 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 		VERSION "${PDI_REQUIRED_NETCDF_VERSION}"
 	)
 	if("${NetCDF_FOUND}")
-		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
+		if("${PDI_BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
 			message(FATAL_ERROR
-				"You requested a parallel NetCDF build (-DBUILD_NETCDF_PARALLEL=ON) but a sequential SYSTEM version has been found\n"
+				"You requested a parallel NetCDF build (-DPDI_BUILD_NETCDF_PARALLEL=ON) but a sequential SYSTEM version has been found\n"
 				"    you have the following options:\n"
-				"     * build with this sequential NetCDF => pass `-DBUILD_NETCDF_PARALLEL=OFF' to cmake\n"
-				"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NetCDF=EMBEDDED' to cmake\n"
+				"     * build with this sequential NetCDF => pass `-DPDI_BUILD_NETCDF_PARALLEL=OFF' to cmake\n"
+				"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DPDI_USE_NetCDF=EMBEDDED' to cmake\n"
 				"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake\n"
 				"       you may need to change the discovery order so the config script is tried first =>\n"
 				"       pass `-DNetCDF_FIND_STRATEGIES=\"CFGSCRIPT\"' to cmake"
 			)
 		endif()
-	elseif(NOT "EMBEDDED" STREQUAL "${USE_NetCDF}")
+	elseif(NOT "EMBEDDED" STREQUAL "${PDI_USE_NetCDF}")
 		message(FATAL_ERROR
 			"NetCDF setup failed: A suitable SYSTEM version (>= ${PDI_REQUIRED_NETCDF_VERSION}) could not be found.\n"
 			"    you have the following options:\n"
-			"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NetCDF=EMBEDDED' to cmake\n"
+			"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DPDI_USE_NetCDF=EMBEDDED' to cmake\n"
 			"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake\n"
 			"       you may need to change the discovery order so the config script is tried first =>\n"
 			"       pass `-DNetCDF_FIND_STRATEGIES=\"CFGSCRIPT\"' to cmake"
@@ -604,13 +606,12 @@ endif()
 
 ## PyBind11
 
-if("${BUILD_PYTHON}")
+if("${PDI_BUILD_PYTHON}")
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
-	sbuild_add_dependency(pybind11 "${USE_DEFAULT}"
+	sbuild_add_dependency(pybind11 "${PDI_USE_DEFAULT}"
 		EMBEDDED_PATH "${PDI_VENDORED_PYBIND11_DIR}"
 		CMAKE_CACHE_ARGS
-			"-DBUILD_TESTING:BOOL=OFF"
 			"-DPYBIND11_TEST:BOOL=OFF"
 			"-DPYBIND11_PYTHON_VERSION:STRING=${Python3_VERSION}"
 		VERSION "${PDI_REQUIRED_PYBIND11_VERSION}"
@@ -620,8 +621,8 @@ endif()
 
 ## JSON
 
-if("${BUILD_JSON_PLUGIN}")
-	sbuild_add_dependency(JSON "${USE_DEFAULT}"
+if("${PDI_BUILD_JSON_PLUGIN}")
+	sbuild_add_dependency(JSON "${PDI_USE_DEFAULT}"
 		EMBEDDED_PATH "${PDI_VENDORED_JSON_DIR}"
 		CMAKE_CACHE_ARGS
 			"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream is updated

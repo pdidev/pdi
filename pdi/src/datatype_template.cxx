@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -721,7 +722,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 	add_scalar_datatype(ctx, "byte", Scalar_kind::UNKNOWN, 1L);
 
 	// Fortran basic types
-#ifdef BUILD_FORTRAN
+#ifdef PDI_BUILD_FORTRAN
 	ctx.add_datatype("character", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_CHARACTER_DEFAULT_KIND);
 		if (kind == 0)
@@ -754,7 +755,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::FLOAT, kind, tree}};
 	});
-#endif // BUILD_FORTRAN
+#endif // PDI_BUILD_FORTRAN
 }
 
 void Datatype_template::load_user_datatypes(Context& ctx, PC_tree_t types_tree)

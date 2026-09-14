@@ -124,7 +124,7 @@ endif()
 # Check that all required components were found
 
 foreach(_PDI_ONE_COMPONENT ${PDI_FIND_COMPONENTS})
-	if("@BUILD_PYTHON@" AND "x${_PDI_ONE_COMPONENT}" STREQUAL "xpython")
+	if("@PDI_BUILD_PYTHON@" AND "x${_PDI_ONE_COMPONENT}" STREQUAL "xpython")
 		# python is available, nothing to import, pdirun looks for it
 	elseif(NOT TARGET "PDI::PDI_${_PDI_ONE_COMPONENT}")
 		if("${PDI_FIND_REQUIRED_${_PDI_ONE_COMPONENT}}")

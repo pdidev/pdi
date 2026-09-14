@@ -59,14 +59,14 @@ add_test(NAME mpi_02_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXE
 set_property(TEST mpi_02_C PROPERTY PROCESSORS 1)
 
 # MPI plugin Fortran predefines test
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 add_executable(mpi_02_F mpi_test_02.F90)
 target_link_libraries(mpi_02_F PDI::PDI_f90 MPI_with_mod)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(mpi_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME mpi_02_F COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:mpi_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/mpi_test_02.yml")
 set_property(TEST mpi_02_F PROPERTY PROCESSORS 1)
-endif("${BUILD_FORTRAN}")
+endif("${PDI_BUILD_FORTRAN}")
 
 # MPI plugin C predefines test
 add_executable(mpi_03_C mpi_test_03.c)

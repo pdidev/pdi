@@ -54,10 +54,10 @@ install(TARGETS pdi_decl_hdf5_plugin
 )
 
 # Tests
-if("${BUILD_TESTING}")
+if("${PDI_BUILD_TESTING}")
 	add_subdirectory(tests/)
 endif()
 
-if("${BUILD_BENCHMARKING}")
+if("${PDI_BUILD_BENCHMARKING}")
 	add_subdirectory(benchmarks)
 endif()

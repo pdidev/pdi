@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -324,7 +325,7 @@ vector<param_pair> scalar_types{
 	{"{type: byte, kind: 0}", Scalar_datatype::make(Scalar_kind::UNKNOWN, 1)},
 
 
-#ifdef BUILD_FORTRAN
+#ifdef PDI_BUILD_FORTRAN
 	{"character", Scalar_datatype::make(Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND)},
 	{"type: character", Scalar_datatype::make(Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND)},
 	{"{type: character, kind: 0}", Scalar_datatype::make(Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND)},
@@ -341,7 +342,7 @@ vector<param_pair> scalar_types{
 	{"type: real", Scalar_datatype::make(Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND)},
 	{"{type: real, kind: 0}", Scalar_datatype::make(Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND)},
 	{"{type: real, kind: 256}", Scalar_datatype::make(Scalar_kind::FLOAT, 256)},
-#endif // BUILD_FORTRAN
+#endif // PDI_BUILD_FORTRAN
 };
 
 vector<param_pair> array_types{

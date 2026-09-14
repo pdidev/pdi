@@ -32,11 +32,11 @@ cmake_minimum_required(VERSION 3.22...4.2)
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 
-if("${BUILD_FORTRAN}")
+if("${PDI_BUILD_FORTRAN}")
 	add_subdirectory(fortran/)
 endif()
 
-if("${BUILD_PYTHON}")
+if("${PDI_BUILD_PYTHON}")
 	add_test(NAME PDI_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_03.py")
 	add_test(NAME PDI_test_04 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_04.py")
 	add_test(NAME PDI_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_05.py")
@@ -101,6 +101,6 @@ target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.
 gtest_discover_tests(PDI_unit_tests)
 
 add_test(NAME PDI_test_env_zsh COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/test_env_sh" "${PDI_BINARY_DIR}/pdi/env.bash")
-if(NOT "${ENABLE_ZSH}")
+if(NOT "${PDI_ENABLE_ZSH}")
 	set_property(TEST PDI_test_env_zsh PROPERTY DISABLED TRUE)
 endif()

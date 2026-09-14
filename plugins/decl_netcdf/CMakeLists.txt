@@ -40,7 +40,7 @@ add_library(pdi_decl_netcdf_plugin MODULE
 		dnc_netcdf_file.cxx
 		dnc_variable.cxx)
 target_link_libraries(pdi_decl_netcdf_plugin PUBLIC PDI::PDI_plugins NetCDF::NetCDF)
-if("${BUILD_NETCDF_PARALLEL}")
+if("${PDI_BUILD_NETCDF_PARALLEL}")
 	target_link_libraries(pdi_decl_netcdf_plugin PUBLIC MPI::MPI_CXX)
 endif()
 set_target_properties(pdi_decl_netcdf_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
@@ -52,6 +52,6 @@ install(TARGETS pdi_decl_netcdf_plugin
 )
 
 # Tests
-if("${BUILD_TESTING}")
+if("${PDI_BUILD_TESTING}")
 	add_subdirectory(tests/)
 endif()
