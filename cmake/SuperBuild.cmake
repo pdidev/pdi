@@ -101,11 +101,10 @@ endfunction()
 function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	cmake_parse_arguments(PARSE_ARGV 2 _SBUILD "BUILD_DEPENDENCY;NO_INSTALL" "EMBEDDED_PATH;BUILD_IN_SOURCE;VERSION;SOURCE_SUBDIR" "CMAKE_CACHE_ARGS;DEPENDS;CONFIGURE_COMMAND;BUILD_COMMAND;INSTALL_COMMAND;COMPONENTS;OPTIONAL_COMPONENTS;PATCH_COMMAND;MODULE_VARS;ENV")
 	
-	if(DEFINED _SBUILD_EMBEDDED_PATH)
-		set("USE_${_SBUILD_NAME}" "${_SBUILD_DEFAULT}" CACHE STRING "version of ${_SBUILD_NAME} to use, this can be 1) a path to the library source, 2) EMBEDDED to use the provided version, 3) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 4) AUTO to use SYSTEM if available and EMBEDDED otherwise")
-	else()
-		set("USE_${_SBUILD_NAME}" "${_SBUILD_DEFAULT}")
+	if(NOT DEFINED _SBUILD_EMBEDDED_PATH)
+		message(FATAL_ERROR "sbuild_add_dependency(${_SBUILD_NAME}) requires an EMBEDDED_PATH")
 	endif()
+	set("USE_${_SBUILD_NAME}" "${_SBUILD_DEFAULT}" CACHE STRING "version of ${_SBUILD_NAME} to use, this can be 1) a path to the library source, 2) EMBEDDED to use the provided version, 3) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 4) AUTO to use SYSTEM if available and EMBEDDED otherwise")
 	
 	set(_SBUILD_TOBUILD FALSE)
 	
