@@ -221,86 +221,6 @@ struct Var_to_reclaim {
 	void emplace_back(const string& name) { m_varnames.emplace_back(name); }
 };
 
-// TODO(??): "topological_sort" dans Global_Context
-// TODO(??): "topological_sort" one time when reading the specification tree to avoid in multiexpose
-
-/**
- * \brief Order a list of data according to the dependencies between in each data
- *
- * \param ctx the Global_context in which the data are defined
- * \param [in] dataname_to_order set of data name that we need to order
- * \param [out] result the list of data that be ordering
- *
- * Remark: No duplicate name must be defined in "dataname_to_order"
- */
-
-void topological_sort(const std::vector<std::string>& dataname_to_order, Global_context& ctx, std::vector<std::string>& result)
-{
-	if (!(result.size() == 0)) {
-		throw System_error{"In topological_sort, result must contains 0 element and contains `{}' elements.", result.size()};
-	}
-
-	// Number of incoming edge for each data in the graph
-	std::unordered_map<std::string, int> incoming_degree;
-
-	// set of data names that depend on each data
-	std::unordered_map<std::string, std::vector<std::string>> dependents;
-
-	// Only consider dataname present in dataname_to_order.
-	for (const auto& dataname: dataname_to_order) {
-		incoming_degree[dataname] = 0;
-	}
-
-	// Build the graph.
-	for (const auto& dataname: dataname_to_order) {
-		if (ctx.m_data_all_dependencies.contains(dataname)) {
-			for (std::string dependency: ctx.m_data_all_dependencies[dataname]) {
-				// Only consider dependencies that are also in dataname_to_order
-				if (incoming_degree.contains(dependency)) {
-					++incoming_degree[dataname];
-					dependents[dependency].push_back(dataname);
-				} else if (!ctx.desc(dependency).metadata()) {
-					throw System_error{"Incoming_degree in the graph of data doesn't contains `{}' for object {}.", dependency, dataname};
-				}
-			}
-		}
-	}
-
-	// Start with data having no dependencies
-	std::queue<std::string> ready;
-
-	for (const auto& [name, degree]: incoming_degree) {
-		if (degree == 0) {
-			ready.push(name);
-		}
-	}
-
-	while (!ready.empty()) {
-		std::string front_name = ready.front();
-		ready.pop();
-
-		// Add front_name to the output result
-		result.push_back(front_name);
-
-		// The data with name='front_name' is now available, so update its dependents
-		for (std::string dependent: dependents[front_name]) {
-			if (--incoming_degree[dependent] == 0) {
-				ready.push(dependent); // add data, with no dependencies, to the queue
-			}
-		}
-	}
-
-	// If not all data were sorted, there is a cycle
-	if (result.size() != dataname_to_order.size()) {
-		ctx.logger().trace("Ordering result");
-		for (auto& elem: result) {
-			ctx.logger().trace("result elem={}", elem);
-		}
-		throw System_error{"Cyclic dependency detected: result.size={}, dataname_to_order.size()={}", result.size(), dataname_to_order.size()};
-	}
-}
-
-
 } // namespace
 
 extern "C" {
@@ -506,29 +426,28 @@ try {
 	}
 	va_end(ap);
 
-	std::vector<std::string> names_without_duplicate;
-	std::vector<std::string> names_ordering;
-
+	std::vector<std::pair<std::string, unsigned int> > sort_name;
 	for (auto& elem: name_indexes) {
-		names_without_duplicate.push_back(elem.first);
+		std::string elem_name = elem.first;
+		if (Global_context::context().m_data_ordering.contains(elem_name)) {
+			sort_name.emplace_back(elem.first, Global_context::context().m_data_ordering[elem.first]);
+		} else {
+			sort_name.emplace_back(elem.first, 0); // case data is not defined in (meta)data section
+		}
 	}
 
-	topological_sort(names_without_duplicate, Global_context::context(), names_ordering);
-
-	for (auto& elem: names_ordering) {
-		Global_context::context().logger().trace("order name {}", elem);
-	}
+	std::sort(sort_name.begin(), sort_name.end(), [](auto& left, auto& right) { return left.second < right.second; });
 
 	Var_to_reclaim list_names{event_name}; // list of variable that will be reclaimed at the end of this function
 	Delayed_data_callbacks delayed_callbacks(Global_context::context());
 
 	int i = -1;
-	for (auto& name22: names_ordering) {
-		for (auto& index: name_indexes[name22]) {
+	for (auto& name22: sort_name) {
+		for (auto& index: name_indexes[name22.first]) {
 			PDI_inout_t v_access = data_access[index];
-			Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", name22, ++i, list_names.size());
-			Global_context::context()[name22].share(data_pointer[index], v_access & PDI_OUT, v_access & PDI_IN, std::move(delayed_callbacks));
-			list_names.emplace_back(name22);
+			Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", name22.first, ++i, list_names.size());
+			Global_context::context()[name22.first].share(data_pointer[index], v_access & PDI_OUT, v_access & PDI_IN, std::move(delayed_callbacks));
+			list_names.emplace_back(name22.first);
 		}
 	}
 

@@ -160,11 +160,11 @@ private:
 	void notify_missing_data(const std::string& name);
 
 public:
-	/// list of direct dependencies for a (meta)data defines in the specification tree
-	std::unordered_map<std::string, std::unordered_set<std::string>> m_data_dependencies;
-
 	/// list of dependencies for a (meta)data defines in the specification tree including indirect
 	std::unordered_map<std::string, std::unordered_set<std::string>> m_data_all_dependencies;
+
+	/// list of ordering index for a (meta)data defines in the specification tree
+	std::unordered_map<std::string, unsigned int> m_data_ordering;
 
 	static void init(PC_tree_t conf);
 
