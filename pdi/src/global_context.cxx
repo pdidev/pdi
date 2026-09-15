@@ -320,11 +320,6 @@ public:
 	 */
 	Data_dependencies(TT name, std::unordered_set<TT> direct_dependencies);
 
-	/** Evaluate all dependencies inside a set of Data_dependencies
-	 * \param data_in_store the set of Data_dependencies
-	 */
-	void all_dependencies_resolved(std::map<TT, std::unique_ptr<Data_dependencies<TT>>>& data_in_store);
-
 	/** Add to the stack the data if no cyclic dependencies is found
 	 * \param data_in_store the set of Data_dependencies
 	 * \param ordering_stack the stack to update
@@ -352,46 +347,6 @@ Data_dependencies<TT>::Data_dependencies(TT name, std::unordered_set<TT> direct_
 	, m_deps(direct_dependencies)
 {
 	m_state = INIT_DEPS;
-}
-
-template <typename TT>
-void Data_dependencies<TT>::all_dependencies_resolved(std::map<TT, std::unique_ptr<Data_dependencies<TT>>>& data_in_store)
-{
-	switch (m_state) {
-	case ALL_DEPS:
-		return;
-	case COMPUTE_DEPS:
-		throw Impl_error{"Error while evaluate dependencies: circular dependency between data"};
-	case INIT_DEPS:
-		m_state = COMPUTE_DEPS;
-		auto&& direct_dependencies = m_deps;
-
-		for (auto&& elem: direct_dependencies) {
-			auto&& data_info_it = data_in_store.find(elem);
-
-			if (data_info_it == data_in_store.end()) {
-				// if we have a dependencies with unknown data
-				// example:
-				// data:
-				//     our_data: {type:array, subtype: double, size:"$our_size"}
-				//
-				// without define "our_size" in (meta)data section
-
-				m_all_deps.insert(elem);
-			} else {
-				if (m_all_deps.insert(elem).second) {
-					;
-					data_info_it->second->all_dependencies_resolved(data_in_store);
-
-					// insert indirect dependencies
-					for (auto&& elem_dependencies: data_info_it->second->get_dependencies()) {
-						m_all_deps.insert(elem_dependencies);
-					}
-				}
-			}
-		}
-		m_state = ALL_DEPS;
-	}
 }
 
 template <typename TT>
