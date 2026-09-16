@@ -216,14 +216,25 @@ void Dataset_op::fletcher(Context& ctx, Expression value)
 	}
 }
 
-void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio, const std::vector<Dataset_explicit_type>& dsets)
+void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio,
+#ifdef H5_HAVE_PARALLEL
+	H5FD_mpio_xfer_t default_mpio,
+#endif
+	const std::vector<Dataset_explicit_type>& dsets)
 {
 	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
 	if (use_mpio) {
-		if (0 > H5Pset_dxpl_mpio(xfer_lst, m_mpio)) {
+		H5FD_mpio_xfer_t actual_mpio = m_mpio.value_or(default_mpio);
+		if (0 > H5Pset_dxpl_mpio(xfer_lst, actual_mpio)) {
 			handle_hdf5_err();
 		}
+		ctx.logger().trace(
+			"Using MPIO transfer mode: {} (explicit override: {}, file default: {})",
+			actual_mpio == H5FD_MPIO_COLLECTIVE ? "COLLECTIVE" : "INDEPENDENT",
+			m_mpio.has_value() ? (*m_mpio == H5FD_MPIO_COLLECTIVE ? "COLLECTIVE" : "INDEPENDENT") : "none",
+			default_mpio == H5FD_MPIO_COLLECTIVE ? "COLLECTIVE" : "INDEPENDENT"
+		);
 	}
 #endif
 	if (m_direction == READ) {
