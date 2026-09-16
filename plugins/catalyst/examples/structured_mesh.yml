@@ -33,7 +33,7 @@ pdi:
           time: '$time'
         channels:
           grid:
-            type: "mesh" # the chanel used is the conduit Blueprint mesh
+            type: "mesh" # the channel used is the Conduit Blueprint mesh
             data:
               coordsets:
                 my_coords:  # coordinates of the vertices of the mesh

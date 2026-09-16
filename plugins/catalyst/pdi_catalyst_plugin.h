@@ -20,7 +20,7 @@ typedef struct conduit_node_impl conduit_node; // ??
  * The PDI Catalyst Plugin is an adapter to call Catalyst API (initialize, execute, finalize)
  * from PDI API calls (PDI_init, PDI_multi_expose, PDI_finalize).
  *
- * It leverages the specification tree to copy only pointer to data. The conduit node structure of
+ * It leverages the specification tree to copy only pointer to data. The Conduit Node structure of
  * the catalyst_execute call is defined in the spec tree.
  *
  */
@@ -32,7 +32,7 @@ public:
 		return {std::unordered_set<std::string>{}, {"mpi"}};
 	}
 
-	/// @brief Builds a catalsyt_plugin specification tree from its yaml config
+	/// @brief Builds a catalyst_plugin specification tree from its yaml config
 	catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree);
 
 	~catalyst_plugin() noexcept(false);
@@ -67,16 +67,16 @@ private:
 	);
 
 	/// @brief creates a conduit_node for catalyst_excute from yaml tree
-	/// @param execute_node conduit node that will be created
+	/// @param execute_node Conduit Node that will be created
 	/// @param execute_spec The tree representing the execute section
 	void create_catalyst_execute_conduit_node(conduit_node* execute_node, PC_tree_t& execute_spec);
 
-	/// @brief Fills a conduit node corresponding to array shared with pdi from a yaml tree.
+	/// @brief Fills a Conduit Node corresponding to array shared with pdi from a yaml tree.
 	/// @param the node in which to operate
 	/// @param tree specification tree containing a PDI_data_array
 	void fill_node_with_pdi_data_array(conduit_node* node, PC_tree_t& tree);
 
-	/// @brief Sets value of a conduit node corresponding to a pdi scalar datatype from a yaml tree
+	/// @brief Sets value of a Conduit Node corresponding to a pdi scalar datatype from a yaml tree
 	/// @param node the node in which we set the value
 	/// @param name name of the array
 	/// @param tree specification tree containing a PDI_data_array
@@ -90,7 +90,7 @@ private:
 		PDI::Ref_r& ref_r
 	);
 
-	/// @brief Sets values of a conduit node corresponding to a pdi array datatype from a yaml tree
+	/// @brief Sets values of a Conduit Node corresponding to a pdi array datatype from a yaml tree
 	/// @param node the node in which we set the value
 	/// @param name name of the array
 	/// @param tree specification tree containing a PDI_data_array
@@ -104,7 +104,7 @@ private:
 		PDI::Ref_r& ref_r
 	);
 
-	/// @brief return an index description (i.e. size, offset, stride) of the array that correspond to a conduit node
+	/// @brief return an index description (i.e. size, offset, stride) of the array that corresponds to a Conduit Node
 	/// @param spec : specification tree where the index is defined
 	/// @param name : The name of the data that corresponding to the index.
 	/// @param value: value of the index

@@ -45,7 +45,7 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 #ifdef CATALYST_IS_PARALLEL
 		m_communicator = PDI::to_string(communicator_spec);
 #else
-		// m_communicator is not defind in this case
+		// m_communicator is not defined in this case
 		context().logger().warn("Catalyst is compiled with no mpi support and a communicator is defined.");
 #endif
 		auto initialize_event_spec = PC_get(m_spec_tree, ".initialize_on_event");
@@ -142,13 +142,13 @@ void catalyst_plugin::run_catalyst_initialize()
 	context().logger().trace("Read information for script.");
 	auto scripts_spec = PC_get(this->m_spec_tree, ".scripts");
 	if (PC_status(scripts_spec)) {
-		throw PDI::Spectree_error(m_spec_tree, "No scripts tree is defiend for catalyst plugin.");
+		throw PDI::Spectree_error(m_spec_tree, "No scripts tree is defined for catalyst plugin.");
 	}
 
 	int script_number = 0;
 	PC_len(scripts_spec, &script_number);
 	if (script_number == 0) {
-		throw PDI::Spectree_error(scripts_spec, "Zero python script is defined for catalyst python.");
+		throw PDI::Spectree_error(scripts_spec, "No python script is defined for catalyst python.");
 	} else {
 		context().logger().debug("The number of python script is `{}'", script_number);
 	}
@@ -177,12 +177,12 @@ void catalyst_plugin::run_catalyst_initialize()
 
 	if (env_catalyst_backend == nullptr) {
 		context().logger().warn("No CATALYST_IMPLEMENTATION_NAME is given");
-		context().logger().warn("The communicator correspond to MPI_COMM_WORLD.");
+		context().logger().warn("The communicator corresponds to MPI_COMM_WORLD.");
 		// Question: throw an error ?
 	} else {
 		std::string st_env_catalyst_backend = env_catalyst_backend;
 		if (st_env_catalyst_backend == "paraview") {
-			// define the communicator if it exist
+			// define the communicator if it exists
 
 			if (m_communicator) {
 				context().logger().trace("Read communicator");
@@ -209,7 +209,7 @@ void catalyst_plugin::run_catalyst_initialize()
 		}
 	}
 #endif
-	// The following node is supported in the last version of Paraview
+	// The following node is supported in the lastest version of Paraview.
 	// These nodes are not defined yet because we need some investigations.
 	// node["catalyst_load/implementation"].set("stub") ;
 	// node["catalyst_load/search_paths"].set("/path/to/install/catalyst/lib/catalyst/");
@@ -277,7 +277,7 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 			if (current.tree.node->type == YAML_MAPPING_NODE) {
 				int data_tree_size = PDI::len(current.tree);
 
-				// reverse order to get the correct order when poping the stack.
+				// reverse order to get the correct order when popping the stack.
 				for (int index = data_tree_size - 1; index >= 0; --index) {
 					auto key = PC_get(current.tree, "{%d}", index);
 					std::string keyname = PDI::to_string(key);
@@ -299,7 +299,7 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 							current_parent_tree = current.tree;
 
 						} else {
-							throw PDI::System_error("Error in creating vtkGhostType: a conduit node doesn't exist !!");
+							throw PDI::System_error("Error in creating vtkGhostType: a Conduit Node doesn't exist !!");
 						}
 					}
 				}
@@ -408,7 +408,7 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 				if (pdi_data_array) {
 					break; // break the case
 				}
-				// reverse order to get the correct order when poping the stack.
+				// reverse order to get the correct order when popping the stack.
 				for (int index = data_tree_size - 1; index >= 0; --index) {
 					auto key = PC_get(current.tree, "{%d}", index);
 					auto value = PC_get(current.tree, "<%d>", index);
@@ -425,12 +425,12 @@ void catalyst_plugin::run_catalyst_execute()
 
 	context().logger().trace("Run catalyst_execute()");
 	conduit_cpp::Node node;
-	std::vector<Catalyst_plugin_structured_ghost> list_vtkGhostType_to_create; // object contain vector vtkGhostType
+	std::vector<Catalyst_plugin_structured_ghost> list_vtkGhostType_to_create; // object contains vector vtkGhostType
 	auto execute_spec = PC_get(this->m_spec_tree, ".execute");
 
 	context().logger().debug("Read m_spec_tree execute");
 	conduit_node* node_pointer = conduit_cpp::c_node(&node);
-	// create the conduit node for catalyst_execute;
+	// create the Conduit Node for catalyst_execute;
 	create_catalyst_execute_conduit_node(node_pointer, execute_spec);
 
 	context().logger().debug("Read Ghost layers for creating vtk_ghost_type");
@@ -451,7 +451,7 @@ void catalyst_plugin::run_catalyst_execute()
 	}
 
 	if (context().logger().level() == spdlog::level::debug || context().logger().level() == spdlog::level::trace) {
-		context().logger().info("Print conduit node including vtk ghost type created ...");
+		context().logger().info("Print Conduit Node including vtk ghost type created ...");
 		node.print();
 	}
 
@@ -478,7 +478,7 @@ void catalyst_plugin::run_catalyst_finalize()
 
 void catalyst_plugin::fill_node_with_pdi_data_array(conduit_node* node, PC_tree_t& tree)
 {
-	// check the function is called with a PC_tree containg
+	// check PDI_data_array is present in tree
 	auto name_spec = PC_get(tree, ".PDI_data_array");
 	if (PC_status(name_spec)) {
 		throw PDI::Spectree_error{tree, "No \"name\" child in PDI_data_array spec."};
@@ -489,7 +489,7 @@ void catalyst_plugin::fill_node_with_pdi_data_array(conduit_node* node, PC_tree_
 	// check the data can be read from PDI
 	if (!ref_r) {
 		context().logger().warn("Cannot read `{}' this data is not available", name);
-		// Remark: This error can arrive outside PDI_initilialize. This implies that is not really a config error
+		// Remark: This error can arrive outside PDI_init. This implies this is not a real config error.
 		throw PDI::System_error{"No \"name\" child in PDI_data_array spec `{}'.", name};
 	}
 
@@ -497,7 +497,7 @@ void catalyst_plugin::fill_node_with_pdi_data_array(conduit_node* node, PC_tree_
 	if (auto array_datatype = std::dynamic_pointer_cast<const PDI::Array_datatype>(data_type)) {
 		set_value_for_pdi_array_datatype(node, name, tree, *array_datatype, ref_r);
 	} else {
-		// Remark: This error can arrive outside PDI_initilialize. This implies that is not really a config error
+		// Remark: This error can arrive outside PDI_init. This implies this is not a real config error.
 		throw PDI::System_error{"Unsupported datatype for variable: `{}'. The type should be array type.", name};
 	}
 }
@@ -510,7 +510,7 @@ void catalyst_plugin::set_value_for_pdi_scalar_datatype(
 	PDI::Ref_r& ref_r
 )
 {
-	// remark: the different type of conduit integer and float is defined in the configuration step of cmake.
+	// remark: the different type of Conduit integer and float is defined in the configuration step of cmake.
 	PDI::Scalar_kind scalar_kind = scalar_datatype.kind();
 	if (scalar_kind == PDI::Scalar_kind::SIGNED) {
 		auto buffer_size = scalar_datatype.buffersize();
@@ -560,13 +560,12 @@ void catalyst_plugin::get_conduit_index_t_value(PC_tree_t& spec, const std::stri
 			PDI::Expression data_expression{PDI::to_string(spec)};
 			PDI::Ref_r spec_ref = data_expression.to_ref(context());
 			if (!spec_ref) {
-				throw PDI::System_error("The PDIData named \"{}\" is not readable.", name);
+				throw PDI::System_error("The PDI data named \"{}\" is not readable.", name);
 			}
 			auto data_type = spec_ref.type()->evaluate(context());
 			if (auto scalar_datatype = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type)) {
 				PDI::Scalar_kind scalar_kind = (*scalar_datatype).kind();
 				if (scalar_kind == PDI::Scalar_kind::SIGNED || scalar_kind == PDI::Scalar_kind::UNSIGNED) {
-					// return spec_ref.scalar_value<long>();
 					tmp_value = data_expression.to_long(context());
 				} else {
 					throw PDI::Spectree_error{
@@ -620,7 +619,7 @@ void catalyst_plugin::set_value_for_pdi_array_datatype(
 	get_conduit_index_t_value(size_spec, name, num_elements);
 
 	if (num_elements == 0) {
-		throw PDI::System_error("Unknown the size of an array of name `{}' passed to catalyst.", name);
+		throw PDI::System_error("Missing the size of an array of name `{}' passed to catalyst.", name);
 	}
 
 	conduit_index_t offset = 0;

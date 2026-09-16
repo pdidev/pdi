@@ -32,7 +32,7 @@ and likely add the catalyst lib folder to `LD_LIBRARY_PATH` if the catalyst libr
 
 PDI describes data through a [Specification Tree](https://pdi.dev/master/Concepts.html#Specification_tree), written in the YAML format and provided to PDI at initialization. Catalyst describes data with [Conduit](https://llnl-conduit.readthedocs.io/en/latest/index.html) nodes and [Mesh Blueprint](https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html#) protocol, provided at execution.
 
-Both protocols are very similars, because they are just hierarchical dictionnary with metadata about the shared memories.
+Both protocols are very similar, because they are just hierarchical dictionary with metadata about the shared memories.
 However, Catalyst requires additional semantic about meanings of the data, to map the memory chunk to mesh description (structured mesh, unstructured mesh, image data, AMR, etc.).
 The current approach is to add this semantic to the PDI Specification Tree under the `catalyst` key. See the [example file](test/pdi.yml.in) for actual implementation.
 
@@ -52,14 +52,14 @@ plugins:
     scripts:               // list of run scripts on event ("iter" in this example)
       script1: "script.py" // name of the script following by ':' with the filename of this script
     on_event: "iter"       // name of the event when 'catalyst_execute' is executed
-    execute:               // contains the information (conduit_node) needed to run 'catalyst_execute'
+    execute:               // contains the information (Conduit Node) needed to run 'catalyst_execute'
       state:
         timestep: '$iter'  // integral value for current timestep (paraview only?)
         time: '1.0*$iter'  // float64 value for current time
       channels:            // list of channels
         grid:              // name of a channel
           type: "mesh"     // type of channel considering
-          data:            // A conduit Mesh Blueprint and object to define vtkGhostType
+          data:            // A Conduit Mesh Blueprint and object to define vtkGhostType
             coordsets:     // list of coordset supported by Mesh Blueprint
               ...
             topologies:    // list of topology supported by Mesh Blueprint
@@ -73,7 +73,7 @@ plugins:
                 size: ['$dend[1]-$dstart[1]', '$dend[0]-$dstart[0]'] // size of domain without ghost
 ```
 
-In paraview implemementation for catalyst, a description of variables (conduit_node)
+In paraview implementation for catalyst, a description of variables (Conduit Node)
 can be found in https://docs.paraview.org/en/v6.1.0/Catalyst/blueprints.html.
 All variables in each protocol are not supported by this plugin.
 
@@ -82,14 +82,17 @@ All variables in each protocol are not supported by this plugin.
 
 In the sub-tree corresponding to the catalyst plugin, a double quoted value is evaluated as a string.
 
-In the specification tree, the `PDI_data_array` key indicates that the conduit node data should be set as external pointer to a data array from the PDI data store. The value of this key corresponds to the name of the data in PDI data store. There is several keys to describe this array like `size`, `offset`, `stride` to try to match every possible memory layout cases. In this case, these integers values are evaluated as conduit index type.
+In the specification tree, the `PDI_data_array` key indicates that the Conduit Node data should be set as external pointer to a data array from the PDI data store.
+The value of this key corresponds to the name of the data in PDI data store.
+There are several keys to describe this array like `size`, `offset`, `stride` to try to match every possible memory layout cases.
+In this case, these integers values are evaluated as Conduit index type.
 
 By default other integer are evaluated as `long`. Excepted if the integer value depend on a data defined in PDI data store as `numXPoints`
 in this example:
 ```yaml
 dims: { i: '$numXPoints', j: '60', k: 44 }
 ```
-Be careful, if you compile conduit with 32-bits index (option `CONDUIT_INDEX_32`), you recommand to define a metadata/data for the index and pass the data as `i` in the previous example.
+Be careful, if you compile Conduit with 32-bits index (option `CONDUIT_INDEX_32`), we recommend to define a metadata/data for the index and pass the data as `i` in the previous example.
 
 In the case of real value, the value is evaluated as `double`. Excepted if the real value depend on a data defined in PDI data store.
 
