@@ -21,7 +21,7 @@ and this project adheres to
 
 #### Fixed
 * Fix YAML index mismatch between Paraconf and LibYAML. 
-[#759](https://github.com/pdidev/pdi/issues/759)
+  [#759](https://github.com/pdidev/pdi/issues/759)
 
 #### Security
 
