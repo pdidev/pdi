@@ -163,7 +163,7 @@ void catalyst_plugin::run_catalyst_initialize()
 
 	// Remark: Each script is defined as a string (i.e. node["catalyst/scripts/[name_of_the_script]"] = filename )
 	//
-	// We don't consider yet the object script supported by the last version of paraview.
+	// We don't consider yet the object script supported by the latest version of paraview.
 	// In others word, the following node is not supported:
 	// node["catalyst/scripts/[name_of_the_script]/filename"] = string
 	// node["catalyst/scripts/[name_of_the_script]/args"] = string
@@ -203,13 +203,13 @@ void catalyst_plugin::run_catalyst_initialize()
 				context().logger().warn("No communicator is given by default the communicator is MPI_COMM_WORLD.");
 			}
 		} else if (st_env_catalyst_backend == "stub") {
-			context().logger().warn("The communicator correspond to MPI_COMM_WORLD.");
+			context().logger().warn("The communicator corresponds to MPI_COMM_WORLD.");
 		} else {
 			throw PDI::Impl_error("CATALYST_IMPLEMENTATION_NAME is not recognized:`{}'. The implemented ", env_catalyst_backend);
 		}
 	}
 #endif
-	// The following node is supported in the lastest version of Paraview.
+	// The following node is supported in the latest version of Paraview.
 	// These nodes are not defined yet because we need some investigations.
 	// node["catalyst_load/implementation"].set("stub") ;
 	// node["catalyst_load/search_paths"].set("/path/to/install/catalyst/lib/catalyst/");
@@ -489,7 +489,7 @@ void catalyst_plugin::fill_node_with_pdi_data_array(conduit_node* node, PC_tree_
 	// check the data can be read from PDI
 	if (!ref_r) {
 		context().logger().warn("Cannot read `{}' this data is not available", name);
-		// Remark: This error can arrive outside PDI_init. This implies this is not a real config error.
+		// Remark: This error can happen outside PDI_init. This implies this is not a real config error.
 		throw PDI::System_error{"No \"name\" child in PDI_data_array spec `{}'.", name};
 	}
 
@@ -497,7 +497,7 @@ void catalyst_plugin::fill_node_with_pdi_data_array(conduit_node* node, PC_tree_
 	if (auto array_datatype = std::dynamic_pointer_cast<const PDI::Array_datatype>(data_type)) {
 		set_value_for_pdi_array_datatype(node, name, tree, *array_datatype, ref_r);
 	} else {
-		// Remark: This error can arrive outside PDI_init. This implies this is not a real config error.
+		// Remark: This error can happen outside PDI_init. This implies this is not a real config error.
 		throw PDI::System_error{"Unsupported datatype for variable: `{}'. The type should be array type.", name};
 	}
 }

@@ -19,7 +19,7 @@ class Catalyst_plugin_structured_ghost
 	/// The parent tree of m_ghost_tree for specification tree error message
 	PC_tree_t m_parent_tree;
 
-	/// name of the mesh (It correspond to the topology name in the mesh blue print)
+	/// name of the mesh (It corresponds to the topology name in the mesh blue print)
 	std::string m_topology_name; // topology name
 
 	/// dimensions of the mesh in each direction (including ghosts)

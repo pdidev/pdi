@@ -41,7 +41,7 @@ pdi:
                   values:
                     x:
                       PDI_data_array: "coords_x"
-                      size: '($local_size[0]+1)*($local_size[1]+1)' # local_size correspond to the number of cells
+                      size: '($local_size[0]+1)*($local_size[1]+1)' # local_size corresponds to the number of cells
                     y:
                       PDI_data_array: "coords_y"
                       size: '($local_size[0]+1)*($local_size[1]+1)'
