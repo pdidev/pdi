@@ -30,7 +30,7 @@ class Catalyst_plugin_structured_ghost
 	std::vector<PDI::Expression> m_size;
 	std::string m_association;
 
-	/// path in the conduit node for catalyst
+	/// path in the Conduit Node for Catalyst
 	std::string m_parent_node_path;
 
 	/// vtkGhostType vector for paraview
@@ -101,7 +101,8 @@ public:
 			};
 		}
 
-		// define the conduit for the vtkGhostType
+		// TODO: change the comment
+		// define the Conduit for the vtkGhostType
 
 		auto mask_ghost_spec = PC_get(m_ghost_tree, "<%d>", index);
 
@@ -145,7 +146,7 @@ public:
 		}
 
 		m_parent_node_path = conduit_cpp::cpp_node(parent_node).path();
-		m_ctx.logger().info("conduit node path for the parent node is `{}'", m_parent_node_path);
+		m_ctx.logger().info("Conduit Node path for the parent node is `{}'", m_parent_node_path);
 	}
 
 	~Catalyst_plugin_structured_ghost() {}
@@ -211,7 +212,7 @@ public:
 	/// get the size of the pointer of the mask ghost
 	size_t get_size() { return m_vtk_ghost_type.size(); }
 
-	/// get the name path in the conduit node
+	/// get the name path in the Conduit Node
 	const std::string& get_node_path() const { return m_parent_node_path; }
 
 	/// @brief get the name of topology(mesh)
@@ -240,7 +241,7 @@ public:
 				PC_tree_t msg_tree = retrieve_pc_tree_from_parent_node("topologies", dataname);
 				throw PDI::Spectree_error{
 					msg_tree,
-					"... Vec Ghost Type catalyst ... The {} for topology `{}' is not defined as a string.",
+					"... Vec Ghost Type Catalyst ... The {} for topology `{}' is not defined as a string.",
 					dataname,
 					m_topology_name
 				};
@@ -248,7 +249,7 @@ public:
 		} else {
 			throw PDI::Spectree_error{
 				m_parent_tree,
-				"... Vec Ghost Type catalyst ... The {} for topology `{}' is not defined.",
+				"... Vec Ghost Type Catalyst ... The {} for topology `{}' is not defined.",
 				dataname,
 				m_topology_name
 			};
@@ -257,9 +258,9 @@ public:
 
 	/// @brief Retrieve the dimension of the mask ghost
 	/// @param parent_node
-	/// @param path_to_dims    // path in the conduit node where the dimensions are
+	/// @param path_to_dims    // path in the Conduit Node where the dimensions are
 	/// @param PC_to_dataname  // path in the PC_tree to get the PC_tree for error message
-	/// @param data_type       // type of data (coordset or topology) where the dimensions are defiened for error message
+	/// @param data_type       // type of data (coordset or topology) where the dimensions are defined for error message
 	/// @param data_type_name  // name of coordset or name of topology for error message
 	void get_dimension(
 		conduit_node* parent_node,
@@ -305,7 +306,7 @@ public:
 					throw PDI::Spectree_error{msg_tree, "No dims/i , dims/j and dims/k are defined for the `{}'", msg_data};
 				}
 			} else {
-				throw PDI::Spectree_error(msg_tree, "For the `{}', we need dims keyword to generate vtkGhostType for catalyst.", msg_data);
+				throw PDI::Spectree_error(msg_tree, "For the `{}', we need dims keyword to generate vtkGhostType for Catalyst.", msg_data);
 			}
 		}
 	}
