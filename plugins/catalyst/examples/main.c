@@ -155,7 +155,7 @@ void create_mesh_and_ghost_type_coord1D( double coords_1D_x[dsize[1]+1], double 
   number_of_points[0] = dsize[0]+1;
   number_of_points[1] = dsize[1]+1;
 
-  // the first axis correspond to the y-coordinate.
+  // the first axis corresponds to the y-coordinate.
   for(int ix=0; ix<number_of_points[0]; ix++) {
     coords_1D_y[ix] = 1.0*(ix-cells_ghost) + pcoord[0]*(dsize[0]-2.0*cells_ghost);
   }
@@ -176,7 +176,7 @@ void create_mesh_and_ghost_type( double coords_x[dsize[0]+1][dsize[1]+1], double
   number_of_points[1] = dsize[1]+1;
   size_t total_number_of_points =  number_of_points[0]*number_of_points[1]; 
 
-  // the first axis correspond to the y-coordinate.
+  // the first axis corresponds to the y-coordinate.
   for(int ix=0; ix<number_of_points[0]; ix++) {
     for(int iy=0; iy<number_of_points[1]; iy++) {
       coords_y[ix][iy] = 1.0*(ix-cells_ghost) + pcoord[0]*(dsize[0]-2.0*cells_ghost);

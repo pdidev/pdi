@@ -51,7 +51,7 @@ void create_coordinate_of_vertices(
 	number_of_points[1] = dsize[1] + 1;
 	size_t total_number_of_points = number_of_points[0] * number_of_points[1];
 
-	// the first axis correspond to the y-coordinate.
+	// the first axis corresponds to the y-coordinate.
 	for (int ix = 0; ix < number_of_points[0]; ix++) {
 		for (int iy = 0; iy < number_of_points[1]; iy++) {
 			coords_y[ix][iy] = 1.0 * (ix - dstart[0]) + pcoord[0] * (local_size[0]);
