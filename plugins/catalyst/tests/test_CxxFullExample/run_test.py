@@ -15,14 +15,14 @@ pwd_value = os.getcwd() # get the current directory
 
 env = os.environ.copy()
 env["CATALYST_DATA_DUMP_DIRECTORY"] = pwd_value
-env["CATALYST_IMPLEMENTATION_NAME"] = 'stub' # need to get the conduit json file for comparison
+env["CATALYST_IMPLEMENTATION_NAME"] = 'stub' # need to get the Conduit json file for comparison
 env["PDI_PLUGIN_PATH"] = binary_folder + '/..'
 result = subprocess.run([binary_folder + "/TestPDICatalyst", binary_folder + "/pdi.yml"], env=env)
 
 if(result.returncode != 0):
     exit(result.returncode)
 
-# get endiannes of the computer
+# get endianness of the computer
 endianness = sys.byteorder
 
 reference_directory = 'references' # if(endianness == 'little');

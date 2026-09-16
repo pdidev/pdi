@@ -22,7 +22,7 @@ renderView1.CameraFocalPoint=[5.0, 12.0, 0.0]
 renderView1.CameraFocalDisk=1.0,
 renderView1.CameraParallelScale=20.0
 
-# element_rank: show the rank of the MPI proceess that owns the element of the mesh.
+# element_rank: show the rank of the MPI process that owns the element of the mesh.
 # get color transfer function/color map for 'element_rank'
 element_rankLUT = GetColorTransferFunction('element_rank')
 
