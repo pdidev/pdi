@@ -20,6 +20,8 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* Fix YAML index mismatch between Paraconf and LibYAML. 
+  [#759](https://github.com/pdidev/pdi/issues/759)
 
 #### Security
 
