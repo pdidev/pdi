@@ -92,13 +92,13 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 #endif
 		} else if (key == "mpio") {
 #ifdef H5_HAVE_PARALLEL
-		if (to_string(value) == "INDEPENDENT") {
-			template_op.m_mpio = H5FD_MPIO_INDEPENDENT;
-		} else if (to_string(value) == "COLLECTIVE") {
-			template_op.m_mpio = H5FD_MPIO_COLLECTIVE;
-		} else {
-			throw Spectree_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
-		}
+			if (to_string(value) == "INDEPENDENT") {
+				template_op.m_mpio = H5FD_MPIO_INDEPENDENT;
+			} else if (to_string(value) == "COLLECTIVE") {
+				template_op.m_mpio = H5FD_MPIO_COLLECTIVE;
+			} else {
+				throw Spectree_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
+			}
 #else
 		throw Spectree_error{value, "Used HDF5 is not parallel. Invalid mpio: `{}'", to_string(value)};
 #endif
@@ -409,19 +409,27 @@ void File_op::execute(Context& ctx)
 	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose, ("Cannot open `" + filename + "' file").c_str());
 
 	for (auto&& one_dset_op: dset_writes) {
-		one_dset_op.execute(ctx, h5_file, use_mpio,
+		one_dset_op.execute(
+			ctx,
+			h5_file,
+			use_mpio,
 #ifdef H5_HAVE_PARALLEL
 			m_mpio,
 #endif
-			m_datasets);
-		}
+			m_datasets
+		);
+	}
 	for (auto&& one_dset_op: dset_reads) {
-		one_dset_op.execute(ctx, h5_file, use_mpio,
+		one_dset_op.execute(
+			ctx,
+			h5_file,
+			use_mpio,
 #ifdef H5_HAVE_PARALLEL
 			m_mpio,
 #endif
-			m_datasets);
-		}
+			m_datasets
+		);
+	}
 	for (auto&& one_attr_op: attr_writes) {
 		one_attr_op.execute(ctx, h5_file);
 	}
