@@ -216,11 +216,15 @@ void Dataset_op::fletcher(Context& ctx, Expression value)
 	}
 }
 
-void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio,
+void Dataset_op::execute(
+	Context& ctx,
+	hid_t h5_file,
+	bool use_mpio,
 #ifdef H5_HAVE_PARALLEL
 	H5FD_mpio_xfer_t default_mpio,
 #endif
-	const std::vector<Dataset_explicit_type>& dsets)
+	const std::vector<Dataset_explicit_type>& dsets
+)
 {
 	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL

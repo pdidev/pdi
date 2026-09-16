@@ -178,6 +178,7 @@ The possible values for the keys are as follow:
   for more information.
 * `mpio` : a string expression to define the type of MPI-I/O parallel pointer 
 for the operation among two choices : `COLLECTIVE` (default) and `INDEPENDENT`.
+Can be defined at file level for an override of the default, or at data level.
 
 ### SELECTION_DESC
 
