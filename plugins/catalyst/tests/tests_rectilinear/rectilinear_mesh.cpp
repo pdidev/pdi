@@ -30,7 +30,6 @@
 #include <time.h>
 
 #include <gtest/gtest.h>
-#include "conduit.hpp"
 #include "catalyst.hpp"
 #include "pdi.h"
 
