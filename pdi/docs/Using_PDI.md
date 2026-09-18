@@ -92,16 +92,16 @@ However, it requires you to modify your root `CMakeLists.txt`.
 I you do not or can not do it, have a look at the \ref MockFind "\"MockFind\" approach"
 
 To use "SubdirMock", your need to introduce a new cmake option in your project.
-For example, in the %PDI `example`, the option is called `DISABLE_PDI`.
+For example, in the %PDI `example`, the option is called `EXAMPLE_MOCK_PDI`.
 ```CMake
-option(DISABLE_PDI "Disable the use of both PDI and Paraconf in the project" OFF)
+option(EXAMPLE_MOCK_PDI "Disable the use of both PDI and Paraconf in the project" OFF)
 ```
 
 Then, where you used to look for %PDI, you will have to replace the call to `find_package` by a call to `add_subdirectory`.
 As parameter, pass the location where you copied the `mock_pdi` directory in your project.
 
 ```CMake
-if("${DISABLE_PDI}")
+if("${EXAMPLE_MOCK_PDI}")
 	add_subdirectory(<path/to>/mock_pdi mock_pdi)
 else()
 	find_package(PDI REQUIRED)
@@ -126,7 +126,7 @@ If you want to go further and make Paraconf optional too:
 2. put Paraconf `find_package` in the same place as the one for %PDI that is not called in case your disabling option is set.
 
 ```CMake
-if("${DISABLE_PDI}")
+if("${EXAMPLE_MOCK_PDI}")
 	set(PDI_MOCK_PARACONF_TARGET TRUE)
 	add_subdirectory(<path/to>/mock_pdi mock_pdi)
 else()

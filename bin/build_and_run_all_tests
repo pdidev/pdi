@@ -141,7 +141,7 @@ conf_build_and_run ./install/bin/pdirun example_installed "${SRCDIR}/example" \
 # The runs that use no installation
 
 printf "\n\n\n\e[1;36m *** Run the examples with SubdirMock PDI\e[m\n\n"
-conf_build_and_run "" example_subdirmock "${SRCDIR}/example" -DDISABLE_PDI=ON
+conf_build_and_run "" example_subdirmock "${SRCDIR}/example" -DEXAMPLE_MOCK_PDI=ON
 
 printf "\n\n\n\e[1;36m *** Run the API tests with SubdirMock PDI\e[m\n\n"
 conf_build_and_run "" api_subdirmock "${SRCDIR}/tests/api_tests" -DAPI_TESTS_PDI=MOCK
