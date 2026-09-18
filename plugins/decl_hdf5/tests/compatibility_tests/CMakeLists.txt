@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,8 +25,6 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.22...4.2)
-
-set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../../cmake/runtest-dir")
 
 set(ALL_TEST_NAMES array dataset group struct variables)
 if("${BUILD_HDF5_PARALLEL}")
@@ -56,7 +55,7 @@ foreach(test_name ${ALL_TEST_NAMES})
                 set(MPI_CASE_CMD)
                 set(MPI_POST_CMD)
             endif()
-            add_test(NAME "${write_test_name}__${read_test_name}" COMMAND "${RUNTEST_DIR}" "/bin/bash" "-exc" "${MPI_CASE_CMD}$<TARGET_FILE:${write_test_name}>${MPI_POST_CMD} && ${MPI_CASE_CMD}$<TARGET_FILE:${read_test_name}>${MPI_POST_CMD}")
+            add_test(NAME "${write_test_name}__${read_test_name}" COMMAND "$<TARGET_FILE:runtest_dir>" "/bin/bash" "-exc" "${MPI_CASE_CMD}$<TARGET_FILE:${write_test_name}>${MPI_POST_CMD} && ${MPI_CASE_CMD}$<TARGET_FILE:${read_test_name}>${MPI_POST_CMD}")
         endforeach(read_prefix)
     endforeach(write_prefix)
 endforeach(test_name)
