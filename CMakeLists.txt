@@ -36,6 +36,32 @@ project(PDI_DIST LANGUAGES C CXX)
 
 
 
+## Required versions of the dependencies
+
+# pdi/docs/Source_installation.md is the authoritative list: keep both in sync.
+set(PDI_REQUIRED_DOXYGEN_VERSION  1.9)
+set(PDI_REQUIRED_HDF5_VERSION     1.10)
+set(PDI_REQUIRED_JSON_VERSION     3.9)
+set(PDI_REQUIRED_NETCDF_VERSION   4.8)
+set(PDI_REQUIRED_PARACONF_VERSION 1.0)
+set(PDI_REQUIRED_PYBIND11_VERSION 2.9)
+set(PDI_REQUIRED_PYTHON_VERSION   3.10)
+set(PDI_REQUIRED_SPDLOG_VERSION   1.9)
+set(PDI_REQUIRED_YAML_VERSION     0.2.2)
+
+set(PDI_VENDORED_BENCHMARK_DIR  "vendor/benchmark-4ed29ae")
+set(PDI_VENDORED_GOOGLETEST_DIR "vendor/googletest-56efe39")
+set(PDI_VENDORED_HDF5_DIR       "vendor/hdf5-1.12.3")
+set(PDI_VENDORED_JSON_DIR       "vendor/json-3.11.4")
+set(PDI_VENDORED_NETCDF_DIR     "vendor/netcdf-c-4.9.3")
+set(PDI_VENDORED_PARACONF_DIR   "vendor/paraconf-1.0.3")
+set(PDI_VENDORED_PYBIND11_DIR   "vendor/pybind11-3.0.1")
+set(PDI_VENDORED_SPDLOG_DIR     "vendor/spdlog-1.15.3")
+set(PDI_VENDORED_YAML_DIR       "vendor/libyaml-0.2.5")
+set(PDI_VENDORED_ZPP_DIR        "vendor/zpp-1.1.2")
+
+
+
 ### Build options
 
 ## Global options
@@ -187,9 +213,9 @@ endif()
 ## Python3
 
 if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.10 REQUIRED COMPONENTS Interpreter Development)
+	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter Development)
 elseif("${BUILD_FORTRAN}")
-	find_package(Python3Path 3.10 REQUIRED COMPONENTS Interpreter)
+	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter)
 endif()
 
 
@@ -228,7 +254,7 @@ endif()
 
 # if ( paraconf )
 sbuild_add_dependency(yaml "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/libyaml-0.2.5"
+	EMBEDDED_PATH "${PDI_VENDORED_YAML_DIR}"
 	CMAKE_CACHE_ARGS
 		"-DBUILD_TESTING:BOOL=OFF"
 		"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream libyaml is updated (https://github.com/yaml/libyaml/pull/314)
@@ -236,7 +262,7 @@ sbuild_add_dependency(yaml "${USE_DEFAULT}"
 		"-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
 		"-DINSTALL_INCLUDE_DIR:STRING=${CMAKE_INSTALL_INCLUDEDIR}"
 		"-DINSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}"
-	VERSION 0.2.2
+	VERSION "${PDI_REQUIRED_YAML_VERSION}"
 )
 
 
@@ -248,13 +274,13 @@ if("${BUILD_FORTRAN}")
 endif()
 # if ( PDI or ... )
 sbuild_add_dependency(paraconf "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/paraconf-1.0.3"
+	EMBEDDED_PATH "${PDI_VENDORED_PARACONF_DIR}"
 	COMPONENTS ${PARACONF_COMPONENTS}
 	CMAKE_CACHE_ARGS
 		"-DUSE_yaml:STRING=SYSTEM"
 		"-DBUILD_TESTING:BOOL=OFF"
 	DEPENDS "yaml"
-	VERSION 1.0
+	VERSION "${PDI_REQUIRED_PARACONF_VERSION}"
 )
 
 
@@ -262,20 +288,20 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 
 # if ( PDI or ... )
 sbuild_add_dependency(spdlog "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/spdlog-1.15.3"
+	EMBEDDED_PATH "${PDI_VENDORED_SPDLOG_DIR}"
 	CMAKE_CACHE_ARGS
 		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
 		"-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF"
 		"-DSPDLOG_BUILD_TESTS:BOOL=OFF"
 		"-DSPDLOG_FMT_EXTERNAL:BOOL=OFF"
-	VERSION 1.9
+	VERSION "${PDI_REQUIRED_SPDLOG_VERSION}"
 )
 
 
 ## Doxygen
 
 if("${BUILD_DOCUMENTATION}")
-	find_package(Doxygen 1.9 REQUIRED OPTIONAL_COMPONENTS dot)
+	find_package(Doxygen "${PDI_REQUIRED_DOXYGEN_VERSION}" REQUIRED OPTIONAL_COMPONENTS dot)
 endif()
 
 
@@ -302,7 +328,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 	endif()
 	
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/hdf5-1.12.3"
+		EMBEDDED_PATH "${PDI_VENDORED_HDF5_DIR}"
 		COMPONENTS ${HDF5_COMPONENTS}
 		MODULE_VARS HDF5_IS_PARALLEL HDF5_VERSION
 		CMAKE_CACHE_ARGS
@@ -316,11 +342,10 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 			"-DHDF5_INSTALL_DATA_DIR:STRING=${CMAKE_INSTALL_DATADIR}/hdf5"
 			"-DHDF5_INSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}"
 			${HDF5_CMAKE_CACHE_ARGS}
-		VERSION
 	)
 	if("${HDF5_FOUND}")
-		if("${HDF5_VERSION}" VERSION_LESS 1.10)
-			message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
+		if("${HDF5_VERSION}" VERSION_LESS "${PDI_REQUIRED_HDF5_VERSION}")
+			message(FATAL_ERROR "HDF5 version ${PDI_REQUIRED_HDF5_VERSION} at least required, HDF5 ${HDF5_VERSION} found.")
 		endif()
 		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 			message(FATAL_ERROR
@@ -333,7 +358,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 		endif()
 	elseif(NOT "EMBEDDED" STREQUAL "${USE_HDF5}")
 		message(FATAL_ERROR
-			"HDF5 setup failed: A suitable SYSTEM version (>= 1.10) could not be found.\n"
+			"HDF5 setup failed: A suitable SYSTEM version (>= ${PDI_REQUIRED_HDF5_VERSION}) could not be found.\n"
 			"    you have the following options:\n"
 			"     * build the EMBEDDED HDF5 from PDI distribution => pass `-DUSE_HDF5=EMBEDDED' to cmake\n"
 			"     * use another version of HDF5 from the system => pass `-DHDF5_ROOT=/path/to/hdf5/root/' to cmake"
@@ -366,7 +391,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 	endif()
 	
 	sbuild_add_dependency(NetCDF "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/netcdf-c-4.9.3"
+		EMBEDDED_PATH "${PDI_VENDORED_NETCDF_DIR}"
 		DEPENDS HDF5
 		MODULE_VARS NetCDF_FEATURES
 		CMAKE_CACHE_ARGS
@@ -382,7 +407,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			-DNETCDF_ENABLE_EXAMPLES:BOOL=OFF
 			-DNETCDF_ENABLE_FILTER_TESTING:BOOL=OFF
 			-DNETCDF_ENABLE_TESTS:BOOL=OFF
-		VERSION 4.8
+		VERSION "${PDI_REQUIRED_NETCDF_VERSION}"
 	)
 	if("${NetCDF_FOUND}")
 		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
@@ -398,7 +423,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 		endif()
 	elseif(NOT "EMBEDDED" STREQUAL "${USE_NetCDF}")
 		message(FATAL_ERROR
-			"NetCDF setup failed: A suitable SYSTEM version (>= 4.8) could not be found.\n"
+			"NetCDF setup failed: A suitable SYSTEM version (>= ${PDI_REQUIRED_NETCDF_VERSION}) could not be found.\n"
 			"    you have the following options:\n"
 			"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NetCDF=EMBEDDED' to cmake\n"
 			"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake\n"
@@ -415,12 +440,12 @@ if("${BUILD_PYTHON}")
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 	sbuild_add_dependency(pybind11 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/pybind11-3.0.1"
+		EMBEDDED_PATH "${PDI_VENDORED_PYBIND11_DIR}"
 		CMAKE_CACHE_ARGS
 			"-DBUILD_TESTING:BOOL=OFF"
 			"-DPYBIND11_TEST:BOOL=OFF"
 			"-DPYBIND11_PYTHON_VERSION:STRING=${Python3_VERSION}"
-		VERSION 2.9
+		VERSION "${PDI_REQUIRED_PYBIND11_VERSION}"
 	)
 endif()
 
@@ -429,11 +454,11 @@ endif()
 
 if("${BUILD_JSON_PLUGIN}")
 	sbuild_add_dependency(JSON "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/json-3.11.4"
+		EMBEDDED_PATH "${PDI_VENDORED_JSON_DIR}"
 		CMAKE_CACHE_ARGS
 			"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream is updated
 			"-DJSON_BuildTests:BOOL=OFF" # skip unit tests for json
-		VERSION 3.11
+		VERSION "${PDI_REQUIRED_JSON_VERSION}"
 	)
 endif()
 
