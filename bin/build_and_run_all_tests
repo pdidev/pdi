@@ -95,56 +95,52 @@ then
 	CMAKE_FLAGS="-DUSE_spdlog=SYSTEM ${CMAKE_FLAGS}"
 fi
 
+
+
+# Configure, build and test one project in the build directory tests_<name>, with a junit report of the same name, which CI collects as tests_*.xml.
+# <launcher> prefixes each command: the runs that use the installation set it to the pdirun of that installation.
+# The configure flags come before CMAKE_FLAGS, so that the user can override them.
+# usage: conf_build_and_run <launcher> <name> <source directory> [cmake configure flags...]
+conf_build_and_run() {
+	local LAUNCHER="$1"
+	local NAME="tests_$2"
+	local SOURCE="$3"
+	shift 3
+	${LAUNCHER} cmake "$@" ${CMAKE_FLAGS} -S "${SOURCE}" -B "${NAME}"
+	${LAUNCHER} cmake --build "${NAME}" -- ${MAKEFLAGS}
+	${LAUNCHER} ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/${NAME}.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir "${NAME}"
+}
+
+
+
 # And now for the actual tests
 
-printf "\n\n\n\e[1;36m *** Configure, build & test the whole pdi distribution\e[m\n\n"
+printf "\n\n\n\e[1;36m *** Configure, build, test & install the whole pdi distribution\e[m\n\n"
 
 mkdir -p install/include install/lib # Workaround for https://github.com/pdidev/pdi/issues/644
-cmake --install-prefix "${PWD}/install" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}" -B tests_distribution
-cmake --build tests_distribution -- ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_distribution.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_distribution
-
-
-printf "\n\n\n\e[1;36m *** Install the pdi distribution & use it from an external project\e[m\n\n"
-
+conf_build_and_run "" distribution "${SRCDIR}" --install-prefix "${PWD}/install" -DDIST_PROFILE=Devel
 cmake --install tests_distribution
-./install/bin/pdirun cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}/tests/cmake_tests" -B test_from_install
-./install/bin/pdirun cmake --build test_from_install -- ${MAKEFLAGS}
-./install/bin/pdirun ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_from_install.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir test_from_install
 
 
-printf "\n\n\n\e[1;36m *** Configure, build & test pdi example with SubdirMock PDI\e[m\n\n"
+# The runs that check the installation
 
-cmake -DDISABLE_PDI=ON -S "${SRCDIR}/example" -B tests_example_subdirmock
-cmake --build tests_example_subdirmock -- ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_example_subdirmock.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_example_subdirmock
-
-
-printf "\n\n\n\e[1;36m *** Configure, build & test pdi API with SubdirMock PDI\e[m\n\n"
-
-cmake -DDISABLE_PDI=ON -S "${SRCDIR}/tests/api_tests" -B tests_api_subdirmock
-cmake --build tests_api_subdirmock -- ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_api_subdirmock.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_api_subdirmock
+printf "\n\n\n\e[1;36m *** Use the installed pdi from an external project\e[m\n\n"
+conf_build_and_run ./install/bin/pdirun from_install "${SRCDIR}/tests/cmake_tests" -DDIST_PROFILE=Devel
 
 
-if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
-	
-	printf "\n\n\n\e[1;36m *** Configure, build & test pdi example with MockFind PDI\e[m\n\n"
-	
-	cd "${TEST_DIR}"
-	mkdir tests_example_mockfind
-	cd tests_example_mockfind
-	cmake -DPDI_ROOT="${SRCDIR}/mock_pdi" -S "${SRCDIR}/example" -B tests_example_mockfind
-	cmake --build tests_example_mockfind -- ${MAKEFLAGS}
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_example_mockfind.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_example_mockfind
-	
-	
-	printf "\n\n\n\e[1;36m *** Configure, build & test pdi API with MockFind PDI\e[m\n\n"
-	
-	cd "${TEST_DIR}"
-	mkdir tests_api_mockfind
-	cd tests_api_mockfind
-	cmake -DPDI_ROOT="${SRCDIR}/mock_pdi" -S "${SRCDIR}/tests/api_tests" -B tests_api_mockfind
-	cmake --build tests_api_mockfind ${MAKEFLAGS}
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_api_mockfind.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_api_mockfind
+# The runs that use no installation
+
+printf "\n\n\n\e[1;36m *** Run the examples with SubdirMock PDI\e[m\n\n"
+conf_build_and_run "" example_subdirmock "${SRCDIR}/example" -DDISABLE_PDI=ON
+
+printf "\n\n\n\e[1;36m *** Run the API tests with SubdirMock PDI\e[m\n\n"
+conf_build_and_run "" api_subdirmock "${SRCDIR}/tests/api_tests" -DDISABLE_PDI=ON
+
+if [[ "x${PDI_LIBS}" = "xprovided" ]]
+then
+	printf "\n\n\n\e[1;36m *** Run the examples with MockFind PDI\e[m\n\n"
+	conf_build_and_run "" example_mockfind "${SRCDIR}/example" -DPDI_ROOT="${SRCDIR}/mock_pdi"
+
+	printf "\n\n\n\e[1;36m *** Run the API tests with MockFind PDI\e[m\n\n"
+	conf_build_and_run "" api_mockfind "${SRCDIR}/tests/api_tests" -DPDI_ROOT="${SRCDIR}/mock_pdi"
 fi

@@ -54,6 +54,8 @@ and this project adheres to
 #### Fixed
 * Flags passed to `bin/build_and_run_all_tests` through `CMAKE_FLAGS` take precedence over those the
   script chooses.
+* `bin/build_and_run_all_tests` configures, builds and tests every project the same way, and passes
+  `CMAKE_FLAGS` to all of them.
 
 #### Security
 
