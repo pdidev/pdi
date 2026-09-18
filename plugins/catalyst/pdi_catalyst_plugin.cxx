@@ -10,6 +10,7 @@
 
 #include "catalyst.hpp"
 
+#include <cstdint>
 #include <cstdlib> // need to retrive the environement variable
 #include <stack>
 #include <unordered_map>
