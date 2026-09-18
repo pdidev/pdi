@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -42,7 +43,7 @@ if("${PDI_BUILD_PYTHON}")
 	add_test(NAME PDI_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_05.py")
 
 	add_executable(PDI_python_tools_unit_tests PDI_python_tools.cxx)
-	target_link_libraries(PDI_python_tools_unit_tests PDI::PDI_pysupport pybind11::embed Python3::Python Threads::Threads GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
+	target_link_libraries(PDI_python_tools_unit_tests PDI::PDI_pysupport pybind11::embed Threads::Threads GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 	target_include_directories(PDI_python_tools_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 	gtest_discover_tests(PDI_python_tools_unit_tests)
 endif()
