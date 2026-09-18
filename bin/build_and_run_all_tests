@@ -103,15 +103,6 @@ then
 fi
 
 
-if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) ]] && dpkg-query -W 'libspdlog-dev' > /dev/null
-then
-	# Workaround: spdlog mismatch between the vendored version and dependency of doxygen
-	#             https://github.com/pdidev/test_env/issues/30
-	#             (see  https://github.com/pdidev/test_env/actions/runs/27519792247/job/81335351522)
-	CMAKE_FLAGS="-DUSE_spdlog=SYSTEM ${CMAKE_FLAGS}"
-fi
-
-
 
 # Configure, build and test one project in the build directory tests_<name>, with a junit report of the same name, which CI collects as tests_*.xml.
 # <launcher> prefixes each command: the runs that use the installation set it to the pdirun of that installation.
