@@ -144,7 +144,7 @@ printf "\n\n\n\e[1;36m *** Run the examples with SubdirMock PDI\e[m\n\n"
 conf_build_and_run "" example_subdirmock "${SRCDIR}/example" -DDISABLE_PDI=ON
 
 printf "\n\n\n\e[1;36m *** Run the API tests with SubdirMock PDI\e[m\n\n"
-conf_build_and_run "" api_subdirmock "${SRCDIR}/tests/api_tests" -DDISABLE_PDI=ON
+conf_build_and_run "" api_subdirmock "${SRCDIR}/tests/api_tests" -DAPI_TESTS_PDI=MOCK
 
 if [[ "x${PDI_LIBS}" = "xprovided" ]]
 then
@@ -152,5 +152,5 @@ then
 	conf_build_and_run "" example_mockfind "${SRCDIR}/example" -DPDI_ROOT="${SRCDIR}/mock_pdi"
 
 	printf "\n\n\n\e[1;36m *** Run the API tests with MockFind PDI\e[m\n\n"
-	conf_build_and_run "" api_mockfind "${SRCDIR}/tests/api_tests" -DPDI_ROOT="${SRCDIR}/mock_pdi"
+	conf_build_and_run "" api_mockfind "${SRCDIR}/tests/api_tests" -DAPI_TESTS_PDI=FIND -DPDI_ROOT="${SRCDIR}/mock_pdi"
 fi
