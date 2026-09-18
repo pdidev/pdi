@@ -43,6 +43,9 @@ and this project adheres to
 * The build type the distribution profile selects is now actually applied: `DIST_PROFILE=User`
   builds `Release` and `Devel` builds `Debug`, as per
   [#773](https://github.com/pdidev/pdi/issues/773).
+* A parallel NetCDF found through its own CMake configuration is no longer taken for a sequential
+  one when no prefix path points at its headers, as per
+  [#771](https://github.com/pdidev/pdi/issues/771).
 * The example project asks for the Fortran component of Paraconf when it is built with Fortran
   support.
 * The source installation guide says that the `Devel` profile selects the `Debug` build type, part
