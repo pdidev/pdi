@@ -39,6 +39,8 @@ and this project adheres to
   [#773](https://github.com/pdidev/pdi/issues/773).
 * The example project asks for the Fortran component of Paraconf when it is built with Fortran
   support.
+* The source installation guide says that the `Devel` profile selects the `Debug` build type, part
+  of [#774](https://github.com/pdidev/pdi/issues/774).
 
 #### Security
 
