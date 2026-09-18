@@ -1,18 +1,19 @@
 ################################################################################
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-#     * Redistributions of source code must retain the above copyright
-#     notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above copyright
-#     notice, this list of conditions and the following disclaimer in the
-#     documentation and/or other materials provided with the distribution.
-#     * Neither the name of the <organization> nor the
-#     names of its contributors may be used to endorse or promote products
-#     derived from this software without specific prior written permission.
+# * Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in the
+#   documentation and/or other materials provided with the distribution.
+# * Neither the name of CEA nor the names of its contributors may be used to
+#   endorse or promote products derived from this software without specific
+#   prior written permission.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -85,7 +86,7 @@ list(REMOVE_DUPLICATES PDI_FIND_COMPONENTS)
 
 # Compute the installation prefix relative to this file.
 
-set(_PDI_INSTALL_CMAKEDIR "@INSTALL_CMAKEDIR@")
+set(_PDI_INSTALL_CMAKEDIR "@INSTALL_PDICMAKEDIR@")
 get_filename_component(_PDI_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
 while(NOT "${_PDI_INSTALL_CMAKEDIR}" STREQUAL "")
 	get_filename_component(_PDI_IMPORT_PREFIX "${_PDI_IMPORT_PREFIX}" PATH)

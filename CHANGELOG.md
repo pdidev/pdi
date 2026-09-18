@@ -14,6 +14,8 @@ and this project adheres to
 #### Added
 
 #### Changed
+* The `INSTALL_CMAKEDIR` CMake variable, which sets where the PDI CMake package files are installed,
+  is renamed `INSTALL_PDICMAKEDIR`.
 
 #### Deprecated
 

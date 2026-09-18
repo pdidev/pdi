@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -75,8 +76,8 @@ set(_REAL_PROJECT_NAME "${PROJECT_NAME}")
 set(PROJECT_NAME pdi)
 include(GNUInstallDirs)
 set(PROJECT_NAME "${_REAL_PROJECT_NAME}")
-set(INSTALL_PDIDATADIR "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
-set(INSTALL_CMAKEDIR   "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "cmake modules (PDIDATADIR/cmake)")
+set(INSTALL_PDIDATADIR  "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
+set(INSTALL_PDICMAKEDIR "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "PDI cmake modules (PDIDATADIR/cmake)")
 set(INSTALL_PDIPLUGINDIR  "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "cmake modules (LIBDIR/pdi/plugins_${PDI_VERSION})")
 
 
@@ -190,7 +191,7 @@ install(FILES
 		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pdi"
 		COMPONENT Development
 )
-install(EXPORT PDI_C_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" FILE "PDI_C.cmake")
+install(EXPORT PDI_C_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_PDICMAKEDIR}" FILE "PDI_C.cmake")
 
 
 # C++ plugin API library
@@ -208,7 +209,7 @@ install(DIRECTORY "${PDI_SOURCE_DIR}/include/pdi"
 		COMPONENT Development
 		FILES_MATCHING PATTERN *.h PATTERN python/*.h EXCLUDE
 )
-install(EXPORT PDI_plugins_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" FILE "PDI_plugins.cmake")
+install(EXPORT PDI_plugins_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_PDICMAKEDIR}" FILE "PDI_plugins.cmake")
 
 
 # pdirun
@@ -251,7 +252,7 @@ if("${BUILD_PYTHON}")
 			DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pdi"
 			COMPONENT Development
 	)
-	install(EXPORT PDI_pysupport_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" FILE "PDI_pysupport.cmake")
+	install(EXPORT PDI_pysupport_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_PDICMAKEDIR}" FILE "PDI_pysupport.cmake")
 	
 	
 	# Python API module
@@ -319,7 +320,7 @@ if("${BUILD_FORTRAN}")
 			DESTINATION "${INSTALL_FMODDIR}"
 			COMPONENT Development
 	)
-	install(EXPORT pdi_f90_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" FILE "PDI_f90.cmake")
+	install(EXPORT pdi_f90_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_PDICMAKEDIR}" FILE "PDI_f90.cmake")
 	add_library(PDI::pdi_f90     ALIAS PDI_f90)
 	add_library(PDI::PDI_f90     ALIAS PDI_f90)
 	add_library(PDI::PDI_Fortran ALIAS PDI_f90)
@@ -361,6 +362,6 @@ write_basic_package_version_file("${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
 install(FILES
 		"${PDI_BINARY_DIR}/PDIConfig.cmake"
 		"${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
-		DESTINATION "${INSTALL_CMAKEDIR}"
+		DESTINATION "${INSTALL_PDICMAKEDIR}"
 		COMPONENT Development
 )
