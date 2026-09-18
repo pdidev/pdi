@@ -30,12 +30,12 @@
 
 
 
-### Project header
+# # Project header
 
 cmake_minimum_required(VERSION 3.22...4.2)
 project(PDI LANGUAGES NONE)
 
-## Version handling
+# ## Version handling
 file(READ VERSION PDI_VERSION)
 string(STRIP "${PDI_VERSION}" PDI_VERSION)
 string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${PDI_VERSION}")
@@ -51,7 +51,7 @@ set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
 
 
 
-## Include path
+# ## Include path
 
 # Every CMake module and helper script of the distribution lives here, whichever component uses it.
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -63,7 +63,7 @@ endif()
 
 
 
-## Required versions of the dependencies
+# ## Required versions of the dependencies
 
 # PDIConfig.cmake.in reads these too, so that an installed PDI asks for the same versions it was built against.
 # pdi/docs/Source_installation.md is the authoritative list: keep both in sync.
@@ -90,12 +90,15 @@ set(PDI_VENDORED_ZPP_DIR        "vendor/zpp-1.1.2")
 
 
 
-### Build options
+
+# # Common part direct & SuperBuild mode
+
+# ## Build options
 
 include(PDIOptions)
 
 
-## Global options
+# ### Global options
 
 pdi_setting(DIST_PROFILE "Profile to use for PDI distribution build. Options are: User, Devel" "User")
 set_property(CACHE PDI_DIST_PROFILE PROPERTY STRINGS User Devel)
@@ -127,7 +130,8 @@ if("${PDI_SUPERBUILD}")
 	message(STATUS " **Profile**: Superbuild mode is: `ON' (-DPDI_SUPERBUILD=ON)")
 endif()
 
-# Modules to build
+
+# ### Modules to build
 
 pdi_option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
 pdi_option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
@@ -148,13 +152,17 @@ pdi_option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 pdi_option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 
 
-
-### Default build type
+# ### Build type
 
 if("${PROJECT_IS_TOP_LEVEL}" AND NOT DEFINED CMAKE_BUILD_TYPE AND "${CMAKE_CONFIGURATION_TYPES}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel ...")
 	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS None Debug Release RelWithDebInfo MinSizeRel)
 endif()
+
+
+
+# ## Status reporting & sanity checks
+
 message(STATUS " **Profile**: Distribution profile is: `${PDI_DIST_PROFILE}' (-DPDI_DIST_PROFILE=${PDI_DIST_PROFILE})")
 message(STATUS " **Profile**: Build type is: `${CMAKE_BUILD_TYPE}' (-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})")
 message(STATUS " **Profile**: Prefix path is: `${CMAKE_PREFIX_PATH}' (-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH})")
@@ -167,10 +175,6 @@ foreach(FEATURE FORTRAN HDF5_PARALLEL PYTHON TESTING)
 	endif()
 	message(STATUS " **Feature**: ${FEATURE_ENABLED} ${FEATURE} (-DPDI_BUILD_${FEATURE}=${PDI_BUILD_${FEATURE}})")
 endforeach()
-
-
-
-### Sanity check
 
 if("${PDI_BUILD_PYCALL_PLUGIN}" AND NOT "${PDI_BUILD_PYTHON}")
 	message(FATAL_ERROR
@@ -213,7 +217,9 @@ endif()
 
 
 
-### Languages
+# ## Loading the stuff that can be done at the common scope
+
+# ### Languages
 
 # This has to come after the build type is settled and before any try_compile or include(GNUInstallDirs).
 enable_language(C)
@@ -223,8 +229,7 @@ if("${PDI_BUILD_FORTRAN}")
 endif()
 
 
-
-### Testing
+# ### Testing
 
 if("${PDI_BUILD_TESTING}")
 	set(BUILD_TESTING ON)
@@ -232,8 +237,7 @@ if("${PDI_BUILD_TESTING}")
 endif()
 
 
-
-### Dependencies common to both modes
+# ### The dependencies
 
 if("${PDI_BUILD_TESTING}")
 	find_program(ZSH_PROGRAM zsh)
@@ -303,8 +307,7 @@ if(NOT "${PDI_BUILD_PDI_CORE}" AND NOT TARGET PDI::PDI_C)
 endif()
 
 
-
-### Installation directories
+# ### Installation directories
 
 include(GNUInstallDirs)
 set(INSTALL_PDIDATADIR  "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
@@ -333,11 +336,12 @@ endif()
 
 
 
-### Direct mode, the part that acts as a normal CMake project
+
+# # Direct mode, the part that acts as a normal CMake project
 
 if(NOT "${PDI_SUPERBUILD}")
 
-	## The vendored dependencies
+	# ## The vendored dependencies
 
 	if(("${PDI_BUILD_PDI_CORE}" OR "${PDI_BUILD_TESTING}") AND NOT TARGET paraconf::paraconf)
 		set(PARACONF_COMPONENTS C)
@@ -408,7 +412,7 @@ if(NOT "${PDI_SUPERBUILD}")
 
 
 
-	## The CMake modules
+	# ## The CMake modules
 
 	include(CMakePackageConfigHelpers)
 
@@ -432,7 +436,7 @@ if(NOT "${PDI_SUPERBUILD}")
 
 
 
-	## and now for the actual content
+	# ## and now for the actual content
 
 	if("${PDI_BUILD_PDI_CORE}")
 		message(STATUS " **Module**: ENABLED  PDI (-DPDI_BUILD_PDI_CORE=ON)")
@@ -462,10 +466,12 @@ endif()
 
 
 
-### Dependencies
+
+# # Superbuild mode, installing vendored dependencies & ourselves
 
 include(SuperBuild)
 
+# ## vendored dependencies
 
 if("${PDI_BUILD_PDI_CORE}" OR "${PDI_BUILD_TESTING}")
 	sbuild_add_dependency(yaml "${PDI_USE_DEFAULT}"
@@ -503,13 +509,10 @@ if("${PDI_BUILD_PDI_CORE}")
 	)
 endif()
 
-
-## HDF5
-
 if("${PDI_BUILD_DECL_HDF5_PLUGIN}" OR "${PDI_BUILD_DECL_NETCDF_PLUGIN}")
-	
+
 	set(HDF5_CMAKE_CACHE_ARGS)
-	
+
 	if("${PDI_BUILD_HDF5_PARALLEL}")
 		set(HDF5_PREFER_PARALLEL ON)
 		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_ENABLE_PARALLEL:BOOL=ON")
@@ -517,7 +520,7 @@ if("${PDI_BUILD_DECL_HDF5_PLUGIN}" OR "${PDI_BUILD_DECL_NETCDF_PLUGIN}")
 		set(HDF5_PREFER_PARALLEL OFF)
 		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_ENABLE_PARALLEL:BOOL=OFF")
 	endif()
-	
+
 	if("${PDI_BUILD_DECL_NETCDF_PLUGIN}")
 		set(HDF5_COMPONENTS C HL)
 		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=ON")
@@ -525,7 +528,7 @@ if("${PDI_BUILD_DECL_HDF5_PLUGIN}" OR "${PDI_BUILD_DECL_NETCDF_PLUGIN}")
 		set(HDF5_COMPONENTS C)
 		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=OFF")
 	endif()
-	
+
 	sbuild_add_dependency(HDF5 "${PDI_USE_DEFAULT}"
 		EMBEDDED_PATH "${PDI_VENDORED_HDF5_DIR}"
 		COMPONENTS ${HDF5_COMPONENTS}
@@ -565,30 +568,27 @@ if("${PDI_BUILD_DECL_HDF5_PLUGIN}" OR "${PDI_BUILD_DECL_NETCDF_PLUGIN}")
 	endif()
 endif()
 
-
-## NetCDF
-
 if("${PDI_BUILD_DECL_NETCDF_PLUGIN}")
-	
+
 	if("${PDI_BUILD_HDF5_PARALLEL}")
 		set(NETCDF_CC "${MPI_C_COMPILER}")
 	else()
 		set(NETCDF_CC "${CMAKE_C_COMPILER}")
 	endif()
-	
+
 	set(NETCDF_CMAKE_CACHE_ARGS)
 	if("${PDI_BUILD_NETCDF_PARALLEL}")
 		list(APPEND NETCDF_CMAKE_CACHE_ARGS "-DENABLE_PARALLEL4:BOOL=ON")
 	else()
 		list(APPEND NETCDF_CMAKE_CACHE_ARGS "-DENABLE_PARALLEL4:BOOL=OFF")
 	endif()
-	
+
 	# Workaround NetCDF failing to add ZLIB include path in H5Deflate plugin
 	find_package(ZLIB QUIET)
 	if("${ZLIB_FOUND}")
 		string(REPLACE ";" " -I" NETCDF_CFLAGS "-I ${ZLIB_INCLUDE_DIRS}")
 	endif()
-	
+
 	sbuild_add_dependency(NetCDF "${PDI_USE_DEFAULT}"
 		EMBEDDED_PATH "${PDI_VENDORED_NETCDF_DIR}"
 		DEPENDS HDF5
@@ -632,9 +632,6 @@ if("${PDI_BUILD_DECL_NETCDF_PLUGIN}")
 	endif()
 endif()
 
-
-## PyBind11
-
 if("${PDI_BUILD_PYTHON}")
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
@@ -647,9 +644,6 @@ if("${PDI_BUILD_PYTHON}")
 	)
 endif()
 
-
-## JSON
-
 if("${PDI_BUILD_JSON_PLUGIN}")
 	sbuild_add_dependency(JSON "${PDI_USE_DEFAULT}"
 		EMBEDDED_PATH "${PDI_VENDORED_JSON_DIR}"
@@ -661,6 +655,7 @@ if("${PDI_BUILD_JSON_PLUGIN}")
 endif()
 
 
-### The main PDI sub-project
+
+# ## The main PDI sub-project
 
 sbuild_add_self()
