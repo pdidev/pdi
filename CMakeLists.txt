@@ -51,6 +51,18 @@ set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
 
 
 
+## Include path
+
+# Every CMake module and helper script of the distribution lives here, whichever component uses it.
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+	# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
+	# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
+	list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/4.3")
+endif()
+
+
+
 ## Required versions of the dependencies
 
 # PDIConfig.cmake.in reads these too, so that an installed PDI asks for the same versions it was built against.
@@ -147,30 +159,6 @@ foreach(FEATURE FORTRAN HDF5_PARALLEL PYTHON TESTING)
 	endif()
 	message(STATUS " **Feature**: ${FEATURE_ENABLED} ${FEATURE} (-DBUILD_${FEATURE}=${BUILD_${FEATURE}})")
 endforeach()
-
-
-
-### Include sub-projects find modules
-
-list(APPEND CMAKE_MODULE_PATH
-	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
-	"${CMAKE_CURRENT_SOURCE_DIR}/pdi/cmake")
-if("${BUILD_DECL_NETCDF_PLUGIN}")
-	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
-		# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
-		# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
-		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/plugins/decl_netcdf/cmake/4.3")
-	endif()
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
-endif()
-if("${BUILD_DECL_HDF5_PLUGIN}")
-	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
-		# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
-		# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
-		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/plugins/decl_hdf5/cmake/4.3")
-	endif()
-endif()
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" CACHE STRING "" FORCE)
 
 
 
@@ -274,9 +262,9 @@ if(NOT "x${MPI_COMPONENTS}x" STREQUAL "xx")
 endif()
 
 if("${BUILD_PYTHON}")
-	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter Development)
+	find_package(Python3 "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter Development)
 elseif("${BUILD_FORTRAN}")
-	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter)
+	find_package(Python3 "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter)
 endif()
 
 if("${BUILD_TESTING}")
@@ -300,6 +288,10 @@ if("${BUILD_FORTRAN}")
 	string(REGEX REPLACE "^([0-9]*\\.[0-9]*)\\..*$" "\\1" Fortran_COMPILER_MINOR_VERSION "${CMAKE_Fortran_COMPILER_VERSION}")
 	set(INSTALL_FMODDIR "${CMAKE_INSTALL_LIBDIR}/pdi/finclude/${CMAKE_Fortran_COMPILER_ID}-${Fortran_COMPILER_MINOR_VERSION}"
 		CACHE PATH "Fortran module directory (LIBDIR/pdi/finclude/<compiler>-<version>)")
+endif()
+
+if("${BUILD_PYTHON}")
+	include(Python3InstallDirs)
 endif()
 
 set(INSTALL_PDIPLUGINDIR "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "PDI plugins (LIBDIR/pdi/plugins_<version>)")

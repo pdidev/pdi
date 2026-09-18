@@ -194,10 +194,10 @@ if("${BUILD_PYTHON}")
 	set_property(TARGET PDI_python PROPERTY POSITION_INDEPENDENT_CODE ON)
 	set_property(TARGET PDI_python PROPERTY LIBRARY_OUTPUT_DIRECTORY pdi)
 	install(TARGETS PDI_python
-			LIBRARY DESTINATION "${Python3Path_INSTALL_SITEARCHDIR}/pdi" COMPONENT Runtime
+			LIBRARY DESTINATION "${INSTALL_PYTHON3_SITEARCHDIR}/pdi" COMPONENT Runtime
 	)
 	install(DIRECTORY src/python/pdi
-			DESTINATION "${Python3Path_INSTALL_SITEARCHDIR}"
+			DESTINATION "${INSTALL_PYTHON3_SITEARCHDIR}"
 			COMPONENT Runtime
 	)
 	configure_file("src/python/pdi/__init__.py" "pdi" COPYONLY)
@@ -272,7 +272,7 @@ install(FILES
 )
 
 
-configure_file(cmake/PDIConfig.cmake.in PDIConfig.cmake @ONLY)
+configure_file("${PROJECT_SOURCE_DIR}/cmake/PDIConfig.cmake.in" PDIConfig.cmake @ONLY)
 write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/PDIConfigVersion.cmake"
 		VERSION "${PDI_VERSION}"
 		COMPATIBILITY AnyNewerVersion

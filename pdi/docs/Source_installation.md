@@ -169,6 +169,7 @@ cmake module.
 |`INSTALL_PDICMAKEDIR` |`PDIDATADIR/cmake`                                                                     |Cmake modules.|
 |`INSTALL_PDIDATADIR`  |`DATADIR/pdi`                                                                          |PDI data|
 |`INSTALL_PDIPLUGINDIR`|`LIBDIR/pdi/plugins_${PDI_VERSION}`                                                    |PDI plugins|
+|`INSTALL_PYTHON3_SITEARCHDIR`|Site directory of the Python found, relative to its prefix                      |Python modules|
 |`CMAKE_INSTALL_BINDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |user executables|
 |`CMAKE_INSTALL_DATADIR`   |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |read-only architecture-independent data|
 |`CMAKE_INSTALL_DOCDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |documentation root|
