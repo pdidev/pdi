@@ -43,6 +43,9 @@ and this project adheres to
 #### Added
 
 #### Changed
+* `tests/cmake_tests` only checks the installed CMake package now.
+  `bin/build_and_run_all_tests` builds and runs the example and the API tests against the
+  installation instead.
 * Merged `Callbacks` into `Global_context` and renamed the callback functions,
   as per [#720](https://github.com/pdidev/pdi/issues/720)
 * Renamed `PDI::TimerEventHandler` to `PDI::Timer_event_handler` to follow the
@@ -66,6 +69,10 @@ and this project adheres to
   [#733](https://github.com/pdidev/pdi/issues/733)
 
 #### Fixed
+* Flags passed to `bin/build_and_run_all_tests` through `CMAKE_FLAGS` take precedence over those the
+  script chooses.
+* `bin/build_and_run_all_tests` configures, builds and tests every project the same way, and passes
+  `CMAKE_FLAGS` to all of them.
 
 #### Security
 

@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -29,6 +30,7 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
+# A sibling directory scope, finding every component the installation offers after another scope found C alone.
 set(COMPONENTS)
 if("${BUILD_FORTRAN}")
 	list(APPEND COMPONENTS f90)
@@ -37,3 +39,6 @@ if("${BUILD_PYTHON}")
 	list(APPEND COMPONENTS python pysupport)
 endif()
 find_package(PDI REQUIRED C plugins ${COMPONENTS})
+assert("${PDI_FOUND}")
+assert(TARGET PDI::PDI_C)
+assert(TARGET PDI::PDI_plugins)
