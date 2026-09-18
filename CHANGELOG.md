@@ -38,6 +38,8 @@ and this project adheres to
   and document the `PDI_SUPERBUILD` option.
 
 #### Deprecated
+* The `WITHOUT_PDI` and `WITHOUT_PARACONF` macros defined by the mock PDI are deprecated in favour
+  of `PDI_IS_MOCK` and `PDI_WITHOUT_PARACONF`.
 
 #### Removed
 * The PDI core can no longer be configured on its own from the `pdi/` directory: configure the

@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -46,7 +47,8 @@ if(NOT TARGET PDI_C)
 	add_library(PDI_C INTERFACE)
 	target_compile_features(PDI_C INTERFACE cxx_std_20 c_std_17)
 	target_include_directories(PDI_C INTERFACE "${CMAKE_CURRENT_LIST_DIR}")
-	target_compile_definitions(PDI_C INTERFACE "WITHOUT_PDI=1")
+	# WITHOUT_PDI is the deprecated name of PDI_IS_MOCK
+	target_compile_definitions(PDI_C INTERFACE "PDI_IS_MOCK=1" "WITHOUT_PDI=1")
 	add_library(PDI::pdi   ALIAS PDI_C)
 	add_library(PDI::PDI_C ALIAS PDI_C)
 endif()
@@ -54,7 +56,8 @@ endif()
 if(NOT TARGET paraconf::paraconf)
 	if(DEFINED PDI_MOCK_PARACONF_TARGET AND "${PDI_MOCK_PARACONF_TARGET}")
 		add_library(paraconf INTERFACE)
-		target_compile_definitions(paraconf INTERFACE "WITHOUT_PARACONF=1")
+		# WITHOUT_PARACONF is the deprecated name of PDI_WITHOUT_PARACONF
+		target_compile_definitions(paraconf INTERFACE "PDI_WITHOUT_PARACONF=1" "WITHOUT_PARACONF=1")
 		add_library(paraconf::paraconf ALIAS paraconf)
 	else()
 		find_dependency(paraconf COMPONENTS C)

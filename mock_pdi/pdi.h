@@ -1,5 +1,6 @@
 /*******************************************************************************
 * Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -27,7 +28,7 @@
 
 #include <stddef.h>
 
-#ifndef WITHOUT_PARACONF
+#ifndef PDI_WITHOUT_PARACONF
 #include <paraconf.h>
 #endif
 
@@ -85,7 +86,7 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
 	return PDI_NULL_HANDLER;
 }
 
-#ifndef WITHOUT_PARACONF
+#ifndef PDI_WITHOUT_PARACONF
 static inline PDI_status_t PDI_init(PC_tree_t conf)
 {
 	return PDI_OK;
