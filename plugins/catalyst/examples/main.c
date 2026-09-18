@@ -23,6 +23,7 @@
 
 #include <mpi.h>
 
+#include <stdint.h>
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -166,7 +167,7 @@ void create_mesh_and_ghost_type_coord1D( double coords_1D_x[dsize[1]+1], double 
 }
 
 void create_mesh_and_ghost_type( double coords_x[dsize[0]+1][dsize[1]+1], double coords_y[dsize[0]+1][dsize[1]+1],
-                 uint8_t ghosts_type_cells[dsize[0]][dsize[1]], __uint32_t connectivity[dsize[0]][4*dsize[1]]) {
+                 uint8_t ghosts_type_cells[dsize[0]][dsize[1]], uint32_t connectivity[dsize[0]][4*dsize[1]]) {
 
   // catalyst variables
   int cells_ghost=1;
@@ -200,7 +201,7 @@ void create_mesh_and_ghost_type( double coords_x[dsize[0]+1][dsize[1]+1], double
 
       if ( gg == 0  && hh == 0 ) {
         for( int ii=0; ii < 4; ii++ ){
-          __uint32_t tmp_conn = connectivity[gg][4*hh+ii];
+          uint32_t tmp_conn = connectivity[gg][4*hh+ii];
 //          printf("SUCCESS connectivity=%u \n", tmp_conn);
 //          printf("SUCCESS coords_x=%lf, coordx_y=%lf \n", ptr_x[tmp_conn], ptr_y[tmp_conn]);
         }
@@ -304,7 +305,7 @@ int main(int argc, char *argv[]) {
   // The number of points in a subdomain (including ghost cells) is [dsize[0]+1, dsize[1]+1]
   double(*coords_x)[dsize[1]+1] = malloc(sizeof(double)* (dsize[1]+1) * (dsize[0]+1) );
   double(*coords_y)[dsize[1]+1] = malloc(sizeof(double)* (dsize[1]+1) * (dsize[0]+1) );
-  __uint32_t (*connectivity)[4*dsize[1]] = malloc(sizeof(__uint32_t)*4* (dsize[1]) * (dsize[0]) );
+  uint32_t (*connectivity)[4*dsize[1]] = malloc(sizeof(uint32_t)*4* (dsize[1]) * (dsize[0]) );
   
   uint8_t (*ghost_type_cells)[dsize[1]] = malloc(sizeof(uint8_t) * dsize[0] * dsize[1]);
   

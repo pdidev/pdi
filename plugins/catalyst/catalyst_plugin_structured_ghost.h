@@ -2,7 +2,7 @@
 #define catalyst_plugin_structured_ghost_H
 
 #include "catalyst.hpp"
-
+#include <cstdint>
 #include <stack>
 #include <vector>
 
