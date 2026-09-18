@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -32,7 +33,7 @@ cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_examples LANGUAGES C)
 
 set(MPI_COMPONENTS C)
-set(paraconf_COMPONENTS C)
+set(PARACONF_COMPONENTS C)
 set(PDI_COMPONENTS C)
 
 option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in"    OFF)
@@ -47,7 +48,7 @@ option(EXAMPLE_MOCK_PDI         "Disable the use of both PDI and Paraconf in the
 if("${BUILD_FORTRAN}")
 	enable_language(Fortran)
 	list(APPEND MPI_COMPONENTS Fortran)
-	list(APPEND PARACONF_COMPONENTS "f90")
+	list(APPEND PARACONF_COMPONENTS f90)
 	list(APPEND PDI_COMPONENTS f90)
 endif()
 
@@ -63,7 +64,7 @@ if("${EXAMPLE_MOCK_PDI}")
 	set(PDI_MOCK_PARACONF_TARGET TRUE)
 	add_subdirectory(../mock_pdi mock_pdi)
 else()
-	find_package(paraconf REQUIRED COMPONENTS ${paraconf_COMPONENTS})
+	find_package(paraconf REQUIRED COMPONENTS ${PARACONF_COMPONENTS})
 	find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
 endif()
 find_library(LIB_M m DOC "The math library")
