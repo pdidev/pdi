@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -32,7 +33,7 @@
 ### Project header
 
 cmake_minimum_required(VERSION 3.22...4.2)
-project(PDI_DIST LANGUAGES C CXX)
+project(PDI_DIST LANGUAGES NONE)
 
 
 
@@ -108,8 +109,9 @@ option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 
 ### Default build type
 
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build, options are: None Debug Release(default) RelWithDebInfo MinSizeRel ..." FORCE)
+if(NOT DEFINED CMAKE_BUILD_TYPE AND "${CMAKE_CONFIGURATION_TYPES}" STREQUAL "")
+	set(CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel ...")
+	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS None Debug Release RelWithDebInfo MinSizeRel)
 endif()
 message(STATUS " **Profile**: Distribution profile is: `${DIST_PROFILE}' (-DDIST_PROFILE=${DIST_PROFILE})")
 message(STATUS " **Profile**: Build type is: `${CMAKE_BUILD_TYPE}' (-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})")
@@ -193,6 +195,17 @@ endif()
 
 
 
+### Languages
+
+# This has to come after the build type is settled and before any try_compile or include(GNUInstallDirs).
+enable_language(C)
+enable_language(CXX)
+if("${BUILD_FORTRAN}")
+	enable_language(Fortran)
+endif()
+
+
+
 ### Dependencies
 
 include(GNUInstallDirs)
@@ -201,13 +214,6 @@ sbuild_get_env(SBUILD_PATH PATH)
 sbuild_get_env(SBUILD_CPATH CPATH)
 sbuild_get_env(SBUILD_LIBRARY_PATH LIBRARY_PATH)
 sbuild_get_env(SBUILD_LD_LIBRARY_PATH LD_LIBRARY_PATH)
-
-
-## Fortran
-
-if("${BUILD_FORTRAN}") # and (paraconf or PDI or ...)
-	enable_language(Fortran)
-endif()
 
 
 ## Python3

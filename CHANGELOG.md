@@ -24,6 +24,9 @@ and this project adheres to
   setting it to `OFF` used to stop the configuration.
 
 #### Fixed
+* The build type the distribution profile selects is now actually applied: `DIST_PROFILE=User`
+  builds `Release` and `Devel` builds `Debug`, as per
+  [#773](https://github.com/pdidev/pdi/issues/773).
 
 #### Security
 
