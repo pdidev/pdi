@@ -74,7 +74,7 @@ function(__sbuild_collect_variables _SBUILD_OUTVAR)
 		endif()
 	endforeach()
 	
-	set(_SBUILD_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_BINARY_DIR}/staging" "${CMAKE_BINARY_DIR}/build-dep")
+	set(_SBUILD_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_BINARY_DIR}/staging")
 	list(APPEND _SBUILD_RESULT
 			#TODO: STAGING_PREFIX is not a very good solution, package may not be relocatable (see python) and it prevents RPATH (replace it by INSTALL_PREFIX)
 			# setting INSTALL_PREFIX at install time would be slightly better
@@ -89,18 +89,26 @@ endfunction()
 ###
 function(__sbuild_env_append _SBUILD_VAR _SBUILD_SUBPATH)
 	if("xx" STREQUAL "x${${_SBUILD_VAR}}x")
-		set("${_SBUILD_VAR}" "${CMAKE_BINARY_DIR}/staging/${_SBUILD_SUBPATH}:${CMAKE_BINARY_DIR}/build-dep/${_SBUILD_SUBPATH}" PARENT_SCOPE)
+		set("${_SBUILD_VAR}" "${CMAKE_BINARY_DIR}/staging/${_SBUILD_SUBPATH}" PARENT_SCOPE)
 	else()
-		set("${_SBUILD_VAR}" "${CMAKE_BINARY_DIR}/staging/${_SBUILD_SUBPATH}:${CMAKE_BINARY_DIR}/build-dep/${_SBUILD_SUBPATH}:${${_SBUILD_VAR}}" PARENT_SCOPE)
+		set("${_SBUILD_VAR}" "${CMAKE_BINARY_DIR}/staging/${_SBUILD_SUBPATH}:${${_SBUILD_VAR}}" PARENT_SCOPE)
 	endif()
 endfunction()
 
 
-### Add a dependency module to the project
-# 
+### Add a dependency, either found on the system or built into the staging tree
+#
+# \param #1 the name of the dependency, as find_package() knows it
+# \param #2 the default of USE_<name>
+# \param EMBEDDED_PATH the source directory or tarball of the copy shipped with the distribution
+# \param VERSION (optional) the minimum version of a system copy
+# \param COMPONENTS (optional) the components to find on the system
+# \param MODULE_VARS (optional) the variables set by find_package() to forward to the caller
+# \param DEPENDS (optional) the dependencies to build this one after
+# \param CMAKE_CACHE_ARGS (optional) additional settings to build the shipped copy with
 ###
 function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
-	cmake_parse_arguments(PARSE_ARGV 2 _SBUILD "BUILD_DEPENDENCY;NO_INSTALL" "EMBEDDED_PATH;BUILD_IN_SOURCE;VERSION;SOURCE_SUBDIR" "CMAKE_CACHE_ARGS;DEPENDS;CONFIGURE_COMMAND;BUILD_COMMAND;INSTALL_COMMAND;COMPONENTS;OPTIONAL_COMPONENTS;PATCH_COMMAND;MODULE_VARS;ENV")
+	cmake_parse_arguments(PARSE_ARGV 2 _SBUILD "" "EMBEDDED_PATH;VERSION" "CMAKE_CACHE_ARGS;COMPONENTS;DEPENDS;MODULE_VARS")
 	
 	if(NOT DEFINED _SBUILD_EMBEDDED_PATH)
 		message(FATAL_ERROR "sbuild_add_dependency(${_SBUILD_NAME}) requires an EMBEDDED_PATH")
@@ -113,14 +121,6 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	
 	if(DEFINED _SBUILD_COMPONENTS)
 		set(_SBUILD_COMPONENTS COMPONENTS ${_SBUILD_COMPONENTS})
-	endif()
-	
-	if(DEFINED _SBUILD_OPTIONAL_COMPONENTS)
-		list(APPEND _SBUILD_COMPONENTS OPTIONAL_COMPONENTS ${_SBUILD_OPTIONAL_COMPONENTS})
-	endif()
-	
-	if(DEFINED _SBUILD_SOURCE_SUBDIR)
-		set(_SBUILD_SOURCE_SUBDIR "SOURCE_SUBDIR" "${_SBUILD_SOURCE_SUBDIR}")
 	endif()
 	
 	
@@ -151,12 +151,8 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 		# use the provided path as:
 		# 1. the path to the source of the library
 		# 2. the path to a tarball of the library source
-		if(NOT EXISTS "${USE_${_SBUILD_NAME}}")
-			message(SEND_ERROR "Invalid path provided for \"${_SBUILD_NAME}\": \"${USE_${_SBUILD_NAME}}\" does not exist")
-			return()
-		endif()
 		set("_SBUILD_EMBEDDED_PATH" "${USE_${_SBUILD_NAME}}")
-		
+	
 		set(_SBUILD_TOBUILD TRUE)
 		message(STATUS " **Dependency**: ${_SBUILD_NAME} (PROVIDED), using PROVIDED version (${_SBUILD_EMBEDDED_PATH})")
 	endif()
@@ -186,34 +182,7 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	list(APPEND _SBUILD_VARS "-DBUILD_SHARED_LIBS:BOOL=ON" "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON")
 	set(_SBUILD_CMAKE_CACHE_ARGS ${_SBUILD_VARS} ${_SBUILD_CMAKE_CACHE_ARGS})
 	
-	if(NOT DEFINED _SBUILD_BUILD_COMMAND)
-		__sbuild_build_command(_SBUILD_BUILD_COMMAND)
-	endif()
-	
-	if(DEFINED _SBUILD_CONFIGURE_COMMAND)
-		set(_SBUILD_CONFIGURE_COMMAND CONFIGURE_COMMAND env ${_SBUILD_ENV} ${_SBUILD_CONFIGURE_COMMAND})
-	endif()
-	
-	if(NOT DEFINED _SBUILD_BUILD_IN_SOURCE)
-		set(_SBUILD_BUILD_IN_SOURCE OFF)
-	endif()
-	
-	if(DEFINED _SBUILD_INSTALL_COMMAND OR "${_SBUILD_NO_INSTALL}")
-		if("xx" STREQUAL "x${_SBUILD_INSTALL_COMMAND}x")
-			set(_SBUILD_INSTALL_COMMAND "INSTALL_COMMAND" "env" ${_SBUILD_ENV} "${CMAKE_COMMAND}" "-E" "echo" "No install step for ${_SBUILD_NAME}_pkg")
-		else()
-			list(INSERT _SBUILD_INSTALL_COMMAND 0 "INSTALL_COMMAND")
-		endif()
-	endif()
-	
-	if(DEFINED _SBUILD_PATCH_COMMAND)
-		set(_SBUILD_PATCH_COMMAND PATCH_COMMAND env ${_SBUILD_ENV} "${_SBUILD_PATCH_COMMAND}")
-	endif()
-	
-	set(_SBUILD_STAGE staging)
-	if("${_SBUILD_BUILD_DEPENDENCY}")
-		set(_SBUILD_STAGE build-dep)
-	endif()
+	__sbuild_build_command(_SBUILD_BUILD_COMMAND)
 	
 	unset(_SBUILD_DEPENDS_NEW)
 	foreach(_SBUILD_ONE_DEPENDS IN LISTS _SBUILD_DEPENDS)
@@ -231,14 +200,9 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 		${_SBUILD_PATH_DATA}
 		EXCLUDE_FROM_ALL 1
 		DEPENDS "${_SBUILD_DEPENDS}"
-		${_SBUILD_PATCH_COMMAND}
-		${_SBUILD_CONFIGURE_COMMAND}
-		${_SBUILD_SOURCE_SUBDIR}
 		CMAKE_CACHE_ARGS "${_SBUILD_CMAKE_CACHE_ARGS}"
-		BUILD_COMMAND env ${_SBUILD_ENV} ${_SBUILD_BUILD_COMMAND}
-		BUILD_IN_SOURCE "${_SBUILD_BUILD_IN_SOURCE}"
-		INSTALL_DIR "${CMAKE_BINARY_DIR}/${_SBUILD_STAGE}"
-		${_SBUILD_INSTALL_COMMAND}
+		BUILD_COMMAND ${_SBUILD_BUILD_COMMAND}
+		INSTALL_DIR "${CMAKE_BINARY_DIR}/staging"
 	)
 endfunction()
 
