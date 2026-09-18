@@ -58,6 +58,8 @@ and this project adheres to
   [#771](https://github.com/pdidev/pdi/issues/771).
 * The example project asks for the Fortran component of Paraconf when it is built with Fortran
   support.
+* The source installation guide lists Doxygen, which the documentation requires, and says that the
+  distribution provides pybind11, part of [#774](https://github.com/pdidev/pdi/issues/774).
 * The source installation guide says that the `Devel` profile selects the `Debug` build type, part
   of [#774](https://github.com/pdidev/pdi/issues/774).
 * The distribution no longer forces `CMAKE_MODULE_PATH` into the cache, where it grew by the same
