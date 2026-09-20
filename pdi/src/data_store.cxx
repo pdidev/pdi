@@ -47,7 +47,7 @@
 
 #include "data_descriptor_impl.h"
 
-#include "global_context.h"
+#include "data_store.h"
 
 namespace fs = std::filesystem;
 
@@ -226,12 +226,12 @@ std::vector<PC_tree_t> get_includes(Logger& logger, PC_tree_t conf)
 }
 
 /** Loads the data (or metadata) from a yaml tree
- * \param ctx the context in which to load
+ * \param store the context in which to load
  * \param node the tree from where to load
  * \param is_metadata whether this is a metadata subtree instead of a data one
  * \param def_location the location of all loaded data/metadata for duplicate detection
  */
-void load_data(Context& ctx, PC_tree_t node, bool is_metadata, std::map<std::string, std::optional<Yaml_region>>& def_location)
+void load_data(Data_store& store, PC_tree_t node, bool is_metadata, std::map<std::string, std::optional<Yaml_region>>& def_location)
 {
 	int nb_desc = 0;
 	each(node, [&](PC_tree_t key_node, PC_tree_t value_node) {
@@ -247,49 +247,49 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata, std::map<std::str
 				(region ? "'" : "")
 			);
 		}
-		auto&& descriptor = ctx[data_name];
+		auto&& descriptor = store[data_name];
 		descriptor.metadata(is_metadata);
-		descriptor.default_type(ctx.datatype(value_node));
+		descriptor.default_type(store.datatype(value_node));
 		++nb_desc;
 	});
 	auto&& region = Yaml_region::make(node);
-	ctx.logger()
+	store.logger()
 		.trace("Loaded {} {}{}{}{}", nb_desc, (is_metadata ? "metadata" : "data"), (region ? " from `" : ""), to_string(region), (region ? "'" : ""));
 }
 
 } // namespace
 
-unique_ptr<Global_context> Global_context::s_context;
+unique_ptr<Data_store> Data_store::s_store;
 
-void Global_context::init(PC_tree_t conf)
+void Data_store::init(PC_tree_t conf)
 {
-	s_context.reset(new Global_context(conf));
+	s_store.reset(new Data_store(conf));
 }
 
-bool Global_context::initialized()
+bool Data_store::initialized()
 {
-	return static_cast<bool>(s_context);
+	return static_cast<bool>(s_store);
 }
 
-Global_context& Global_context::context()
+Data_store& Data_store::store()
 {
-	if (!s_context) throw State_error{"PDI not initialized"};
-	return *s_context;
+	if (!s_store) throw State_error{"PDI not initialized"};
+	return *s_store;
 }
 
-void Global_context::finalize()
+void Data_store::finalize()
 {
-	s_context.reset();
+	s_store.reset();
 }
 
-void Global_context::notify_init() const
+void Data_store::notify_init() const
 {
 	for (auto&& init_callback: m_init_callbacks) {
 		init_callback();
 	}
 }
 
-void Global_context::notify_data(const string& name, Ref ref)
+void Data_store::notify_data(const string& name, Ref ref)
 {
 	std::vector<std::reference_wrapper<const std::function<void(const std::string&, Ref)>>> data_callbacks;
 	// add named callbacks
@@ -315,7 +315,7 @@ void Global_context::notify_data(const string& name, Ref ref)
 	rethrow_with_context(errors, "while sharing `{}', ", name);
 }
 
-void Global_context::notify_data_remove(const string& name, Ref ref)
+void Data_store::notify_data_remove(const string& name, Ref ref)
 {
 	std::vector<std::reference_wrapper<const std::function<void(const std::string&, Ref)>>> data_remove_callbacks;
 	//add named callbacks
@@ -341,7 +341,7 @@ void Global_context::notify_data_remove(const string& name, Ref ref)
 	rethrow_with_context(errors, "while removing `{}', ", name);
 }
 
-void Global_context::notify_event(const string& name)
+void Data_store::notify_event(const string& name)
 {
 	vector<std::reference_wrapper<const function<void(const string&)>>> event_callbacks;
 	//add named callbacks
@@ -367,7 +367,7 @@ void Global_context::notify_event(const string& name)
 	rethrow_with_context(errors, "while triggering `{}', ", name);
 }
 
-void Global_context::notify_missing_data(const string& name)
+void Data_store::notify_missing_data(const string& name)
 {
 	std::vector<std::reference_wrapper<const std::function<void(const std::string&)>>> empty_desc_callbacks;
 	//add named callbacks
@@ -393,21 +393,21 @@ void Global_context::notify_missing_data(const string& name)
 	rethrow_with_context(errors, "while populating `{}', ", name);
 }
 
-Global_context::Global_context(PC_tree_t conf)
+Data_store::Data_store(PC_tree_t conf)
 	: m_logger{"PDI", PC_get(conf, ".logging")}
-	, m_plugins{*this}
+	, m_plugins{m_logger}
 {
 	// Handle includes and gather all files
 	std::vector<PC_tree_t> confs = get_includes(logger(), conf);
 
 	// load basic datatypes
-	Datatype_template::load_basic_datatypes(*this);
+	Datatype_template::load_basic_datatypes(m_logger, *this);
 	// load user datatypes
 	for (auto&& conf: confs) {
-		Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
+		Datatype_template::load_user_datatypes(m_logger, *this, PC_get(conf, ".types"));
 	}
 
-	m_plugins.load_plugins(confs);
+	m_plugins.load_plugins(*this, confs);
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
@@ -437,57 +437,57 @@ Global_context::Global_context(PC_tree_t conf)
 	m_logger.info("Initialization successful");
 }
 
-Global_context::~Global_context()
+Data_store::~Data_store()
 {
 	m_logger.info("Finalization");
 }
 
-Data_descriptor& Global_context::desc(const char* name)
+Data_descriptor& Data_store::desc(const char* name)
 {
 	return *(m_descriptors.emplace(name, unique_ptr<Data_descriptor>{new Data_descriptor_impl{*this, name}}).first->second);
 }
 
-Data_descriptor& Global_context::desc(const string& name)
+Data_descriptor& Data_store::desc(const string& name)
 {
 	return desc(name.c_str());
 }
 
-Data_descriptor& Global_context::operator[] (const char* name)
+Data_descriptor& Data_store::operator[] (const char* name)
 {
 	return desc(name);
 }
 
-Data_descriptor& Global_context::operator[] (const string& name)
+Data_descriptor& Data_store::operator[] (const string& name)
 {
 	return desc(name.c_str());
 }
 
-Global_context::Iterator Global_context::begin()
+Data_store::Iterator Data_store::begin()
 {
 	return Context::get_iterator(m_descriptors.begin());
 }
 
-Global_context::Iterator Global_context::end()
+Data_store::Iterator Data_store::end()
 {
 	return Context::get_iterator(m_descriptors.end());
 }
 
-PDI::Context::Iterator Global_context::find(const string& name)
+PDI::Context::Iterator Data_store::find(const string& name)
 {
 	return Context::get_iterator(m_descriptors.find(name));
 }
 
-void Global_context::event(const char* name)
+void Data_store::event(const char* name)
 {
 	notify_event(name);
 }
 
-Logger& Global_context::logger()
+Logger& Data_store::logger()
 {
 	return m_logger;
 }
 
-Datatype_template_sptr Global_context::datatype(PC_tree_t node)
+Datatype_template_sptr Data_store::datatype(PC_tree_t node)
 {
 	string type;
 	try {
@@ -513,7 +513,7 @@ Datatype_template_sptr Global_context::datatype(PC_tree_t node)
 	throw Spectree_error{node, "Unknown data type: `{}'", type};
 }
 
-void Global_context::add_datatype(const string& name, Datatype_template_parser parser)
+void Data_store::add_datatype(const string& name, Datatype_template_parser parser)
 {
 	if (!m_datatype_parsers.emplace(name, std::move(parser)).second) {
 		//if a datatype with the given name already exists
@@ -521,7 +521,7 @@ void Global_context::add_datatype(const string& name, Datatype_template_parser p
 	}
 }
 
-function<void()> Global_context::on_init(const function<void()>& callback)
+function<void()> Data_store::on_init(const function<void()>& callback)
 {
 	m_init_callbacks.emplace_back(callback);
 	auto it = --m_init_callbacks.end();
@@ -530,7 +530,7 @@ function<void()> Global_context::on_init(const function<void()>& callback)
 	};
 }
 
-function<void()> Global_context::on_data(const function<void(const string&, Ref)>& callback, const string& name)
+function<void()> Data_store::on_data(const function<void(const string&, Ref)>& callback, const string& name)
 {
 	if (name.empty()) {
 		m_data_callbacks.emplace_back(callback);
@@ -546,7 +546,7 @@ function<void()> Global_context::on_data(const function<void(const string&, Ref)
 	}
 }
 
-function<void()> Global_context::on_data_remove(const function<void(const string&, Ref)>& callback, const string& name)
+function<void()> Data_store::on_data_remove(const function<void(const string&, Ref)>& callback, const string& name)
 {
 	if (name.empty()) {
 		m_data_remove_callbacks.emplace_back(callback);
@@ -562,7 +562,7 @@ function<void()> Global_context::on_data_remove(const function<void(const string
 	}
 }
 
-function<void()> Global_context::on_event(const function<void(const string&)>& callback, const string& name)
+function<void()> Data_store::on_event(const function<void(const string&)>& callback, const string& name)
 {
 	if (name.empty()) {
 		m_event_callbacks.emplace_back(callback);
@@ -578,7 +578,7 @@ function<void()> Global_context::on_event(const function<void(const string&)>& c
 	}
 }
 
-function<void()> Global_context::on_missing_data(const function<void(const string&)>& callback, const string& name)
+function<void()> Data_store::on_missing_data(const function<void(const string&)>& callback, const string& name)
 {
 	if (name.empty()) {
 		m_empty_desc_access_callbacks.emplace_back(callback);

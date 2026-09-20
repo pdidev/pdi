@@ -11,20 +11,21 @@ plugins:
 ```
 The given example will load example plugin and pass its subtree to the plugin's constructor.
 
-The plugin has to inherit from PDI::Plugin and have a constructor with arguments PDI::Context& and PC_tree_t.
+The plugin has to inherit from PDI::Plugin and have a constructor with arguments PDI::Logger&, PDI::Context& and PC_tree_t.
 
 ### Example plugin {#example_plugin}
 Example of the simplest plugin, that does nothing:
 
 ```cpp
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 
 struct example_plugin : public PDI::Plugin
 {
-    example_plugin(PDI::Context& ctx, PC_tree_t spec_tree):
-        Plugin{ctx}
+    example_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t spec_tree):
+        Plugin{logger, ctx}
     {}
 }
 
@@ -45,14 +46,15 @@ Returns a function that removes the callback from PDI::Context container.
 Example of adding new callback:
 ```cpp
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
 struct example_plugin : public PDI::Plugin
 {
-    example_plugin(PDI::Context& ctx, PC_tree_t spec_tree):
-        Plugin{ctx}
+    example_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t spec_tree):
+        Plugin{logger, ctx}
     {
         ctx.on_data([](const std::string& data_name, PDI::Ref ref){
             std::cout << "User has shared a data named " << data_name << std::endl;
@@ -94,14 +96,15 @@ User has shared a data named some_integer
 Example of reading and writing data:
 ```cpp
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
 struct example_plugin : public PDI::Plugin
 {
-    example_plugin(PDI::Context& ctx, PC_tree_t spec_tree):
-        Plugin{ctx}
+    example_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t spec_tree):
+        Plugin{logger, ctx}
     {
         ctx.on_data([](const std::string& data_name, PDI::Ref ref){
             if(PDI::Ref_rw ref_rw{ref}) {
@@ -126,14 +129,15 @@ PDI_PLUGIN(example)
 ### Handling events {#example_events}
 ```cpp
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
 struct example_plugin : public PDI::Plugin
 {
-    example_plugin(PDI::Context& ctx, PC_tree_t spec_tree):
-        Plugin{ctx}
+    example_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t spec_tree):
+        Plugin{logger, ctx}
     {
         ctx.on_event([this](const std::string& event_name){
             this->handle_event(event_name);
@@ -166,14 +170,15 @@ plugins:
 Reading a scalar and an array:
 ```cpp
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
 struct example_plugin : public PDI::Plugin
 {
-    example_plugin(PDI::Context& ctx, PC_tree_t spec_tree):
-        Plugin{ctx}
+    example_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t spec_tree):
+        Plugin{logger, ctx}
     {
         //scalar
         PC_tree_t scalar_tree = PC_get(spec_tree, ".scalar");
@@ -209,14 +214,15 @@ Reading a scalar and an array:
 #include <unordered_map>
 
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
 struct example_plugin : public PDI::Plugin
 {
-    example_plugin(PDI::Context& ctx, PC_tree_t spec_tree):
-        Plugin{ctx}
+    example_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t spec_tree):
+        Plugin{logger, ctx}
     {
         PC_tree_t subtree = PC_get(spec_tree, ".custom_subtree");
         int subtree_size = PDI::len(subtree);
@@ -264,8 +270,8 @@ class posix_plugin : public PDI::Plugin
     std::unordered_map<std::string, std::string> m_data_to_path_map;
 
 public:
-    posix_plugin(PDI::Context& ctx, PC_tree_t spec_tree):
-        Plugin{ctx}
+    posix_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t spec_tree):
+        Plugin{logger, ctx}
     {}
 }
 
@@ -376,8 +382,8 @@ class posix_plugin : public PDI::Plugin
     std::unordered_map<std::string, std::string> m_data_to_path_map;
 
 public:
-    posix_plugin(PDI::Context& ctx, PC_tree_t spec_tree):
-        Plugin{ctx}
+    posix_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t spec_tree):
+        Plugin{logger, ctx}
     {
         read_recover_tree(spec_tree);
         read_data_tree(spec_tree);

@@ -29,7 +29,6 @@
 #include <type_traits>
 
 #include <pdi/context.h>
-#include <pdi/context_proxy.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
@@ -38,13 +37,13 @@
 namespace {
 
 using PDI::Context;
-using PDI::Context_proxy;
 using PDI::Data_descriptor;
 using PDI::Datatype;
 using PDI::Datatype_sptr;
 using PDI::Error;
 using PDI::Impl_error;
 using PDI::len;
+using PDI::Logger;
 using PDI::Permission_error;
 using PDI::Plugin;
 using PDI::Ref;
@@ -195,15 +194,15 @@ struct mpi_plugin: Plugin {
 	 */
 	static std::string pretty_name() { return "MPI"; }
 
-	mpi_plugin(Context& ctx, PC_tree_t config)
-		: Plugin{ctx}
+	mpi_plugin(Logger& logger, Context& ctx, PC_tree_t config)
+		: Plugin{logger, ctx}
 	{
 		int world_rank;
 		MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 		add_predefined(ctx, "MPI_COMM_WORLD_rank", &world_rank, Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 
 		// logger requires MPI_COMM_WORLD.rank data
-		set_up_logger(ctx, PC_get(config, ".logging"));
+		set_up_logger(logger, ctx, PC_get(config, ".logging"));
 
 		// share the MPI_Comm datatype, it does not duplicate its content (collective), only copies it!
 		ctx.add_datatype("MPI_Comm", [this](Context&, PC_tree_t) { return m_mpi_comm_datatype; });
@@ -235,15 +234,15 @@ struct mpi_plugin: Plugin {
 		MPI_Fint comm_null_f = MPI_Comm_c2f(MPI_COMM_NULL);
 		add_predefined(ctx, "MPI_COMM_NULL_F", &comm_null_f, m_mpi_comm_f_datatype);
 
-		MPI_Comm_transtype(ctx, config, m_mpi_comm_datatype, m_mpi_comm_f_datatype);
+		MPI_Comm_transtype(logger, ctx, config, m_mpi_comm_datatype, m_mpi_comm_f_datatype);
 
-		ctx.logger().info("Plugin loaded successfully");
+		logger.info("Plugin loaded successfully");
 	}
 
-	void set_up_logger(Context& ctx, PC_tree_t)
+	void set_up_logger(Logger& logger, Context& ctx, PC_tree_t)
 	{
-		ctx.logger().add_pattern_global_block("MPI %{MPI_COMM_WORLD_rank:06d}");
-		ctx.logger().evaluate_global_pattern(ctx);
+		logger.add_pattern_global_block("MPI %{MPI_COMM_WORLD_rank:06d}");
+		logger.evaluate_global_pattern(ctx);
 	}
 
 	void add_predefined(Context& ctx, const string& name, void* data, Datatype_sptr type)
@@ -259,16 +258,18 @@ struct mpi_plugin: Plugin {
 		predef_desc.reclaim(); // reclaim the reference and let PDI keep a copy (metadata)
 	}
 
-	~mpi_plugin() { context().logger().info("Closing plugin"); }
+	~mpi_plugin() { logger().info("Closing plugin"); }
 
 	/** Transtypes C/Fortran communicator depending on specification tree
 	 *
+	 * \param logger the logger to use
 	 * \param ctx PDI context
 	 * \param tree PC tree of mpi plugin
 	 * \param C_mpi_comm_type C mpi comm datatype
 	 * \param F_mpi_comm_type Fortran mpi comm datatype
 	 */
 	void MPI_Comm_transtype(
+		Logger& logger,
 		Context& ctx,
 		PC_tree_t tree,
 		std::shared_ptr<const Scalar_datatype> C_mpi_comm_type,
@@ -277,7 +278,7 @@ struct mpi_plugin: Plugin {
 	{
 		PC_tree_t transtype_tree = PC_get(tree, ".transtype");
 		if (!PC_status(transtype_tree)) {
-			ctx.logger().warn("`transtype' key is deprecated when transtyping C/Fortran MPI communicator, please use Comm_c2f/Comm_f2c");
+			logger.warn("`transtype' key is deprecated when transtyping C/Fortran MPI communicator, please use Comm_c2f/Comm_f2c");
 			if (*C_mpi_comm_type == *F_mpi_comm_type) {
 				throw Value_error{"Transtype failed, cannot detect the direction of transtype"};
 			}
@@ -288,10 +289,10 @@ struct mpi_plugin: Plugin {
 				string dst_desc = to_string(PC_get(transtype_tree, "<%d>", i));
 				if (*ctx.desc(src_desc).default_type()->evaluate(ctx) == *C_mpi_comm_type) {
 					/// src is C_comm, dst is F_comm
-					transtype_C_to_F(ctx, src_desc, dst_desc);
+					transtype_C_to_F(logger, ctx, src_desc, dst_desc);
 				} else {
 					/// src is F_comm, dst is C_comm
-					transtype_F_to_C(ctx, src_desc, dst_desc);
+					transtype_F_to_C(logger, ctx, src_desc, dst_desc);
 				}
 			}
 		}
@@ -301,7 +302,7 @@ struct mpi_plugin: Plugin {
 			int len;
 			PC_len(c2f_tree, &len);
 			for (int i = 0; i < len; i++) {
-				transtype_C_to_F(ctx, to_string(PC_get(c2f_tree, "{%d}", i)), to_string(PC_get(c2f_tree, "<%d>", i)));
+				transtype_C_to_F(logger, ctx, to_string(PC_get(c2f_tree, "{%d}", i)), to_string(PC_get(c2f_tree, "<%d>", i)));
 			}
 		}
 		PC_tree_t f2c_tree = PC_get(tree, ".Comm_f2c");
@@ -309,24 +310,25 @@ struct mpi_plugin: Plugin {
 			int len;
 			PC_len(f2c_tree, &len);
 			for (int i = 0; i < len; i++) {
-				transtype_F_to_C(ctx, to_string(PC_get(f2c_tree, "{%d}", i)), to_string(PC_get(f2c_tree, "<%d>", i)));
+				transtype_F_to_C(logger, ctx, to_string(PC_get(f2c_tree, "{%d}", i)), to_string(PC_get(f2c_tree, "<%d>", i)));
 			}
 		}
 	}
 
 	/** Transtype C mpi comm to Fortran mpi comm
 	 *
+	 * \param logger the logger to use
 	 * \param ctx PDI context
 	 * \param c_comm_desc descriptor name of C mpi comm (source)
 	 * \param f_comm_desc descriptor name of Fortran mpi comm (destination)
 	 */
-	void transtype_C_to_F(Context& ctx, const string& c_comm_desc, const string& fortran_comm_desc)
+	void transtype_C_to_F(Logger& logger, Context& ctx, const string& c_comm_desc, const string& fortran_comm_desc)
 	{
 		Datatype_sptr const & mpi_comm_f_type = m_mpi_comm_f_datatype;
 
 		ctx.on_data(
-			[&ctx, fortran_comm_desc, mpi_comm_f_type](const string& c_comm_desc, Ref ref) {
-				ctx.logger().debug("Transtype `{}' to `{}' (C->F)", c_comm_desc, fortran_comm_desc);
+			[&logger, &ctx, fortran_comm_desc, mpi_comm_f_type](const string& c_comm_desc, Ref ref) {
+				logger.debug("Transtype `{}' to `{}' (C->F)", c_comm_desc, fortran_comm_desc);
 				Ref fortran_comm_ref{new MPI_Fint, [](void* p) { delete static_cast<MPI_Fint*>(p); }, std::move(mpi_comm_f_type), true, true};
 				if (Ref_r ref_r{ref}) {
 					*static_cast<MPI_Fint*>(Ref_w{fortran_comm_ref}.get()) = MPI_Comm_c2f(*static_cast<const MPI_Comm*>(ref_r.get()));
@@ -339,10 +341,10 @@ struct mpi_plugin: Plugin {
 		);
 
 		ctx.on_data_remove(
-			[&ctx, fortran_comm_desc](const std::string& c_comm_desc, Ref c_comm_ref) {
-				ctx.logger().debug("`{}' no longer available, reclaim transtyped `{}'", fortran_comm_desc, c_comm_desc);
+			[&logger, &ctx, fortran_comm_desc](const std::string& c_comm_desc, Ref c_comm_ref) {
+				logger.debug("`{}' no longer available, reclaim transtyped `{}'", fortran_comm_desc, c_comm_desc);
 				if (Ref_w c_comm_ref_w{c_comm_ref}) {
-					ctx.logger().debug("Transtype back `{}' to `{}' (F->C)", fortran_comm_desc, c_comm_desc);
+					logger.debug("Transtype back `{}' to `{}' (F->C)", fortran_comm_desc, c_comm_desc);
 					if (Ref_r fortran_comm_ref_r = ctx.desc(fortran_comm_desc).ref()) {
 						*static_cast<MPI_Comm*>(c_comm_ref_w.get()) = MPI_Comm_f2c(*static_cast<const MPI_Fint*>(fortran_comm_ref_r.get()));
 					} else {
@@ -357,17 +359,18 @@ struct mpi_plugin: Plugin {
 
 	/** Transtype Fortran mpi comm to C mpi comm
 	 *
+	 * \param logger the logger to use
 	 * \param ctx PDI context
 	 * \param f_comm_desc descriptor name of Fortran mpi comm (source)
 	 * \param c_comm_desc descriptor name of C mpi comm (destination)
 	 */
-	void transtype_F_to_C(Context& ctx, const string& fortran_comm_desc, const string& c_comm_desc)
+	void transtype_F_to_C(Logger& logger, Context& ctx, const string& fortran_comm_desc, const string& c_comm_desc)
 	{
 		Datatype_sptr mpi_comm_type = m_mpi_comm_datatype;
 
 		ctx.on_data(
-			[&ctx, c_comm_desc, mpi_comm_type](const string& fortran_comm_desc, Ref ref) {
-				ctx.logger().debug("Transtype `{}' to `{}` (F->C)", fortran_comm_desc, c_comm_desc);
+			[&logger, &ctx, c_comm_desc, mpi_comm_type](const string& fortran_comm_desc, Ref ref) {
+				logger.debug("Transtype `{}' to `{}` (F->C)", fortran_comm_desc, c_comm_desc);
 				Ref c_comm_ref{new MPI_Comm, [](void* p) { delete static_cast<MPI_Comm*>(p); }, std::move(mpi_comm_type), true, true};
 				if (Ref_r ref_r{ref}) {
 					MPI_Fint f_comm;
@@ -383,17 +386,17 @@ struct mpi_plugin: Plugin {
 
 
 		ctx.on_data_remove(
-			[&ctx, c_comm_desc](const string& fortran_comm_desc, Ref fortran_comm_ref) {
-				ctx.logger().debug("`{}' no longer available, reclaim transtyped `{}'", fortran_comm_desc, c_comm_desc);
+			[&logger, &ctx, c_comm_desc](const string& fortran_comm_desc, Ref fortran_comm_ref) {
+				logger.debug("`{}' no longer available, reclaim transtyped `{}'", fortran_comm_desc, c_comm_desc);
 				if (Ref_w fortran_comm_ref_w{fortran_comm_ref}) {
-					ctx.logger().debug("Transtype back `{}' to `{}' (C->F)", c_comm_desc, fortran_comm_desc);
+					logger.debug("Transtype back `{}' to `{}' (C->F)", c_comm_desc, fortran_comm_desc);
 					if (Ref_r c_comm_ref_r = ctx.desc(c_comm_desc).ref()) {
 						set_val(fortran_comm_ref_w, MPI_Comm_c2f(*static_cast<const MPI_Comm*>(c_comm_ref_r.get())));
 					} else {
 						throw Permission_error{"Cannot read `{}' data", c_comm_desc};
 					}
 				} else {
-					ctx.logger().error("Cannot write `{}' communicator back", fortran_comm_desc);
+					logger.error("Cannot write `{}' communicator back", fortran_comm_desc);
 				}
 				ctx.desc(c_comm_desc).release();
 			},

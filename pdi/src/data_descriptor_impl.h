@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,19 +36,19 @@
 #include <pdi/datatype_template.h>
 #include <pdi/ref_any.h>
 
-#include "global_context.h"
+#include "data_store.h"
 
 namespace PDI {
 
 class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 {
-	friend class Global_context;
+	friend class Data_store;
 	friend class Descriptor_test_handler;
 
 	struct PDI_NO_EXPORT Ref_holder;
 
-	/// The context this descriptor is part of
-	Global_context& m_context;
+	/// The data store this descriptor is part of
+	Data_store& m_store;
 
 	/// References to the values of this descriptor
 	std::stack<std::unique_ptr<Ref_holder>> m_refs;
@@ -62,7 +62,7 @@ class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 
 	/** Create an empty descriptor
 	 */
-	Data_descriptor_impl(Global_context& ctx, const char* name);
+	Data_descriptor_impl(Data_store& store, const char* name);
 
 	Data_descriptor_impl(const Data_descriptor_impl&) = delete;
 

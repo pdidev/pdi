@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -43,12 +44,12 @@ class Event_operation: public Operation
 
 public:
 	/** Creates event operation
-     * \param[in] ctx context of the operation
+     * \param[in] logger the logger to use
      * \param[in] event_value_node yaml config tree of operation
      */
-	Event_operation(PDI::Context& ctx, PC_tree_t event_value_node);
+	Event_operation(PDI::Logger& logger, PC_tree_t event_value_node);
 
-	void execute() override;
+	void execute(PDI::Logger& logger, PDI::Context& ctx) override;
 };
 
 } // namespace set_value

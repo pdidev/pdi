@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -107,11 +107,6 @@ public:
 	 * \param[in] name the event name
 	 */
 	virtual void event(const char* name) = 0;
-
-	/** Logger getter
-	 * \return logger
-	 */
-	virtual Logger& logger() = 0;
 
 	/** Creates a new datatype template from a paraconf-style config
 	 * \param[in] node the configuration to read

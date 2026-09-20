@@ -49,6 +49,7 @@ using PDI::Context;
 using PDI::each;
 using PDI::Error;
 using PDI::Expression;
+using PDI::Logger;
 using PDI::opt_each;
 using PDI::Ref_r;
 using PDI::Ref_w;
@@ -63,7 +64,7 @@ using std::vector;
 
 namespace decl_hdf5 {
 
-vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
+vector<File_op> File_op::parse(Logger& logger, Context& ctx, PC_tree_t tree)
 {
 	// pass 0: mandatory parameters
 
@@ -160,10 +161,10 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			if (dset_string.find("#") == string::npos) {
 				dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when, template_op.m_collision_policy);
 				if (deflate) {
-					dset_ops.back().deflate(ctx, deflate.to_long(ctx));
+					dset_ops.back().deflate(logger, deflate.to_long(ctx));
 				}
 				if (fletcher) {
-					dset_ops.back().fletcher(ctx, fletcher.to_long(ctx));
+					dset_ops.back().fletcher(logger, fletcher.to_long(ctx));
 				}
 			} else {
 				attr_ops.emplace_back(Attribute_op::WRITE, tree, default_when);
@@ -179,10 +180,10 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
 					dset_ops.emplace_back(Dataset_op::WRITE, to_string(name), default_when, value, template_op.m_collision_policy);
 					if (deflate) {
-						dset_ops.back().deflate(ctx, deflate.to_long(ctx));
+						dset_ops.back().deflate(logger, deflate.to_long(ctx));
 					}
 					if (fletcher) {
-						dset_ops.back().fletcher(ctx, fletcher.to_long(ctx));
+						dset_ops.back().fletcher(logger, fletcher.to_long(ctx));
 					}
 				});
 			}
@@ -259,7 +260,7 @@ File_op::File_op(Expression&& file, Collision_policy collision_policy)
 	, m_file{std::move(file)}
 {}
 
-void File_op::execute(Context& ctx)
+void File_op::execute(Logger& logger, Context& ctx)
 {
 	PDI::TimerEventHandler hdf5_timer(ctx, "decl_hdf5");
 	// first gather the ops we actually want to do
@@ -277,7 +278,7 @@ void File_op::execute(Context& ctx)
 			}
 		} catch (PDI::Value_error const & e) {
 			//TODO: explain why we only warn here
-			ctx.logger().warn("Unable to evaluate \"when\" close while executing transfer for {}: `{}'", one_dset_op.value(), e.what());
+			logger.warn("Unable to evaluate \"when\" close while executing transfer for {}: `{}'", one_dset_op.value(), e.what());
 		}
 	}
 	vector<Attribute_op> attr_reads;
@@ -294,7 +295,7 @@ void File_op::execute(Context& ctx)
 			}
 		} catch (PDI::Value_error const & e) {
 			//TODO: explain why we only warn here
-			ctx.logger().warn("Unable to evaluate \"when\" close while executing transfer for {}: `{}'", one_attr_op.name(), e.what());
+			logger.warn("Unable to evaluate \"when\" close while executing transfer for {}: `{}'", one_attr_op.name(), e.what());
 		}
 	}
 	// nothing to do if no op is selected
@@ -311,12 +312,12 @@ void File_op::execute(Context& ctx)
 	if (comm != MPI_COMM_SELF) {
 		if (0 > H5Pset_fapl_mpio(file_lst, comm, MPI_INFO_NULL)) handle_hdf5_err();
 		use_mpio = true;
-		ctx.logger().debug("Opening `{}' file in parallel mode", filename);
+		logger.debug("Opening `{}' file in parallel mode", filename);
 
 		if (auto subfiling_stripe_count = subfiling().count().to_long(ctx)) {
 #ifndef H5_HAVE_SUBFILING_VFD
 			if (subfiling().policy().to_string(ctx) == "CONTINUE") {
-				ctx.logger().warn("Used HDF5 does not support subfiling. HDF5 subfiling is ignored");
+				logger.warn("Used HDF5 does not support subfiling. HDF5 subfiling is ignored");
 			} else {
 				throw System_error{"Used HDF5 does not support subfiling. Please set subfiling to 0."};
 			}
@@ -326,14 +327,14 @@ void File_op::execute(Context& ctx)
 			if (provided < MPI_THREAD_MULTIPLE) {
 				if (subfiling().policy().to_string(ctx) == "CONTINUE") {
 					subfiling_stripe_count = 0;
-					ctx.logger().warn("MPI is not initialized with MPI_THREAD_MULTIPLE. HDF5 subfiling is ignored");
+					logger.warn("MPI is not initialized with MPI_THREAD_MULTIPLE. HDF5 subfiling is ignored");
 				} else {
 					throw System_error{"HDF5 subfiling requires MPI_THREAD_MULTIPLE (3). The provided level of thread support is {}", provided};
 				}
 			}
 #ifdef H5_HAVE_SUBFILING_VFD
 			if (subfiling_stripe_count != 0) {
-				ctx.logger().info("HDF5 subfiling enabled for file {}", filename);
+				logger.info("HDF5 subfiling enabled for file {}", filename);
 				H5FD_subfiling_config_t subf_config;
 				H5Pget_fapl_subfiling(file_lst, &subf_config);
 				subf_config.shared_cfg.stripe_count = subfiling_stripe_count;
@@ -343,7 +344,7 @@ void File_op::execute(Context& ctx)
 					} else if (stripe_size < 0) {
 						throw System_error{"Negative stripe_size is provided. Please set stripe_size > 0."};
 					} else {
-						ctx.logger().warn("Using default stripe_size");
+						logger.warn("Using default stripe_size");
 					}
 				}
 				H5Pset_fapl_subfiling(file_lst, &subf_config);
@@ -354,22 +355,22 @@ void File_op::execute(Context& ctx)
 #endif
 	hid_t h5_file_raw = -1;
 	if ((!dset_writes.empty() || !attr_writes.empty()) && (!dset_reads.empty() || !attr_reads.empty())) {
-		ctx.logger().trace("Opening `{}' file to read and write", filename);
+		logger.trace("Opening `{}' file to read and write", filename);
 		h5_file_raw = H5Fopen(m_file.to_string(ctx).c_str(), H5F_ACC_RDWR, file_lst);
 	} else if (!dset_writes.empty() || !attr_writes.empty()) {
-		ctx.logger().trace("Opening `{}' file to write", filename);
+		logger.trace("Opening `{}' file to write", filename);
 		h5_file_raw = H5Fopen(m_file.to_string(ctx).c_str(), H5F_ACC_RDWR, file_lst);
 		if (0 > h5_file_raw) {
-			ctx.logger().trace("Cannot open `{}' file, creating new file", filename);
+			logger.trace("Cannot open `{}' file, creating new file", filename);
 			h5_file_raw = H5Fcreate(filename.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, file_lst);
 		} else {
 			// File exists -> collision
 			function<void(const char*, const std::string&)> notify = [&](const char* message, const std::string& filename) {
-				ctx.logger().trace("File `{}' already exists: {}", filename, message);
+				logger.trace("File `{}' already exists: {}", filename, message);
 			};
 			if (m_collision_policy & Collision_policy::WARNING) {
 				notify = [&](const char* message, const std::string& filename) {
-					ctx.logger().warn("File `{}' already exists: {}", filename, message);
+					logger.warn("File `{}' already exists: {}", filename, message);
 				};
 			}
 
@@ -390,33 +391,33 @@ void File_op::execute(Context& ctx)
 			}
 		}
 	} else {
-		ctx.logger().trace("Opening `{}' file to read", filename);
+		logger.trace("Opening `{}' file to read", filename);
 		h5_file_raw = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, file_lst);
 	}
 	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose, ("Cannot open `" + filename + "' file").c_str());
 
 	for (auto&& one_dset_op: dset_writes) {
-		one_dset_op.execute(ctx, h5_file, use_mpio, m_datasets);
+		one_dset_op.execute(logger, ctx, h5_file, use_mpio, m_datasets);
 	}
 	for (auto&& one_dset_op: dset_reads) {
-		one_dset_op.execute(ctx, h5_file, use_mpio, m_datasets);
+		one_dset_op.execute(logger, ctx, h5_file, use_mpio, m_datasets);
 	}
 	for (auto&& one_attr_op: attr_writes) {
-		one_attr_op.execute(ctx, h5_file);
+		one_attr_op.execute(logger, ctx, h5_file);
 	}
 	for (auto&& one_attr_op: attr_reads) {
-		one_attr_op.execute(ctx, h5_file);
+		one_attr_op.execute(logger, ctx, h5_file);
 	}
 	for (auto&& one_dset_size_op: m_dset_size_ops) {
 		string dataset_name = one_dset_size_op.second.to_string(ctx);
-		ctx.logger().trace("Getting size of `{}' dataset", dataset_name);
+		logger.trace("Getting size of `{}' dataset", dataset_name);
 		Ref_w ref_w = ctx[one_dset_size_op.first].ref();
 		if (!ref_w) {
-			ctx.logger().warn("Data `{}' to read size of dataset not available", one_dset_size_op.first);
+			logger.warn("Data `{}' to read size of dataset not available", one_dset_size_op.first);
 			return;
 		}
 
-		ctx.logger().trace("Opening `{}' dataset", dataset_name);
+		logger.trace("Opening `{}' dataset", dataset_name);
 		Raii_hid dset_id = make_raii_hid(H5Dopen(h5_file, dataset_name.c_str(), H5P_DEFAULT), H5Dclose);
 		Raii_hid dset_space_id = make_raii_hid(H5Dget_space(dset_id), H5Sclose);
 		if (H5Sis_simple(dset_space_id)) {
@@ -431,9 +432,9 @@ void File_op::execute(Context& ctx)
 			*static_cast<long*>(ref_w.get()) = 0L;
 		}
 
-		ctx.logger().trace("Getting size of `{}' dataset finished", dataset_name);
+		logger.trace("Getting size of `{}' dataset finished", dataset_name);
 	}
-	ctx.logger().trace("All operations done in `{}'. Closing the file.", filename);
+	logger.trace("All operations done in `{}'. Closing the file.", filename);
 }
 
 } // namespace decl_hdf5

@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -49,10 +50,11 @@ class Dnc_group
 public:
 	/** Creates a NetCDF group information from yaml
 	 *
+	 * \param logger Logger to use while creating this group
 	 * \param ctx Context of this group
 	 * \param config (optional) config with group attributes
 	 */
-	Dnc_group(PDI::Context& ctx, const std::string& path, PC_tree_t config = {});
+	Dnc_group(PDI::Logger& logger, PDI::Context& ctx, const std::string& path, PC_tree_t config = {});
 
 	/** Returns variable path
 	 *

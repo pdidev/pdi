@@ -37,6 +37,7 @@
 #include <pdi/data_descriptor.h>
 #include <pdi/datatype.h>
 #include <pdi/expression.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/python/tools.h>
@@ -51,6 +52,7 @@ using PDI::Datatype;
 using PDI::Error;
 using PDI::Expression;
 using PDI::len;
+using PDI::Logger;
 using PDI::Plugin;
 using PDI::Ref;
 using PDI::Ref_rw;
@@ -140,9 +142,10 @@ public:
 	}
 
 	/** Call the function that has been registered
+	 * \param logger the logger to use
 	 * \param ctx the PDI context for this trigger
 	 */
-	void call(Context& ctx)
+	void call(Logger& logger, Context& ctx)
 	{
 		// a python context we fill with exposed variables
 		pydict pyscope = pymod::import("__main__").attr("__dict__");
@@ -156,9 +159,9 @@ public:
 			PDI::TimerEventHandler pycall_timer(ctx, "pycall");
 			pybind11::exec(m_code, pyscope);
 		} catch (const std::exception& e) {
-			ctx.logger().error("while calling python, caught exception: {}", e.what());
+			logger.error("while calling python, caught exception: {}", e.what());
 		} catch (...) {
-			ctx.logger().error("while calling python, caught exception");
+			logger.error("while calling python, caught exception");
 		}
 	}
 
@@ -168,13 +171,13 @@ struct pycall_plugin: Plugin {
 	//Determine if python interpreter is initialized by the plugin.
 	bool interpreter_initialized_in_plugin = false;
 
-	pycall_plugin(Context& ctx, PC_tree_t conf)
-		: Plugin{ctx}
+	pycall_plugin(Logger& logger, Context& ctx, PC_tree_t conf)
+		: Plugin{logger, ctx}
 	{
 		if (!Py_IsInitialized()) {
 			pybind11::initialize_interpreter();
 			interpreter_initialized_in_plugin = true;
-			ctx.logger().debug("Python interpreter is initialized by the plugin");
+			logger.debug("Python interpreter is initialized by the plugin");
 		}
 
 		// Loading configuration for events
@@ -189,9 +192,9 @@ struct pycall_plugin: Plugin {
 					triggers.emplace_back(to_string(PC_get(event, "[%d].exec", i)), PC_get(event, "[%d].with", i));
 				}
 				ctx.on_event(
-					[&ctx, triggers](const std::string&) mutable {
+					[&logger, &ctx, triggers](const std::string&) mutable {
 						for (auto&& trigger: triggers) {
-							trigger.call(ctx);
+							trigger.call(logger, ctx);
 						}
 					},
 					to_string(PC_get(on_event, "{%d}", map_id))
@@ -199,7 +202,7 @@ struct pycall_plugin: Plugin {
 			} else {
 				Trigger event_trigger{to_string(PC_get(event, ".exec")), PC_get(event, ".with")};
 				ctx.on_event(
-					[&ctx, event_trigger](const std::string&) mutable { event_trigger.call(ctx); },
+					[&logger, &ctx, event_trigger](const std::string&) mutable { event_trigger.call(logger, ctx); },
 					to_string(PC_get(on_event, "{%d}", map_id))
 				);
 			}
@@ -211,14 +214,14 @@ struct pycall_plugin: Plugin {
 		for (int map_id = 0; map_id < nb_data; map_id++) {
 			string data_name = to_string(PC_get(on_data, "{%d}", map_id));
 			Trigger data_trigger{to_string(PC_get(on_data, "<%d>", map_id)), data_name};
-			ctx.on_data([&ctx, data_trigger](const std::string&, Ref) mutable { data_trigger.call(ctx); }, data_name);
+			ctx.on_data([&logger, &ctx, data_trigger](const std::string&, Ref) mutable { data_trigger.call(logger, ctx); }, data_name);
 		}
 	}
 
 	~pycall_plugin()
 	{
 		if (interpreter_initialized_in_plugin) {
-			context().logger().debug("Finalizing python interpreter");
+			logger().debug("Finalizing python interpreter");
 			pybind11::finalize_interpreter();
 		}
 	}

@@ -50,8 +50,6 @@ struct MockContext: public PDI::Context {
 
 	MOCK_METHOD(void, event, (const char*), (override));
 
-	MOCK_METHOD(PDI::Logger&, logger, (), (override));
-
 	MOCK_METHOD(PDI::Datatype_template_sptr, datatype, (PC_tree_t), (override));
 	MOCK_METHOD(void, add_datatype, (const std::string&, Datatype_template_parser), (override));
 

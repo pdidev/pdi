@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -42,12 +43,12 @@ class Expose_operation: public Operation
 
 public:
 	/** Creates expose operation
-     * \param[in] ctx context of the operation
+     * \param[in] logger the logger to use
      * \param[in] list_of_values yaml config tree of operation
      */
-	Expose_operation(PDI::Context& ctx, PC_tree_t list_of_values);
+	Expose_operation(PDI::Logger& logger, PC_tree_t list_of_values);
 
-	void execute() override;
+	void execute(PDI::Logger& logger, PDI::Context& ctx) override;
 };
 
 } // namespace set_value
