@@ -113,7 +113,7 @@ public:
 							ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
 							logger.debug("event [{}] stops timer {}", stop_ev, timer_name);
 						} else {
-							logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
+							logger.debug("Defined timer (scalar/list-styled): {}", timer_name);
 
 							opt_each(val, [&](PC_tree_t sub_elem) {
 								auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
