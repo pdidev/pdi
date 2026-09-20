@@ -53,11 +53,11 @@ class timer_plugin: public PDI::Plugin
 	std::string m_output_path = "cout";
 
 public:
-	timer_plugin(Logger& log, Context& ctx, PC_tree_t spec_tree)
-		: Plugin{log, ctx}
+	timer_plugin(Logger& logger, Context& ctx, PC_tree_t spec_tree)
+		: Plugin{logger, ctx}
 	{
 		if (PC_status(spec_tree)) {
-			logger().error("Error in read_config_tree");
+			logger.error("Error in read_config_tree");
 			return;
 		}
 		if (is_list(spec_tree)) {
@@ -71,26 +71,26 @@ public:
 
 				PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
 				if (is_map(val)) {
-					logger().debug("Defined timer (map-styled): {}", timer_name);
+					logger.debug("Defined timer (map-styled): {}", timer_name);
 
 					auto start_ev = PDI::to_string(PC_get(val, ".start"));
 					ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
-					logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+					logger.debug("event [{}] starts timer {}", start_ev, timer_name);
 
 					auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
 					ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
-					logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+					logger.debug("event [{}] stops timer {}", stop_ev, timer_name);
 				} else {
-					logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
+					logger.debug("Defined timer (scalar/list-styled): {}", timer_name);
 
 					opt_each(val, [&](PC_tree_t sub_elem) {
 						auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
 						ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
-						logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+						logger.debug("event [{}] starts timer {}", start_ev, timer_name);
 
 						auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
 						ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
-						logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+						logger.debug("event [{}] stops timer {}", stop_ev, timer_name);
 					});
 				}
 			}
@@ -103,34 +103,34 @@ public:
 					} else {
 						PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
 						if (is_map(val)) {
-							logger().debug("Defined timer (map-styled): {}", timer_name);
+							logger.debug("Defined timer (map-styled): {}", timer_name);
 
 							auto start_ev = PDI::to_string(PC_get(val, ".start"));
 							ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
-							logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+							logger.debug("event [{}] starts timer {}", start_ev, timer_name);
 
 							auto stop_ev = PDI::to_string(PC_get(val, ".stop"));
 							ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
-							logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+							logger.debug("event [{}] stops timer {}", stop_ev, timer_name);
 						} else {
 							logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
 
 							opt_each(val, [&](PC_tree_t sub_elem) {
 								auto start_ev = PDI::to_string(sub_elem) + "_start_timer";
 								ctx.on_event([this, timer_name](const std::string& event) { startTimer(timer_name); }, start_ev);
-								logger().debug("event [{}] starts timer {}", start_ev, timer_name);
+								logger.debug("event [{}] starts timer {}", start_ev, timer_name);
 
 								auto stop_ev = PDI::to_string(sub_elem) + "_stop_timer";
 								ctx.on_event([this, timer_name](const std::string& event) { stopTimer(timer_name); }, stop_ev);
-								logger().debug("event [{}] stops timer {}", stop_ev, timer_name);
+								logger.debug("event [{}] stops timer {}", stop_ev, timer_name);
 							});
 						}
 					}
 				}
 			});
 		}
-		logger().info("Plugin loaded successfully");
-		logger().debug("Timer output to {}", m_output_path);
+		logger.info("Plugin loaded successfully");
+		logger.debug("Timer output to {}", m_output_path);
 	}
 
 	~timer_plugin()

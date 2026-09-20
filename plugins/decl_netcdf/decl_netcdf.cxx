@@ -50,10 +50,10 @@ public:
 			// allocate memory for all elements, because Dnc_file has callbacks with their pointers
 			m_files.reserve(len);
 			for (int i = 0; i < len; i++) {
-				m_files.emplace_back(logger, context(), PC_get(config, "[%d]", i));
+				m_files.emplace_back(logger, ctx, PC_get(config, "[%d]", i));
 			}
 		} else {
-			m_files.emplace_back(logger, context(), config);
+			m_files.emplace_back(logger, ctx, config);
 		}
 		logger.info("Plugin loaded successfully");
 	}
