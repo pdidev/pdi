@@ -44,9 +44,6 @@ class Logger_operation: public Operation
 	/// pattern to set to the logger on execute
 	std::string m_pattern;
 
-	/// evaluate pattern on execute
-	PDI::Expression m_evaluate = 0L;
-
 public:
 	/** Creates logger operation
      * \param[in] logger a logger

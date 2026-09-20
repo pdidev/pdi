@@ -38,7 +38,6 @@
 #include <pdi/data_descriptor.h>
 #include <pdi/datatype.h>
 #include <pdi/expression.h>
-#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/python/tools.h>

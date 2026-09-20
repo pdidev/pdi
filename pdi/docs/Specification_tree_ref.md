@@ -24,7 +24,7 @@ The *specification tree root* is a **mapping** that contains the following keys:
   and`plugins` sections. But the keys under these sections should not be
   repeated. The same file can be included twice (diamond include) but recursive
   inclusion is an error.
-* the `logging` section specify logger properties
+* the `logging` section configures the messages %PDI and its plugins write,
 * the `metadata` and `data` sections specify the type of the data in buffers
   exposed by the application; for `metadata`, %PDI keeps a copy while it only
   keeps references for `data`,
@@ -867,30 +867,70 @@ It accepts no parameter.
 type: intptr
 ```
 
+## logger {#logger_node}
+
+A *logger* can be **any of**:
+* a \ref logging_level_node, the logger logging level,
+* a \ref logger_map_node.
+
+
+## logger_map {#logger_map_node}
+
+A *logger_map* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"level"` (*optional*)|a \ref logging_level_node, the level of the logger|
+|`"disabled_outputs"` (*optional*)|a list of names of outputs the logger does not write to|
+
+* a logger writes to every output of the \ref logging_map_node "logging" of the
+  \ref root_node "root", except those it disables, each with the pattern of that
+  output,
+* a logger whose level is not set follows the default logging level.
+
+Example:
+
+```yaml
+logging:
+  core:
+    level: info
+    disabled_outputs: [stdout]
+plugins:
+  some_plugin:
+    logging:
+      level: warn
+      disabled_outputs: [stdout]
+```
+
 
 ## logging {#logging_node}
 
 A *logging* can be **any of**:
-* a \ref logging_map_node,
-* a \ref logging_level_node,
-
-A *logging* is fully supported in \ref root_node and any \ref plugin_map_node .
+* a \ref logging_level_node, the default logging level,
+* a \ref logging_map_node.
 
 
 ## logging_level {#logging_level_node}
 
-A *logging_level* is a scalar which determines verbosity level. It can be set to 
-  (from the most to the least verbose): 
+A *logging_level* is a scalar which determines verbosity level, with no regard
+for case.
+It can be set to (from the most to the least verbose):
+* `"trace"` - shows a log when a normal situation of the execution might be
+  useful for the developers to diagnose the behaviour of the library,
 * `"debug"` - shows a log when a normal situation of the execution might be
   useful to understand the behavior of the library,
 * `"info"` - shows a log when a normal situation of the execution is likely
   useful to understand the behavior of the library,
-* `"warn"` - shows a log when a very likely invalid situation has been detected
-  by the library (user input that is technically valid, but very unusual for
-  example),
-* `"error"` - shows a log when an invalid situation has been detected by the
-  library (invalid user input, invalid hardware behaviour, etc.),
+* `"warn"` or `"warning"` - shows a log when a very likely invalid situation has
+  been detected by the library (user input that is technically valid, but very
+  unusual for example),
+* `"error"` or `"err"` - shows a log when an invalid situation has been detected
+  by the library (invalid user input, invalid hardware behaviour, etc.),
+* `"critical"` - shows a log only when the library cannot recover from an
+  invalid situation,
 * `"off"` - logs are disabled.
+
+Any other value is an error.
 
 Examples:
 
@@ -898,7 +938,8 @@ Examples:
 logging: "debug"
 ```
 
-* by default `level` is set to `info`
+* unless set, the default logging level is `info`, the level of a logger is the
+  default logging level, and the level of an output is `trace`.
 
 
 ## logging_map {#logging_map_node}
@@ -907,44 +948,83 @@ A *logging_map* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
-|`"level"`  (*optional*)|a \ref logging_level_node|
-|`"pattern"` (*optional*)|a logger prefix pattern of spdlog|
-|`"output"` (*optional*)|a \ref logging_output_map_node|
+|`"level"`  (*optional*)|a \ref logging_level_node, the default logging level of the loggers|
+|`"pattern"` (*optional*)|a \ref logging_pattern_node, the default pattern of the outputs|
+|`"outputs"` (*optional*)|a \ref logging_outputs_map_node|
+|`"output"` (*deprecated*)|a \ref logging_output_map_node|
+|`"core"` (*optional*)|a \ref logger_node, that configures the logger of %PDI core|
 
-* spdlog pattern is a string that is parsed by spdlog library,
-  (see more: https://github.com/gabime/spdlog/wiki/3.-Custom-formatting)
-* %PDI introduces new special flag `%{<EXPR>}`, where `<EXPR>` represents a
-  \ref expression_node "string-valued $-expression"|a $-expression that will be
-  evaluated just after all plugins have been initialized,
-* *pattern* by default is set to (where %n is `PDI` or a plugin name):
-  ```
-  [%T][%n] *** %^%l%$: %v
-  ```
-  for serial execution and:
-  ```
-  [%T][%{MPI_COMM_WORLD.rank:06d}][%n] *** %^%l%$: %v
-  ```
-  when running application with MPI/
+* `output` is the deprecated way to choose outputs, it cannot be used together
+  with `outputs`,
+* with neither `outputs` nor `output`, there is a single output, named `stdout`,
+  that writes to the standard output,
 
-Example:
+### Example
 
 ```yaml
 logging:
   level: "debug"
-  pattern: "[%{MPI_COMM_WORLD.rank:04d}][%n][%l]"
+  pattern: "[%{MPI_COMM_WORLD_rank}][%n] %l: %v"
+plugins:
+  mpi: ~
+```
+
+
+## logging_named_output {#logging_named_output_node}
+
+A *logging_named_output* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"kind"`|where the output writes logs: `file`, `stdout` for the standard output, `stderr` for the standard error|
+|`"path"` (*for kind `file` only*)|the path of the file where to write logs|
+|`"level"` (*optional*)|a \ref logging_level_node, the level of the output|
+|`"pattern"` (*optional*)|a \ref logging_pattern_node, the pattern of the output|
+
+* the level of an output defaults to `trace`, so that it doesn't filter anything, and everything not filtered at the logger level is written,
+* the pattern of an output defaults to the default pattern.
+
+### Example
+
+```yaml
+logging:
+  level: "debug"
+  pattern: "[%{MPI_COMM_WORLD_rank}][%n] %l: %v"
+  core:
+    outputs:
+      output1:
+        kind: stdout
+        level: error
+        pattern: "Error in PDI !!! -> %v"
+      output2:
+        kind: stderr
+        level: warning
+      output3:
+        kind: file
+        path: "pdi.log"
+plugins:
+  mpi:
+    logging:
+      disabled_outputs: ["output2"]
 ```
 
 
 ## logging_output_map {#logging_output_map_node}
 
-A *logging_output_map* is a **mapping** that contains the following keys:
+A *logging_output_map* a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
-|`"file"`  (*optional*)|a path of the file where to write logs|
-|`"console"` (*optional*)|`on` or `off`|
+|`"file"`  (*optional*)|a path of the file where to write logs, creating an output named `file`|
+|`"console"` (*optional*)|a boolean, such as `on` or `off` on whether to create an output named `stdout` that writes to the standard output.|
 
-* by default when `file` is defined, `console` is set to `off`.
+* by default when `file` is defined, `console` is set to `off`, it is set to
+  `on` otherwise,
+* the file is an output named `file`, and the console one named `stdout`, by
+  which a \ref logger_map_node can disable them.
+
+It is the deprecated way to choose the outputs, use a
+\ref logging_outputs_map_node instead.
 
 Example:
 
@@ -953,7 +1033,7 @@ logging:
   level: "debug"
   output:
     file: "test.log"
-    console: "on"
+    console: on
 ```
 
 ### Example:
@@ -975,6 +1055,50 @@ members:
 ```
 
 See \ref struct_type_node for more examples.
+
+
+## logging_outputs_map {#logging_outputs_map_node}
+
+A *logging_outputs_map* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`".*"` (*optional*)|a \ref logging_named_output_node|
+
+* each key is the name of an output, its value defines the output associated to it.
+
+Example:
+
+```yaml
+logging:
+  outputs:
+    console: {kind: stderr, level: warn}
+    log_file: {kind: file, path: "pdi.log", pattern: "[%T][%n] %l: %v"}
+```
+
+
+## logging_pattern {#logging_pattern_node}
+
+A *logging_pattern* is a string that sets the format of each line of log, as
+parsed by the spdlog library (see
+https://github.com/gabime/spdlog/wiki/Custom-formatting), where `%v` stands for
+the message.
+
+* %PDI introduces a new flag `%{<REF>}`, where `<REF>` is a reference as in a
+  \ref expression_node "$-expression", without its leading `$`; it stands for
+  the value of `${<REF>}`, printed as is, evaluated once all plugins are loaded,
+  and an empty string until then,
+* `%%` stands for a literal `%`, so `%%{` writes a literal `%{`,
+* a pattern that ends with a lone `%` is an error.
+
+Example:
+
+```yaml
+logging:
+  pattern: "[%T][%{MPI_COMM_WORLD_rank}][%n] %l: %v"
+plugins:
+  mpi: ~
+```
 
 
 ## logical_type {#logical_type_node}
@@ -1057,7 +1181,9 @@ A *plugin_map* is a **mapping** that contains the following keys:
 
 * each key identifies the name of a plugin to load associated to its
   configuration; the content of the configuration depends on the plugin.
-
+* if the value is a mapping and contain the `logging` key, it is interpreted as
+  the \ref logger_map_node for this plugin
+  
 Have a look at the \ref Plugins "plugins" documentation to see the specification
 tree they accept.
 

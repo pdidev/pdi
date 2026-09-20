@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -202,7 +203,7 @@ struct mpi_plugin: Plugin {
 		add_predefined(ctx, "MPI_COMM_WORLD_rank", &world_rank, Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 
 		// logger requires MPI_COMM_WORLD.rank data
-		set_up_logger(logger, ctx, PC_get(config, ".logging"));
+		logger.add_default_pattern_block(fmt::format("MPI {:06d}", world_rank));
 
 		// share the MPI_Comm datatype, it does not duplicate its content (collective), only copies it!
 		ctx.add_datatype("MPI_Comm", [this](Context&, PC_tree_t) { return m_mpi_comm_datatype; });
@@ -237,12 +238,6 @@ struct mpi_plugin: Plugin {
 		MPI_Comm_transtype(logger, ctx, config, m_mpi_comm_datatype, m_mpi_comm_f_datatype);
 
 		logger.info("Plugin loaded successfully");
-	}
-
-	void set_up_logger(Logger& logger, Context& ctx, PC_tree_t)
-	{
-		logger.add_pattern_global_block("MPI %{MPI_COMM_WORLD_rank:06d}");
-		logger.evaluate_global_pattern(ctx);
 	}
 
 	void add_predefined(Context& ctx, const string& name, void* data, Datatype_sptr type)

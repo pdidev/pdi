@@ -13,6 +13,7 @@ The given example will load example plugin and pass its subtree to the plugin's 
 
 The plugin has to inherit from PDI::Plugin and have a constructor with arguments
 PDI::Logger&, PDI::Context& and PC_tree_t.
+It forwards the logger and the context to PDI::Plugin.
 
 ### Example plugin {#example_plugin}
 Example of the simplest plugin, that does nothing:

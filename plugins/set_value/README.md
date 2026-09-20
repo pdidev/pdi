@@ -129,11 +129,10 @@ It defines an operation to execute inside a \ref value_list.
 |`"logger"` (*optional*)|a \ref logger_map|
 
 
-**Share warning**  
-
+\warning
 Share is always done with read and write rights.
-Plugin allocates memory by `malloc`. If you reclaim the data, you should
-free it with `free` instruction.
+Plugin allocates memory by `malloc`.
+If you reclaim the data, you should free it with `free`.
 
 ### value list {#value_list}
 Is a list of the
@@ -215,12 +214,12 @@ set_value:
 ```
 
 ### logger map {#logger_map}
-Defines settings for global PDI logger.
+Changes the settings of the %PDI logging infrastructure, that apply to the
+messages of %PDI and of all its plugins.
 |key|value|
 |:--|:----|
-|`"level"` (*optional*)   |level to set to the logger|
-|`"pattern"` (*optional*) |pattern to set to the logger|
-|`"evaluate"` (*optional*) |if true evaluate the logger pattern|
+|`"level"` (*optional*)   |a \ref logging_level_node, the default logging level to set|
+|`"pattern"` (*optional*) |a \ref logging_pattern_node, the default pattern to set, whose references are evaluated right away|
 
 ## full configuration example {#full_config}
 

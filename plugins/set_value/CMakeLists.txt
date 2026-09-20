@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -48,11 +49,6 @@ add_library(pdi_set_value_plugin MODULE set_value.cxx
 										event_operation.cxx
 										release_operation.cxx)
 target_link_libraries(pdi_set_value_plugin PUBLIC PDI::PDI_plugins spdlog::spdlog)
-# logger_operation.cxx casts to PDI::Global_context to reach the root logger; that class is
-# library-internal (pdi/src/, not the public pdi/include/pdi/ API) and only reachable this way
-# when set_value is built as part of the PDI monorepo superbuild, not as a standalone plugin
-# against an installed PDI package.
-target_include_directories(pdi_set_value_plugin PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../pdi/src")
 set_target_properties(pdi_set_value_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # installation

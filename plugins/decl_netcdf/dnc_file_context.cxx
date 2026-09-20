@@ -27,11 +27,15 @@
 #include <set>
 #include <netcdf.h>
 
+#include <pdi/logger.h>
+
 #include "dnc_netcdf_file.h"
 
 #include "dnc_file_context.h"
 
 namespace decl_netcdf {
+
+using PDI::to_string;
 
 Dnc_file_context::Dnc_file_context(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t config)
 	: m_logger{logger}
@@ -108,13 +112,13 @@ Dnc_file_context::Dnc_file_context(PDI::Logger& logger, PDI::Context& ctx, PC_tr
 		if (PDI::is_scalar(read_node)) {
 			std::string read_desc = PDI::to_string(read_node);
 			m_logger.trace("Creating new empty read info for: {}", read_desc);
-			m_read.emplace(read_desc, Dnc_io{this->m_logger, this->m_ctx, PC_tree_t{}});
+			m_read.emplace(read_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
 		} else if (PDI::is_list(read_node)) {
 			int len = PDI::len(read_node);
 			for (int i = 0; i < len; i++) {
 				std::string read_desc = PDI::to_string(PC_get(read_node, "[%d]", i));
 				m_logger.trace("Creating new empty read info for: {}", read_desc);
-				m_read.emplace(read_desc, Dnc_io{this->m_logger, this->m_ctx, PC_tree_t{}});
+				m_read.emplace(read_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
 			}
 		} else {
 			PDI::each(read_node, [this](PC_tree_t desc_name, PC_tree_t read_value) {
@@ -122,12 +126,12 @@ Dnc_file_context::Dnc_file_context(PDI::Logger& logger, PDI::Context& ctx, PC_tr
 				m_logger.trace("Creating new read info for: {}", read_desc);
 				// if we read a variable with "size_of" key
 				if (!PC_status(PC_get(read_value, ".size_of"))) {
-					this->m_sizeof.emplace(read_desc, Dnc_io{this->m_logger, this->m_ctx, read_value});
+					this->m_sizeof.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
 				}
 				// if we read a regular variable
 				else
 				{
-					this->m_read.emplace(read_desc, Dnc_io{this->m_logger, this->m_ctx, read_value});
+					this->m_read.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
 				}
 			});
 		}
@@ -138,19 +142,19 @@ Dnc_file_context::Dnc_file_context(PDI::Logger& logger, PDI::Context& ctx, PC_tr
 		if (PDI::is_scalar(write_node)) {
 			std::string write_desc = PDI::to_string(write_node);
 			m_logger.trace("Creating new empty write info for: {}", write_desc);
-			m_write.emplace(write_desc, Dnc_io{this->m_logger, this->m_ctx, PC_tree_t{}});
+			m_write.emplace(write_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
 		} else if (PDI::is_list(write_node)) {
 			int len = PDI::len(write_node);
 			for (int i = 0; i < len; i++) {
 				std::string write_desc = PDI::to_string(PC_get(write_node, "[%d]", i));
 				m_logger.trace("Creating new empty write info for: {}", write_desc);
-				m_write.emplace(write_desc, Dnc_io{this->m_logger, this->m_ctx, PC_tree_t{}});
+				m_write.emplace(write_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
 			}
 		} else if (PDI::is_map(write_node)) {
 			PDI::each(write_node, [this](PC_tree_t desc_name, PC_tree_t write_value) {
 				std::string write_desc = PDI::to_string(desc_name);
 				m_logger.trace("Creating new write info for: {}", write_desc);
-				this->m_write.emplace(PDI::to_string(desc_name), Dnc_io{this->m_logger, this->m_ctx, write_value});
+				this->m_write.emplace(to_string(desc_name), Dnc_io{this->m_ctx, write_value});
 			});
 		} else {
 			throw PDI::Spectree_error{write_node, "write node is not parsed correctly"};

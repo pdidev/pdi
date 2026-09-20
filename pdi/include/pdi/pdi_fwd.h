@@ -85,7 +85,7 @@ using Datatype_sptr = std::shared_ptr<const Datatype>;
  */
 class Data_descriptor;
 
-/** Wrapper for spdlog::logger with additional pattern getter method
+/** A logger of the PDI logging infrastructure
  */
 class Logger;
 

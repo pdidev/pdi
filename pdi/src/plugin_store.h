@@ -34,8 +34,12 @@
 #include <utility>
 #include <vector>
 
-#include <pdi/logger.h>
-#include <pdi/plugin.h>
+#include "pdi/pdi_fwd.h"
+#include "pdi/logger.h"
+#include "pdi/plugin.h"
+
+#include "pdi_logger.h"
+#include "plugin_logger.h"
 
 namespace PDI {
 
@@ -48,6 +52,19 @@ class PDI_NO_EXPORT Plugin_store
 
 	/// A function listing the dependencies of a plugin
 	using plugin_deps_f = std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> (*)();
+
+	/** The symbols a plugin exports
+	 */
+	struct Symbols {
+		/// The factory function of the plugin
+		plugin_factory_f ctr;
+
+		/// The function listing the dependencies of the plugin
+		plugin_deps_f deps;
+
+		/// The name of the plugin, as shown in the logs: the one the plugin provides, or the name it is loaded by if it provides none
+		std::string pretty_name;
+	};
 
 	/** Information about the load state of a plugin
 	 */
@@ -76,36 +93,46 @@ class PDI_NO_EXPORT Plugin_store
 		/// The name of this plugin
 		std::string m_name;
 
-		// members are destroyed in reverse declaration order: the plugin references m_plugin_logger, so it must be declared (and thus destroyed)
-		// after it to avoid a dangling reference in the plugin destructor
+		/** The logger of the plugin
+		 *
+		 * The plugin refers to it, so it is declared before the plugin, and thus destroyed after it, to remain valid in the plugin destructor
+		 */
+		Plugin_logger m_plugin_logger;
 
-		/// A logger for the plugin
-		Logger m_plugin_logger;
-
-		/// The actual plugin, this must remain after the context & handle to guarantee correct destruction order
+		/// The actual plugin, declared after its logger to be destroyed before it
 		std::unique_ptr<Plugin> m_loaded_plugin;
 
 		/// Whether this plugin is loaded or not
-		Init_state m_state;
+		Init_state m_state = PRELOADED;
 
-	public:
-		/** Pre-loads a plugin
-		 * \param ctx the context
-		 * \param store the store in which this plugin is loaded
+		/** Pre-load a plugin whose symbols are already looked up
+		 * \param store the store in which the plugin is loaded
 		 * \param name the name of the plugin
 		 * \param conf the configuration subtree of the plugin
+		 * \param symbols the symbols the plugin exports
+		 * \throw Spectree_error if the `logging` subtree of the configuration is invalid
+		 */
+		Stored_plugin(Plugin_store& store, std::string name, PC_tree_t conf, Symbols symbols);
+
+	public:
+		/** Pre-load a plugin
+		 * \param store the store in which the plugin is loaded
+		 * \param name the name of the plugin
+		 * \param conf the configuration subtree of the plugin
+		 * \throw Plugin_error if the library of the plugin cannot be loaded or lacks one of its symbols
+		 * \throw Spectree_error if the `logging` subtree of the configuration is invalid
 		 */
 		Stored_plugin(Plugin_store& store, std::string name, PC_tree_t conf);
 
-		/** Loads a plugin if not done yet and its pre-dependencies if required
-		 * \param plugins the list of all plugins (for dependencies)
+		/** Load a plugin if not done yet and its pre-dependencies if required
+		 * \param store the store in which the plugin is loaded
+		 * \param ctx a context to pass to the plugin to load
 		 */
 		void ensure_loaded(Plugin_store& store, Context& ctx);
 	};
-	friend class Stored_plugin;
 
-	/// The logger
-	Logger& m_logger;
+	/// The PDI logger, that holds the infrastructure the logger of each plugin uses
+	Pdi_logger& m_logger;
 
 	/// The list of default path where to load the plugins
 	std::vector<std::string> m_plugin_path;
@@ -118,20 +145,23 @@ class PDI_NO_EXPORT Plugin_store
 	 */
 	void initialize_path(std::vector<PC_tree_t> const & confs);
 
-	/** dlopen's a plugin taking m_plugin_path into account
+	/** Look up the symbols a plugin exports, loading its library if its constructor or dependencies are not linked in: from m_plugin_path, from
+	 * the default plugin path, or from the system path
 	 * \param name the name of the plugin
-	 * \return a handle for the loaded object, same as dlopen
+	 * \return the symbols of the plugin
+	 * \throw Plugin_error if the library cannot be loaded or lacks the constructor or the dependencies of the plugin
 	 */
-	void* plugin_dlopen(const std::string& name);
+	Symbols plugin_dlopen(const std::string& name);
 
 public:
 	/** Builds a plugin store
-	 * \param logger the logger
+	 * \param logger the PDI logger, that holds the infrastructure the logger of each plugin uses
 	 */
-	Plugin_store(Logger& logger);
+	Plugin_store(Pdi_logger& logger);
 
 	/** Actually load the plugins
-	 * 
+	 *
+	 * \param ctx the context to pass to the plugins
 	 * \param confs the configurations specifying the list of plugin paths & plugins to load
 	 */
 	void load_plugins(Context& ctx, std::vector<PC_tree_t> const & confs);

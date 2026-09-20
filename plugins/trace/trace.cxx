@@ -26,7 +26,6 @@
 #include <string>
 
 #include <pdi/context.h>
-#include <pdi/logger.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 

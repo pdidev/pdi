@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -394,7 +395,7 @@ void Data_store::notify_missing_data(const string& name)
 }
 
 Data_store::Data_store(PC_tree_t conf)
-	: m_logger{"PDI", PC_get(conf, ".logging")}
+	: m_logger{PC_get(conf, ".logging")}
 	, m_plugins{m_logger}
 {
 	// Handle includes and gather all files
@@ -404,13 +405,13 @@ Data_store::Data_store(PC_tree_t conf)
 	Datatype_template::load_basic_datatypes(m_logger, *this);
 	// load user datatypes
 	for (auto&& conf: confs) {
-		Datatype_template::load_user_datatypes(m_logger, *this, PC_get(conf, ".types"));
+		Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
 	}
 
 	m_plugins.load_plugins(*this, confs);
 
-	// evaluate pattern after loading plugins
-	m_logger.evaluate_pattern(*this);
+	// now that all plugins are loaded, we can evaluate the references in the logger pattern
+	m_logger.evaluate_patterns(*this);
 
 	std::map<std::string, std::optional<Yaml_region>> data_definition_location;
 
@@ -482,7 +483,7 @@ void Data_store::event(const char* name)
 	notify_event(name);
 }
 
-Logger& Data_store::logger()
+Pdi_logger& Data_store::logger()
 {
 	return m_logger;
 }

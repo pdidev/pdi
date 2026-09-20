@@ -33,6 +33,7 @@
 #include <utility>
 
 #include <pdi/pdi_fwd.h>
+#include <pdi/logger.h>
 
 namespace PDI {
 

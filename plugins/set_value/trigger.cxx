@@ -24,7 +24,6 @@
  ******************************************************************************/
 
 #include <pdi/error.h>
-#include <pdi/logger.h>
 
 #include "event_operation.h"
 #include "expose_operation.h"

@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -55,6 +56,7 @@ if("${BUILD_PYTHON}")
 endif()
 
 add_executable(PDI_unit_tests
+		logger.cxx
 		paraconf_wrapper.cxx
 		parsed_modulo.cxx
 		PDI_array_datatype.cxx
@@ -73,6 +75,7 @@ add_executable(PDI_unit_tests
 		PDI_scalar_datatype.cxx
 		PDI_test_parse_types.cxx
 		PDI_tuple_datatype.cxx
+		plugin_store.cxx
 		)
 
 set(OPERAND_TYPES uint8_t int64_t float double)
@@ -103,6 +106,8 @@ foreach(OPERAND1_TYPE IN LISTS MODULABLE_OPERAND_TYPES)
 endforeach()
 
 target_compile_features(PDI_unit_tests PRIVATE cxx_std_20)
+# export the symbols of the test plugins, that PDI looks up in the executable before searching for a plugin library
+set_target_properties(PDI_unit_tests PROPERTIES ENABLE_EXPORTS TRUE)
 target_link_libraries(PDI_unit_tests PDI::PDI_plugins Threads::Threads GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 gtest_discover_tests(PDI_unit_tests)
