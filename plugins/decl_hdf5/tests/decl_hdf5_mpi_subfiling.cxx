@@ -65,6 +65,7 @@ plugins:
       subfiling:
         stripe_size: 4096
         count: 4
+        ioc_selection: SELECT_IOC_EVERY_NTH_RANK
       datasets:
         reals: {type: array, subtype: double, size: [$njt, $nit]}
       write:
