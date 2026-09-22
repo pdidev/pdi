@@ -20,6 +20,7 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* Fix an unreachable condition, [#758](https://github.com/pdidev/pdi/issues/758)
 
 #### Security
 
