@@ -346,6 +346,25 @@ void File_op::execute(Context& ctx)
 						ctx.logger().warn("Using default stripe_size");
 					}
 				}
+				const std::string& ioc_selection = subfiling().ioc_selection();
+				ctx.logger().debug("Subfiling ioc_selection = {}", ioc_selection);
+				if (ioc_selection == "SELECT_IOC_TOTAL") {
+					subf_config.shared_cfg.ioc_selection = SELECT_IOC_TOTAL;
+				} else if (ioc_selection == "SELECT_IOC_ONE_PER_NODE") {
+					subf_config.shared_cfg.ioc_selection = SELECT_IOC_ONE_PER_NODE;
+				} else if (ioc_selection == "SELECT_IOC_EVERY_NTH_RANK") {
+					subf_config.shared_cfg.ioc_selection = SELECT_IOC_EVERY_NTH_RANK;
+					if (const char* val = std::getenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA")) {
+						ctx.logger().info("H5FD_SUBFILING_IOC_SELECTION_CRITERIA = {}", val);
+					} else {
+						ctx.logger().warn("H5FD_SUBFILING_IOC_SELECTION_CRITERIA not set. Use default value 1.");
+					}
+				} else {
+					throw System_error{
+						"Subfiling IOC_selection has incompatible input. Please choose between SELECT_IOC_ONE_PER_NODE, SELECT_IOC_TOTAL, "
+						"and SELECT_IOC_EVERY_NTH_RANK"
+					};
+				}
 				H5Pset_fapl_subfiling(file_lst, &subf_config);
 			}
 #endif
