@@ -113,6 +113,11 @@ public:
 	 */
 	virtual Logger& logger() = 0;
 
+	/** Root PDI logger getter, bypassing this plugin's own logger scoping
+	 * \return the root "PDI" logger
+	 */
+	virtual Logger& pdi_core_logger() = 0;
+
 	/** Creates a new datatype template from a paraconf-style config
 	 * \param[in] node the configuration to read
 	 *

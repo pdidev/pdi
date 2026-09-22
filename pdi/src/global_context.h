@@ -188,6 +188,8 @@ public:
 
 	Logger& logger() override;
 
+	Logger& pdi_core_logger() override;
+
 	Datatype_template_sptr datatype(PC_tree_t node) override;
 
 	void add_datatype(const std::string&, Datatype_template_parser) override;

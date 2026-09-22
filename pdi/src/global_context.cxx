@@ -487,6 +487,11 @@ Logger& Global_context::logger()
 	return m_logger;
 }
 
+Logger& Global_context::pdi_core_logger()
+{
+	return m_logger;
+}
+
 Datatype_template_sptr Global_context::datatype(PC_tree_t node)
 {
 	string type;
