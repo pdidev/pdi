@@ -12,6 +12,8 @@ and this project adheres to
 ### For users
 
 #### Added
+* Support for `ioc_selection` parameter in YAML configuration to select the HDF5 subfiling I/O Concentrator strategy as per
+  [#804](https://github.com/pdidev/pdi/issues/804)
 
 #### Changed
 
