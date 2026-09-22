@@ -46,7 +46,7 @@ class Subfiling
 	/// The policy for subfiling when problem
 	PDI::Expression m_sf_policy = "STOP";
 
-	/// The strategy for selecting I/O Concentrato processes across MPI ranks.
+	/// The strategy for selecting I/O Concentrator processes across MPI ranks.
 	std::string m_sf_selection = "SELECT_IOC_ONE_PER_NODE";
 
 public:
