@@ -46,6 +46,9 @@ class Subfiling
 	/// The policy for subfiling when problem
 	PDI::Expression m_sf_policy = "STOP";
 
+	/// The strategy for selecting I/O Concentrato processes across MPI ranks.
+	std::string m_sf_selection = "SELECT_IOC_ONE_PER_NODE";
+
 public:
 	/** The default constructor for an empty selection (everything selected)
 	 */
@@ -57,6 +60,7 @@ public:
 	 * - count: an expressions, or an integer value
 	 * - stripe_size: an expressions, or an integer value
 	 * - policy: an expression representing either CONTINUE or STOP
+	 * - ioc_selection: a string specifing the IOC strategy
 	 *
 	 * \param tree the tree representing the subfiling.
 	 */
@@ -74,12 +78,17 @@ public:
 	 */
 	const PDI::Expression& stripe_size() const { return m_sf_stripe_size; }
 
-	/** Accesses the policy of subfiling configuration if problem
-	 * default.
+	/** Accesses the policy of subfiling configuration if problem.
 	 *
-	 * \return The the policy of subfiling configuration if problem
+	 * \return The policy of subfiling configuration if problem
 	 */
 	const PDI::Expression& policy() const { return m_sf_policy; }
+
+	/** Accesses the ios_selection of subfiling configuration.
+	 *
+	 * \return The IOC strategy of subfiling
+	 */
+	const std::string& ioc_selection() const { return m_sf_selection; }
 };
 
 } // namespace decl_hdf5
