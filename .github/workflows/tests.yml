@@ -33,14 +33,13 @@ on:
   pull_request:
   workflow_dispatch:
 jobs:
-  indent_and_typos:
+  indent:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
     - run: exec ./bin/test_indent
-    - uses: crate-ci/typos@v1
   first: # do a first run so as not to needlessly use all resources for all to fail
-    needs: indent_and_typos
+    needs: indent
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout branch
@@ -143,3 +142,10 @@ jobs:
       if: ( success() || failure() )  # always run even if the previous step fails
       with:
         report_paths: '/tmp/tests_output/tests_*.xml'
+  spell:
+    needs: second
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+    - uses: actions/checkout@v6
+    - uses: crate-ci/typos@v1
