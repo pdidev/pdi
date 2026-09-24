@@ -35,7 +35,7 @@
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "dnc_file_context.h"
 #include "dnc_netcdf_file.h"
 

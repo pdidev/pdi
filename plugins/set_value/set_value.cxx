@@ -34,7 +34,7 @@
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "trigger.h"
 
 namespace {

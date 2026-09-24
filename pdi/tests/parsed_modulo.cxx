@@ -30,7 +30,7 @@
 #include <pdi/expression.h>
 
 #include "pdi/pdi_fwd.h"
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "pdi/ref_any.h"
 #include "mocks/context_mock.h"
 #include "operators.h"

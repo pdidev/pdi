@@ -40,7 +40,7 @@
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "attribute_op.h"
 #include "dataset_op.h"
 #include "file_op.h"

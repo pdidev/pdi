@@ -45,7 +45,7 @@
 #include "pdi/pdi_fwd.h"
 #include "pdi/context.h"
 #include "pdi/data_descriptor.h"
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "global_context.h"
 #include "gmock/gmock.h"
 #include "mocks/context_mock.h"

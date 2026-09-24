@@ -33,7 +33,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <pstl/glue_algorithm_defs.h>
 #include <string.h>
 
 #include "pdi.h"
@@ -42,7 +41,7 @@
 #include "pdi/datatype.h"
 #include "pdi/datatype_template.h"
 #include "pdi/error.h"
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 
 namespace PDI {
 

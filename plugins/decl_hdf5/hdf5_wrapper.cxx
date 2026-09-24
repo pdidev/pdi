@@ -34,7 +34,7 @@
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "hdf5_wrapper.h"
 
 using PDI::Array_datatype;

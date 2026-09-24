@@ -30,12 +30,13 @@
 #include <utility>
 #include <vector>
 
-#include <spdlog/fmt/ranges.h> // IWYU pragma: keep
 #include <spdlog/logger.h>
 #include <spdlog/spdlog.h>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/paraconf_wrapper.h>
+
+#include "pdi/fmt.h" // IWYU pragma: keep
 
 namespace PDI {
 

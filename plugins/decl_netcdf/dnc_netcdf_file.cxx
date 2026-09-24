@@ -45,7 +45,7 @@
 #include <pdi/array_datatype.h>
 #include <pdi/scalar_datatype.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "dnc_netcdf_file.h"
 
 namespace decl_netcdf {

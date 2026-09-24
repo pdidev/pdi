@@ -28,7 +28,7 @@
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 
 namespace decl_netcdf {
 

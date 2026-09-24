@@ -43,7 +43,7 @@
 #include "pdi.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 
 using namespace PDI;
 using namespace std;

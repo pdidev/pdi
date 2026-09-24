@@ -34,7 +34,7 @@
 #include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/record_datatype.h"
 #include "pdi/ref_any.h"

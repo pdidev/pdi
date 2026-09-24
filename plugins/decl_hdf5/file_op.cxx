@@ -49,7 +49,7 @@
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "file_op.h"
 #include "hdf5_wrapper.h"
 

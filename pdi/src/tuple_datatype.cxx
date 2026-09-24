@@ -40,7 +40,7 @@
 #include "pdi/datatype.h"
 #include "pdi/datatype_template.h"
 #include "pdi/error.h"
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "pdi/tuple_datatype.h"
 
 namespace PDI {

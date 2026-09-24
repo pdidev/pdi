@@ -32,7 +32,7 @@
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "dnc_file_context.h"
 
 namespace {

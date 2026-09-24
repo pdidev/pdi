@@ -39,7 +39,7 @@
 #include "pdi/data_descriptor.h"
 #include "pdi/datatype.h"
 #include "pdi/datatype_template.h"
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"

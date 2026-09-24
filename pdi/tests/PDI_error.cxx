@@ -28,7 +28,7 @@
 #include <pdi/error.h>
 
 #include "pdi.h"
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 
 using namespace PDI;
 

@@ -34,7 +34,7 @@
 #include "pdi.h"
 #include "pdi/error.h"
 #include "pdi/export.h"
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "pdi/paraconf_wrapper.h"
 
 template <>

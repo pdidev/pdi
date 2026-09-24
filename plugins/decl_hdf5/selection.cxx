@@ -32,7 +32,7 @@
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "hdf5_wrapper.h"
 #include "selection.h"
 

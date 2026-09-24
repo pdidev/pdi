@@ -28,7 +28,7 @@
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "event_operation.h"
 #include "expose_operation.h"
 #include "logger_operation.h"

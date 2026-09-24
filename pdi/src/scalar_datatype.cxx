@@ -34,7 +34,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <pstl/glue_algorithm_defs.h>
 
 #include "pdi.h"
 #include "pdi/pdi_fwd.h"

@@ -50,7 +50,7 @@
 #include <pdi/scalar_datatype.h>
 #include <pdi/tuple_datatype.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "dataset_op.h"
 #include "hdf5_wrapper.h"
 #include "selection.h"

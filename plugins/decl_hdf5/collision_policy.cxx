@@ -28,7 +28,7 @@
 #include <pdi.h>
 #include <pdi/error.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "collision_policy.h"
 
 using PDI::Value_error;

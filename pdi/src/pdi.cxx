@@ -43,6 +43,7 @@
 #include "pdi/data_descriptor.h"
 #include "pdi/error.h"
 #include "pdi/export.h"
+#include "pdi/fmt.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/ref_any.h"

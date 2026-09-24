@@ -36,7 +36,7 @@
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
 
-#include "pdi/logger.h"
+#include "pdi/fmt.h"
 #include "set_operation.h"
 
 namespace set_value {

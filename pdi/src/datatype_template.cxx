@@ -34,7 +34,6 @@
 #include <utility>
 #include <vector>
 #include <paraconf.h>
-#include <pstl/glue_algorithm_defs.h>
 #include <sys/types.h>
 
 #include "config.h" // IWYU pragma: keep
@@ -46,6 +45,7 @@
 #include "pdi/datatype_template.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
+#include "pdi/fmt.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/pointer_datatype.h"
