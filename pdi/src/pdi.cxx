@@ -46,7 +46,7 @@
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/ref_any.h"
-#include "pdi/version.h"
+#include "pdi/version.h" // IWYU pragma: keep
 #include "global_context.h"
 
 static_assert(std::size(PDI_STATUS_MSG) == PDI_NB_STATUSES_DEFINED, "The signification of each error code should be listed in PDI_STATUS_MSG");

@@ -44,6 +44,7 @@
 #include "pdi/python/python_ref_wrapper.h"
 #include "pdi/python/tools.h"
 #include "pdi/ref_any.h"
+#include "pdi/version.h" // IWYU pragma: keep
 
 #include "global_context.h"
 
