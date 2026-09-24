@@ -23,20 +23,22 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <map>
+#include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
+#include <stdint.h>
 
-#include "pdi/array_datatype.h"
-#include "pdi/context.h"
+#include "pdi.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
+#include "pdi/fmt.h"
+#include "pdi/paraconf_wrapper.h"
 #include "pdi/record_datatype.h"
 #include "pdi/ref_any.h"
-#include "pdi/scalar_datatype.h"
-
+#include "expression/impl.h"
 #include "mapping.h"
 
 namespace PDI {

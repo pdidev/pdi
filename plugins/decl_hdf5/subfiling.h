@@ -27,8 +27,6 @@
 #define DECL_HDF5_SUBFILING_H_
 
 #include <paraconf.h>
-
-#include <pdi/pdi_fwd.h>
 #include <pdi/expression.h>
 
 namespace decl_hdf5 {

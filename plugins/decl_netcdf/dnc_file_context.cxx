@@ -23,12 +23,21 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <functional>
+#include <memory>
 #include <set>
+#include <utility>
+#include <vector>
 #include <netcdf.h>
+#include <pdi/data_descriptor.h>
+#include <pdi/error.h>
+#include <pdi/logger.h>
+#include <pdi/paraconf_wrapper.h>
+#include <pdi/ref_any.h>
 
-#include "dnc_netcdf_file.h"
-
+#include "pdi/fmt.h"
 #include "dnc_file_context.h"
+#include "dnc_netcdf_file.h"
 
 namespace decl_netcdf {
 

@@ -23,13 +23,22 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <functional>
+#include <memory>
+#include <set>
+#include <string>
 #include <gtest/gtest.h>
-
+#include <paraconf.h>
+#include <stdlib.h>
 #include <pdi/context.h>
 #include <pdi/paraconf_wrapper.h>
-#include <pdi/plugin.h>
 #include <pdi/scalar_datatype.h>
 
+#include "pdi.h"
+#include "pdi/pdi_fwd.h"
+#include "pdi/data_descriptor.h"
+#include "pdi/error.h"
+#include "pdi/ref_any.h"
 #include "global_context.h"
 
 

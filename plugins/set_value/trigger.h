@@ -27,9 +27,8 @@
 
 #include <memory>
 #include <vector>
-
+#include <paraconf.h>
 #include <pdi/context.h>
-#include <pdi/paraconf_wrapper.h>
 
 #include "operation.h"
 

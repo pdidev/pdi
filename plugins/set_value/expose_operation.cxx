@@ -23,10 +23,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <memory>
+#include <stddef.h>
+#include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
+#include <pdi/data_descriptor.h>
+#include <pdi/datatype.h>
+#include <pdi/datatype_template.h>
 #include <pdi/expression.h>
+#include <pdi/logger.h>
+#include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
 
+#include "pdi/fmt.h"
 #include "expose_operation.h"
 
 namespace set_value {

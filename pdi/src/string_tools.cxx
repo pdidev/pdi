@@ -22,14 +22,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
 #include <cassert>
+#include <stddef.h>
 
+#include "pdi.h"
 #include "pdi/error.h"
-
-#include "data_descriptor_impl.h"
-
+#include "pdi/fmt.h"
 #include "string_tools.h"
 
 namespace PDI {

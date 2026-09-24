@@ -25,10 +25,14 @@
 #ifndef PDI_EXPRESSION_IMPL_MAPPING_LITERAL_H_
 #define PDI_EXPRESSION_IMPL_MAPPING_LITERAL_H_
 
-#include <memory>
+#include <string>
+#include <unordered_map>
+#include <paraconf.h>
+#include <stddef.h>
 
-#include "pdi/context.h"
-#include "pdi/datatype.h"
+#include "pdi/pdi_fwd.h"
+#include "pdi/export.h"
+#include "pdi/expression.h"
 #include "../impl.h"
 
 namespace PDI {

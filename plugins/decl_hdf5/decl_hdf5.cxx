@@ -23,23 +23,26 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <hdf5.h>
-#ifdef H5_HAVE_PARALLEL
-#include <mpi.h>
-#endif
-
+#include <functional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
-
+#include <H5pubconf.h>
+#include <assert.h>
+#include <hdf5.h>
 #include <paraconf.h>
-
+#include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
+#include <pdi/expression.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
+#include "pdi/fmt.h"
+#include "attribute_op.h"
+#include "dataset_op.h"
 #include "file_op.h"
 #include "hdf5_wrapper.h"
 

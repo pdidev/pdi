@@ -22,11 +22,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <string>
+#include <vector>
 #include <gtest/gtest.h>
 #include <hdf5.h>
 #include <paraconf.h>
 #include <time.h>
-#include <unistd.h>
 #include <pdi.h>
 
 /** check the deflate level set in a HDF5 plist

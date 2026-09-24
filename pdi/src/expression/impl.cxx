@@ -22,22 +22,24 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
+#include <functional>
 #include <iomanip>
 #include <memory>
+#include <new>
 #include <sstream>
 #include <string>
+#include <ctype.h>
 
+#include "pdi.h"
+#include "pdi/pdi_fwd.h"
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
-#include "pdi/pointer_datatype.h"
-#include "pdi/record_datatype.h"
+#include "pdi/fmt.h"
+#include "pdi/paraconf_wrapper.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
-
 #include "impl.h"
 #include "impl/float_literal.h"
 #include "impl/int_literal.h"

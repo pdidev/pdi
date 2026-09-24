@@ -25,17 +25,13 @@
 #ifndef PDI_DATA_DESCRIPTOR_IMPL_H_
 #define PDI_DATA_DESCRIPTOR_IMPL_H_
 
-#include <functional>
 #include <memory>
 #include <stack>
-
-#include <paraconf.h>
-
+#include <string>
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
-#include <pdi/datatype_template.h>
-#include <pdi/ref_any.h>
 
+#include "pdi/export.h"
 #include "global_context.h"
 
 namespace PDI {

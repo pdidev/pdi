@@ -23,16 +23,17 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
+#include <cstdint>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
-
 #include <gtest/gtest.h>
-
+#include <paraconf.h>
+#include <stddef.h>
 #include <pdi/array_datatype.h>
 #include <pdi/datatype.h>
 #include <pdi/datatype_template.h>
@@ -42,6 +43,8 @@
 #include <pdi/scalar_datatype.h>
 #include <pdi/tuple_datatype.h>
 
+#include "pdi/pdi_fwd.h"
+#include "pdi/error.h"
 #include "global_context.h"
 
 

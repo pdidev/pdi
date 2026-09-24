@@ -23,12 +23,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 #include <gtest/gtest.h>
-
+#include <stddef.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/pointer_datatype.h>
 #include <pdi/tuple_datatype.h>
 
+#include "pdi/array_datatype.h"
+#include "pdi/datatype.h"
+#include "pdi/scalar_datatype.h"
 #include "PDI_tuple_datatype_cases.h"
 
 using namespace PDI;

@@ -24,16 +24,29 @@
  ******************************************************************************/
 
 #include <mpi.h>
-
+#include <cstdint>
+#include <functional>
+#include <memory>
 #include <string>
 #include <type_traits>
-
+#include <utility>
+#include <paraconf.h>
+#include <stddef.h>
+#include <pdi.h>
+#include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
 #include <pdi/context_proxy.h>
+#include <pdi/data_descriptor.h>
+#include <pdi/datatype.h>
+#include <pdi/datatype_template.h>
+#include <pdi/error.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
+#include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
+
+#include "pdi/fmt.h"
 
 namespace {
 

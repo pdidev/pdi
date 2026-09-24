@@ -23,14 +23,22 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <array>
 #include <filesystem>
 #include <iostream>
-#include <numeric>
+#include <iterator>
+#include <random>
 #include <ranges>
-
+#include <string>
+#include <type_traits>
+#include <gtest/gtest.h>
 #include <hdf5.h>
-
+#include <paraconf.h>
+#include <stddef.h>
+#include <pdi.h>
 #include <pdi/testing.h>
+
+#include "gmock/gmock.h"
 
 using PDI::make_random;
 using PDI::random_init;

@@ -23,15 +23,16 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <initializer_list>
+#include <string>
 #include <type_traits>
-
 #include <gtest/gtest.h>
-
 #include <pdi/expression.h>
 
+#include "pdi/pdi_fwd.h"
+#include "pdi/fmt.h"
+#include "pdi/ref_any.h"
 #include "mocks/context_mock.h"
-#include "mocks/data_descriptor_mock.h"
-
 #include "operators.h"
 
 

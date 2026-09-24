@@ -23,16 +23,19 @@
  ******************************************************************************/
 
 #include <memory>
+#include <string>
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "pdi/array_datatype.h"
-#include "pdi/context.h"
+#include "pdi.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
-#include "pdi/record_datatype.h"
+#include "pdi/fmt.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
-
+#include "expression/impl.h"
 #include "float_literal.h"
 
 namespace PDI {

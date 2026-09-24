@@ -25,11 +25,12 @@
 #ifndef SET_VALUE_EXPOSE_OPERATION_H_
 #define SET_VALUE_EXPOSE_OPERATION_H_
 
-#include <map>
+#include <iterator>
 #include <string>
-
+#include <utility>
+#include <vector>
+#include <paraconf.h>
 #include <pdi/context.h>
-#include <pdi/paraconf_wrapper.h>
 
 #include "operation.h"
 

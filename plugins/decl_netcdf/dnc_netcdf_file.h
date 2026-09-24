@@ -26,11 +26,16 @@
 #ifndef DECL_NETCDF_DNC_NETCDF_FILE_H_
 #define DECL_NETCDF_DNC_NETCDF_FILE_H_
 
-#include <map>
-
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <netcdf.h>
+#include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
 #include <pdi/expression.h>
+#include <pdi/record_datatype.h>
 
+#include "dnc_attribute.h"
 #include "dnc_group.h"
 #include "dnc_io.h"
 #include "dnc_variable.h"

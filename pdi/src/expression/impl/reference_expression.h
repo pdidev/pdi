@@ -27,9 +27,13 @@
 #define PDI_EXPRESSION_IMPL_REFERENCE_EXPRESSION_H_
 
 #include <memory>
+#include <string>
+#include <vector>
+#include <stddef.h>
 
-#include "pdi/context.h"
-#include "pdi/datatype.h"
+#include "pdi/pdi_fwd.h"
+#include "pdi/export.h"
+#include "pdi/expression.h"
 #include "../impl.h"
 
 namespace PDI {

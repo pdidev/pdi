@@ -23,10 +23,10 @@
  ******************************************************************************/
 
 #include <filesystem>
-#include <iostream>
-#include <numeric>
-#include <ranges>
-
+#include <string>
+#include <gtest/gtest.h>
+#include <paraconf.h>
+#include <pdi.h>
 #include <pdi/testing.h>
 
 class Timer: public ::PDI::PdiTest

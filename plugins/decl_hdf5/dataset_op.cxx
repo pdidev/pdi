@@ -23,36 +23,37 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <hdf5.h>
-#ifdef H5_HAVE_PARALLEL
-#include <mpi.h>
-#endif
-
 #include <algorithm>
+#include <functional>
+#include <iterator>
+#include <memory>
 #include <optional>
 #include <regex>
 #include <sstream>
 #include <tuple>
+#include <unordered_map>
+#include <utility>
 #include <vector>
-
-#include <spdlog/spdlog.h>
-
+#include <hdf5.h>
+#include <stddef.h>
+#include <pdi.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/array_datatype.h>
 #include <pdi/context.h>
+#include <pdi/data_descriptor.h>
 #include <pdi/datatype.h>
 #include <pdi/datatype_template.h>
 #include <pdi/error.h>
-#include <pdi/fmt.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
 #include <pdi/tuple_datatype.h>
 
+#include "pdi/fmt.h"
+#include "dataset_op.h"
 #include "hdf5_wrapper.h"
 #include "selection.h"
-
-#include "dataset_op.h"
 
 using PDI::Array_datatype;
 using PDI::Context;

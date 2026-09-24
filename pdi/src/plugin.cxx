@@ -22,11 +22,11 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
 #include <pdi/context.h>
-#include <pdi/ref_any.h>
 
+#include "pdi.h"
+#include "pdi/error.h"
+#include "pdi/fmt.h"
 #include "pdi/plugin.h"
 
 namespace PDI {

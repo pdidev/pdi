@@ -23,27 +23,31 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
 #include <cstddef>
 #include <exception>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <list>
+#include <memory>
 #include <regex>
 #include <sstream>
+#include <stack>
 #include <string>
 #include <type_traits>
-#include <unordered_set>
+#include <paraconf.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
-#include "pdi/context.h"
+#include "pdi.h"
 #include "pdi/data_descriptor.h"
-#include "pdi/datatype.h"
 #include "pdi/error.h"
+#include "pdi/export.h"
+#include "pdi/fmt.h"
+#include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
-#include "pdi/plugin.h"
 #include "pdi/ref_any.h"
-
+#include "pdi/version.h" // IWYU pragma: keep
 #include "global_context.h"
 
 static_assert(std::size(PDI_STATUS_MSG) == PDI_NB_STATUSES_DEFINED, "The signification of each error code should be listed in PDI_STATUS_MSG");

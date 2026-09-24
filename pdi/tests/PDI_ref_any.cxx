@@ -23,9 +23,16 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-
+#include <stddef.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/array_datatype.h>
 #include <pdi/pointer_datatype.h>
@@ -33,7 +40,10 @@
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
 
-#include "mocks/datatype_mock.h"
+#include "pdi.h"
+#include "pdi/datatype.h"
+#include "pdi/error.h"
+#include "pdi/fmt.h"
 
 using namespace PDI;
 using namespace std;

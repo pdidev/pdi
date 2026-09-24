@@ -27,7 +27,7 @@
 
 #include <string>
 #include <hdf5.h>
-
+#include <paraconf.h>
 #include <pdi/context.h>
 #include <pdi/expression.h>
 

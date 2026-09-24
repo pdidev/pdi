@@ -23,17 +23,18 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <functional>
+#include <iterator>
 #include <limits>
 #include <memory>
+#include <stdexcept>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
-
 #include <gtest/gtest.h>
-
+#include <paraconf.h>
+#include <string.h>
 #include <pdi/array_datatype.h>
-#include <pdi/datatype.h>
 #include <pdi/error.h>
 #include <pdi/expression.h>
 #include <pdi/paraconf_wrapper.h>
@@ -41,8 +42,12 @@
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
 
+#include "pdi/pdi_fwd.h"
+#include "pdi/context.h"
+#include "pdi/data_descriptor.h"
+#include "pdi/fmt.h"
 #include "global_context.h"
-
+#include "gmock/gmock.h"
 #include "mocks/context_mock.h"
 #include "mocks/data_descriptor_mock.h"
 

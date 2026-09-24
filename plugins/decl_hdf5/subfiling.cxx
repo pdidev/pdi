@@ -22,13 +22,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <algorithm>
-#include <iostream>
+#include <functional>
 #include <string>
-
-#include <pdi/context.h>
 #include <pdi/error.h>
+#include <pdi/paraconf_wrapper.h>
 
+#include "pdi/fmt.h"
 #include "subfiling.h"
 
 using PDI::each;

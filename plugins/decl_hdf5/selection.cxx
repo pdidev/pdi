@@ -22,20 +22,18 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <hdf5.h>
-#ifdef H5_HAVE_PARALLEL
-#include <mpi.h>
-#endif
-
 #include <algorithm>
+#include <functional>
 #include <string>
-
+#include <H5pubconf.h>
+#include <hdf5.h>
+#include <stddef.h>
 #include <pdi/context.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 
+#include "pdi/fmt.h"
 #include "hdf5_wrapper.h"
-
 #include "selection.h"
 
 using PDI::Context;

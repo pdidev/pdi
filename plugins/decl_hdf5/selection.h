@@ -27,10 +27,9 @@
 #define DECL_HDF5_SELECTION_H_
 
 #include <vector>
-
+#include <hdf5.h>
 #include <paraconf.h>
-
-#include <pdi/pdi_fwd.h>
+#include <pdi/context.h>
 #include <pdi/expression.h>
 
 namespace decl_hdf5 {

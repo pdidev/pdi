@@ -26,9 +26,11 @@
 #define PDI_EXPRESSION_IMPL_INT_LITERAL_H_
 
 #include <memory>
+#include <stddef.h>
 
-#include "pdi/context.h"
-#include "pdi/datatype.h"
+#include "pdi/pdi_fwd.h"
+#include "pdi/export.h"
+#include "pdi/expression.h"
 #include "../impl.h"
 
 namespace PDI {

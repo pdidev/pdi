@@ -36,6 +36,8 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/paraconf_wrapper.h>
 
+#include "pdi/fmt.h" // IWYU pragma: keep
+
 namespace PDI {
 
 /// Wrapper for spdlog::logger with additional pattern getter method

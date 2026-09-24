@@ -22,6 +22,11 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <string>
+#include <gtest/gtest.h>
+#include <paraconf.h>
+#include <stddef.h>
+#include <pdi.h>
 #include <pdi/testing.h>
 
 extern "C" {

@@ -23,10 +23,9 @@
  ******************************************************************************/
 
 #include <string>
-
 #include <gtest/gtest.h>
-
 #include <paraconf.h>
+#include <stddef.h>
 #include <pdi.h>
 
 class PdiCApiTest: public ::testing::Test

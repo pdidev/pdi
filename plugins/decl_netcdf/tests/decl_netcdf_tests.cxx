@@ -23,7 +23,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <cstdlib>
+#include <string>
 #include <gtest/gtest.h>
+#include <paraconf.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <pdi.h>
 
 /*

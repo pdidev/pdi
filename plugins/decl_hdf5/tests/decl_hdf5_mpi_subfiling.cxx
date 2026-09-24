@@ -24,6 +24,8 @@
 
 #include <mpi.h>
 #include <cstdlib>
+#include <paraconf.h>
+#include <stdio.h>
 #include <pdi.h>
 
 #define IMX 50

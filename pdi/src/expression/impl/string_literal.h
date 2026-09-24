@@ -25,10 +25,16 @@
 #ifndef PDI_EXPRESSION_IMPL_STRING_LITERAL_H_
 #define PDI_EXPRESSION_IMPL_STRING_LITERAL_H_
 
+#include <iterator>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+#include <stddef.h>
 
-#include "pdi/context.h"
-#include "pdi/datatype.h"
+#include "pdi/pdi_fwd.h"
+#include "pdi/export.h"
+#include "pdi/expression.h"
 #include "../impl.h"
 
 namespace PDI {

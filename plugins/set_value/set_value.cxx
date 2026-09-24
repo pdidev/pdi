@@ -22,26 +22,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <functional>
 #include <list>
-#include <map>
-#include <memory>
-#include <regex>
 #include <string>
-#include <unordered_map>
-#include <utility>
-
+#include <vector>
+#include <paraconf.h>
 #include <pdi/pdi_fwd.h>
-#include <pdi/array_datatype.h>
 #include <pdi/context.h>
-#include <pdi/error.h>
-#include <pdi/expression.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
-#include <pdi/pointer_datatype.h>
-#include <pdi/record_datatype.h>
-#include <pdi/scalar_datatype.h>
+#include <pdi/ref_any.h>
 
+#include "pdi/fmt.h"
 #include "trigger.h"
 
 namespace {

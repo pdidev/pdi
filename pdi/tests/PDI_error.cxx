@@ -23,9 +23,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <string>
 #include <gtest/gtest.h>
-
 #include <pdi/error.h>
+
+#include "pdi.h"
+#include "pdi/fmt.h"
 
 using namespace PDI;
 

@@ -23,13 +23,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
-
+#include <string>
 #include <gtest/gtest.h>
-
+#include <paraconf.h>
 #include <pdi.h>
 
 #define SUBREGIONARRAY_SIZE 64

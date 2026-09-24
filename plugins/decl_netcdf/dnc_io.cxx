@@ -25,6 +25,12 @@
 
 #include "dnc_io.h"
 
+#include <pdi.h>
+#include <pdi/error.h>
+#include <pdi/paraconf_wrapper.h>
+
+#include "pdi/fmt.h"
+
 namespace decl_netcdf {
 
 Dnc_io::Dnc_io(PDI::Context& ctx, PC_tree_t config)

@@ -22,8 +22,11 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <optional>
+#include <string>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <paraconf.h>
 
 #include "pdi/paraconf_wrapper.h"
 

@@ -23,12 +23,20 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <functional>
+#include <tuple>
+#include <utility>
+#include <H5version.h>
+#include <stddef.h>
+#include <pdi/pdi_fwd.h>
 #include <pdi/error.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
+#include <pdi/ref_any.h>
 
-#include "hdf5_wrapper.h"
-
+#include "pdi/fmt.h"
 #include "attribute_op.h"
+#include "hdf5_wrapper.h"
 
 namespace decl_hdf5 {
 

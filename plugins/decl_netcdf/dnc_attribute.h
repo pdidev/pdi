@@ -26,12 +26,11 @@
 #ifndef DECL_NETCDF_DNC_ATTRIBUTE_H_
 #define DECL_NETCDF_DNC_ATTRIBUTE_H_
 
+#include <string>
+#include <paraconf.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
-#include <pdi/datatype.h>
 #include <pdi/expression.h>
-#include <pdi/paraconf_wrapper.h>
-#include <pdi/ref_any.h>
 
 namespace decl_netcdf {
 

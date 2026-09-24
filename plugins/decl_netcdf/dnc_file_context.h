@@ -27,11 +27,12 @@
 #define DECL_NETCDF_DNC_FILE_CONTEXT_H_
 
 #include <list>
-#include <map>
-
+#include <string>
+#include <unordered_map>
+#include <paraconf.h>
 #include <pdi/pdi_fwd.h>
+#include <pdi/context.h>
 #include <pdi/expression.h>
-#include <pdi/paraconf_wrapper.h>
 
 #include "dnc_group.h"
 #include "dnc_io.h"

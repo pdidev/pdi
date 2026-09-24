@@ -23,17 +23,17 @@
  ******************************************************************************/
 
 #include <string>
+#include <typeinfo>
 #include <unordered_map>
-
-#include <spdlog/spdlog.h>
-
+#include <utility>
+#include <spdlog/common.h>
 #include <pdi/context.h>
 #include <pdi/context_proxy.h>
-#include <pdi/error.h>
 #include <pdi/expression.h>
 #include <pdi/logger.h>
-#include <pdi/ref_any.h>
+#include <pdi/paraconf_wrapper.h>
 
+#include "pdi/fmt.h"
 #include "logger_operation.h"
 
 namespace set_value {

@@ -23,31 +23,24 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
 #include <cstdlib>
-#include <functional>
+#include <exception>
 #include <map>
 #include <memory>
+#include <optional>
+#include <tuple>
+#include <unordered_map>
 #include <vector>
-
 #include <dlfcn.h>
-#include <unistd.h>
 
-#include <spdlog/spdlog.h>
-
+#include "config.h"
+#include "pdi.h"
 #include "pdi/error.h"
 #include "pdi/fmt.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
-#include "pdi/plugin.h"
-#include "pdi/ref_any.h"
-#include "pdi/version.h"
-
-#include "data_descriptor_impl.h"
-#include "string_tools.h"
-
 #include "plugin_store.h"
+#include "string_tools.h"
 
 namespace PDI {
 

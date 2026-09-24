@@ -22,20 +22,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <hdf5.h>
-#ifdef H5_HAVE_PARALLEL
-#include <mpi.h>
-#endif
-
+#include <memory>
 #include <string>
 #include <vector>
-
+#include <hdf5.h>
+#include <stdint.h>
+#include <pdi.h>
 #include <pdi/array_datatype.h>
 #include <pdi/datatype.h>
 #include <pdi/error.h>
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
 
+#include "pdi/fmt.h"
 #include "hdf5_wrapper.h"
 
 using PDI::Array_datatype;

@@ -23,11 +23,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <memory>
+#include <ostream>
+#include <string>
+#include <utility>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
-
+#include <stddef.h>
+#include <stdint.h>
 #include <pdi/array_datatype.h>
 #include <pdi/scalar_datatype.h>
 
+#include "pdi/pdi_fwd.h"
+#include "pdi/datatype.h"
 #include "mocks/context_mock.h"
 #include "mocks/datatype_mock.h"
 
