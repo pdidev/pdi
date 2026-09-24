@@ -22,19 +22,13 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
-#include <iostream>
 #include <memory>
-
-#include <dlfcn.h>
-
-#include "pdi/error.h"
-#include "pdi/paraconf_wrapper.h"
-#include "pdi/plugin.h"
-#include "pdi/ref_any.h"
+#include <string>
+#include <unordered_map>
+#include <utility>
 
 #include "pdi/context.h"
+#include "pdi/data_descriptor.h"
 
 namespace PDI {
 

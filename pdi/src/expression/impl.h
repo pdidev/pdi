@@ -25,17 +25,15 @@
 #ifndef PDI_EXPRESSION_IMPL_H_
 #define PDI_EXPRESSION_IMPL_H_
 
-#include <map>
+#include <pdi/pdi_fwd.h>
+#include <paraconf.h>
+#include <stddef.h>
 #include <memory>
 #include <string>
-#include <utility>
-#include <vector>
-
-#include <pdi/pdi_fwd.h>
-#include <pdi/paraconf_wrapper.h>
-#include <pdi/ref_any.h>
 
 #include "pdi/expression.h"
+#include "pdi/context.h"
+#include "pdi/export.h"
 
 namespace PDI {
 
@@ -43,27 +41,21 @@ struct PDI_NO_EXPORT Expression::Impl {
 	/** An expression implemented by a a integer literal
 	 */
 	struct Int_literal;
-
 	/** An expression implemented by a a float literal
 	 */
 	struct Float_literal;
-
 	/** An expression implemented by a a string literal (with potential dollar refs)
 	 */
 	struct String_literal;
-
 	/** An expression implemented by a an operation
 	 */
 	struct Operation;
-
 	/** An expression implemented by a a reference to a data
 	 */
 	class Reference_expression;
-
 	/** An expression implemented by a a sequence literal
 	 */
 	struct Sequence;
-
 	/** An expression implemented by a a mapping literal
 	 */
 	struct Mapping;

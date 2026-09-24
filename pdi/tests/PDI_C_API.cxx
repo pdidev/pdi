@@ -22,12 +22,11 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <string>
-
 #include <gtest/gtest.h>
-
 #include <paraconf.h>
 #include <pdi.h>
+#include <stddef.h>
+#include <string>
 
 class PdiCApiTest: public ::testing::Test
 {

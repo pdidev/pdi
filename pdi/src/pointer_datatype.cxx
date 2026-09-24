@@ -23,15 +23,21 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
-#include <map>
+#include <stdint.h>
+#include <string.h>
 #include <sstream>
 #include <string>
-
-#include "pdi/error.h"
+#include <functional>
+#include <iterator>
+#include <memory>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "pdi/pointer_datatype.h"
+#include "pdi/datatype.h"
+#include "pdi/datatype_template.h"
+#include "pdi/pdi_fwd.h"
 
 namespace PDI {
 

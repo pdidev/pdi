@@ -24,6 +24,12 @@
 
 #include "dnc_attribute.h"
 
+#include <pdi/logger.h>
+#include <pdi/paraconf_wrapper.h>
+#include <pdi/ref_any.h>
+
+#include "pdi/logger.h"
+
 namespace decl_netcdf {
 
 Dnc_attribute::Dnc_attribute(PDI::Context& ctx, const std::string& name, PC_tree_t config)

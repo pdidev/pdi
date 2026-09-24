@@ -26,8 +26,17 @@
 #include <pdi/context.h>
 #include <pdi/expression.h>
 #include <pdi/ref_any.h>
+#include <pdi/data_descriptor.h>
+#include <pdi/datatype.h>
+#include <pdi/datatype_template.h>
+#include <pdi/logger.h>
+#include <pdi/paraconf_wrapper.h>
+#include <pdi/pdi_fwd.h>
+#include <stddef.h>
+#include <memory>
 
 #include "share_operation.h"
+#include "pdi/logger.h"
 
 namespace set_value {
 

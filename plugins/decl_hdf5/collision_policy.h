@@ -27,6 +27,7 @@
 
 #include <cstdint>
 #include <ostream>
+#include <string>
 
 namespace decl_hdf5 {
 

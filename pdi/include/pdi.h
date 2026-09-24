@@ -56,9 +56,7 @@
 #define PDI_H_
 
 #include <paraconf.h>
-
 #include <pdi/export.h>
-#include <pdi/version.h>
 
 #ifdef __cplusplus
 extern "C" {

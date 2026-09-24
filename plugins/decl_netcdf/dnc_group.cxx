@@ -24,6 +24,9 @@
 
 #include "dnc_group.h"
 
+#include <pdi/paraconf_wrapper.h>
+#include <functional>
+
 namespace decl_netcdf {
 
 Dnc_group::Dnc_group(PDI::Context& ctx, const std::string& path, PC_tree_t config)

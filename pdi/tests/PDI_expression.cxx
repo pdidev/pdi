@@ -23,28 +23,33 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <limits>
-#include <memory>
-#include <string>
-#include <type_traits>
-#include <utility>
-#include <vector>
-
 #include <gtest/gtest.h>
-
 #include <pdi/array_datatype.h>
-#include <pdi/datatype.h>
 #include <pdi/error.h>
 #include <pdi/expression.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/record_datatype.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
+#include <paraconf.h>
+#include <string.h>
+#include <limits>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 
 #include "global_context.h"
-
 #include "mocks/context_mock.h"
 #include "mocks/data_descriptor_mock.h"
+#include "gmock/gmock.h"
+#include "pdi/context.h"
+#include "pdi/data_descriptor.h"
+#include "pdi/logger.h"
+#include "pdi/pdi_fwd.h"
 
 using PDI::Array_datatype;
 using PDI::Context;

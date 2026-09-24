@@ -23,22 +23,23 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
+#include <assert.h>
+#include <stdlib.h>
 #include <exception>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <vector>
+#include <new>
+#include <utility>
 
-#include "pdi/context.h"
-#include "pdi/datatype.h"
 #include "pdi/error.h"
-#include "pdi/plugin.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
-
 #include "data_descriptor_impl.h"
+#include "pdi.h"
+#include "pdi/datatype_template.h"
+#include "pdi/logger.h"
+#include "pdi/pdi_fwd.h"
 
 namespace PDI {
 

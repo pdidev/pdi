@@ -22,16 +22,20 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
-#include <cassert>
-#include <memory>
+#include <paraconf.h>
 #include <string>
-
-#include <pthread.h>
+#include <cstdlib>
+#include <exception>
+#include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 #include "pdi/error.h"
-#include "pdi/fmt.h"
+#include "pdi.h"
+#include "pdi/export.h"
+#include "pdi/logger.h"
+#include "pdi/paraconf_wrapper.h"
 
 template <>
 struct fmt::formatter<std::exception_ptr>: formatter<std::string_view> {

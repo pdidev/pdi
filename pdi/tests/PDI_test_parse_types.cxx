@@ -23,16 +23,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
-#include <map>
-#include <memory>
-#include <sstream>
-#include <utility>
-#include <vector>
-
 #include <gtest/gtest.h>
-
 #include <pdi/array_datatype.h>
 #include <pdi/datatype.h>
 #include <pdi/datatype_template.h>
@@ -41,8 +32,20 @@
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
 #include <pdi/tuple_datatype.h>
+#include <paraconf.h>
+#include <stddef.h>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <utility>
+#include <vector>
+#include <cstdint>
+#include <iterator>
+#include <string>
 
 #include "global_context.h"
+#include "pdi/error.h"
+#include "pdi/pdi_fwd.h"
 
 
 using PDI::Array_datatype;

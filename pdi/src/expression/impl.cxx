@@ -22,22 +22,20 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
+#include <ctype.h>
 #include <iomanip>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <functional>
+#include <new>
 
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
-#include "pdi/pointer_datatype.h"
-#include "pdi/record_datatype.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
-
 #include "impl.h"
 #include "impl/float_literal.h"
 #include "impl/int_literal.h"
@@ -46,6 +44,10 @@
 #include "impl/reference_expression.h"
 #include "impl/sequence.h"
 #include "impl/string_literal.h"
+#include "pdi.h"
+#include "pdi/logger.h"
+#include "pdi/paraconf_wrapper.h"
+#include "pdi/pdi_fwd.h"
 
 namespace PDI {
 

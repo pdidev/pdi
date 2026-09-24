@@ -23,31 +23,28 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
+#include <yaml.h>
 #include <cstdlib>
 #include <filesystem>
-#include <fstream>
 #include <functional>
 #include <map>
 #include <memory>
-#include <stdexcept>
 #include <unordered_set>
 #include <vector>
-
-#include <dlfcn.h>
-#include <unistd.h>
+#include <exception>
+#include <optional>
+#include <string_view>
+#include <tuple>
+#include <utility>
 
 #include "pdi/error.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
-#include "pdi/plugin.h"
 #include "pdi/ref_any.h"
-#include "pdi/version.h"
-
 #include "data_descriptor_impl.h"
-
 #include "global_context.h"
+#include "pdi.h"
+#include "pdi/datatype_template.h"
 
 namespace fs = std::filesystem;
 

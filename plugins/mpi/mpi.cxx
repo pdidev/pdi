@@ -24,16 +24,29 @@
  ******************************************************************************/
 
 #include <mpi.h>
-
-#include <string>
-#include <type_traits>
-
 #include <pdi/context.h>
 #include <pdi/context_proxy.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/scalar_datatype.h>
+#include <paraconf.h>
+#include <pdi.h>
+#include <pdi/data_descriptor.h>
+#include <pdi/datatype.h>
+#include <pdi/datatype_template.h>
+#include <pdi/error.h>
+#include <pdi/pdi_fwd.h>
+#include <pdi/ref_any.h>
+#include <stddef.h>
+#include <string>
+#include <type_traits>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <utility>
+
+#include "pdi/logger.h"
 
 namespace {
 

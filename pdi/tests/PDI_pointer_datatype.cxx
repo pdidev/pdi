@@ -24,11 +24,19 @@
  ******************************************************************************/
 
 #include <gtest/gtest.h>
-
 #include <pdi/array_datatype.h>
 #include <pdi/pointer_datatype.h>
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
+#include <stddef.h>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "pdi/datatype.h"
+#include "pdi/pdi_fwd.h"
 
 using namespace PDI;
 using namespace std;

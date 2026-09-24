@@ -22,9 +22,15 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <fstream>
-
 #include <pdi/testing.h>
+#include <gtest/gtest.h>
+#include <paraconf.h>
+#include <pdi.h>
+#include <fstream>
+#include <array>
+#include <string>
+
+#include "gmock/gmock.h"
 
 using testing::_;
 using testing::AllOf;

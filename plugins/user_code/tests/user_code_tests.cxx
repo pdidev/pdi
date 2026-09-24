@@ -23,6 +23,11 @@
  ******************************************************************************/
 
 #include <pdi/testing.h>
+#include <gtest/gtest.h>
+#include <paraconf.h>
+#include <pdi.h>
+#include <stddef.h>
+#include <string>
 
 extern "C" {
 

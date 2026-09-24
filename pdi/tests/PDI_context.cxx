@@ -24,13 +24,22 @@
  ******************************************************************************/
 
 #include <gtest/gtest.h>
-
 #include <pdi/context.h>
 #include <pdi/paraconf_wrapper.h>
-#include <pdi/plugin.h>
 #include <pdi/scalar_datatype.h>
+#include <paraconf.h>
+#include <stdlib.h>
+#include <functional>
+#include <memory>
+#include <set>
+#include <string>
 
 #include "global_context.h"
+#include "pdi.h"
+#include "pdi/data_descriptor.h"
+#include "pdi/error.h"
+#include "pdi/pdi_fwd.h"
+#include "pdi/ref_any.h"
 
 
 using namespace PDI;

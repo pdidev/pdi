@@ -23,17 +23,17 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <vector>
-
 #include <netcdf_meta.h> // includes NC_HAS_PARALLEL4 define
-#if NC_HAS_PARALLEL4
-#include <mpi.h>
-#endif
-
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
+#include <paraconf.h>
+#include <pdi/context.h>
+#include <pdi/logger.h>
+#include <vector>
+#include <string>
 
 #include "dnc_file_context.h"
+#include "pdi/logger.h"
 
 namespace {
 

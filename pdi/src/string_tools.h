@@ -28,8 +28,6 @@
 #include <string>
 #include <vector>
 
-#include <pdi/plugin.h>
-
 namespace PDI {
 
 /** Parse and unescape array of colon separated string

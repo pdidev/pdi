@@ -28,18 +28,14 @@
 #define DECL_HDF5_DATASET_OP_H_
 
 #include <hdf5.h>
-#ifdef H5_HAVE_PARALLEL
-#include <mpi.h>
-#endif
-
-#include <string>
-#include <unordered_map>
-
 #include <paraconf.h>
-
-#include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
 #include <pdi/expression.h>
+#include <H5FDmpi.h>
+#include <H5pubconf.h>
+#include <pdi/datatype.h>
+#include <string>
+#include <vector>
 
 #include "attribute_op.h"
 #include "collision_policy.h"

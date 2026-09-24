@@ -25,10 +25,18 @@
 
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
+#include <H5version.h>
+#include <pdi/logger.h>
+#include <pdi/pdi_fwd.h>
+#include <pdi/ref_any.h>
+#include <stddef.h>
+#include <functional>
+#include <tuple>
+#include <utility>
 
 #include "hdf5_wrapper.h"
-
 #include "attribute_op.h"
+#include "pdi/logger.h"
 
 namespace decl_hdf5 {
 

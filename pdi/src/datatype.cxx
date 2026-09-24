@@ -23,14 +23,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
-#include <spdlog/spdlog.h>
+#include <stddef.h>
+#include <iterator>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "pdi/error.h"
-#include "pdi/fmt.h"
-
 #include "pdi/datatype.h"
+#include "pdi.h"
+#include "pdi/datatype_template.h"
+#include "pdi/logger.h"
+#include "pdi/pdi_fwd.h"
 
 namespace PDI {
 

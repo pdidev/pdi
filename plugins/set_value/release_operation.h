@@ -25,12 +25,10 @@
 #ifndef SET_VALUE_RELEASE_OPERATION_H_
 #define SET_VALUE_RELEASE_OPERATION_H_
 
-#include <map>
+#include <pdi/context.h>
+#include <paraconf.h>
 #include <string>
 #include <vector>
-
-#include <pdi/context.h>
-#include <pdi/paraconf_wrapper.h>
 
 #include "operation.h"
 

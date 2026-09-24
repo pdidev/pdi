@@ -23,13 +23,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <iostream>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 #include <dlfcn.h>
-
 #include <pdi.h>
 #include <pdi/context.h>
 #include <pdi/data_descriptor.h>
@@ -39,6 +33,16 @@
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
+#include <paraconf.h>
+#include <pdi/pdi_fwd.h>
+#include <stddef.h>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include <exception>
+#include <functional>
+
+#include "pdi/logger.h"
 
 namespace {
 

@@ -26,8 +26,9 @@
 #include <hdf5.h>
 #include <paraconf.h>
 #include <time.h>
-#include <unistd.h>
 #include <pdi.h>
+#include <string>
+#include <vector>
 
 /** check the deflate level set in a HDF5 plist
  * 

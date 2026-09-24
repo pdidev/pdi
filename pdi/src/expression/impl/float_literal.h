@@ -25,11 +25,13 @@
 #ifndef PDI_EXPRESSION_IMPL_FLOAT_LITERAL_H_
 #define PDI_EXPRESSION_IMPL_FLOAT_LITERAL_H_
 
+#include <stddef.h>
 #include <memory>
 
-#include "pdi/context.h"
-#include "pdi/datatype.h"
 #include "../impl.h"
+#include "pdi/export.h"
+#include "pdi/expression.h"
+#include "pdi/pdi_fwd.h"
 
 namespace PDI {
 

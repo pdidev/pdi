@@ -24,6 +24,9 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <paraconf.h>
+#include <optional>
+#include <string>
 
 #include "pdi/paraconf_wrapper.h"
 

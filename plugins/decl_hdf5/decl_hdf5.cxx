@@ -24,24 +24,27 @@
  ******************************************************************************/
 
 #include <hdf5.h>
-#ifdef H5_HAVE_PARALLEL
-#include <mpi.h>
-#endif
-
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 #include <paraconf.h>
-
 #include <pdi/context.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
+#include <H5pubconf.h>
+#include <assert.h>
+#include <pdi/expression.h>
+#include <pdi/pdi_fwd.h>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include <functional>
+#include <utility>
 
 #include "file_op.h"
 #include "hdf5_wrapper.h"
+#include "attribute_op.h"
+#include "dataset_op.h"
+#include "pdi/logger.h"
 
 namespace {
 

@@ -25,6 +25,12 @@
 
 #include "dnc_variable.h"
 
+#include <pdi/datatype_template.h>
+#include <pdi/paraconf_wrapper.h>
+#include <functional>
+#include <memory>
+#include <utility>
+
 namespace decl_netcdf {
 
 Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate)

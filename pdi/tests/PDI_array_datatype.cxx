@@ -24,12 +24,20 @@
  ******************************************************************************/
 
 #include <gtest/gtest.h>
-
 #include <pdi/array_datatype.h>
 #include <pdi/scalar_datatype.h>
+#include <gmock/gmock.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <utility>
 
 #include "mocks/context_mock.h"
 #include "mocks/datatype_mock.h"
+#include "pdi/datatype.h"
+#include "pdi/pdi_fwd.h"
 
 using namespace PDI;
 using std::make_shared;

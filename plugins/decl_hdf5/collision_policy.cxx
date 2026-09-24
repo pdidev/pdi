@@ -23,11 +23,13 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <algorithm>
-
 #include <pdi/error.h>
+#include <pdi.h>
+#include <algorithm>
+#include <cctype>
 
 #include "collision_policy.h"
+#include "pdi/logger.h"
 
 using PDI::Value_error;
 using std::ostream;

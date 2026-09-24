@@ -23,20 +23,18 @@
  ******************************************************************************/
 
 #include <hdf5.h>
-#ifdef H5_HAVE_PARALLEL
-#include <mpi.h>
-#endif
-
-#include <algorithm>
-#include <string>
-
 #include <pdi/context.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
+#include <H5pubconf.h>
+#include <stddef.h>
+#include <algorithm>
+#include <string>
+#include <functional>
 
 #include "hdf5_wrapper.h"
-
 #include "selection.h"
+#include "pdi/logger.h"
 
 using PDI::Context;
 using PDI::each;

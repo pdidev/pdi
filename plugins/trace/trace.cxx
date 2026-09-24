@@ -23,11 +23,16 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <string>
-
 #include <pdi/context.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
+#include <paraconf.h>
+#include <pdi/logger.h>
+#include <pdi/pdi_fwd.h>
+#include <string>
+#include <functional>
+
+#include "pdi/logger.h"
 
 namespace {
 

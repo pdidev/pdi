@@ -26,11 +26,16 @@
 #ifndef PDI_EXPRESSION_IMPL_OPERATION_H_
 #define PDI_EXPRESSION_IMPL_OPERATION_H_
 
+#include <stddef.h>
 #include <memory>
+#include <iterator>
+#include <utility>
+#include <vector>
 
-#include "pdi/context.h"
-#include "pdi/datatype.h"
 #include "../impl.h"
+#include "pdi/export.h"
+#include "pdi/expression.h"
+#include "pdi/pdi_fwd.h"
 
 namespace PDI {
 

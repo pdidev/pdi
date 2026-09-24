@@ -24,22 +24,22 @@
  ******************************************************************************/
 
 
+#include <string.h>
 #include <memory>
 #include <string>
 #include <unordered_set>
 
 #include "pdi/array_datatype.h"
-#include "pdi/context.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
-#include "pdi/record_datatype.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
-
 #include "reference_expression.h"
-
 #include "string_literal.h"
+#include "expression/impl.h"
+#include "pdi.h"
+#include "pdi/logger.h"
 
 namespace PDI {
 

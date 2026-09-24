@@ -24,10 +24,14 @@
  ******************************************************************************/
 
 #include <gtest/gtest.h>
-
 #include <pdi/record_datatype.h>
+#include <gmock/gmock.h>
+#include <stddef.h>
+#include <memory>
+#include <string>
 
 #include "mocks/datatype_mock.h"
+#include "pdi/pdi_fwd.h"
 
 using namespace PDI;
 using ::testing::Return;

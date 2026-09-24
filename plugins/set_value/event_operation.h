@@ -25,11 +25,9 @@
 #ifndef SET_VALUE_EVENT_OPERATION_H_
 #define SET_VALUE_EVENT_OPERATION_H_
 
-#include <map>
-#include <string>
-
 #include <pdi/context.h>
-#include <pdi/paraconf_wrapper.h>
+#include <paraconf.h>
+#include <string>
 
 #include "operation.h"
 

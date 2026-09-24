@@ -32,6 +32,7 @@
 
 #include <spdlog/logger.h>
 #include <spdlog/spdlog.h>
+#include <spdlog/fmt/ranges.h> // IWYU pragma: keep
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/paraconf_wrapper.h>

@@ -22,21 +22,15 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
-#include <cassert>
-#include <cstdint>
 #include <cstring>
-#include <map>
 #include <memory>
-#include <vector>
+#include <functional>
+#include <utility>
 
-#include "pdi/array_datatype.h"
 #include "pdi/datatype.h"
-#include "pdi/record_datatype.h"
 #include "pdi/scalar_datatype.h"
-
 #include "pdi/ref_any.h"
+#include "pdi/pdi_fwd.h"
 
 namespace PDI {
 

@@ -22,13 +22,17 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
+#include <paraconf.h>
+#include <stdlib.h>
+#include <yaml.h>
 #include <cassert>
+#include <functional>
+#include <optional>
+#include <string>
 
 #include "pdi/error.h"
-
 #include "pdi/paraconf_wrapper.h"
+#include "pdi/logger.h"
 
 namespace PDI {
 

@@ -23,22 +23,25 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
+#include <pstl/glue_algorithm_defs.h>
 #include <algorithm>
-#include <cassert>
 #include <cstdint>
 #include <cstring>
 #include <map>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <functional>
+#include <iterator>
+#include <unordered_map>
+#include <utility>
 
 #include "pdi/error.h"
-#include "pdi/expression.h"
-#include "pdi/paraconf_wrapper.h"
-
 #include "pdi/scalar_datatype.h"
+#include "pdi.h"
+#include "pdi/datatype.h"
+#include "pdi/datatype_template.h"
+#include "pdi/pdi_fwd.h"
 
 namespace PDI {
 

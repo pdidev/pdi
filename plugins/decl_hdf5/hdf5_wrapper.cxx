@@ -23,20 +23,19 @@
  ******************************************************************************/
 
 #include <hdf5.h>
-#ifdef H5_HAVE_PARALLEL
-#include <mpi.h>
-#endif
-
-#include <string>
-#include <vector>
-
 #include <pdi/array_datatype.h>
 #include <pdi/datatype.h>
 #include <pdi/error.h>
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
+#include <pdi.h>
+#include <stdint.h>
+#include <string>
+#include <vector>
+#include <memory>
 
 #include "hdf5_wrapper.h"
+#include "pdi/logger.h"
 
 using PDI::Array_datatype;
 using PDI::Datatype_sptr;

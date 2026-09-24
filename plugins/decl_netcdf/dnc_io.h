@@ -25,10 +25,12 @@
 #ifndef DECL_NETCDF_DNC_IO_H_
 #define DECL_NETCDF_DNC_IO_H_
 
-#include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
 #include <pdi/expression.h>
-#include <pdi/paraconf_wrapper.h>
+#include <paraconf.h>
+#include <stddef.h>
+#include <string>
+#include <vector>
 
 namespace decl_netcdf {
 

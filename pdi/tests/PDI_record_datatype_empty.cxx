@@ -24,8 +24,12 @@
  ******************************************************************************/
 
 #include <gtest/gtest.h>
-
 #include <pdi/record_datatype.h>
+#include <stddef.h>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "mocks/context_mock.h"
 

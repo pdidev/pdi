@@ -24,6 +24,13 @@
  ******************************************************************************/
 
 #include <hdf5.h>
+#include <H5version.h>
+#include <pdi.h>
+#include <pdi/data_descriptor.h>
+#include <pdi/logger.h>
+#include <pdi/pdi_fwd.h>
+#include <stddef.h>
+#include <yaml.h>
 #ifdef H5_HAVE_PARALLEL
 #include <mpi.h>
 #ifdef H5_HAVE_SUBFILING_VFD
@@ -32,18 +39,19 @@
 #endif
 
 
-#include <memory>
-#include <unordered_map>
-#include <utility>
-
 #include <pdi/context.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
+#include <memory>
+#include <unordered_map>
+#include <utility>
+#include <functional>
+#include <regex>
 
 #include "hdf5_wrapper.h"
-
 #include "file_op.h"
+#include "pdi/logger.h"
 
 using PDI::Context;
 using PDI::each;

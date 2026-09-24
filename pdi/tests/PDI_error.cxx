@@ -24,8 +24,11 @@
  ******************************************************************************/
 
 #include <gtest/gtest.h>
-
 #include <pdi/error.h>
+#include <string>
+
+#include "pdi.h"
+#include "pdi/logger.h"
 
 using namespace PDI;
 

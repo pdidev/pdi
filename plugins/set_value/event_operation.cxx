@@ -23,8 +23,11 @@
  ******************************************************************************/
 
 #include <pdi/context.h>
+#include <pdi/logger.h>
+#include <pdi/paraconf_wrapper.h>
 
 #include "event_operation.h"
+#include "pdi/logger.h"
 
 namespace set_value {
 

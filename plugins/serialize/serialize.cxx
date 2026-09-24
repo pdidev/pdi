@@ -23,16 +23,10 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <functional>
-#include <map>
-#include <memory>
-#include <vector>
-
 #include <pdi/pdi_fwd.h>
 #include <pdi/array_datatype.h>
 #include <pdi/context.h>
 #include <pdi/error.h>
-#include <pdi/expression.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
@@ -41,6 +35,22 @@
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
 #include <pdi/tuple_datatype.h>
+#include <paraconf.h>
+#include <pdi.h>
+#include <pdi/data_descriptor.h>
+#include <pdi/datatype.h>
+#include <stdint.h>
+#include <string.h>
+#include <functional>
+#include <memory>
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
+
+#include "pdi/logger.h"
 
 namespace {
 
