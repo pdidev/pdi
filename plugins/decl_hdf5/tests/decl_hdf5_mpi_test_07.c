@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,13 +62,14 @@ const char* CONFIG_YAML
 	  "  decl_hdf5:                                                     \n"
 	  "    file: decl_hdf5_mpi_test_07_C.h5                             \n"
 	  "    communicator: $MPI_COMM_WORLD                                \n"
+	  "    mpio: INDEPENDENT                                            \n"
 	  "    datasets:                                                    \n"
 	  "      reals:  {type: array, subtype: double, size: [$njt, $nit]} \n"
 	  "      values: {type: array, subtype: int, size: [$njt, $nit]}    \n"
 	  "    write:                                                       \n"
 	  "      reals:                                                     \n"
-	  "        when: $input=0                                           \n"
 	  "        mpio: INDEPENDENT                                        \n"
+	  "        when: $input=0                                           \n"
 	  "        dataset_selection: {start: [$jstart, $istart]}           \n"
 	  "      values:                                                    \n"
 	  "        mpio: COLLECTIVE                                         \n"
@@ -80,7 +81,6 @@ const char* CONFIG_YAML
 	  "        when: $input=1                                           \n"
 	  "        dataset_selection: {start: [$jstart, $istart]}           \n"
 	  "      values:                                                    \n"
-	  "        mpio: INDEPENDENT                                        \n"
 	  "        when: $input=1                                           \n"
 	  "        dataset_selection: {start: [$jstart, $istart]}           \n";
 
