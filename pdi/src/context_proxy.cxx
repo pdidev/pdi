@@ -23,15 +23,15 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <paraconf.h>
 #include <functional>
 #include <string>
 #include <utility>
+#include <paraconf.h>
 
+#include "pdi/pdi_fwd.h"
 #include "pdi/context.h"
 #include "pdi/context_proxy.h"
 #include "pdi/logger.h"
-#include "pdi/pdi_fwd.h"
 
 using std::function;
 using std::string;

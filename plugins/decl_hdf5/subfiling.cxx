@@ -22,13 +22,13 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <functional>
+#include <string>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
-#include <string>
-#include <functional>
 
-#include "subfiling.h"
 #include "pdi/logger.h"
+#include "subfiling.h"
 
 using PDI::each;
 using PDI::opt_each;

@@ -23,22 +23,22 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <memory>
+#include <string>
+#include <type_traits>
 #include <ctype.h>
 #include <stdint.h>
 #include <string.h>
-#include <memory>
-#include <type_traits>
-#include <string>
 
+#include "pdi.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
+#include "pdi/logger.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
-#include "operation.h"
 #include "expression/impl.h"
-#include "pdi.h"
-#include "pdi/logger.h"
+#include "operation.h"
 
 namespace PDI {
 

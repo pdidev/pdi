@@ -23,26 +23,26 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <stdint.h>
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <string>
-#include <vector>
-#include <functional>
 #include <utility>
+#include <vector>
+#include <stdint.h>
 
+#include "pdi.h"
 #include "pdi/array_datatype.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
+#include "pdi/logger.h"
+#include "pdi/paraconf_wrapper.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
 #include "pdi/tuple_datatype.h"
-#include "sequence.h"
 #include "expression/impl.h"
-#include "pdi.h"
-#include "pdi/logger.h"
-#include "pdi/paraconf_wrapper.h"
+#include "sequence.h"
 
 namespace PDI {
 

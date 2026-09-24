@@ -26,13 +26,13 @@
 #ifndef DECL_HDF5_HDF5_WRAPPER_H_
 #define DECL_HDF5_HDF5_WRAPPER_H_
 
-#include <hdf5.h>
-#include <pdi/pdi_fwd.h>
-#include <H5pubconf.h>
-#include <stddef.h>
 #include <functional>
 #include <tuple>
 #include <utility>
+#include <H5pubconf.h>
+#include <hdf5.h>
+#include <stddef.h>
+#include <pdi/pdi_fwd.h>
 
 namespace decl_hdf5 {
 

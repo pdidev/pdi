@@ -22,19 +22,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <string>
+#include <typeinfo>
+#include <unordered_map>
+#include <utility>
+#include <spdlog/common.h>
 #include <pdi/context.h>
 #include <pdi/context_proxy.h>
 #include <pdi/expression.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
-#include <spdlog/common.h>
-#include <string>
-#include <unordered_map>
-#include <typeinfo>
-#include <utility>
 
-#include "logger_operation.h"
 #include "pdi/logger.h"
+#include "logger_operation.h"
 
 namespace set_value {
 

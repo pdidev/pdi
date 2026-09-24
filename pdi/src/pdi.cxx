@@ -23,31 +23,31 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <paraconf.h>
-#include <stdarg.h>
-#include <stdlib.h>
 #include <cstddef>
 #include <exception>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <list>
+#include <memory>
 #include <regex>
 #include <sstream>
+#include <stack>
 #include <string>
 #include <type_traits>
-#include <iterator>
-#include <memory>
-#include <stack>
+#include <paraconf.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
+#include "pdi.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/error.h"
-#include "pdi/paraconf_wrapper.h"
-#include "pdi/ref_any.h"
-#include "global_context.h"
-#include "pdi.h"
 #include "pdi/export.h"
 #include "pdi/logger.h"
+#include "pdi/paraconf_wrapper.h"
+#include "pdi/ref_any.h"
 #include "pdi/version.h"
+#include "global_context.h"
 
 static_assert(std::size(PDI_STATUS_MSG) == PDI_NB_STATUSES_DEFINED, "The signification of each error code should be listed in PDI_STATUS_MSG");
 

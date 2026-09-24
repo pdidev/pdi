@@ -23,25 +23,25 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <stdint.h>
-#include <string.h>
 #include <algorithm>
+#include <iterator>
 #include <memory>
 #include <regex>
 #include <sstream>
 #include <string>
-#include <vector>
-#include <iterator>
 #include <unordered_map>
 #include <utility>
+#include <vector>
+#include <stdint.h>
+#include <string.h>
 
-#include "pdi/error.h"
-#include "pdi/tuple_datatype.h"
 #include "pdi.h"
+#include "pdi/pdi_fwd.h"
 #include "pdi/datatype.h"
 #include "pdi/datatype_template.h"
+#include "pdi/error.h"
 #include "pdi/logger.h"
-#include "pdi/pdi_fwd.h"
+#include "pdi/tuple_datatype.h"
 
 namespace PDI {
 

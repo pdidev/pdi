@@ -22,14 +22,14 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <pdi/testing.h>
-#include <gtest/gtest.h>
-#include <paraconf.h>
-#include <pdi.h>
-#include <stddef.h>
 #include <array>
 #include <random>
 #include <string>
+#include <gtest/gtest.h>
+#include <paraconf.h>
+#include <stddef.h>
+#include <pdi.h>
+#include <pdi/testing.h>
 
 
 using PDI::make_random;

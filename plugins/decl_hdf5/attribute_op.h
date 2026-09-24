@@ -25,11 +25,11 @@
 #ifndef DECL_HDF5_ATTRIBUTE_OP_H_
 #define DECL_HDF5_ATTRIBUTE_OP_H_
 
+#include <string>
 #include <hdf5.h>
+#include <paraconf.h>
 #include <pdi/context.h>
 #include <pdi/expression.h>
-#include <paraconf.h>
-#include <string>
 
 namespace decl_hdf5 {
 

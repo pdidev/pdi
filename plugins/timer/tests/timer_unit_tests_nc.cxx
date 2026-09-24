@@ -22,12 +22,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <pdi/testing.h>
+#include <filesystem>
+#include <string>
 #include <gtest/gtest.h>
 #include <paraconf.h>
 #include <pdi.h>
-#include <filesystem>
-#include <string>
+#include <pdi/testing.h>
 
 class Timer: public ::PDI::PdiTest
 {};

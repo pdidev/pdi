@@ -24,10 +24,10 @@
 
 #include <pdi/context.h>
 
-#include "pdi/plugin.h"
 #include "pdi.h"
 #include "pdi/error.h"
 #include "pdi/logger.h"
+#include "pdi/plugin.h"
 
 namespace PDI {
 

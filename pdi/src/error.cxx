@@ -22,17 +22,17 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <paraconf.h>
-#include <string>
 #include <cstdlib>
 #include <exception>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
+#include <paraconf.h>
 
-#include "pdi/error.h"
 #include "pdi.h"
+#include "pdi/error.h"
 #include "pdi/export.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"

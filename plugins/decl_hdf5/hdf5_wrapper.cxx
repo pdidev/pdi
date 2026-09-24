@@ -22,20 +22,20 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <memory>
+#include <string>
+#include <vector>
 #include <hdf5.h>
+#include <stdint.h>
+#include <pdi.h>
 #include <pdi/array_datatype.h>
 #include <pdi/datatype.h>
 #include <pdi/error.h>
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
-#include <pdi.h>
-#include <stdint.h>
-#include <string>
-#include <vector>
-#include <memory>
 
-#include "hdf5_wrapper.h"
 #include "pdi/logger.h"
+#include "hdf5_wrapper.h"
 
 using PDI::Array_datatype;
 using PDI::Datatype_sptr;

@@ -27,13 +27,13 @@
 #ifndef DECL_HDF5_FILE_OP_H_
 #define DECL_HDF5_FILE_OP_H_
 
-#include <paraconf.h>
-#include <pdi/expression.h>
-#include <H5pubconf.h>
-#include <pdi/context.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <H5pubconf.h>
+#include <paraconf.h>
+#include <pdi/context.h>
+#include <pdi/expression.h>
 
 #include "attribute_op.h"
 #include "collision_policy.h"

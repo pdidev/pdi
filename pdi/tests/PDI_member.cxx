@@ -23,15 +23,15 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <gtest/gtest.h>
-#include <pdi/record_datatype.h>
-#include <gmock/gmock.h>
-#include <stddef.h>
 #include <memory>
 #include <string>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <stddef.h>
+#include <pdi/record_datatype.h>
 
-#include "mocks/datatype_mock.h"
 #include "pdi/pdi_fwd.h"
+#include "mocks/datatype_mock.h"
 
 using namespace PDI;
 using ::testing::Return;

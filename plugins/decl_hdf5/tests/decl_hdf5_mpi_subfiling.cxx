@@ -23,10 +23,10 @@
  ******************************************************************************/
 
 #include <mpi.h>
-#include <pdi.h>
+#include <cstdlib>
 #include <paraconf.h>
 #include <stdio.h>
-#include <cstdlib>
+#include <pdi.h>
 
 #define IMX 50
 #define JMX 40

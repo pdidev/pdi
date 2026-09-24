@@ -22,22 +22,22 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <spdlog/sinks/ansicolor_sink.h>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <pdi/context.h>
-#include <pdi/error.h>
-#include <pdi/expression.h>
+#include <functional>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include <paraconf.h>
 #include <spdlog/common.h>
 #include <spdlog/logger.h>
+#include <spdlog/sinks/ansicolor_sink.h>
+#include <spdlog/sinks/basic_file_sink.h>
 #include <stddef.h>
-#include <memory>
-#include <unordered_map>
-#include <vector>
-#include <functional>
-#include <sstream>
-#include <string>
-#include <utility>
+#include <pdi/context.h>
+#include <pdi/error.h>
+#include <pdi/expression.h>
 
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"

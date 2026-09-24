@@ -23,20 +23,20 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <hdf5.h>
-#include <pdi/testing.h>
-#include <gtest/gtest.h>
-#include <paraconf.h>
-#include <pdi.h>
-#include <stddef.h>
+#include <array>
 #include <filesystem>
 #include <iostream>
-#include <ranges>
-#include <array>
 #include <iterator>
 #include <random>
+#include <ranges>
 #include <string>
 #include <type_traits>
+#include <gtest/gtest.h>
+#include <hdf5.h>
+#include <paraconf.h>
+#include <stddef.h>
+#include <pdi.h>
+#include <pdi/testing.h>
 
 #include "gmock/gmock.h"
 

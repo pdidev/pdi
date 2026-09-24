@@ -23,13 +23,13 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <gtest/gtest.h>
-#include <pdi.h>
-#include <paraconf.h>
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <gtest/gtest.h>
+#include <paraconf.h>
+#include <pdi.h>
 
 #define SUBREGIONARRAY_SIZE 64
 #define GRID_SIZE 32

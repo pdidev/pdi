@@ -22,19 +22,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <algorithm>
+#include <functional>
+#include <string>
+#include <H5pubconf.h>
 #include <hdf5.h>
+#include <stddef.h>
 #include <pdi/context.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
-#include <H5pubconf.h>
-#include <stddef.h>
-#include <algorithm>
-#include <string>
-#include <functional>
 
+#include "pdi/logger.h"
 #include "hdf5_wrapper.h"
 #include "selection.h"
-#include "pdi/logger.h"
 
 using PDI::Context;
 using PDI::each;

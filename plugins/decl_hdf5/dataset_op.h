@@ -27,15 +27,15 @@
 #ifndef DECL_HDF5_DATASET_OP_H_
 #define DECL_HDF5_DATASET_OP_H_
 
+#include <string>
+#include <vector>
+#include <H5FDmpi.h>
+#include <H5pubconf.h>
 #include <hdf5.h>
 #include <paraconf.h>
 #include <pdi/context.h>
-#include <pdi/expression.h>
-#include <H5FDmpi.h>
-#include <H5pubconf.h>
 #include <pdi/datatype.h>
-#include <string>
-#include <vector>
+#include <pdi/expression.h>
 
 #include "attribute_op.h"
 #include "collision_policy.h"

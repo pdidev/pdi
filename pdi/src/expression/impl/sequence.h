@@ -25,15 +25,15 @@
 #ifndef PDI_EXPRESSION_IMPL_SEQUENCE_H_
 #define PDI_EXPRESSION_IMPL_SEQUENCE_H_
 
-#include <paraconf.h>
-#include <stddef.h>
 #include <string>
 #include <vector>
+#include <paraconf.h>
+#include <stddef.h>
 
-#include "../impl.h"
+#include "pdi/pdi_fwd.h"
 #include "pdi/export.h"
 #include "pdi/expression.h"
-#include "pdi/pdi_fwd.h"
+#include "../impl.h"
 
 namespace PDI {
 

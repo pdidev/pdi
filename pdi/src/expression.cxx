@@ -23,20 +23,20 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <paraconf.h>
 #include <memory>
 #include <string>
 #include <utility>
+#include <paraconf.h>
 
+#include "pdi/pdi_fwd.h"
 #include "pdi/context.h"
+#include "pdi/expression.h"
 #include "pdi/ref_any.h"
 #include "expression/impl.h"
 #include "expression/impl/float_literal.h"
 #include "expression/impl/int_literal.h"
 #include "expression/impl/operation.h"
 #include "expression/impl/reference_expression.h"
-#include "pdi/expression.h"
-#include "pdi/pdi_fwd.h"
 
 namespace PDI {
 

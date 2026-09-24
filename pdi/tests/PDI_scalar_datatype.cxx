@@ -23,16 +23,16 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <gtest/gtest.h>
-#include <pdi/scalar_datatype.h>
-#include <stddef.h>
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <gtest/gtest.h>
+#include <stddef.h>
+#include <pdi/scalar_datatype.h>
 
-#include "mocks/context_mock.h"
-#include "pdi/datatype.h"
 #include "pdi/pdi_fwd.h"
+#include "pdi/datatype.h"
+#include "mocks/context_mock.h"
 
 using namespace PDI;
 using namespace std;

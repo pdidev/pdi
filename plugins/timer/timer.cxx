@@ -22,21 +22,21 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <chrono>
+#include <functional>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <utility>
 #include <fcntl.h>
+#include <paraconf.h>
+#include <stdio.h>
 #include <sys/file.h>
 #include <unistd.h>
 #include <pdi/context.h>
 #include <pdi/logger.h>
-#include <pdi/plugin.h>
-#include <paraconf.h>
 #include <pdi/paraconf_wrapper.h>
-#include <stdio.h>
-#include <chrono>
-#include <optional>
-#include <string>
-#include <unordered_map>
-#include <functional>
-#include <utility>
+#include <pdi/plugin.h>
 
 #include "pdi/logger.h"
 

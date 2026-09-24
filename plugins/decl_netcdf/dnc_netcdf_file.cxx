@@ -26,27 +26,27 @@
 #include <netcdf.h>
 #include <netcdf_meta.h> // includes NC_HAS_PARALLEL4 define
 #include <paraconf.h>
+#include <stddef.h>
 #include <pdi.h>
 #include <pdi/datatype.h>
 #include <pdi/error.h>
 #include <pdi/logger.h>
 #include <pdi/ref_any.h>
 #include <pdi/tuple_datatype.h>
-#include <stddef.h>
 #if NC_HAS_PARALLEL4
 #include <mpi.h>
 #include <netcdf_par.h>
 #endif
-#include <pdi/array_datatype.h>
-#include <pdi/scalar_datatype.h>
+#include <exception>
 #include <sstream>
 #include <string>
-#include <vector>
-#include <exception>
 #include <utility>
+#include <vector>
+#include <pdi/array_datatype.h>
+#include <pdi/scalar_datatype.h>
 
-#include "dnc_netcdf_file.h"
 #include "pdi/logger.h"
+#include "dnc_netcdf_file.h"
 
 namespace decl_netcdf {
 

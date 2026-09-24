@@ -23,20 +23,20 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <gtest/gtest.h>
-#include <pdi/array_datatype.h>
-#include <pdi/pointer_datatype.h>
-#include <pdi/record_datatype.h>
-#include <pdi/scalar_datatype.h>
-#include <stddef.h>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+#include <gtest/gtest.h>
+#include <stddef.h>
+#include <pdi/array_datatype.h>
+#include <pdi/pointer_datatype.h>
+#include <pdi/record_datatype.h>
+#include <pdi/scalar_datatype.h>
 
-#include "pdi/datatype.h"
 #include "pdi/pdi_fwd.h"
+#include "pdi/datatype.h"
 
 using namespace PDI;
 using namespace std;

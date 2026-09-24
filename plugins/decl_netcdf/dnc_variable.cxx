@@ -25,11 +25,11 @@
 
 #include "dnc_variable.h"
 
-#include <pdi/datatype_template.h>
-#include <pdi/paraconf_wrapper.h>
 #include <functional>
 #include <memory>
 #include <utility>
+#include <pdi/datatype_template.h>
+#include <pdi/paraconf_wrapper.h>
 
 namespace decl_netcdf {
 

@@ -23,24 +23,24 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <cerrno>
+#include <compare>
+#include <memory>
+#include <string>
 #include <ctype.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cerrno>
-#include <memory>
-#include <compare>
-#include <string>
 
+#include "pdi.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
+#include "pdi/logger.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
-#include "int_literal.h"
 #include "expression/impl.h"
-#include "pdi.h"
-#include "pdi/logger.h"
+#include "int_literal.h"
 
 namespace PDI {
 

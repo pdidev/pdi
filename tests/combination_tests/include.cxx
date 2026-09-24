@@ -22,13 +22,13 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <pdi/testing.h>
+#include <array>
+#include <fstream>
+#include <string>
 #include <gtest/gtest.h>
 #include <paraconf.h>
 #include <pdi.h>
-#include <fstream>
-#include <array>
-#include <string>
+#include <pdi/testing.h>
 
 #include "gmock/gmock.h"
 

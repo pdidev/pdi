@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <ctype.h>
-#include <stdint.h>
-#include <string.h>
 #include <exception>
 #include <iomanip>
 #include <memory>
@@ -34,20 +31,23 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <ctype.h>
+#include <stdint.h>
+#include <string.h>
 
+#include "pdi.h"
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
+#include "pdi/data_descriptor.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
+#include "pdi/logger.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
+#include "expression/impl.h"
 #include "operation.h"
 #include "reference_expression.h"
-#include "expression/impl.h"
-#include "pdi.h"
-#include "pdi/data_descriptor.h"
-#include "pdi/logger.h"
 
 namespace PDI {
 

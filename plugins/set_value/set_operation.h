@@ -24,12 +24,12 @@
 
 #ifndef SET_VALUE_SET_OPERATION_H_
 #define SET_VALUE_SET_OPERATION_H_
-#include <pdi/context.h>
-#include <paraconf.h>
-#include <string>
 #include <iterator>
+#include <string>
 #include <utility>
 #include <vector>
+#include <paraconf.h>
+#include <pdi/context.h>
 
 #include "operation.h"
 

@@ -23,14 +23,14 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <functional>
+#include <string>
+#include <paraconf.h>
+#include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
-#include <paraconf.h>
-#include <pdi/logger.h>
-#include <pdi/pdi_fwd.h>
-#include <string>
-#include <functional>
 
 #include "pdi/logger.h"
 

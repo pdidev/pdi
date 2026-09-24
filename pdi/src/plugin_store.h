@@ -26,15 +26,15 @@
 #ifndef PDI_PLUGIN_LOADER_H_
 #define PDI_PLUGIN_LOADER_H_
 
-#include <pdi/plugin.h>
-#include <paraconf.h>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <string>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-#include <iterator>
+#include <paraconf.h>
+#include <pdi/plugin.h>
 
 #include "pdi/context.h"
 #include "pdi/context_proxy.h"

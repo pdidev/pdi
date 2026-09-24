@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <string>
 #include <gtest/gtest.h>
 #include <pdi/error.h>
-#include <string>
 
 #include "pdi.h"
 #include "pdi/logger.h"

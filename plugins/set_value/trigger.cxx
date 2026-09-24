@@ -23,11 +23,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <string>
+#include <stddef.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
-#include <stddef.h>
-#include <string>
 
+#include "pdi/logger.h"
 #include "event_operation.h"
 #include "expose_operation.h"
 #include "logger_operation.h"
@@ -35,7 +36,6 @@
 #include "set_operation.h"
 #include "share_operation.h"
 #include "trigger.h"
-#include "pdi/logger.h"
 
 namespace set_value {
 

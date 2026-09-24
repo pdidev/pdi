@@ -24,8 +24,8 @@
 
 #include "dnc_group.h"
 
-#include <pdi/paraconf_wrapper.h>
 #include <functional>
+#include <pdi/paraconf_wrapper.h>
 
 namespace decl_netcdf {
 

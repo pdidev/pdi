@@ -25,10 +25,10 @@
 #ifndef SET_VALUE_TRIGGER_H_
 #define SET_VALUE_TRIGGER_H_
 
-#include <pdi/context.h>
-#include <paraconf.h>
 #include <memory>
 #include <vector>
+#include <paraconf.h>
+#include <pdi/context.h>
 
 #include "operation.h"
 

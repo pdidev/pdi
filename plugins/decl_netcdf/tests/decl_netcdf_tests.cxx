@@ -23,13 +23,13 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <cstdlib>
+#include <string>
 #include <gtest/gtest.h>
-#include <pdi.h>
 #include <paraconf.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <cstdlib>
-#include <string>
+#include <pdi.h>
 
 /*
  * Name:                decl_netcdf_test.01

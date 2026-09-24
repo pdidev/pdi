@@ -26,11 +26,11 @@
 #ifndef DECL_HDF5_SELECTION_H_
 #define DECL_HDF5_SELECTION_H_
 
-#include <paraconf.h>
-#include <pdi/expression.h>
-#include <hdf5.h>
-#include <pdi/context.h>
 #include <vector>
+#include <hdf5.h>
+#include <paraconf.h>
+#include <pdi/context.h>
+#include <pdi/expression.h>
 
 namespace decl_hdf5 {
 

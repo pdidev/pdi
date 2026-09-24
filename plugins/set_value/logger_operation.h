@@ -24,10 +24,10 @@
 
 #ifndef SET_VALUE_LOGGER_OPERATION_H_
 #define SET_VALUE_LOGGER_OPERATION_H_
+#include <string>
+#include <paraconf.h>
 #include <pdi/context.h>
 #include <pdi/expression.h>
-#include <paraconf.h>
-#include <string>
 
 #include "operation.h"
 

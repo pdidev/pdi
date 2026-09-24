@@ -25,10 +25,10 @@
 #ifndef DECL_NETCDF_DNC_GROUP_H_
 #define DECL_NETCDF_DNC_GROUP_H_
 
-#include <pdi/context.h>
-#include <paraconf.h>
-#include <vector>
 #include <string>
+#include <vector>
+#include <paraconf.h>
+#include <pdi/context.h>
 
 #include "dnc_attribute.h"
 

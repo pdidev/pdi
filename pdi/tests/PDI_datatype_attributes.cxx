@@ -23,27 +23,27 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <gtest/gtest.h>
-#include <pdi/expression.h>
-#include <pdi/pointer_datatype.h>
-#include <pdi/record_datatype.h>
-#include <paraconf.h>
-#include <stdlib.h>
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
+#include <gtest/gtest.h>
+#include <paraconf.h>
+#include <stdlib.h>
+#include <pdi/expression.h>
+#include <pdi/pointer_datatype.h>
+#include <pdi/record_datatype.h>
 
-#include "global_context.h"
+#include "pdi/pdi_fwd.h"
 #include "pdi/array_datatype.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/datatype.h"
 #include "pdi/datatype_template.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
-#include "pdi/pdi_fwd.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
+#include "global_context.h"
 
 using namespace PDI;
 using namespace std;

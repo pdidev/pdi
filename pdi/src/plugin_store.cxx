@@ -23,23 +23,23 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <dlfcn.h>
 #include <cstdlib>
+#include <exception>
 #include <map>
 #include <memory>
-#include <vector>
-#include <exception>
 #include <optional>
 #include <tuple>
 #include <unordered_map>
+#include <vector>
+#include <dlfcn.h>
 
 #include "config.h"
+#include "pdi.h"
 #include "pdi/error.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
-#include "string_tools.h"
 #include "plugin_store.h"
-#include "pdi.h"
+#include "string_tools.h"
 
 namespace PDI {
 

@@ -26,12 +26,12 @@
 #ifndef DECL_NETCDF_DNC_VARIABLE_H_
 #define DECL_NETCDF_DNC_VARIABLE_H_
 
+#include <string>
+#include <vector>
+#include <paraconf.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
 #include <pdi/expression.h>
-#include <paraconf.h>
-#include <vector>
-#include <string>
 
 #include "dnc_attribute.h"
 

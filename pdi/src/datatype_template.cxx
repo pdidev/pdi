@@ -23,35 +23,35 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <paraconf.h>
-#include <pstl/glue_algorithm_defs.h>
-#include <sys/types.h>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <memory>
-#include <string>
-#include <vector>
 #include <exception>
 #include <functional>
+#include <memory>
+#include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
+#include <paraconf.h>
+#include <pstl/glue_algorithm_defs.h>
+#include <sys/types.h>
 
 #include "config.h" // IWYU pragma: keep
 #include "pdi.h"
+#include "pdi/pdi_fwd.h"
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
+#include "pdi/datatype.h"
+#include "pdi/datatype_template.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
+#include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/pointer_datatype.h"
 #include "pdi/record_datatype.h"
 #include "pdi/scalar_datatype.h"
 #include "pdi/tuple_datatype.h"
-#include "pdi/datatype_template.h"
-#include "pdi/datatype.h"
-#include "pdi/logger.h"
-#include "pdi/pdi_fwd.h"
 
 namespace PDI {
 

@@ -22,20 +22,20 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <functional>
+#include <list>
+#include <string>
+#include <vector>
+#include <paraconf.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
-#include <paraconf.h>
 #include <pdi/ref_any.h>
-#include <list>
-#include <string>
-#include <functional>
-#include <vector>
 
-#include "trigger.h"
 #include "pdi/logger.h"
+#include "trigger.h"
 
 namespace {
 

@@ -25,8 +25,8 @@
 #ifndef PDI_DATA_DESCRIPTOR_H_
 #define PDI_DATA_DESCRIPTOR_H_
 
-#include <pdi/pdi_fwd.h>
 #include <string>
+#include <pdi/pdi_fwd.h>
 
 #include "pdi/export.h"
 

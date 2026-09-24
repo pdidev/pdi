@@ -26,20 +26,20 @@
 #ifndef PDI_GLOBAL_CONTEXT_H_
 #define PDI_GLOBAL_CONTEXT_H_
 
-#include <paraconf.h>
+#include <functional>
 #include <list>
 #include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <functional>
+#include <paraconf.h>
 
 #include "pdi/pdi_fwd.h"
 #include "pdi/context.h"
 #include "pdi/data_descriptor.h"
+#include "pdi/export.h"
 #include "pdi/logger.h"
 #include "plugin_store.h"
-#include "pdi/export.h"
 
 namespace PDI {
 
