@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -441,7 +442,7 @@ void free_vector(Vector* v1)
  *
  * Description:         scalar serialization
  */
-TEST(serialize_test, 01)
+TEST(SerializeTest, 01)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                         \n"
@@ -492,7 +493,7 @@ TEST(serialize_test, 01)
  *
  * Description:         array serialization
  */
-TEST(serialize_test, 02)
+TEST(SerializeTest, 02)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                               \n"
@@ -565,7 +566,7 @@ TEST(serialize_test, 02)
  *
  * Description:         pointer serialization
  */
-TEST(serialize_test, 03)
+TEST(SerializeTest, 03)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                     \n"
@@ -657,7 +658,7 @@ TEST(serialize_test, 03)
  *
  * Description:         record serialization
  */
-TEST(serialize_test, 04)
+TEST(SerializeTest, 04)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                   \n"
@@ -733,7 +734,7 @@ TEST(serialize_test, 04)
  *
  * Description:         complex datatype serialization
  */
-TEST(serialize_test, 05)
+TEST(SerializeTest, 05)
 {
 	const char* CONFIG_YAML
 		= ".types:                                     \n"
@@ -898,7 +899,7 @@ TEST(serialize_test, 05)
  *
  * Description:         tuple serialization
  */
-TEST(serialize_test, 06)
+TEST(SerializeTest, 06)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                   \n"
@@ -967,7 +968,7 @@ TEST(serialize_test, 06)
  *
  * Description:         complex tuple datatype serialization
  */
-TEST(serialize_test, 07)
+TEST(SerializeTest, 07)
 {
 	const char* CONFIG_YAML
 		= ".types:                                     \n"

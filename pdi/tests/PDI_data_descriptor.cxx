@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +37,9 @@
 #include "global_context.h"
 
 using namespace PDI;
-using namespace std;
+
+using std::shared_ptr;
+using std::unique_ptr;
 
 namespace PDI {
 //handler to private fields of Descriptor

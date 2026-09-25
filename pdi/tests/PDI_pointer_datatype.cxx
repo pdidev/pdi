@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,11 +32,15 @@
 #include <pdi/scalar_datatype.h>
 
 using namespace PDI;
-using namespace std;
 
 /*
  * Struct prepared for PointerDatatypeTest.
  */
+using std::cerr;
+using std::endl;
+using std::shared_ptr;
+using std::vector;
+
 struct PointerDatatypeTest: public ::testing::Test {
 	PointerDatatypeTest()
 	{

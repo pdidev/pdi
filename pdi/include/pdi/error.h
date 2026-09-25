@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -92,17 +93,17 @@ public:
 namespace impl {
 
 /// a "trait" that implements `what` from std::exception
-class PDI_EXPORT what_impl: virtual public std::exception
+class PDI_EXPORT What_impl: virtual public std::exception
 {
 private:
 	/// message of the error
 	std::string m_what;
 
 protected:
-	/** build a new what_impl by specifying the message of the error
+	/** build a new What_impl by specifying the message of the error
 	 * \param what the message of the error
 	 */
-	what_impl(std::string what) noexcept;
+	What_impl(std::string what) noexcept;
 
 public:
 	const char* what() const noexcept override;
@@ -110,7 +111,7 @@ public:
 
 /// a "trait" that implements `status` from PDI::Error
 template <PDI_status_t STATUS>
-class PDI_EXPORT status_impl: virtual public Error
+class PDI_EXPORT Status_impl: virtual public Error
 {
 public:
 	PDI_status_t status() const noexcept override { return STATUS; }
@@ -119,8 +120,8 @@ public:
 /// a basic implementation of PDI:Error
 template <PDI_status_t STATUS>
 class PDI_EXPORT Error_impl
-	: public what_impl
-	, public status_impl<STATUS>
+	: public What_impl
+	, public Status_impl<STATUS>
 {
 public:
 	/** build a new Error_impl by specifying the message of the error
@@ -137,9 +138,9 @@ public:
 		: Error_impl(fmt::format(format_str, std::forward<Args>(args)...))
 	{}
 
-	using what_impl::what;
+	using What_impl::what;
 
-	using status_impl<STATUS>::status;
+	using Status_impl<STATUS>::status;
 
 	std::string full_msg() const override;
 
@@ -192,8 +193,8 @@ extern template class PDI_EXPORT impl::Error_impl<PDI_ERR_INVALIDACTION>;
 /** An error class to use when there is an invalid entry in the specification tree
  */
 class PDI_EXPORT Spectree_error
-	: public impl::what_impl
-	, public impl::status_impl<PDI_ERR_SPECTREE>
+	: public impl::What_impl
+	, public impl::Status_impl<PDI_ERR_SPECTREE>
 {
 private:
 	std::optional<Yaml_region> m_location;
@@ -217,9 +218,9 @@ public:
 		: Spectree_error(tree, fmt::format(format_str, std::forward<Args>(args)...))
 	{}
 
-	using what_impl::what;
+	using What_impl::what;
 
-	using status_impl::status;
+	using Status_impl::status;
 
 	std::string full_msg() const override;
 
@@ -229,8 +230,8 @@ public:
 /** An error class to use when multiple errors of different kind have happened
  */
 class PDI_EXPORT Multiple_errors
-	: public impl::status_impl<PDI_ERR_MULTIPLE>
-	, public impl::what_impl
+	: public impl::Status_impl<PDI_ERR_MULTIPLE>
+	, public impl::What_impl
 {
 private:
 	/// The list or original errors
@@ -258,9 +259,9 @@ public:
 	 */
 	std::vector<std::exception_ptr> const & nested_ptrs() const;
 
-	using status_impl::status;
+	using Status_impl::status;
 
-	using what_impl::what;
+	using What_impl::what;
 
 	std::string full_msg() const override;
 

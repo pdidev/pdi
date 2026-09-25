@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,8 +27,9 @@
 #ifndef PDI_LOGGER_H_
 #define PDI_LOGGER_H_
 
+#include <functional>
+#include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <spdlog/logger.h>
@@ -60,11 +62,11 @@ class PDI_EXPORT Logger
 	void build_pattern();
 
 	/// parent logger
-	Logger* m_parent_logger = nullptr; //change in c++17 to std::optional
+	Logger* m_parent_logger = nullptr;
 
 public:
 	/// Creates new empty logger
-	Logger() = default;
+	Logger();
 
 	/** Creates new logger
 	 * \param[in] logger_name logger name that will be displayed

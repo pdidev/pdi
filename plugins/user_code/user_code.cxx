@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -165,7 +166,7 @@ public:
 	/// call the function that has been registered
 	void call(Context& ctx)
 	{
-		PDI::TimerEventHandler uc_timer(ctx, "user_code");
+		PDI::Timer_event_handler uc_timer(ctx, "user_code");
 		// all exposed aliases that will be unexposed on destroy
 		vector<ExposedAlias> exposed_aliases;
 		for (auto&& alias: m_aliases) {

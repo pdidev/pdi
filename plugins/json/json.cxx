@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2023-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -326,7 +327,7 @@ private:
 	 */
 	void write_data(const std::string& data_name, Ref_r&& reference)
 	{
-		PDI::TimerEventHandler json_timer(context(), "json");
+		PDI::Timer_event_handler json_timer(context(), "json");
 		Logger& logger = context().logger();
 
 		for (const auto& [condition, fpath]: m_data_to_path_map[data_name]) {

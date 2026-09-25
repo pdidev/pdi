@@ -34,26 +34,44 @@ In case you don't want to use either option, you can install PDI source
 distribution using the dedicated
 [installation instructions](https://pdi.dev/main/Installation.html).
 
+## Contributing
+
+Contributions are welcome!
+The [contributing guide](CONTRIBUTING.md) describes how to set up a development
+build, run the test suite, find your way around the source tree and submit your
+work, as well as the coding conventions the project follows.
+
+Bugs and feature requests are tracked at
+https://github.com/pdidev/pdi/issues and development is discussed on the PDI
+slack channel at https://pdidev.slack.com
+
+## License
+
+PDI is distributed under the 3-clause BSD license, see the [LICENSE](LICENSE)
+file.
+
 ## Content
 
 PDI distribution is made of the following submodules:
-* `mock_pdi/`, 
+* `mock_pdi/`: a header-only no-op implementation of the PDI application API,
+  so that codes can be built and run without PDI,
 * `pdi/` : the PDI library,
 * `plugins/decl_hdf5/`: the Decl'HDF5 plugin,
 * `plugins/decl_netcdf/`: the Decl'NetCDF plugin,
+* `plugins/json/`: the JSON plugin,
 * `plugins/mpi/`: the MPI plugin,
 * `plugins/pycall/`: the Pycall plugin,
 * `plugins/serialize/`: the serialize plugin,
 * `plugins/set_value/`: the Set value plugin,
-* `plugins/test/`: the Test plugin (deprecated),
+* `plugins/timer/`: the Timer plugin,
 * `plugins/trace/`: the Trace plugin,
 * `plugins/user_code/`: the user-code plugin,
 * `example/`: PDI examples,
-* `tests/api_tests/`: tests of PDI API (can be used with eith PDI or mock PDI),
+* `tests/api_tests/`: tests of PDI API (can be used with either PDI or mock PDI),
 * `tests/cmake_tests/`: test the installation of PDI from cmake,
 * `tests/combination_tests/`: tests that combine multiple plugins,
 * `tutorial/`: the PDI tutorial,
 * `vendor/`: source for vendored PDI dependencies.
-* `AUTHORS`, `bin/`, `CHANGELOG.md`, `cmake/`, `CMakeLists.txt`, `LICENSE`, 
-  `PACKAGING.md`, `README.md`, `spack.yaml`: files and directories specific to
-   the PDI distribution itself,
+* `ACKNOWLEDGMENTS.md`, `AUTHORS`, `bin/`, `CHANGELOG.md`, `cmake/`,
+  `CMakeLists.txt`, `CONTRIBUTING.md`, `LICENSE`, `PACKAGING.md`, `README.md`,
+  `spack.yaml`: files and directories specific to the PDI distribution itself,

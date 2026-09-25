@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +55,7 @@ bool get_deflate_level(hid_t plist_id, unsigned int& level)
 	return false;
 }
 
-TEST(decl_hdf5_deflate, no_deflate)
+TEST(DeclHdf5Deflate, no_deflate)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                                          \n"
@@ -108,7 +109,7 @@ TEST(decl_hdf5_deflate, no_deflate)
 	H5Fclose(file_id);
 }
 
-TEST(decl_hdf5_deflate, deflate_level1)
+TEST(DeclHdf5Deflate, deflate_level1)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                                          \n"
@@ -165,7 +166,7 @@ TEST(decl_hdf5_deflate, deflate_level1)
 	H5Fclose(file_id);
 }
 
-TEST(decl_hdf5_deflate, deflate_level2)
+TEST(DeclHdf5Deflate, deflate_level2)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                                          \n"
@@ -222,7 +223,7 @@ TEST(decl_hdf5_deflate, deflate_level2)
 	H5Fclose(file_id);
 }
 
-TEST(decl_hdf5_deflate, deflate_level9)
+TEST(DeclHdf5Deflate, deflate_level9)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                                          \n"

@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,11 +31,13 @@
 #include "mocks/context_mock.h"
 
 using namespace PDI;
-using namespace std;
 
 /*
  * Struct prepared for ScalarDatatypeTest.
  */
+using std::is_same;
+using std::shared_ptr;
+
 template <typename T>
 struct ScalarDatatypeTest: public ::testing::Test {
 	//set kind and size depending on type

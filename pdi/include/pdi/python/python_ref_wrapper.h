@@ -1,5 +1,6 @@
 /*******************************************************************************
 * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+* Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -22,8 +23,8 @@
 * THE SOFTWARE.
 ******************************************************************************/
 
-#ifndef PDI_PYTHON_REF_WRAPPER
-#define PDI_PYTHON_REF_WRAPPER
+#ifndef PDI_PYTHON_REF_WRAPPER_H_
+#define PDI_PYTHON_REF_WRAPPER_H_
 
 #include <cstddef>
 #include <string>
@@ -66,4 +67,4 @@ public:
 
 } // namespace PDI
 
-#endif // PDI_PYTHON_REF_WRAPPER
+#endif // PDI_PYTHON_REF_WRAPPER_H_
