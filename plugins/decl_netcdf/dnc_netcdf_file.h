@@ -142,8 +142,9 @@ public:
 	 * \param variable variable to get
 	 * \param write Dnc_io that deteremines the read operation
 	 * \param ref_w reference where the data will be written
+	 * \param ref_name name of the reference ref_w
 	 */
-	void get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w);
+	void get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w, const std::string& ref_name);
 
 	/** Gets variable from the file
 	 *

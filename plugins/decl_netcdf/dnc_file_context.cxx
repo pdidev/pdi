@@ -266,7 +266,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 			nc_file.read_variable(*variable);
 
 			// execute read
-			nc_file.get_variable(*variable, read_it->second, ref);
+			nc_file.get_variable(*variable, read_it->second, ref, desc_name);
 		}
 
 		auto size_it = m_sizeof.find(desc_name);
@@ -352,7 +352,7 @@ void Dnc_file_context::execute()
 		i = 0;
 		for (auto&& read: m_read) {
 			Dnc_variable* variable = variables_to_get[i]; // order of loop iteration is the same as was on define loop
-			nc_file->get_variable(*variable, read.second, m_ctx.desc(read.first).ref());
+			nc_file->get_variable(*variable, read.second, m_ctx.desc(read.first).ref(), read.first);
 			i++;
 		}
 	}
