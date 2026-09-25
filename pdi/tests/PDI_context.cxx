@@ -58,7 +58,7 @@ struct ContextTest: public ::testing::Test {
  *
  * Tested functions:    PDI::Context::desc(string)
  *
- * Description:         Checks if accessesing uninitialzied descriptor
+ * Description:         Checks if accessesing uninitialized descriptor
  *                      creates a new one.
  */
 TEST_F(ContextTest, desc_string_uninitialized)
@@ -93,7 +93,7 @@ TEST_F(ContextTest, desc_string_initialized)
  *
  * Tested functions:    PDI::Context::desc(const char*)
  *
- * Description:         Checks if accessesing uninitialzied descriptor
+ * Description:         Checks if accessesing uninitialized descriptor
  *                      creates a new one.
  */
 TEST_F(ContextTest, desc_cstring_uninitialized)
@@ -128,7 +128,7 @@ TEST_F(ContextTest, desc_cstring_initialized)
  *
  * Tested functions:    PDI::Context::operator[](string)
  *
- * Description:         Checks if accessesing uninitialzied descriptor
+ * Description:         Checks if accessesing uninitialized descriptor
  *                      creates a new one.
  */
 TEST_F(ContextTest, operator_string_uninitialized)
@@ -163,7 +163,7 @@ TEST_F(ContextTest, operator_string_initialized)
  *
  * Tested functions:    PDI::Context::operator[](const char*)
  *
- * Description:         Checks if accessesing uninitialzied descriptor
+ * Description:         Checks if accessesing uninitialized descriptor
  *                      creates a new one.
  */
 TEST_F(ContextTest, operator_cstring_uninitialized)

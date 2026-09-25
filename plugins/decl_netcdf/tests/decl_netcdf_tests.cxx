@@ -742,7 +742,7 @@ TEST(decl_netcdf_test, 06)
 /*
  * Name:                decl_netcdf_test.07
  *
- * Description:         Tests yaml syntaxe with `write: data`
+ * Description:         Tests yaml syntax with `write: data`
  */
 TEST(decl_netcdf_test, 07)
 {

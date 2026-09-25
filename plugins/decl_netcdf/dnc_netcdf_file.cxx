@@ -161,7 +161,7 @@ Dnc_netcdf_file::Dnc_netcdf_file(PDI::Context& ctx, const std::string& filename,
 		// open/create in parallel
 		const MPI_Comm* communicator = static_cast<const MPI_Comm*>(PDI::Ref_r{m_communicator.to_ref(m_ctx)}.get());
 		MPI_Info mpi_info = MPI_INFO_NULL;
-		m_ctx.logger().debug("Openning `{}' file in parallel mode", m_filename);
+		m_ctx.logger().debug("Opening `{}' file in parallel mode", m_filename);
 		if (nc_open_par(m_filename.c_str(), rights_flag | NC_NETCDF4, *communicator, mpi_info, &m_file_id) != NC_NOERR) {
 			m_ctx.logger().trace("Cannot open file, creating", m_filename);
 			nc_try(
@@ -178,7 +178,7 @@ Dnc_netcdf_file::Dnc_netcdf_file(PDI::Context& ctx, const std::string& filename,
 		throw PDI::System_error{"Decl_netcdf plugin: MPI communicator defined, but NetCDF is not parallel"};
 #endif
 	} else {
-		m_ctx.logger().debug("Openning `{}' file in serial mode", m_filename);
+		m_ctx.logger().debug("Opening `{}' file in serial mode", m_filename);
 		if (nc_open(m_filename.c_str(), rights_flag | NC_NETCDF4, &m_file_id) != NC_NOERR) {
 			m_ctx.logger().trace("Cannot open `{}' file, creating", m_filename);
 			nc_try(nc_create(m_filename.c_str(), rights_flag | NC_NETCDF4 | NC_NOCLOBBER, &m_file_id), "cannot open or create file `{}'", m_filename);
@@ -333,7 +333,7 @@ nc_type Dnc_netcdf_file::define_compound_type(std::shared_ptr<const PDI::Record_
 	    nc_id dest_id = group_it->second;
 	*/
 
-	// HAVE TO DEFINE SUB COMPOUND TYPE BEFOER CALLING nc_def_compound
+	// HAVE TO DEFINE SUB COMPOUND TYPE BEFORE CALLING nc_def_compound
 	for (auto&& member: record_type->members()) {
 		PDI::Datatype_sptr type = member.type();
 		while (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(type)) {
@@ -393,7 +393,7 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 
 	// get group path and variable name
 	auto [group_path, variable_name] = split_group_and_variable(variable.path());
-	m_ctx.logger().trace("Variable path `{}' splitted to `{}' group and `{}` variable name", variable.path(), group_path, variable_name);
+	m_ctx.logger().trace("Variable path `{}' split to `{}' group and `{}` variable name", variable.path(), group_path, variable_name);
 
 	// get dest_id
 	auto group_it = m_groups.find(group_path);

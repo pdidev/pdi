@@ -1214,8 +1214,8 @@ TEST(PCTreeToRef, record_value_string)
 /*
  * Struct prepared for CallbacksTest.
  */
-struct ExpresionOperators: public ::testing::Test {
-	ExpresionOperators()
+struct ExpressionOperators: public ::testing::Test {
+	ExpressionOperators()
 		: test_conf{PC_parse_string("data: {x : int, y : int}")}
 	{}
 
@@ -1227,7 +1227,7 @@ struct ExpresionOperators: public ::testing::Test {
 };
 
 /*
- * Name:                ExpresionOperators.empty_expr
+ * Name:                ExpressionOperators.empty_expr
  *
  * Tested functions:    PDI::Expression::operator+
  *
@@ -1235,7 +1235,7 @@ struct ExpresionOperators: public ::testing::Test {
  * Description:         Checks if cannot add empty expression.
  *
  */
-TEST_F(ExpresionOperators, empty_expr)
+TEST_F(ExpressionOperators, empty_expr)
 {
 	Expression first{"2"};
 	Expression second;
@@ -1247,7 +1247,7 @@ TEST_F(ExpresionOperators, empty_expr)
 }
 
 /*
- * Name:                ExpresionOperators.add_two_expr
+ * Name:                ExpressionOperators.add_two_expr
  *
  * Tested functions:    PDI::Expression::operator+
  *
@@ -1255,7 +1255,7 @@ TEST_F(ExpresionOperators, empty_expr)
  * Description:         Checks if sum of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, add_two_expr)
+TEST_F(ExpressionOperators, add_two_expr)
 {
 	Expression first{"2"};
 	Expression second{"2"};
@@ -1267,7 +1267,7 @@ TEST_F(ExpresionOperators, add_two_expr)
 }
 
 /*
- * Name:                ExpresionOperators.add_two_ref_expr
+ * Name:                ExpressionOperators.add_two_ref_expr
  *
  * Tested functions:    PDI::Expression::operator+
  *
@@ -1275,7 +1275,7 @@ TEST_F(ExpresionOperators, add_two_expr)
  * Description:         Checks if sum of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, add_two_ref_expr)
+TEST_F(ExpressionOperators, add_two_ref_expr)
 {
 	int x = 42;
 	int y = 24;
@@ -1292,7 +1292,7 @@ TEST_F(ExpresionOperators, add_two_ref_expr)
 }
 
 /*
- * Name:                ExpresionOperators.add_tree_ref_expr
+ * Name:                ExpressionOperators.add_tree_ref_expr
  *
  * Tested functions:    PDI::Expression::operator+
  *
@@ -1300,7 +1300,7 @@ TEST_F(ExpresionOperators, add_two_ref_expr)
  * Description:         Checks if sum of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, add_tree_ref_expr)
+TEST_F(ExpressionOperators, add_tree_ref_expr)
 {
 	int x = 42;
 	int y = 24;
@@ -1318,7 +1318,7 @@ TEST_F(ExpresionOperators, add_tree_ref_expr)
 }
 
 /*
- * Name:                ExpresionOperators.sub_two_expr
+ * Name:                ExpressionOperators.sub_two_expr
  *
  * Tested functions:    PDI::Expression::operator-
  *
@@ -1326,7 +1326,7 @@ TEST_F(ExpresionOperators, add_tree_ref_expr)
  * Description:         Checks if subtraction of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, sub_two_expr)
+TEST_F(ExpressionOperators, sub_two_expr)
 {
 	Expression first{"4"};
 	Expression second{"2"};
@@ -1338,7 +1338,7 @@ TEST_F(ExpresionOperators, sub_two_expr)
 }
 
 /*
- * Name:                ExpresionOperators.sub_two_ref_expr
+ * Name:                ExpressionOperators.sub_two_ref_expr
  *
  * Tested functions:    PDI::Expression::operator-
  *
@@ -1346,7 +1346,7 @@ TEST_F(ExpresionOperators, sub_two_expr)
  * Description:         Checks if subtraction of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, sub_two_ref_expr)
+TEST_F(ExpressionOperators, sub_two_ref_expr)
 {
 	int x = 42;
 	int y = 40;
@@ -1363,7 +1363,7 @@ TEST_F(ExpresionOperators, sub_two_ref_expr)
 }
 
 /*
- * Name:                ExpresionOperators.sub_tree_ref_expr
+ * Name:                ExpressionOperators.sub_tree_ref_expr
  *
  * Tested functions:    PDI::Expression::operator-
  *
@@ -1371,7 +1371,7 @@ TEST_F(ExpresionOperators, sub_two_ref_expr)
  * Description:         Checks if subtraction of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, sub_tree_ref_expr)
+TEST_F(ExpressionOperators, sub_tree_ref_expr)
 {
 	int x = 42;
 	int y = 20;
@@ -1389,7 +1389,7 @@ TEST_F(ExpresionOperators, sub_tree_ref_expr)
 }
 
 /*
- * Name:                ExpresionOperators.multiply_two_expr
+ * Name:                ExpressionOperators.multiply_two_expr
  *
  * Tested functions:    PDI::Expression::operator*
  *
@@ -1397,7 +1397,7 @@ TEST_F(ExpresionOperators, sub_tree_ref_expr)
  * Description:         Checks if multiplication of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, multiply_two_expr)
+TEST_F(ExpressionOperators, multiply_two_expr)
 {
 	Expression first{"2"};
 	Expression second{"2"};
@@ -1406,7 +1406,7 @@ TEST_F(ExpresionOperators, multiply_two_expr)
 }
 
 /*
- * Name:                ExpresionOperators.multiply_two_ref_expr
+ * Name:                ExpressionOperators.multiply_two_ref_expr
  *
  * Tested functions:    PDI::Expression::operator*
  *
@@ -1414,7 +1414,7 @@ TEST_F(ExpresionOperators, multiply_two_expr)
  * Description:         Checks if multiplication of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, multiply_two_ref_expr)
+TEST_F(ExpressionOperators, multiply_two_ref_expr)
 {
 	int x = 4;
 	int y = 7;
@@ -1431,7 +1431,7 @@ TEST_F(ExpresionOperators, multiply_two_ref_expr)
 }
 
 /*
- * Name:                ExpresionOperators.multiply_tree_ref_expr
+ * Name:                ExpressionOperators.multiply_tree_ref_expr
  *
  * Tested functions:    PDI::Expression::operator*
  *
@@ -1439,7 +1439,7 @@ TEST_F(ExpresionOperators, multiply_two_ref_expr)
  * Description:         Checks if multiplication of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, multiply_tree_ref_expr)
+TEST_F(ExpressionOperators, multiply_tree_ref_expr)
 {
 	int x = 4;
 	int y = 2;
@@ -1457,7 +1457,7 @@ TEST_F(ExpresionOperators, multiply_tree_ref_expr)
 }
 
 /*
- * Name:                ExpresionOperators.comlex_tree_ref_expr
+ * Name:                ExpressionOperators.complex_tree_ref_expr
  *
  * Tested functions:    PDI::Expression::operator*
  *
@@ -1465,7 +1465,7 @@ TEST_F(ExpresionOperators, multiply_tree_ref_expr)
  * Description:         Checks if sum and multiplication of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, sum_multiply_tree_ref_expr)
+TEST_F(ExpressionOperators, sum_multiply_tree_ref_expr)
 {
 	int x = 4;
 	int y = 2;
@@ -1487,7 +1487,7 @@ TEST_F(ExpresionOperators, sum_multiply_tree_ref_expr)
 }
 
 /*
- * Name:                ExpresionOperators.divide_two_expr
+ * Name:                ExpressionOperators.divide_two_expr
  *
  * Tested functions:    PDI::Expression::operator/
  *
@@ -1495,7 +1495,7 @@ TEST_F(ExpresionOperators, sum_multiply_tree_ref_expr)
  * Description:         Checks if division of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, divide_two_expr)
+TEST_F(ExpressionOperators, divide_two_expr)
 {
 	Expression first{"4"};
 	Expression second{"2"};
@@ -1504,7 +1504,7 @@ TEST_F(ExpresionOperators, divide_two_expr)
 }
 
 /*
- * Name:                ExpresionOperators.divide_two_ref_expr
+ * Name:                ExpressionOperators.divide_two_ref_expr
  *
  * Tested functions:    PDI::Expression::operator/
  *
@@ -1512,7 +1512,7 @@ TEST_F(ExpresionOperators, divide_two_expr)
  * Description:         Checks if division of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, divide_two_ref_expr)
+TEST_F(ExpressionOperators, divide_two_ref_expr)
 {
 	int x = 8;
 	int y = 4;
@@ -1529,7 +1529,7 @@ TEST_F(ExpresionOperators, divide_two_ref_expr)
 }
 
 /*
- * Name:                ExpresionOperators.divide_tree_ref_expr
+ * Name:                ExpressionOperators.divide_tree_ref_expr
  *
  * Tested functions:    PDI::Expression::operator/
  *
@@ -1537,7 +1537,7 @@ TEST_F(ExpresionOperators, divide_two_ref_expr)
  * Description:         Checks if division of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, divide_tree_ref_expr)
+TEST_F(ExpressionOperators, divide_tree_ref_expr)
 {
 	int x = 16;
 	int y = 2;
@@ -1555,7 +1555,7 @@ TEST_F(ExpresionOperators, divide_tree_ref_expr)
 }
 
 /*
- * Name:                ExpresionOperators.comlex_tree_ref_expr
+ * Name:                ExpressionOperators.complex_tree_ref_expr
  *
  * Tested functions:    PDI::Expression::operator/
  *
@@ -1563,7 +1563,7 @@ TEST_F(ExpresionOperators, divide_tree_ref_expr)
  * Description:         Checks if sum and multiplication of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, sum_divide_tree_ref_expr)
+TEST_F(ExpressionOperators, sum_divide_tree_ref_expr)
 {
 	int x = 16;
 	int y = 2;
@@ -1585,7 +1585,7 @@ TEST_F(ExpresionOperators, sum_divide_tree_ref_expr)
 }
 
 /*
- * Name:                ExpresionOperators.mod_two_ref_expr
+ * Name:                ExpressionOperators.mod_two_ref_expr
  *
  * Tested functions:    PDI::Expression::operator%
  *
@@ -1593,7 +1593,7 @@ TEST_F(ExpresionOperators, sum_divide_tree_ref_expr)
  * Description:         Checks if mod of expressions is correct.
  *
  */
-TEST_F(ExpresionOperators, mod_two_ref_expr)
+TEST_F(ExpressionOperators, mod_two_ref_expr)
 {
 	int x = 42;
 	int y = 10;
@@ -1612,8 +1612,8 @@ TEST_F(ExpresionOperators, mod_two_ref_expr)
 /*
  * Struct prepared for CallbacksTest.
  */
-struct ExpresionFMTFormat: public ::testing::Test {
-	ExpresionFMTFormat()
+struct ExpressionFMTFormat: public ::testing::Test {
+	ExpressionFMTFormat()
 		: test_conf{PC_parse_string("data: {x : int, y : double, z: {type: array, subtype: char, size: 16}}")}
 	{}
 
@@ -1625,7 +1625,7 @@ struct ExpresionFMTFormat: public ::testing::Test {
 };
 
 /*
- * Name:                ExpresionFMTFormat.fmt_int_ref
+ * Name:                ExpressionFMTFormat.fmt_int_ref
  *
  * Tested functions:    PDI::Expression::to_string
  *
@@ -1633,7 +1633,7 @@ struct ExpresionFMTFormat: public ::testing::Test {
  * Description:         Checks if fmt operator of expressions works correct.
  *
  */
-TEST_F(ExpresionFMTFormat, fmt_int_ref)
+TEST_F(ExpressionFMTFormat, fmt_int_ref)
 {
 	int x = 42;
 	test_context->desc("x").share(&x, true, false);
@@ -1648,7 +1648,7 @@ TEST_F(ExpresionFMTFormat, fmt_int_ref)
 }
 
 /*
- * Name:                ExpresionFMTFormat.fmt_float_ref
+ * Name:                ExpressionFMTFormat.fmt_float_ref
  *
  * Tested functions:    PDI::Expression::to_string
  *
@@ -1656,7 +1656,7 @@ TEST_F(ExpresionFMTFormat, fmt_int_ref)
  * Description:         Checks if fmt operator of expressions works correct.
  *
  */
-TEST_F(ExpresionFMTFormat, fmt_float_ref)
+TEST_F(ExpressionFMTFormat, fmt_float_ref)
 {
 	double y = 42.424242;
 	test_context->desc("y").share(&y, true, false);
@@ -1667,7 +1667,7 @@ TEST_F(ExpresionFMTFormat, fmt_float_ref)
 }
 
 /*
- * Name:                ExpresionFMTFormat.fmt_string_ref
+ * Name:                ExpressionFMTFormat.fmt_string_ref
  *
  * Tested functions:    PDI::Expression::to_string
  *
@@ -1675,7 +1675,7 @@ TEST_F(ExpresionFMTFormat, fmt_float_ref)
  * Description:         Checks if fmt operator of expressions works correct.
  *
  */
-TEST_F(ExpresionFMTFormat, fmt_string_ref)
+TEST_F(ExpressionFMTFormat, fmt_string_ref)
 {
 	char z[16] = "sometext";
 	test_context->desc("z").share(z, true, false);
@@ -1684,7 +1684,7 @@ TEST_F(ExpresionFMTFormat, fmt_string_ref)
 }
 
 /*
- * Name:                ExpresionMemberAccess.access_simple_member
+ * Name:                ExpressionMemberAccess.access_simple_member
  *
  * Tested functions:    PDI::Expression::to_long
  *                      PDI::Expression::to_double
@@ -1693,7 +1693,7 @@ TEST_F(ExpresionFMTFormat, fmt_string_ref)
  * Description:         Checks if mod of expressions is correct.
  *
  */
-TEST(ExpresionMemberAccess, access_simple_member)
+TEST(ExpressionMemberAccess, access_simple_member)
 {
 	Paraconf_wrapper fw;
 	PC_tree_t config = PC_parse_string(
@@ -1742,7 +1742,7 @@ TEST(ExpresionMemberAccess, access_simple_member)
 }
 
 /*
- * Name:                ExpresionMemberAccess.access_string_member
+ * Name:                ExpressionMemberAccess.access_string_member
  *
  * Tested functions:    PDI::Expression::to_string
  *
@@ -1750,7 +1750,7 @@ TEST(ExpresionMemberAccess, access_simple_member)
  * Description:         Checks if mod of expressions is correct.
  *
  */
-TEST(ExpresionMemberAccess, access_string_member)
+TEST(ExpressionMemberAccess, access_string_member)
 {
 	Paraconf_wrapper fw;
 	PC_tree_t config = PC_parse_string(
@@ -1782,7 +1782,7 @@ TEST(ExpresionMemberAccess, access_string_member)
 }
 
 /*
- * Name:                ExpresionMemberAccess.access_array_record
+ * Name:                ExpressionMemberAccess.access_array_record
  *
  * Tested functions:    PDI::Expression::to_long
  *                      PDI::Expression::to_double
@@ -1791,7 +1791,7 @@ TEST(ExpresionMemberAccess, access_string_member)
  * Description:         Checks if mod of expressions is correct.
  *
  */
-TEST(ExpresionMemberAccess, access_array_record)
+TEST(ExpressionMemberAccess, access_array_record)
 {
 	Paraconf_wrapper fw;
 	PC_tree_t config = PC_parse_string(
@@ -1838,7 +1838,7 @@ TEST(ExpresionMemberAccess, access_array_record)
 }
 
 /*
- * Name:                ExpresionMemberAccess.access_complex_member
+ * Name:                ExpressionMemberAccess.access_complex_member
  *
  * Tested functions:    PDI::Expression::to_long
  *                      PDI::Expression::to_double
@@ -1847,7 +1847,7 @@ TEST(ExpresionMemberAccess, access_array_record)
  * Description:         Checks if mod of expressions is correct.
  *
  */
-TEST(ExpresionMemberAccess, access_complex_member)
+TEST(ExpressionMemberAccess, access_complex_member)
 {
 	Paraconf_wrapper fw;
 	PC_tree_t config = PC_parse_string(
@@ -1925,6 +1925,7 @@ TEST(StringExpressionBoolTest, to_long_boolean_string)
 		ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 0);
 	}
 
+	// typos:ignore-next-line
 	const vector<string> v_fpos{"y1", "YY", "yEs", "Yess", "YE5", "tru", "TrUe", "TRRUE", "onn", "0n", "ONN"};
 	for (auto&& string_value: v_fpos) {
 		try {
@@ -1935,6 +1936,7 @@ TEST(StringExpressionBoolTest, to_long_boolean_string)
 		}
 	}
 
+	// typos:ignore-next-line
 	const vector<string> v_fneg{"n1", "nO", "N0", "Nope", "NOO", "faLse", "Fals", "FaLSE", "OfF", "0f", "FF"};
 	for (auto&& string_value: v_fneg) {
 		try {

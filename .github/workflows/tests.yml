@@ -142,3 +142,10 @@ jobs:
       if: ( success() || failure() )  # always run even if the previous step fails
       with:
         report_paths: '/tmp/tests_output/tests_*.xml'
+  spell:
+    needs: second
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+    - uses: actions/checkout@v6
+    - uses: crate-ci/typos@v1

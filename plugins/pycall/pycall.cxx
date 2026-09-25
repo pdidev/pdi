@@ -111,7 +111,7 @@ class Trigger
 	vector<Alias> m_aliases;
 
 public:
-	/** Parse tree to initialiaze this instance
+	/** Parse tree to initialize this instance
 	 * \param code python code to call
 	 * \param with aliases of descriptors for python code
 	 */
@@ -128,7 +128,7 @@ public:
 		}
 	}
 
-	/** Parse tree to initialiaze this instance
+	/** Parse tree to initialize this instance
 	 * \param code python code to call
 	 * \param with alias of descriptor for python code
 	 */

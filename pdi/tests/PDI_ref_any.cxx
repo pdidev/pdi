@@ -223,7 +223,7 @@ TEST_F(DataRefAnyTest, releaseTest)
  * Tested functions:    PDI::Ref_any::on_nullify()
  *
  * Description:         Test checks if the function passed in on_nullify
- *                      is called on realese by different owner.
+ *                      is called on release by different owner.
  */
 TEST_F(DataRefAnyTest, nullifyTest)
 {
