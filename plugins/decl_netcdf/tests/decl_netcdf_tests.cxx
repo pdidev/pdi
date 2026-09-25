@@ -1110,3 +1110,44 @@ TEST(decl_netcdf_test, float_read)
 
 	PDI_finalize();
 }
+
+// TEST(decl_netcdf_test_yaml, double_read_array_missing_data)
+// {
+// 	constexpr char CONFIG_YAML[] = R"(
+//     logging: trace
+//     metadata:
+//       nn: int
+//     data:
+//       var_in: {type: array, subtype: double, size: ['$nn']}
+//       #var_out: {type: array, subtype: double, size: ['$nn']}
+//     plugins:
+//       decl_netcdf:
+//       - file: 'test_double22_read.nc'
+//         variables:
+//           nc_var: {type: array, subtype: double, size: ['$nn']}
+//         on_event: write_data
+//         write:
+//           var_in:
+//             variable: nc_var
+//       - file: 'test_double22_read.nc'
+//         variables:
+//           nc_var:  {type: array, subtype: double, size: ['$nn']}
+//         on_event: read_data
+//         read:
+//           var_out:
+//             variable: nc_var)";
+
+// 	PC_tree_t tree = PC_parse_string(CONFIG_YAML);
+
+//     try {
+//         PDI_init(tree);
+//         FAIL() << "PDI_init should have raised an exception due to the missing 'var_out' descriptor";
+//     } catch (const PDI::Error& e) {
+//         EXPECT_THAT(e.what(), testing::HasSubstr("Cannot reference data `var_out` in `decl_netcdf`"));
+//         EXPECT_THAT(e.what(), testing::HasSubstr("descriptor is not declared in `data` or `metadata`"));
+//     } catch (const std::exception& e) {
+//         EXPECT_THAT(e.what(), testing::HasSubstr("Cannot reference data `var_out`"));
+//     }
+
+//     PC_tree_destroy(&tree);
+// }

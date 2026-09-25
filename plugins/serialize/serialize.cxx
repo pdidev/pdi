@@ -381,8 +381,10 @@ struct serialize_plugin: PDI::Plugin {
 	{
 		PDI::each(config, [this](PC_tree_t key, PC_tree_t value) mutable {
 			std::string desc_name = PDI::to_string(key);
-			m_desc_to_serialize.emplace(desc_name, PDI::to_string(value));
-			context().logger().trace("`{}' will be serialized", desc_name);
+			std::string serialized_name = PDI::to_string(value);
+			context().desc(serialized_name);
+			m_desc_to_serialize.emplace(desc_name, serialized_name);
+			context().logger().trace("`{}' will be serialized as `{}'", desc_name, serialized_name);
 			context().on_data([this](const std::string& desc_name, PDI::Ref ref) { share_serialized(desc_name, ref); }, desc_name);
 		});
 	}

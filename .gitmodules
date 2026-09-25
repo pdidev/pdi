@@ -4,3 +4,7 @@
 [submodule "vendor/run-clang-format"]
 	path = vendor/run-clang-format
 	url = https://github.com/Sarcasm/run-clang-format.git
+[submodule "vendor/paraconf-X"]
+	path = vendor/paraconf-X
+	url = https://github.com/JAuriac/paraconf.git
+	branch = more_errors
