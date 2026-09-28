@@ -226,14 +226,18 @@ TEST_F(DataDescDelayed, reclaim_before_trigger)
 	ASSERT_EQ(x, 0); // check the value of data_x is not changed
 
 	// check the error message in trigger call when a data is not shared
+	bool error_in_trigger = false;
 	try {
 		delayed_callbacks.trigger();
 	} catch (Error& e) {
+		error_in_trigger = true;
 		EXPECT_STREQ("`1' error(s) while triggering data callbacks, Cannot access a non shared value: `data_x'", e.what());
 	} catch (...) {
 		FAIL() << "Unexpected error occurs in trigger()";
 	}
-	FAIL() << "No error is thrown";
+	if(!error_in_trigger) {
+		FAIL() << "No error is thrown";
+	}
 }
 
 /*
