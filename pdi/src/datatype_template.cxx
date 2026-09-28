@@ -100,7 +100,7 @@ public:
 
 	void add_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
 	{
-		m_size.add_dependencies(ctx, name_of_dependencies);  // adds list of data names needed to evaluate m_size
+		m_size.add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate m_size
 		m_align.add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate m_align
 		add_attributes_dependencies(ctx, name_of_dependencies); // adds list of data names needed for m_attributes
 	}
@@ -151,9 +151,9 @@ public:
 	void add_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
 	{
 		m_subtype->add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate m_subtype
-		m_size.add_dependencies(ctx, name_of_dependencies);     // adds list of data names needed to evaluate m_size
-		m_start.add_dependencies(ctx, name_of_dependencies);    // adds list of data names needed to evaluate m_start
-		m_subsize.add_dependencies(ctx, name_of_dependencies);  // adds list of data names needed to evaluate m_subsize
+		m_size.add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate m_size
+		m_start.add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate m_start
+		m_subsize.add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate m_subsize
 		add_attributes_dependencies(ctx, name_of_dependencies); // adds list of data names needed for m_attributes
 	}
 };
@@ -216,7 +216,7 @@ public:
 	{
 		for (auto&& member: m_members) {
 			member.m_displacement.add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate member.m_displacement
-			member.m_type->add_dependencies(ctx, name_of_dependencies);        // adds list of data names needed to evaluate member.m_type
+			member.m_type->add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate member.m_type
 		}
 		add_attributes_dependencies(ctx, name_of_dependencies); // adds list of data names needed for m_attributes
 	}

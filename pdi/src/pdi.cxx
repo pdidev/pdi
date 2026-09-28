@@ -406,7 +406,8 @@ try {
 	va_list ap;
 
 	std::vector<void*> data_pointer{const_cast<void*>(data)};
-	std::unordered_map<std::string, std::vector<int>> name_indexes; // list of the indexes for a data name (need this variable in case of duplicate name)
+	std::unordered_map<std::string, std::vector<int>>
+		name_indexes; // list of the indexes for a data name (need this variable in case of duplicate name)
 	std::vector<PDI_inout_t> data_access{access};
 
 	name_indexes[std::string(name)].push_back(0);
@@ -419,7 +420,8 @@ try {
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
 
 		name_indexes[std::string(v_name)].push_back(index_data_arg);
-		data_pointer.push_back(v_data); // A data name can be associated to different data_pointer (see TEST_F(CheckMultiExpose, DataWithSameNameWithDifferentPointer))
+		data_pointer.push_back(v_data
+		); // A data name can be associated to different data_pointer (see TEST_F(CheckMultiExpose, DataWithSameNameWithDifferentPointer))
 		data_access.emplace_back(v_access);
 		index_data_arg++; // update the index
 	}
