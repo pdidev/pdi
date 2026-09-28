@@ -78,14 +78,14 @@ public:
 	 */
 	virtual bool empty() = 0;
 
-	/** Shares some data with PDI and callbacks on the data will be trigger inside this function
+	/** Shares some data with PDI and callbacks on the data will be triggered inside this function
 	 * \param[in,out] data the shared data
 	 * \param read whether read access is granted to other references
 	 * \param write whether write access is granted to other references
 	 */
 	virtual void share(void* data, bool read, bool write) = 0;
 
-	/** Shares some data with PDI and callbacks on the data will be trigger outside this function
+	/** Shares some data with PDI and callbacks on the data will be triggered outside this function
 	 * \param[in,out] data the shared data
 	 * \param read whether read access is granted to other references
 	 * \param write whether write access is granted to other references
@@ -94,7 +94,7 @@ public:
 	 */
 	virtual void share(void* data, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks) = 0;
 
-	/** Shares some data with PDI and callbacks on the data will be trigger inside this function
+	/** Shares some data with PDI and callbacks on the data will be triggered inside this function
 	 * \param[in,out] ref a reference to the shared data
 	 * \param read whether the stored reference should have read access
 	 * \param write whether the stored reference should have write access
@@ -102,7 +102,7 @@ public:
 	 */
 	virtual void* share(Ref ref, bool read, bool write) = 0;
 
-	/** Shares some data with PDI and callbacks on the data will be trigger outside this function
+	/** Shares some data with PDI and callbacks on the data will be triggered outside this function
 	 * \param[in,out] ref a reference to the shared data
 	 * \param read whether the stored reference should have read access
 	 * \param write whether the stored reference should have write access

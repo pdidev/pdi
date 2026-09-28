@@ -158,6 +158,6 @@ string Expression::Impl::parse_id(char const ** val_str)
 	return result;
 }
 
-void Expression::Impl::get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const {}
+void Expression::Impl::add_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const {}
 
 } // namespace PDI

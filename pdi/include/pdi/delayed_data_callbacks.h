@@ -37,31 +37,37 @@ namespace PDI {
 
 class PDI_EXPORT Delayed_data_callbacks
 {
-	/// list of names of the data
+	/// list of data names
 	std::vector<std::string> m_datanames;
 
 	/// The context where the list of data is a part of
 	Global_context& m_context;
 
 public:
-	/// constructor
+	/** Constructor
+	 * \param[in] ctx the context where the list of data is a part of
+	 */
 	Delayed_data_callbacks(Global_context& ctx);
 
 	Delayed_data_callbacks(const Delayed_data_callbacks&) = delete;
 
 	Delayed_data_callbacks(Delayed_data_callbacks&&) = delete;
 
-	/// In the destructor, we need to throw an error message in case the callback on the data doesn't work (trigger function)
-	///  (example: error in the config.yml for a plugin, error due to external library incompatibility)
+	// In the destructor, we need to throw an error message in case the callbacks on the data doesn't work (trigger function)
+	//  (example: error in the config.yml for a plugin, error due to external library incompatibility)
 	~Delayed_data_callbacks() noexcept(false);
 
-	/// add element "name" to  "m_datanames"
+	/** Adds new dataname to m_datanames
+	* \param[in] name name of data to add
+	*/
 	void add_dataname(const std::string& name);
 
-	/// Trigger data callback for all elements in "m_datanames"
+	/** Triggers data callbacks (notify_data call) for all elements in m_datanames
+	 */
 	void trigger();
 
-	/// clear m_datanames
+	/** clear m_datanames
+	*/
 	void cancel();
 
 }; // class Delayed_data_callbacks

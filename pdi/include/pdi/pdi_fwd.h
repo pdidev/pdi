@@ -79,8 +79,7 @@ using Datatype_template_sptr = std::shared_ptr<const Datatype_template>;
 
 using Datatype_sptr = std::shared_ptr<const Datatype>;
 
-/**
- * A class to delay the moment to call call_data_callback
+/** A class used to delay the callbacks for a set of data
 */
 class Delayed_data_callbacks;
 

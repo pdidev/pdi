@@ -202,14 +202,14 @@ public:
 	 */
 	static std::pair<Expression, long> parse_reference(const char* reference_str);
 
-	/** Add the direct dependencies of an expression in argument dependencies
+	/** Adds the direct dependencies of an expression to dependencies
 	 *
-	 * \param[in] ctx the context in which to evaluate the dependencies
-	 * \param dependencies list of name of metadata or data needed
-	 *  input: list of data name (can be non null)
-	 *  output: input and list of data name needed to evaluate the expression
+	 * \param[in] ctx the context in which to evaluate the expression
+	 * \param dependencies list of names of metadata or data needed to evaluate the expression
+	 *  input: list of data names (can be non null)
+	 *  output: input and list of data names needed to evaluate the expression
 	 */
-	void get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const;
+	void add_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const;
 };
 
 } // namespace PDI

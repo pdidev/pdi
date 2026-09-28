@@ -66,7 +66,7 @@ data: {inner_array: {type: array, subtype: double, size: '10'}}
 	Global_context global_ctx{tree};
 	std::unordered_set<std::string> result;
 	Datatype_template_sptr data_template = global_ctx["inner_array"].default_type();
-	data_template->get_dependencies(global_ctx, result);
+	data_template->add_dependencies(global_ctx, result);
 
 	std::unordered_set<std::string> expected_dependencies = {""};
 
@@ -92,7 +92,7 @@ data: {inner_array: {type: array, subtype: double, size: $array_size}}
 	Global_context global_ctx{tree};
 	std::unordered_set<std::string> result;
 	Datatype_template_sptr data_template = global_ctx["inner_array"].default_type();
-	data_template->get_dependencies(global_ctx, result);
+	data_template->add_dependencies(global_ctx, result);
 
 
 	std::unordered_set<std::string> expected_dependencies = {"array_size"};
@@ -119,7 +119,7 @@ data: {inner_array: {type: array, subtype: inner_attr, size: [ "$array_size[0]",
 	Global_context global_ctx{tree};
 	std::unordered_set<std::string> result;
 	Datatype_template_sptr data_template = global_ctx["inner_array"].default_type();
-	data_template->get_dependencies(global_ctx, result);
+	data_template->add_dependencies(global_ctx, result);
 
 	// check for direct dependencies
 	std::unordered_set<std::string> expected_dependencies = {"array_size", "type_size"};

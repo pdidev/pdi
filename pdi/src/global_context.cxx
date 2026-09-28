@@ -280,7 +280,7 @@ void compute_direct_dependencies_data(
 
 		Datatype_template_sptr data_template = dsc.default_type();
 
-		data_template->get_dependencies(ctx, data_dependencies[dataname]);
+		data_template->add_dependencies(ctx, data_dependencies[dataname]);
 	}
 
 	ctx.logger().trace("Compute direct dependencies {} (meta)data", map_len);
@@ -338,7 +338,7 @@ public:
 
 	TT& get_name() { return m_name; }
 
-	std::unordered_set<TT> get_dependencies() { return m_all_deps; }
+	std::unordered_set<TT> add_dependencies() { return m_all_deps; }
 };
 
 template <typename TT>
@@ -419,7 +419,7 @@ void Data_dependencies<TT>::topological_sort_and_evaluate_all_dependencies(
 					data_info_it->second->topological_sort_and_evaluate_all_dependencies(data_in_store, ordering_stack);
 
 					// insert dependencies
-					for (auto&& elem_dependencies: data_info_it->second->get_dependencies()) {
+					for (auto&& elem_dependencies: data_info_it->second->add_dependencies()) {
 						m_all_deps.insert(elem_dependencies);
 					}
 				}
@@ -638,7 +638,7 @@ Global_context::Global_context(PC_tree_t conf)
 	}
 
 	for (auto& elem: data_depend_on) {
-		m_data_all_dependencies[elem.second->get_name()] = elem.second->get_dependencies();
+		m_data_all_dependencies[elem.second->get_name()] = elem.second->add_dependencies();
 	}
 
 	// Compute counter

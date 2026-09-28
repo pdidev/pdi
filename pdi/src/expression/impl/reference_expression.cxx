@@ -356,7 +356,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 	return result;
 }
 
-void Expression::Impl::Reference_expression::get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const
+void Expression::Impl::Reference_expression::add_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const
 {
 	dependencies.insert(m_referenced);
 }

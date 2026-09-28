@@ -487,11 +487,11 @@ Expression::Impl::Operation::Operator Expression::Impl::Operation::parse_operato
 	return op;
 }
 
-void Expression::Impl::Operation::get_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const
+void Expression::Impl::Operation::add_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const
 {
-	m_first_operand.get_dependencies(ctx, dependencies);
+	m_first_operand.add_dependencies(ctx, dependencies);
 	for (auto&& op: m_operands) {
-		op.second.get_dependencies(ctx, dependencies);
+		op.second.add_dependencies(ctx, dependencies);
 	}
 }
 

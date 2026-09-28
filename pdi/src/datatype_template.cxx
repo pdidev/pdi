@@ -98,10 +98,11 @@ public:
 		return Scalar_datatype::make(m_kind, static_cast<size_t>(m_size.to_long(ctx)), static_cast<size_t>(m_align.to_long(ctx)), m_attributes);
 	}
 
-	void get_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
+	void add_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
 	{
-		m_size.get_dependencies(ctx, name_of_dependencies); // add list of data name use to evaluate m_size
-		m_align.get_dependencies(ctx, name_of_dependencies); // add list of data name use to evaluate m_align
+		m_size.add_dependencies(ctx, name_of_dependencies);  // adds list of data names needed to evaluate m_size
+		m_align.add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate m_align
+		add_attributes_dependencies(ctx, name_of_dependencies); // adds list of data names needed for m_attributes
 	}
 };
 
@@ -147,13 +148,13 @@ public:
 		);
 	}
 
-	void get_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
+	void add_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
 	{
-		m_subtype->get_dependencies(ctx, name_of_dependencies); // add list of data name use to evaluate m_subtype
-		m_size.get_dependencies(ctx, name_of_dependencies); // add list of data name use to evaluate m_size
-		m_start.get_dependencies(ctx, name_of_dependencies); // add list of data name use to evaluate m_start
-		m_subsize.get_dependencies(ctx, name_of_dependencies); // add list of data name use to evaluate m_subsize
-		get_attributes_dependencies(ctx, name_of_dependencies); // add list of data name use to evaluate attributes
+		m_subtype->add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate m_subtype
+		m_size.add_dependencies(ctx, name_of_dependencies);     // adds list of data names needed to evaluate m_size
+		m_start.add_dependencies(ctx, name_of_dependencies);    // adds list of data names needed to evaluate m_start
+		m_subsize.add_dependencies(ctx, name_of_dependencies);  // adds list of data names needed to evaluate m_subsize
+		add_attributes_dependencies(ctx, name_of_dependencies); // adds list of data names needed for m_attributes
 	}
 };
 
@@ -211,13 +212,13 @@ public:
 		return Record_datatype::make(std::move(evaluated_members), static_cast<size_t>(m_buffersize.to_long(ctx)), m_attributes);
 	}
 
-	void get_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
+	void add_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
 	{
 		for (auto&& member: m_members) {
-			member.m_displacement.get_dependencies(ctx, name_of_dependencies); // get dependencies from the size
-			member.m_type->get_dependencies(ctx, name_of_dependencies); // get dependencies from the type
+			member.m_displacement.add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate member.m_displacement
+			member.m_type->add_dependencies(ctx, name_of_dependencies);        // adds list of data names needed to evaluate member.m_type
 		}
-		get_attributes_dependencies(ctx, name_of_dependencies);
+		add_attributes_dependencies(ctx, name_of_dependencies); // adds list of data names needed for m_attributes
 	}
 };
 
@@ -276,12 +277,12 @@ public:
 		return Record_datatype::make(std::move(evaluated_members), displacement, m_attributes);
 	}
 
-	void get_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
+	void add_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
 	{
 		for (auto&& member: m_members) {
-			member.m_type->get_dependencies(ctx, name_of_dependencies); // get dependencies from the type
+			member.m_type->add_dependencies(ctx, name_of_dependencies); // get dependencies from the type
 		}
-		get_attributes_dependencies(ctx, name_of_dependencies);
+		add_attributes_dependencies(ctx, name_of_dependencies); // adds list of data names needed for m_attributes
 	}
 };
 
@@ -302,10 +303,10 @@ public:
 
 	Datatype_sptr evaluate(Context& ctx) const override { return Pointer_datatype::make(m_subtype->evaluate(ctx), m_attributes); }
 
-	void get_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
+	void add_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
 	{
-		m_subtype->get_dependencies(ctx, name_of_dependencies); // get dependencies from the type
-		get_attributes_dependencies(ctx, name_of_dependencies);
+		m_subtype->add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate m_subtype
+		add_attributes_dependencies(ctx, name_of_dependencies); // adds list of data names needed for m_attributes
 	}
 };
 
@@ -407,18 +408,18 @@ public:
 		return Tuple_datatype::make(std::move(evaluated_elements), tuple_buffersize, m_attributes);
 	}
 
-	void get_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
+	void add_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const override
 	{
 		if (m_elements[0].m_displacement) {
 			for (auto&& element: m_elements) {
-				element.m_displacement.get_dependencies(ctx, name_of_dependencies); // add list of data name use to evaluate m_displacement
+				element.m_displacement.add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate m_displacement
 			}
 		} else {
 			for (auto&& element: m_elements) {
-				element.m_type->get_dependencies(ctx, name_of_dependencies); // add list of data name use to evaluate m_displacement
+				element.m_type->add_dependencies(ctx, name_of_dependencies); // adds list of data names needed to evaluate m_displacement
 			}
 		}
-		get_attributes_dependencies(ctx, name_of_dependencies);
+		add_attributes_dependencies(ctx, name_of_dependencies);
 	}
 };
 
@@ -823,12 +824,12 @@ void Datatype_template::load_user_datatypes(Context& ctx, PC_tree_t types_tree)
 	}
 }
 
-void Datatype_template::get_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const {}
+void Datatype_template::add_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const {}
 
-void Datatype_template::get_attributes_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const
+void Datatype_template::add_attributes_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const
 {
 	for (auto&& elem: m_attributes) {
-		elem.second.get_dependencies(ctx, name_of_dependencies);
+		elem.second.add_dependencies(ctx, name_of_dependencies);
 	}
 }
 

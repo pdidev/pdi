@@ -42,7 +42,6 @@ Delayed_data_callbacks::Delayed_data_callbacks(Global_context& ctx)
 {}
 
 // In the destructor, we need to throw an error message in case the callback doesn't work on a data(trigger function)
-//  (example: error in the config.yml for a plugin, error due to external library incompatibility)
 Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false)
 {
 	try {
@@ -68,7 +67,7 @@ Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false)
 
 void Delayed_data_callbacks::add_dataname(const std::string& name)
 {
-	// Comment: In case of a multi_expose, if the data is defined twice then the callback "on_data" are called twice also (in PDI v1.10)
+	// Comment: if a data is exposed twice in a multi_expose call then the data's callbacks are called twice(in PDI v1.10)
 	//         Therefore, we need to add the name to have the same behaviour.
 	m_datanames.emplace_back(name);
 }
