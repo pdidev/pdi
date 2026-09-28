@@ -78,13 +78,6 @@ plugins:
 	PDI_multi_expose("my_test", "first", &var1, PDI_OUT, "second", &var2, PDI_OUT, NULL);
 }
 
-/*
- * Name:               CheckMultiExpose, DataWithSameName
- *
- * Description:        Verify the behavior of multi_expose when we shared two different
- *                     data in the same place in PDI store.
- */
-
 // Define user_code function
 extern "C" {
 
@@ -97,6 +90,13 @@ void add_2(void)
 }
 
 } // end extern "C"
+
+/*
+ * Name:               CheckMultiExpose.DataWithSameNameWithDifferentPointer
+ *
+ * Description:        Verify the behavior of multi_expose when we shared two different
+ *                     pointer in the same dataname in PDI store.
+ */
 
 TEST_F(CheckMultiExpose, DataWithSameNameWithDifferentPointer)
 {
@@ -120,6 +120,13 @@ plugins:
 	EXPECT_EQ(var2, 15) << "Wrong value of var2"; // the add_2 function is called two times on reference &var2.
 }
 
+/*
+ * Name:               CheckMultiExpose.DataWithSameName
+ *
+ * Description:        Verify the behavior of multi_expose when we shared two different
+ *                     data in the same place in PDI store.
+ */
+
 TEST_F(CheckMultiExpose, DataWithSameName)
 {
 	InitPdi(PC_parse_string(R"==(
@@ -141,6 +148,14 @@ plugins:
 	EXPECT_EQ(var1, 7) << "Wrong value of var1"; // the reference of pdi_var1 in the store is &var2 => no change in the value
 	EXPECT_EQ(var2, 11) << "Wrong value of var2"; // the add_2 function is called two times on reference &var2.
 }
+
+/*
+ * Name:               CheckMultiExpose.WriteFileName
+ *
+ * Description:        Create a HDF5 file "on_data" event for the first data shared 
+ *                     whose name depends on the last data shared.
+ *                     
+ */
 
 TEST_F(CheckMultiExpose, WriteFileName)
 {
@@ -166,11 +181,11 @@ plugins:
 }
 
 /*
-These tests don't work.
-To resolve this issue:
-1) Add a function to get the list of data on which a variable (pass to multi expose) depends
-2) Reorganize the order of variables of the sharing loop inside "PDI_multi_expose"
-*/
+ * Name:               CheckMultiExpose.WriteArrayWithMetadataSize
+ *
+ * Description:        Create a HDF5 file "on_data" event for the first data shared
+ *                     whose size depends on the last shared metadata
+ */
 
 TEST_F(CheckMultiExpose, WriteArrayWithMetadataSize)
 {
@@ -196,6 +211,13 @@ plugins:
 
 	EXPECT_TRUE(std::filesystem::exists("mydata.h5"));
 }
+
+/*
+ * Name:               CheckMultiExpose.WriteArrayWithDataSize
+ *
+ * Description:        Create a HDF5 file "on_data" event for the first data shared
+ *                     whose size depends on the last shared data
+ */
 
 TEST_F(CheckMultiExpose, WriteArrayWithDataSize)
 {
