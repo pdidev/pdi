@@ -33,7 +33,6 @@
 
 #include "global_context.h"
 
-
 using namespace PDI;
 
 // function to check the list of dependencies
@@ -49,11 +48,11 @@ void check_dependecies(const std::unordered_set<std::string>& expected_dependenc
 }
 
 /*
- * Name:                DataAttrTest.simple_attr
+ * Name:                DataDependenciesTest.ArrayDataTypeNoDependencies
  *
- * Tested functions:    PDI::Datatype_template::load_basic_datatypes
+ * Tested functions:    PDI::Datatype_template::add_dependencies
  *
- * Description:         Test checks if correct type attribute is returned
+ * Description:         Test checks if no direct dependency is found
  *
  */
 TEST(DataDependenciesTest, ArrayDataTypeNoDependencies)
@@ -75,11 +74,11 @@ data: {inner_array: {type: array, subtype: double, size: '10'}}
 }
 
 /*
- * Name:                DataAttrTest.simple_attr
+ * Name:                DataDependenciesTest.ArrayDataType
  *
- * Tested functions:    PDI::Datatype_template::load_basic_datatypes
+ * Tested functions:    PDI::Datatype_template::add_dependencies
  *
- * Description:         Test checks if correct type attribute is returned
+ * Description:         Test checks if the direct size dependency of an array datatype is found
  *
  */
 TEST(DataDependenciesTest, ArrayDataType)
@@ -101,12 +100,12 @@ data: {inner_array: {type: array, subtype: double, size: $array_size}}
 }
 
 /*
- * Name:                DataAttrTest.simple_attr
+ * Name:                DataDependenciesTest.ArrayOfArrayDataType
  *
- * Tested functions:    PDI::Datatype_template::load_basic_datatypes
+ * Tested functions:    PDI::Datatype_template::add_dependencies
  *
- * Description:         Test checks if correct type attribute is returned
- *
+ * Description:         Test checks if the direct subtype dependency of an array datatype is added
+ *                      Test checks if the indirect dependency due to a subtype of an array datatype is found
  */
 TEST(DataDependenciesTest, ArrayOfArrayDataType)
 {
@@ -125,18 +124,9 @@ data: {inner_array: {type: array, subtype: inner_attr, size: [ "$array_size[0]",
 	std::unordered_set<std::string> expected_dependencies = {"array_size", "type_size"};
 	check_dependecies(expected_dependencies, result);
 
-
 	// check for all dependencies
 	std::unordered_set<std::string> expected_dependencies22 = {"array_size", "dim_size", "type_size"};
 	std::unordered_set<std::string> result22 = global_ctx.m_data_all_dependencies["inner_array"];
-
-	for (auto& elem: result22) {
-		std::cout << "result 22: elem=" << elem << std::endl;
-	}
-
-	for (auto& elem: result) {
-		std::cout << "result: elem=" << elem << std::endl;
-	}
 
 	check_dependecies(expected_dependencies22, result22);
 }
