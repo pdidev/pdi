@@ -1,6 +1,5 @@
 /*******************************************************************************
  * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,17 +55,15 @@ struct DataDescDelayed: public ::testing::Test {
 };
 
 /*
- * Name:                DataDescDelayed.multiple_data_callbacks
+ * Name:                DataDescDelayed.multiple_data
  *
- * Description:         Check, in case of multiple data, each data callbacks are called
+ * Description:         Check the behavior of trigger for two different data
  *
  */
-TEST_F(DataDescDelayed, multiple_delayed_data_callbacks)
+TEST_F(DataDescDelayed, multiple_data)
 {
 	string data_x{"data_x"};
 	string data_y{"data_y"};
-	Data_descriptor& desc_x = context->desc(data_x);
-	Data_descriptor& desc_y = context->desc(data_y);
 	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
@@ -123,7 +120,6 @@ TEST_F(DataDescDelayed, multiple_delayed_data_callbacks)
 TEST_F(DataDescDelayed, test_scope_guard)
 {
 	string data_x{"data_x"};
-	Data_descriptor& desc_x = context->desc(data_x);
 	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 
@@ -161,7 +157,6 @@ TEST_F(DataDescDelayed, test_scope_guard)
 TEST_F(DataDescDelayed, test_scope_guard_2_callback)
 {
 	string data_x{"data_x"};
-	Data_descriptor& desc_x = context->desc(data_x);
 	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 
@@ -208,7 +203,6 @@ TEST_F(DataDescDelayed, test_scope_guard_2_callback)
 TEST_F(DataDescDelayed, reclaim_before_trigger)
 {
 	string data_x{"data_x"};
-	Data_descriptor& desc_x = context->desc(data_x);
 	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 
@@ -229,21 +223,21 @@ TEST_F(DataDescDelayed, reclaim_before_trigger)
 	ASSERT_EQ(x, 0);
 
 	context->desc("data_x").reclaim();
-	ASSERT_EQ(x, 0);
+	ASSERT_EQ(x, 0); // check the value of data_x is not changed
 
-
-	// Check the error message is trigger is called before reclaim
+	// check the error message in trigger call when a data is not shared
 	try {
 		delayed_callbacks.trigger();
 	} catch (Error& e) {
-		ASSERT_STREQ("`1' error(s) while triggering data callbacks, Cannot access a non shared value: `data_x'", e.what());
+		EXPECT_STREQ("`1' error(s) while triggering data callbacks, Cannot access a non shared value: `data_x'", e.what());
 	} catch (...) {
-		FAIL();
+		FAIL() << "Unexpected error occurs in trigger()";
 	}
+	FAIL() << "No error is thrown";
 }
 
 /*
- * Name:                DataDescDelayed.reclaim_before_trigger
+ * Name:                DataDescDelayed.same_name_added
  *
  * Description:         Check the behavior of trigger when a data name is defined twice.
  *
@@ -251,7 +245,6 @@ TEST_F(DataDescDelayed, reclaim_before_trigger)
 TEST_F(DataDescDelayed, same_name_added)
 {
 	string data_x{"data_x"};
-	Data_descriptor& desc_x = context->desc(data_x);
 	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 
@@ -286,7 +279,6 @@ TEST_F(DataDescDelayed, same_name_added)
 TEST_F(DataDescDelayed, two_trigger_calls)
 {
 	string data_x{"data_x"};
-	Data_descriptor& desc_x = context->desc(data_x);
 	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 
@@ -308,7 +300,7 @@ TEST_F(DataDescDelayed, two_trigger_calls)
 
 		delayed_callbacks.trigger();
 		ASSERT_EQ(x, 42);
-	} // the second call of trigger at the end of this scope
+	} // the second call of trigger is executed at the end of this scope
 	context->desc("data_x").reclaim();
 	ASSERT_EQ(x, 42); // Check the list of data in second trigger is empty
 }
