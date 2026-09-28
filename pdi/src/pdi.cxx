@@ -406,8 +406,7 @@ try {
 	va_list ap;
 
 	std::vector<void*> data_pointer{const_cast<void*>(data)};
-	std::unordered_map<std::string, std::vector<int>>
-		name_indexes; // list of the index for a data name (need this variable in case of duplicate name)
+	std::unordered_map<std::string, std::vector<int>> name_indexes; // list of the indexes for a data name (need this variable in case of duplicate name)
 	std::vector<PDI_inout_t> data_access{access};
 
 	name_indexes[std::string(name)].push_back(0);
@@ -420,7 +419,7 @@ try {
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
 
 		name_indexes[std::string(v_name)].push_back(index_data_arg);
-		data_pointer.push_back(v_data); // used to avoid to create a new value
+		data_pointer.push_back(v_data); // A data name can be associated to different data_pointer (see TEST_F(CheckMultiExpose, DataWithSameNameWithDifferentPointer))
 		data_access.emplace_back(v_access);
 		index_data_arg++; // update the index
 	}
@@ -430,24 +429,25 @@ try {
 	for (auto& elem: name_indexes) {
 		std::string elem_name = elem.first;
 		if (Global_context::context().m_data_ordering.contains(elem_name)) {
-			sort_name.emplace_back(elem.first, Global_context::context().m_data_ordering[elem.first]);
+			sort_name.emplace_back(elem_name, Global_context::context().m_data_ordering[elem_name]);
 		} else {
-			sort_name.emplace_back(elem.first, 0); // case data is not defined in (meta)data section
+			sort_name.emplace_back(elem_name, 0); // case data is not defined in (meta)data section
 		}
 	}
 
 	std::sort(sort_name.begin(), sort_name.end(), [](auto& left, auto& right) { return left.second < right.second; });
 
-	Var_to_reclaim list_names{event_name}; // list of variable that will be reclaimed at the end of this function
+	Var_to_reclaim list_names{event_name}; // list of variables that will be reclaimed at the end of this function
 	Delayed_data_callbacks delayed_callbacks(Global_context::context());
 
 	int i = -1;
-	for (auto& name22: sort_name) {
-		for (auto& index: name_indexes[name22.first]) {
+	for (auto& elem: sort_name) {
+		std::string elem_name = elem.first;
+		for (auto& index: name_indexes[elem_name]) {
 			PDI_inout_t v_access = data_access[index];
-			Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", name22.first, ++i, list_names.size());
-			Global_context::context()[name22.first].share(data_pointer[index], v_access & PDI_OUT, v_access & PDI_IN, std::move(delayed_callbacks));
-			list_names.emplace_back(name22.first);
+			Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", elem_name, ++i, list_names.size());
+			Global_context::context()[elem_name].share(data_pointer[index], v_access & PDI_OUT, v_access & PDI_IN, std::move(delayed_callbacks));
+			list_names.emplace_back(elem_name);
 		}
 	}
 

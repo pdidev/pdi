@@ -260,8 +260,8 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata, std::map<std::str
 }
 
 /** Loads the data (or metadata) from a yaml tree
- * \param ctx the context in which the direct dependencies are define
- * \param node the tree from where the direct dependencies are define
+ * \param ctx the context in which the direct dependencies are defined
+ * \param node the tree from where the direct dependencies are defined
  * \param data_dependencies the map of direct dependencies for each data
  */
 void compute_direct_dependencies_data(
@@ -368,15 +368,15 @@ void Data_dependencies<TT>::local_topological_sort(
 			auto&& data_info_it = data_in_store.find(elem);
 
 			if (data_info_it == data_in_store.end()) {
-				// if we have a dependencies with unknown data
+				// if we have a dependency with unknown data
 				// example:
 				// data:
 				//     our_data: {type:array, subtype: double, size:"$our_size"}
 				//
-				// without define "our_size" in (meta)data section
+				// without defining "our_size" in (meta)data section
 
 				// The ordering_stack contains only variables that are in metadata and data section
-				// ==> nothing todo
+				// Implies nothing to do
 			} else {
 				data_info_it->second->local_topological_sort(data_in_store, ordering_stack);
 			}
@@ -405,12 +405,12 @@ void Data_dependencies<TT>::topological_sort_and_evaluate_all_dependencies(
 			auto&& data_info_it = data_in_store.find(elem);
 
 			if (data_info_it == data_in_store.end()) {
-				// if we have a dependencies with unknown data
+				// if we have a dependency with unknown data
 				// example:
 				// data:
 				//     our_data: {type:array, subtype: double, size:"$our_size"}
 				//
-				// without define "our_size" in (meta)data section
+				// without defining "our_size" in (meta)data section
 
 				m_all_deps.insert(elem);
 			} else {
@@ -603,7 +603,7 @@ Global_context::Global_context(PC_tree_t conf)
 		m_logger.warn("No data (or metadata) defined in specification tree");
 	}
 
-	/// list of direct dependencies for a (meta)data defines in the specification tree
+	/// list of direct dependencies for a (meta)data defined in the specification tree
 	std::unordered_map<std::string, std::unordered_set<std::string>> data_direct_dependencies;
 
 	// create the dependencies between data and metadata
@@ -625,10 +625,8 @@ Global_context::Global_context(PC_tree_t conf)
 
 	std::map<std::string, std::unique_ptr<Data_dependencies<std::string>>> data_depend_on;
 
-	size_t counter = 0;
 	for (auto& elem: data_direct_dependencies) {
 		data_depend_on.emplace(elem.first, std::make_unique<Data_dependencies<std::string>>(elem.first, elem.second));
-		counter++;
 	}
 
 	m_logger.trace("compute all dependencies and topological sort");
@@ -641,10 +639,9 @@ Global_context::Global_context(PC_tree_t conf)
 		m_data_all_dependencies[elem.second->get_name()] = elem.second->add_dependencies();
 	}
 
-	// Compute counter
-	counter = ordering_stack.size(); // zero value is for data that is not defined in (meta)data section
+	size_t counter = ordering_stack.size(); // zero value is for data that are not defined in (meta)data section
 	while (!ordering_stack.empty()) {
-		m_data_ordering[ordering_stack.top()] = (unsigned int)counter; // zero value is for data that is not defined in (meta)data section
+		m_data_ordering[ordering_stack.top()] = (unsigned int)counter; // zero value is for data that are not defined in (meta)data section
 		counter--;
 		ordering_stack.pop();
 	}

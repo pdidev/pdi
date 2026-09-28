@@ -171,5 +171,4 @@ void Expression::add_dependencies(Context& ctx, std::unordered_set<std::string>&
 	m_impl->add_dependencies(ctx, dependencies);
 }
 
-
 } // namespace PDI

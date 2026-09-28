@@ -221,9 +221,9 @@ public:
 
 	using status_impl::status;
 
-	std::string full_msg() const;
+	std::string full_msg() const override;
 
-	[[noreturn]] void rethrow_with_context(std::string msg) const;
+	[[noreturn]] void rethrow_with_context(std::string msg) const override;
 };
 
 /** An error class to use when multiple errors of different kind have happened

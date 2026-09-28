@@ -32,12 +32,6 @@
 class CheckMultiExpose: public ::PDI::PdiTest
 {};
 
-/*
- * Name:               CheckMultiExpose.AccesSecondData
- *
- * Description:        Acces to second data on the event "on_data" for the first data of a multi expose
- */
-
 // Function to check the value inside the user_code function
 void check_value(const char* var_name, int& var, const int expected_value)
 {
@@ -57,6 +51,12 @@ void test_access_var2(void)
 }
 
 } // end extern "C"
+
+/*
+ * Name:               CheckMultiExpose.AccesSecondData
+ *
+ * Description:        Acces to second data on the event "on_data" for the first data of a multi expose
+ */
 
 TEST_F(CheckMultiExpose, AccesSecondData)
 {
@@ -145,8 +145,7 @@ plugins:
 
 	PDI_multi_expose("my_test", "pdi_var1", &var1, PDI_OUT, "pdi_var1", &var1, PDI_OUT, NULL);
 
-	EXPECT_EQ(var1, 7) << "Wrong value of var1"; // the reference of pdi_var1 in the store is &var2 => no change in the value
-	EXPECT_EQ(var2, 11) << "Wrong value of var2"; // the add_2 function is called two times on reference &var2.
+	EXPECT_EQ(var1, 7) << "Wrong value of var1"; // the add_2 function is applied two times on var1
 }
 
 /*
