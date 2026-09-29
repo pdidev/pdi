@@ -235,7 +235,7 @@ TEST_F(DataDescDelayed, reclaim_before_trigger)
 	} catch (...) {
 		FAIL() << "Unexpected error occurs in trigger()";
 	}
-	if(!error_in_trigger) {
+	if (!error_in_trigger) {
 		FAIL() << "No error is thrown";
 	}
 }
