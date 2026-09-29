@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Centre National de la Recherche Scientifique (CNRS)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.

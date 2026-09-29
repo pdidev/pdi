@@ -4,11 +4,22 @@ The VeloC plugin enables
 
 * writing and reading generic-data checkpoint files using [VeloC memory-based API](https://veloc.readthedocs.io/en/latest/api.html#example)
 * writing and reading applications' custom checkpoint files using [VeloC file-based API](https://veloc.readthedocs.io/en/latest/api.html#memory-based-api)
-* handling the persistence, versioning, and transfer of checkpoint files using [VeloC](https://veloc.readthedocs.io/en/latest/) **in synchronous mode only**. 
+* handling the versioning and transfer of checkpoint files using [VeloC](https://veloc.readthedocs.io/en/latest/) **in synchronous mode only**. 
 
 Please note: <br> 
 * for applications's customs checkpoints, VeloC does not automate the serialization or deserialization of data structure like it does for generic-data checkpoints; that remains manual and user‑defined. (See [VeloC documentation](https://veloc.readthedocs.io/en/latest/)) <br>
-* VeloC's own configuration file requires the definition of a temporary storage directory `scratch` and a persistent one `persistent`. After the program's execution, users will find the checkpoint files in : `persistent`with the naming convention: `<label>-<rank>-<iteration>.dat`
+
+* VeloC has its own configuration file. It must define two directories: `scratch`, a node-local directory for temporary checkpoints, and `persistent`, a durable directory (usually on the parallel file system). Because the plugin currently supports only VeloC's synchronous mode, we recommend the following settings:
+
+  - `mode = sync`
+  - `scratch` and `persistent`: set both as they are mandatory fields for VeloC
+  - `persistent_interval = -1`: this will disable the transfer of checkpoints from `scratch` to `persistent` 
+
+  After the program's execution, the checkpoint files are found in `scratch`, with the naming convention `<label>-<rank>-<iteration>.dat`, where `<label>` is the checkpoint name, `<rank>` is the MPI rank, and `<iteration>` is the iteration at which the checkpoint was written. 
+
+> [ATTENTION]
+> Please note if the field "mode" in VeloC's configuration file is not set to "sync" when using the plugin, it will result in an error inside VeloC. 
+
 
 
 The VeloC plugin does not currently support the full set of features of VeloC, but it offers a simple
@@ -29,8 +40,6 @@ The user also needs an MPI implementation with shared memory support, such as
 The VeloC plugin specification tree requires 3 mandatory mappings for successful initialization. 
 
 * *config_file* : path to [VeloC's own configuration file](https://veloc.readthedocs.io/en/latest/quick.html#configure). <br> 
-> [ATTENTION]
-> Please note the plugin currently only works in synchronous mode. This means the parameter "mode" should be set to "sync" in VeloC's configuration file when using the plugin. 
 
 ```yml
 config_file: ./veloc_config.cfg 
@@ -41,7 +50,7 @@ config_file: ./veloc_config.cfg
 checkpoint_label: myapp
 ```
 
-* *iteration*: name of the data corresponding to the simulation loop's iterator in the PDI data store. This is also used by VeloC to name checkpoint files. 
+* *iteration*: name of the data corresponding to the simulation loop's iterator in the PDI data store. It is also used by VeloC to name checkpoint files. This field is called " **version**" in the VeloC documentation.  
 
 ```yml
 iteration: ii
@@ -54,12 +63,12 @@ iteration: ii
   ```
   The plugin by default defines the status equal to 1 but users can change the status by writing to PDI.
   ```cpp 
-  PDI_expose("status", &checkpoint_status, PDI_OUT);
-  ```cpp 
+  int simulation_checkpoint_status = 0;
   PDI_expose("checkpoint_status", &simulation_checkpoint_status, PDI_OUT);
+  ```
   If users wish to inspect the status they can read it from PDI. 
   ```cpp 
-  PDI_expose("status", &checkpoint_status, PDI_IN);
+  PDI_expose("status", &simulation_checkpoint_status, PDI_IN);
   ``` 
 
 * *counter* : name of an integer variable in the PDI data store that represents the number of checkpoints written by the plugin.
@@ -85,17 +94,17 @@ The user can define a *managed_checkpointing* tree or a *custom_checkpointing* t
 > [ATTENTION]
 > This list must include the simulation's iteration counter.
 
-* *checkpoint_on_event* : name of the PDI event where the user wants to checkpoint
+* *checkpoint_on_event* : name of the PDI event where the user wants to checkpoint; *protected_data* needs to be exposed to PDI during this event.
 
-* *recover_on_event* : name of the PDI event where the user wants to recover
+* *recover_on_event* : name of the PDI event where the user wants to recover; *protected_data* needs to be exposed to PDI during this event.
 
-* *synchronize_on_event* : name of the PDI event where the user wants to synchronize. If the *status* is equal to 0, the synchronization event will be a recovery event, if the *status* is equal to 1, the synchronization event will be a checkpoint event.
+* *synchronize_on_event* : name of the PDI event where the user wants to synchronize. If the *status* is equal to 0, the synchronization event will be a recovery event, if the *status* is equal to 1, the synchronization event will be a checkpoint event; *protected_data* needs to be exposed to PDI during this event.
 
 * *when* : PDI expression indicating when to execute a checkpoint operation. It is evaluated both in the case of a checkpoint event and of a synchronization event that performs a checkpoint. 
 
 *managed_checkpointing* accepts the following optional mapping
 
-  * *recover_at_or_before_iteration* : The maximum iteration from which the user wants to restart. For example, if this key is set to 20, the plugin will restore the checkpoint written at iteration 20, if available. Otherwise, it will restore the most recent available checkpoint from a preceding iteration. If this key is undefined, the plugin will restore the checkpoint from the latest iteration for which a checkpoint was written. 
+  * *recover_at_or_before_iteration* : The maximum iteration from which the user wants to restart. For example, if this key is set to 20, the plugin will restore the checkpoint written at iteration 20, if available. Otherwise, it will restore the most recent available checkpoint from a preceding iteration. If this key is undefined, the plugin will restore the checkpoint from the latest iteration checkpoint. 
 
 ```yml
 managed_checkpointing:
@@ -132,7 +141,7 @@ managed_checkpointing:
    * *recover_at_or_before_iteration* : The maximum iteration from which the user wants to restart. For example, if this key is set to 20, the plugin will restore the checkpoint written at iteration 20, if available. Otherwise, it will restore the most recent available checkpoint from a preceding iteration. If this key is undefined, the plugin will restore the checkpoint from the latest iteration for which a checkpoint was written. 
 
 
-  All recovery logic must be placed by the user after the "route_file_on_event" event and before the "end_on_event" event. 
+    All recovery logic must be placed by the user after the "route_file_on_event" event and before the "end_on_event" event. 
 
 ```yml
 custom_checkpointing:
