@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -29,6 +29,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <paraconf.h>
 
@@ -70,6 +71,17 @@ public:
 	 */
 	virtual Datatype_sptr evaluate(Context& ctx) const = 0;
 
+
+	/** Adds to name_of_dependencies the dependency of this datatype template
+	 *
+	 * \param ctx the context in which to evaluate this template
+	 * \param name_of_dependencies
+	 *  input: list of data name (can be non null)
+	 *  output: input and list of data names on which this datatype template depend
+	 *
+	 */
+	virtual void add_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const;
+
 	/** Returns attribute of given name as Expression
 	 * \param attribute_name attribute to get
 	 *
@@ -82,6 +94,16 @@ public:
 	 * \return all attributes as a unordered map
 	 */
 	const Attributes_map& attributes() const;
+
+	/** Adds to name_of_dependencies the dependency of all attributes
+	 *
+	 * \param ctx the context in which to evaluate this template
+	 * \param name_of_dependencies
+	 *  input: list of data name (can be non null)
+	 *  output: input and list of data names on which all attributes depend
+	 *
+	 */
+	void add_attributes_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const;
 
 	/**
 	 * Adds to the context the basic Array, Record, C and Fortran datatypes
