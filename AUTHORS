@@ -40,6 +40,7 @@ Jacques Morice - CEA (jacques.morice@cea.fr)
 * fix issue [#55](https://github.com/pdidev/pkgs/issues/55)
 * fix issue [#582](https://github.com/pdidev/pkgs/issues/582)
 * fix issue [#30](https://github.com/pdidev/test_env/issues/582)
+* fix issue [#739](https://github.com/pdidev/pdi/issues/739)
 
 Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
 * Fortran interface fixes
