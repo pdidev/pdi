@@ -20,10 +20,11 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+<<<<<<< HEAD
 * Corrected an invalid test that prevented a deprecation warning message for
   order of arrays to ever be shown. This fixes
   [#758](https://github.com/pdidev/pdi/issues/758).
-* Improved the error message if test `decl_netcdf_test_08` in Decl'NetCDF fails
+* Improved the error message if one test in Decl'NetCDF fails
   [#739](https://github.com/pdidev/pdi/issues/739)
 
 #### Security
