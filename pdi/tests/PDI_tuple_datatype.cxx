@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +33,9 @@
 #include "PDI_tuple_datatype_cases.h"
 
 using namespace PDI;
-using namespace std;
+
+using std::unique_ptr;
+using std::vector;
 
 template <class T>
 struct TupleDatatypeTest: public ::testing::Test {

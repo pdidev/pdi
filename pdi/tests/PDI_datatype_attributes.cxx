@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +35,6 @@
 #include "PDI_record_datatype_cases.h"
 
 using namespace PDI;
-using namespace std;
 
 /*
  * Name:                TypeAttrTest.simple_attr
@@ -44,6 +44,8 @@ using namespace std;
  * Description:         Test checks if correct type attribute is returned
  *
  */
+using std::string;
+
 TEST(TypeAttrTest, simple_attr)
 {
 	PDI::Paraconf_wrapper fw;
