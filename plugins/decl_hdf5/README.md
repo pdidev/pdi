@@ -68,13 +68,18 @@ The possible values for the keys are as follow:
       * `STOP`: Throw a runtime error.
       * `CONTINUE`: Fall back to a standard HDF5 output file.
     * `stripe_size` (non-negative integer, default: 0): The amount of data (in bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MB) is used.
+    * `ioc_selection` (string): The strategy for selecting I/O Concentrato (IOC) processes across MPI ranks. Possible choices:
+      * `SELECT_IOC_ONE_PER_NODE` (default): one IOC per node
+      * `SELECT_IOC_TOTAL`: same number of IOC as `count`
+      * `SELECT_IOC_EVERY_NTH_RANK`: one IOC per `N` MPI ranks. To be used in conjunction with `H5FD_SUBFILING_IOC_SELECTION_CRITERIA` environment variable that defines `N`. If not defined, `N` will take the default value 1.
   * Yaml example
-    * full configuration:
+    * full configuration: SELECT_IOC_TOTAL
       ```
       subfiling:
         count: 4              # generate 4 subfiles
         policy: CONTINUE      # Fallback to standard HDF5 if necessary
         stripe_size: 8388608  # 8MB stripes
+        ioc_selection: 
       ```
     * shorthand configuration:
       ```
@@ -88,6 +93,7 @@ The possible values for the keys are as follow:
     * **Naming Convention**: Subfile names are managed internally by HDF5 and cannot be easily customized. They follow a template similar to:
     `[filename].h5.subfile_[contextID]_[subfile_index]_of_[total_subfiles]`
     (e.g., `output.h5.subfile_11273556_01_of_10`)
+    * Please refer to HDF5 official user guide for further information.
 
 ### DATA_SECTION
 
