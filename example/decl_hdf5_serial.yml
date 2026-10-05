@@ -1,0 +1,29 @@
+# duration in seconds
+duration: 0.75
+# global [height, width] (excluding boundary conditions or ghosts)
+datasize: [60, 12]
+# degree of parallelism
+parallelism: { height: 1, width: 1 }
+
+# only the following config is passed to PDI
+pdi:
+  include:
+  - pdi.yml
+  plugins:
+    decl_hdf5:
+      file: data_${mpi_rank}.h5
+      datasets: # type of the datasets to create in file
+        data:
+          type: array
+          subtype: double
+          size: [10, '$dsize[0]-2', '$dsize[1]-2']
+      write:
+        main_field: # the name of the data to write
+          dataset: data
+          when: '$iter<10'   # do only write the first 10 iterations (0...9)
+          memory_selection:  # exclude ghosts from the data in memory
+            size:  ['$dsize[0]-2', '$dsize[1]-2']
+            start: [1, 1]
+          dataset_selection: # only write into a single slice in time
+            size:  [1, '$dsize[0]-2', '$dsize[1]-2']
+            start: [$iter, 0, 0]
