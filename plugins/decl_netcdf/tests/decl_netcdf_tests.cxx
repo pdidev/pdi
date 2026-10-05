@@ -24,957 +24,808 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <array>
 #include <filesystem>
 
 #include <pdi/testing.h>
 
+class DeclNetcdfTest: public ::PDI::PdiTest
+{};
+
 /*
- * Name:                decl_netcdf_test.01
+ * Name:                DeclNetcdfTest.01
  *
  * Description:         Tests simple write and read of scalar and array depending on `input' metadata
  */
-TEST(DeclNetcdfTest, 01)
+TEST_F(DeclNetcdfTest, 01)
 {
-	const char* CONFIG_YAML
-		= "logging: trace                                     \n"
-		  "metadata:                                          \n"
-		  "  input: int                                       \n"
-		  "data:                                              \n"
-		  "  int_scalar: int                                  \n"
-		  "  int_array: {type: array, subtype: int, size: 32} \n"
-		  "plugins:                                           \n"
-		  "  decl_netcdf:                                     \n"
-		  "    - file: 'test_01.nc'                           \n"
-		  "      when: '${input}=0'                           \n"
-		  "      write: [int_scalar, int_array]               \n"
-		  "    - file: 'test_01.nc'                           \n"
-		  "      when: '${input}=1'                           \n"
-		  "      read: [int_scalar, int_array]                \n";
-
-	PDI_init(PC_parse_string(CONFIG_YAML));
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata:
+  input: int
+data:
+  int_scalar: int
+  int_array: {type: array, subtype: int, size: 32}
+plugins:
+  decl_netcdf:
+    - file: 'test_01.nc'
+      when: '${input}=0'
+      write: [int_scalar, int_array]
+    - file: 'test_01.nc'
+      when: '${input}=1'
+      read: [int_scalar, int_array]
+)=="));
 
 	// init data
 	int input = 0;
-	int int_scalar = 42;
-	int int_array[32];
-	for (int i = 0; i < 32; i++) {
-		int_array[i] = i;
-	}
+	int const int_scalar = 42;
+	auto const int_array = make_a<std::array<int, 32>>();
 
 	// write data
 	PDI_expose("input", &input, PDI_OUT);
 	PDI_expose("int_scalar", &int_scalar, PDI_OUT);
-	PDI_expose("int_array", int_array, PDI_OUT);
+	PDI_expose("int_array", int_array.data(), PDI_OUT);
 
-	// zero data
-	int_scalar = 0;
-	for (int i = 0; i < 32; i++) {
-		int_array[i] = 0;
-	}
+	// check file exists
+	EXPECT_TRUE(std::filesystem::exists("test_01.nc"));
 
-	// read data
+	// read_data
+	int int_scalar_read = 0;
+	std::array<int, 32> int_array_read{};
+	int_array_read.fill(-1);
+
 	input = 1;
 	PDI_expose("input", &input, PDI_OUT);
-	PDI_expose("int_scalar", &int_scalar, PDI_IN);
-	PDI_expose("int_array", int_array, PDI_IN);
+	PDI_expose("int_scalar", &int_scalar_read, PDI_IN);
+	PDI_expose("int_array", int_array_read.data(), PDI_IN);
 
 	// verify
-	printf("%d ?= %d\n", int_scalar, 42);
-	ASSERT_EQ(int_scalar, 42);
-	for (int i = 0; i < 32; i++) {
-		printf("%d ?= %d\n", int_array[i], i);
-		ASSERT_EQ(int_array[i], i);
-	}
-
-	PDI_finalize();
+	ASSERT_EQ(int_scalar, int_scalar_read);
+	ASSERT_EQ(int_array, int_array_read);
 }
 
 /*
- * Name:                decl_netcdf_test.02
+ * Name:                DeclNetcdfTest.02
  *
  * Description:         Tests simple write and read of scalar and array depending on event
  */
-TEST(DeclNetcdfTest, 02)
+TEST_F(DeclNetcdfTest, 02)
 {
-	const char* CONFIG_YAML
-		= "logging: trace                                     \n"
-		  "data:                                              \n"
-		  "  int_scalar: int                                  \n"
-		  "  int_array: {type: array, subtype: int, size: 32} \n"
-		  "plugins:                                           \n"
-		  "  decl_netcdf:                                     \n"
-		  "    - file: 'test_02.nc'                           \n"
-		  "      on_event: 'write'                            \n"
-		  "      write: [int_scalar, int_array]               \n"
-		  "    - file: 'test_02.nc'                           \n"
-		  "      on_event: 'read'                             \n"
-		  "      read: [int_scalar, int_array]                \n";
-
-	PDI_init(PC_parse_string(CONFIG_YAML));
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata:
+  input: int
+data:
+  int_scalar: int
+  int_array: {type: array, subtype: int, size: 32}
+plugins:
+  decl_netcdf:
+    - file: 'test_02.nc'
+      on_event: 'write'
+      write: [int_scalar, int_array]
+    - file: 'test_02.nc'
+      on_event: 'read'
+      read: [int_scalar, int_array]
+)=="));
 
 	// init data
-	int int_scalar = 42;
-	int int_array[32];
-	for (int i = 0; i < 32; i++) {
-		int_array[i] = i;
-	}
+	int const int_scalar = 42;
+	auto const int_array = make_a<std::array<int, 32>>();
 
 	// write data
-	PDI_multi_expose("write", "int_scalar", &int_scalar, PDI_OUT, "int_array", int_array, PDI_OUT, NULL);
+	PDI_multi_expose("write", "int_scalar", &int_scalar, PDI_OUT, "int_array", int_array.data(), PDI_OUT, NULL);
 
-	// zero data
-	int_scalar = 0;
-	for (int i = 0; i < 32; i++) {
-		int_array[i] = 0;
-	}
+	// check file exists
+	EXPECT_TRUE(std::filesystem::exists("test_02.nc"));
 
 	// read data
-	PDI_multi_expose("read", "int_scalar", &int_scalar, PDI_IN, "int_array", int_array, PDI_IN, NULL);
+	int int_scalar_read = 0;
+	std::array<int, 32> int_array_read{};
+	int_array_read.fill(0);
+
+	PDI_multi_expose("read", "int_scalar", &int_scalar_read, PDI_IN, "int_array", int_array_read.data(), PDI_IN, NULL);
 
 	// verify
-	printf("%d ?= %d\n", int_scalar, 42);
-	ASSERT_EQ(int_scalar, 42);
-	for (int i = 0; i < 32; i++) {
-		printf("%d ?= %d\n", int_array[i], i);
-		ASSERT_EQ(int_array[i], i);
-	}
-
-	PDI_finalize();
+	ASSERT_EQ(int_scalar, int_scalar_read);
+	ASSERT_EQ(int_array, int_array_read);
 }
 
 /*
- * Name:                decl_netcdf_test.03
+ * Name:                DeclNetcdfTest.03
  *
  * Description:         Tests simple write and read of variables and groups attributes
  */
-TEST(DeclNetcdfTest, 03)
+TEST_F(DeclNetcdfTest, 03)
 {
-	const char* CONFIG_YAML
-		= ".vars:                                                   \n"
-		  "  - &int_scalar_var                                      \n"
-		  "    type: int                                            \n"
-		  "    group: 'scalar_group'                                \n"
-		  "    attributes:                                          \n"
-		  "      scalar_attr: $scalar_attr                          \n"
-		  "  - &int_array_var                                       \n"
-		  "    type: array                                          \n"
-		  "    subtype: int                                         \n"
-		  "    size: 32                                             \n"
-		  "    group: 'array_group'                                 \n"
-		  "    dimensions: ['time']                                 \n"
-		  "    attributes:                                          \n"
-		  "      array_attr: $array_attr                            \n"
-		  ".groups:                                                 \n"
-		  "  - &scalar_group_value                                  \n"
-		  "    attributes:                                          \n"
-		  "      scalar_group_attr: $scalar_group_attr              \n"
-		  "  - &array_group_value                                   \n"
-		  "    attributes:                                          \n"
-		  "      array_group_attr: $array_group_attr                \n"
-		  "                                                         \n"
-		  "logging: trace                                           \n"
-		  "metadata:                                                \n"
-		  "  input: int                                             \n"
-		  "  group_attr: int                                        \n"
-		  "  scalar_attr: int                                       \n"
-		  "  array_attr: {type: array, subtype: int, size: 4}       \n"
-		  "  scalar_group_attr: int                                 \n"
-		  "  array_group_attr: {type: array, subtype: int, size: 4} \n"
-		  "data:                                                    \n"
-		  "  int_scalar: int                                        \n"
-		  "  int_array: {type: array, subtype: int, size: 32}       \n"
-		  "plugins:                                                 \n"
-		  "  decl_netcdf:                                           \n"
-		  "    - file: 'test_03.nc'                                 \n"
-		  "      variables:                                         \n"
-		  "        int_scalar: *int_scalar_var                      \n"
-		  "        int_array: *int_array_var                        \n"
-		  "      groups:                                            \n"
-		  "        scalar_group: *scalar_group_value                \n"
-		  "        array_group: *array_group_value                  \n"
-		  "      when: '${input}=0'                                 \n"
-		  "      write: [int_scalar, int_array]                     \n"
-		  "    - file: 'test_03.nc'                                 \n"
-		  "      variables:                                         \n"
-		  "        int_scalar: *int_scalar_var                      \n"
-		  "        int_array: *int_array_var                        \n"
-		  "      groups:                                            \n"
-		  "        scalar_group: *scalar_group_value                \n"
-		  "        array_group: *array_group_value                  \n"
-		  "      when: '${input}=1'                                 \n"
-		  "      read: [int_scalar, int_array]                      \n";
+	InitPdi(PC_parse_string(R"==(
+.vars:
+  - &int_scalar_var
+    type: int
+    group: 'scalar_group'
+    attributes:
+      scalar_attr: $scalar_attr
+  - &int_array_var
+    type: array
+    subtype: int
+    size: 32
+    group: 'array_group'
+    dimensions: ['time']
+    attributes:
+      array_attr: $array_attr
+.groups:
+  - &scalar_group_value
+    attributes:
+      scalar_group_attr: $scalar_group_attr
+  - &array_group_value
+    attributes:
+      array_group_attr: $array_group_attr
 
-	PDI_init(PC_parse_string(CONFIG_YAML));
+logging: trace
+metadata:
+  input: int
+  group_attr: int
+  scalar_attr: int
+  array_attr: {type: array, subtype: int, size: 4}
+  scalar_group_attr: int
+  array_group_attr: {type: array, subtype: int, size: 4}
+data:
+  int_scalar: int
+  int_array: {type: array, subtype: int, size: 32}
+plugins:
+  decl_netcdf:
+    - file: 'test_03.nc'
+      variables:
+        int_scalar: *int_scalar_var
+        int_array: *int_array_var
+      groups:
+        scalar_group: *scalar_group_value
+        array_group: *array_group_value
+      when: '${input}=0'
+      write: [int_scalar, int_array]
+    - file: 'test_03.nc'
+      variables:
+        int_scalar: *int_scalar_var
+        int_array: *int_array_var
+      groups:
+        scalar_group: *scalar_group_value
+        array_group: *array_group_value
+      when: '${input}=1'
+      read: [int_scalar, int_array]
+)=="));
 
 	// init data
 	int input = 0;
-	int int_scalar = 42;
-	int int_array[32];
-	for (int i = 0; i < 32; i++) {
-		int_array[i] = i;
-	}
+	int const int_scalar = 42;
+	auto const int_array = make_a<std::array<int, 32>>();
 
-	// expose attributes
+	// init and expose attributes
 	int scalar_attr = 100;
 	PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
 
-	int array_attr[4];
-	array_attr[0] = 101;
-	array_attr[1] = 102;
-	array_attr[2] = 103;
-	array_attr[3] = 104;
-	PDI_expose("array_attr", array_attr, PDI_OUT);
+	auto const array_attr = make_a<std::array<int, 4>>();
+	PDI_expose("array_attr", array_attr.data(), PDI_OUT);
 
-	int scalar_group_attr = 200;
+	int const scalar_group_attr = 200;
 	PDI_expose("scalar_group_attr", &scalar_group_attr, PDI_OUT);
 
-	int array_group_attr[4];
-	array_group_attr[0] = 201;
-	array_group_attr[1] = 202;
-	array_group_attr[2] = 203;
-	array_group_attr[3] = 204;
-	PDI_expose("array_group_attr", array_group_attr, PDI_OUT);
+	auto const array_group_attr = make_a<std::array<int, 4>>();
+	PDI_expose("array_group_attr", array_group_attr.data(), PDI_OUT);
 
 	// write data
 	input = 0;
 	PDI_expose("input", &input, PDI_OUT);
 	PDI_expose("int_scalar", &int_scalar, PDI_OUT);
-	PDI_expose("int_array", int_array, PDI_OUT);
+	PDI_expose("int_array", int_array.data(), PDI_OUT);
 
-	// zero data
-	int_scalar = 0;
-	for (int i = 0; i < 32; i++) {
-		int_array[i] = 0;
-	}
+	// check file exists
+	EXPECT_TRUE(std::filesystem::exists("test_03.nc"));
 
-	// reset metadata
-	scalar_attr = 0;
-	PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
+	// reset metadata attributes
+	int scalar_attr_reset_read = 0;
+	PDI_expose("scalar_attr", &scalar_attr_reset_read, PDI_OUT);
+	int scalar_group_attr_reset_read = 0;
+	PDI_expose("scalar_group_attr", &scalar_group_attr_reset_read, PDI_OUT);
+	std::array<int, 4> array_attr_reset_read{};
+	array_attr_reset_read.fill(0);
+	PDI_expose("array_attr", array_attr_reset_read.data(), PDI_OUT);
+	std::array<int, 4> array_group_attr_reset_read{};
+	array_group_attr_reset_read.fill(0);
+	PDI_expose("array_group_attr", array_group_attr_reset_read.data(), PDI_OUT);
 
-	array_attr[0] = 0;
-	array_attr[1] = 0;
-	array_attr[2] = 0;
-	array_attr[3] = 0;
-	PDI_expose("array_attr", array_attr, PDI_OUT);
+	// read data and attributes
+	int int_scalar_read = 0;
+	std::array<int, 32> int_array_read{};
+	int_array_read.fill(0);
 
-	scalar_group_attr = 0;
-	PDI_expose("scalar_group_attr", &scalar_group_attr, PDI_OUT);
-
-	array_group_attr[0] = 0;
-	array_group_attr[1] = 0;
-	array_group_attr[2] = 0;
-	array_group_attr[3] = 0;
-	PDI_expose("array_group_attr", array_group_attr, PDI_OUT);
-
-	// read data
 	input = 1;
 	PDI_expose("input", &input, PDI_OUT);
 
-	PDI_share("scalar_attr", &scalar_attr, PDI_INOUT);
-	PDI_share("scalar_group_attr", &scalar_group_attr, PDI_INOUT);
-	PDI_expose("int_scalar", &int_scalar, PDI_IN);
+	PDI_share("scalar_attr", &scalar_attr_reset_read, PDI_INOUT);
+	PDI_share("scalar_group_attr", &scalar_group_attr_reset_read, PDI_INOUT);
+	PDI_expose("int_scalar", &int_scalar_read, PDI_IN);
 	PDI_reclaim("scalar_group_attr");
 	PDI_reclaim("scalar_attr");
 
-	PDI_share("array_attr", array_attr, PDI_INOUT);
-	PDI_share("array_group_attr", array_group_attr, PDI_INOUT);
-	PDI_expose("int_array", int_array, PDI_IN);
+	PDI_share("array_attr", array_attr_reset_read.data(), PDI_INOUT);
+	PDI_share("array_group_attr", array_group_attr_reset_read.data(), PDI_INOUT);
+	PDI_expose("int_array", int_array_read.data(), PDI_IN);
 	PDI_reclaim("array_group_attr");
 	PDI_reclaim("array_attr");
 
+	// verify attributes
+	ASSERT_EQ(scalar_attr, scalar_attr_reset_read);
+	ASSERT_EQ(scalar_group_attr, scalar_group_attr_reset_read);
 
-	// verify
-	printf("scalar_group_attr: %d ?= %d\n", scalar_group_attr, 200);
-	ASSERT_EQ(scalar_group_attr, 200);
+	ASSERT_EQ(array_attr, array_attr_reset_read);
+	ASSERT_EQ(array_group_attr, array_group_attr_reset_read);
 
-	printf("scalar_attr: %d ?= %d\n", scalar_attr, 100);
-	ASSERT_EQ(scalar_attr, 100);
-
-
-	printf("array_attr[0]: %d ?= %d\n", array_attr[0], 101);
-	ASSERT_EQ(array_attr[0], 101);
-	printf("array_attr[1]: %d ?= %d\n", array_attr[1], 102);
-	ASSERT_EQ(array_attr[1], 102);
-	printf("array_attr[2]: %d ?= %d\n", array_attr[2], 103);
-	ASSERT_EQ(array_attr[2], 103);
-	printf("array_attr[3]: %d ?= %d\n", array_attr[3], 104);
-	ASSERT_EQ(array_attr[3], 104);
-
-	printf("array_group_attr[0]: %d ?= %d\n", array_group_attr[0], 201);
-	ASSERT_EQ(array_group_attr[0], 201);
-	printf("array_group_attr[1]: %d ?= %d\n", array_group_attr[1], 202);
-	ASSERT_EQ(array_group_attr[1], 202);
-	printf("array_group_attr[2]: %d ?= %d\n", array_group_attr[2], 203);
-	ASSERT_EQ(array_group_attr[2], 203);
-	printf("array_group_attr[3]: %d ?= %d\n", array_group_attr[3], 204);
-	ASSERT_EQ(array_group_attr[3], 204);
-
-	printf("int_scalar: %d ?= %d\n", int_scalar, 42);
-	ASSERT_EQ(int_scalar, 42);
-	for (int i = 0; i < 32; i++) {
-		printf("%d ?= %d\n", int_array[i], i);
-		ASSERT_EQ(int_array[i], i);
-	}
-
-	PDI_finalize();
+	// verify data
+	ASSERT_EQ(int_scalar, int_scalar_read);
+	ASSERT_EQ(int_array, int_array_read);
 }
 
 /*
- * Name:                decl_netcdf_test.04
+ * Name:                DeclNetcdfTest.04
  *
  * Description:         Tests group and variable definitions
  */
-TEST(DeclNetcdfTest, 04)
+TEST_F(DeclNetcdfTest, 04)
 {
-	const char* CONFIG_YAML
-		= ".vars:                                                    \n"
-		  "  - &int_scalar_var                                       \n"
-		  "    type: int                                             \n"
-		  "    attributes:                                           \n"
-		  "      scalar_attr: $scalar_attr                           \n"
-		  "  - &int_array_var                                        \n"
-		  "    type: array                                           \n"
-		  "    subtype: int                                          \n"
-		  "    size: 32                                              \n"
-		  "    dimensions: ['time']                                  \n"
-		  "    attributes:                                           \n"
-		  "      array_attr: $array_attr                             \n"
-		  ".groups:                                                  \n"
-		  "  - &scalar_group_value                                   \n"
-		  "    attributes:                                           \n"
-		  "      scalar_group_attr: $scalar_group_attr               \n"
-		  "  - &array_group_value                                    \n"
-		  "    attributes:                                           \n"
-		  "      array_group_attr: $array_group_attr                 \n"
-		  "                                                          \n"
-		  "logging: trace                                            \n"
-		  "metadata:                                                 \n"
-		  "  group_attr: int                                         \n"
-		  "  scalar_attr: int                                        \n"
-		  "  array_attr: int                                         \n"
-		  "  scalar_group_attr: int                                  \n"
-		  "  array_group_attr: int                                   \n"
-		  "data:                                                     \n"
-		  "  int_scalar: int                                         \n"
-		  "  int_array: {type: array, subtype: int, size: 32}        \n"
-		  "plugins:                                                  \n"
-		  "  decl_netcdf:                                            \n"
-		  "    - file: 'test_04.nc'                                  \n"
-		  "      variables:                                          \n"
-		  "        scalar_group/data/int_scalar: *int_scalar_var     \n"
-		  "        array_group/data/int_array: *int_array_var        \n"
-		  "      groups:                                             \n"
-		  "        scalar_group/data: *scalar_group_value            \n"
-		  "        array_group/data: *array_group_value              \n"
-		  "      on_event: 'write'                                   \n"
-		  "      write:                                              \n"
-		  "        int_scalar:                                       \n"
-		  "          variable: scalar_group/data/int_scalar          \n"
-		  "        int_array:                                        \n"
-		  "          variable: array_group/data/int_array            \n"
-		  "    - file: 'test_04.nc'                                  \n"
-		  "      variables:                                          \n"
-		  "        scalar_group/data/int_scalar: *int_scalar_var     \n"
-		  "        array_group/data/int_array: *int_array_var        \n"
-		  "      groups:                                             \n"
-		  "        scalar_group/data: *scalar_group_value            \n"
-		  "        array_group/data: *array_group_value              \n"
-		  "      on_event: 'read'                                    \n"
-		  "      read:                                               \n"
-		  "        int_scalar:                                       \n"
-		  "          variable: scalar_group/data/int_scalar          \n"
-		  "        int_array:                                        \n"
-		  "          variable: array_group/data/int_array            \n";
+	InitPdi(PC_parse_string(R"==(
+.vars:
+  - &int_scalar_var
+    type: int
+    attributes:
+      scalar_attr: $scalar_attr
+  - &int_array_var
+    type: array
+    subtype: int
+    size: 32
+    dimensions: ['time']
+    attributes:
+      array_attr: $array_attr
+.groups:
+  - &scalar_group_value
+    attributes:
+      scalar_group_attr: $scalar_group_attr
+  - &array_group_value
+    attributes:
+      array_group_attr: $array_group_attr
 
-	PDI_init(PC_parse_string(CONFIG_YAML));
+logging: trace
+metadata:
+  group_attr: int
+  scalar_attr: int
+  array_attr: int
+  scalar_group_attr: int
+  array_group_attr: int
+data:
+  int_scalar: int
+  int_array: {type: array, subtype: int, size: 32}
+plugins:
+  decl_netcdf:
+    - file: 'test_04.nc'
+      variables:
+        scalar_group/data/int_scalar: *int_scalar_var
+        array_group/data/int_array: *int_array_var
+      groups:
+        scalar_group/data: *scalar_group_value
+        array_group/data: *array_group_value
+      on_event: 'write'
+      write:
+        int_scalar:
+          variable: scalar_group/data/int_scalar
+        int_array:
+          variable: array_group/data/int_array
+    - file: 'test_04.nc'
+      variables:
+        scalar_group/data/int_scalar: *int_scalar_var
+        array_group/data/int_array: *int_array_var
+      groups:
+        scalar_group/data: *scalar_group_value
+        array_group/data: *array_group_value
+      on_event: 'read'
+      read:
+        int_scalar:
+          variable: scalar_group/data/int_scalar
+        int_array:
+          variable: array_group/data/int_array
+)=="));
 
 	// init data
-	int int_scalar = 42;
-	int int_array[32];
-	for (int i = 0; i < 32; i++) {
-		int_array[i] = i;
-	}
+	int const int_scalar = 42;
+	auto const int_array = make_a<std::array<int, 32>>();
 
-	// expose attributes
-	int scalar_attr = 100;
+	// init and expose attributes
+	int const scalar_attr = 100;
 	PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
-	int array_attr = 101;
+	int const array_attr = 101;
 	PDI_expose("array_attr", &array_attr, PDI_OUT);
-	int scalar_group_attr = 200;
+	int const scalar_group_attr = 200;
 	PDI_expose("scalar_group_attr", &scalar_group_attr, PDI_OUT);
-	int array_group_attr = 201;
+	int const array_group_attr = 201;
 	PDI_expose("array_group_attr", &array_group_attr, PDI_OUT);
 
 	// write data
-	PDI_multi_expose("write", "int_scalar", &int_scalar, PDI_OUT, "int_array", int_array, PDI_OUT, NULL);
+	PDI_multi_expose("write", "int_scalar", &int_scalar, PDI_OUT, "int_array", int_array.data(), PDI_OUT, NULL);
 
+	// check file exists
+	EXPECT_TRUE(std::filesystem::exists("test_04.nc"));
 
-	// zero data
-	int_scalar = 0;
-	for (int i = 0; i < 32; i++) {
-		int_array[i] = 0;
-	}
-
-	// reset metadata
-	scalar_attr = 0;
-	PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
-	array_attr = 0;
-	PDI_expose("array_attr", &array_attr, PDI_OUT);
-	scalar_group_attr = 0;
-	PDI_expose("scalar_group_attr", &scalar_group_attr, PDI_OUT);
-	array_group_attr = 0;
-	PDI_expose("array_group_attr", &array_group_attr, PDI_OUT);
+	// reset metadata attributes
+	int scalar_attr_reset_read = 0;
+	PDI_expose("scalar_attr", &scalar_attr_reset_read, PDI_OUT);
+	int array_attr_reset_read = 0;
+	PDI_expose("array_attr", &array_attr_reset_read, PDI_OUT);
+	int scalar_group_attr_reset_read = 0;
+	PDI_expose("scalar_group_attr", &scalar_group_attr_reset_read, PDI_OUT);
+	int array_group_attr_reset_read = 0;
+	PDI_expose("array_group_attr", &array_group_attr_reset_read, PDI_OUT);
 
 	// read data
+	int int_scalar_read = 0;
+	std::array<int, 32> int_array_read{};
+
 	PDI_multi_expose(
 		"read",
 		"int_scalar",
-		&int_scalar,
+		&int_scalar_read,
 		PDI_IN,
 		"int_array",
-		int_array,
+		int_array_read.data(),
 		PDI_IN,
 		"scalar_attr",
-		&scalar_attr,
+		&scalar_attr_reset_read,
 		PDI_INOUT,
 		"scalar_group_attr",
-		&scalar_group_attr,
+		&scalar_group_attr_reset_read,
 		PDI_INOUT,
 		"array_attr",
-		&array_attr,
+		&array_attr_reset_read,
 		PDI_INOUT,
 		"array_group_attr",
-		&array_group_attr,
+		&array_group_attr_reset_read,
 		PDI_INOUT,
 		NULL
 	);
 
+	// verify attributes
+	ASSERT_EQ(scalar_attr, scalar_attr_reset_read);
+	ASSERT_EQ(scalar_group_attr, scalar_group_attr_reset_read);
 
-	// verify
-	printf("scalar_group_attr: %d ?= %d\n", scalar_group_attr, 200);
-	ASSERT_EQ(scalar_group_attr, 200);
+	ASSERT_EQ(array_attr, array_attr_reset_read);
+	ASSERT_EQ(array_group_attr, array_group_attr_reset_read);
 
-	printf("scalar_attr: %d ?= %d\n", scalar_attr, 100);
-	ASSERT_EQ(scalar_attr, 100);
-
-	printf("array_attr: %d ?= %d\n", array_attr, 101);
-	ASSERT_EQ(array_attr, 101);
-
-	printf("array_group_attr: %d ?= %d\n", array_group_attr, 201);
-	ASSERT_EQ(array_group_attr, 201);
-
-	printf("int_scalar: %d ?= %d\n", int_scalar, 42);
-	ASSERT_EQ(int_scalar, 42);
-	for (int i = 0; i < 32; i++) {
-		printf("%d ?= %d\n", int_array[i], i);
-		ASSERT_EQ(int_array[i], i);
-	}
-
-	PDI_finalize();
+	// verify data
+	ASSERT_EQ(int_scalar, int_scalar_read);
+	ASSERT_EQ(int_array, int_array_read);
 }
 
 /*
- * Name:                decl_netcdf_test.05
+ * Name:                DeclNetcdfTest.05
  *
  * Description:         Tests variable selection on write and read
  */
-TEST(DeclNetcdfTest, 05)
+TEST_F(DeclNetcdfTest, 05)
 {
-	const char* CONFIG_YAML
-		= "logging: trace                                  \n"
-		  "data:                                           \n"
-		  "  int_submatrix_0:                              \n"
-		  "    type: array                                 \n"
-		  "    subtype: int                                \n"
-		  "    size: [4, 4]                                \n"
-		  "  int_submatrix_1:                              \n"
-		  "    type: array                                 \n"
-		  "    subtype: int                                \n"
-		  "    size: [4, 4]                                \n"
-		  "  int_submatrix_2:                              \n"
-		  "    type: array                                 \n"
-		  "    subtype: int                                \n"
-		  "    size: [4, 4]                                \n"
-		  "  int_submatrix_3:                              \n"
-		  "    type: array                                 \n"
-		  "    subtype: int                                \n"
-		  "    size: [4, 4]                                \n"
-		  "  int_submatrix_left:                           \n"
-		  "    type: array                                 \n"
-		  "    subtype: int                                \n"
-		  "    size: [8, 4]                                \n"
-		  "  int_submatrix_right:                          \n"
-		  "    type: array                                 \n"
-		  "    subtype: int                                \n"
-		  "    size: [8, 4]                                \n"
-		  "                                                \n"
-		  "plugins:                                        \n"
-		  "  decl_netcdf:                                  \n"
-		  "    - file: 'test_05.nc'                        \n"
-		  "      on_event: 'write'                         \n"
-		  "      variables:                                \n"
-		  "        int_matrix_var:                         \n"
-		  "          type: array                           \n"
-		  "          subtype: int                          \n"
-		  "          size: [8, 8]                          \n"
-		  "          dimensions: ['height', 'width']       \n"
-		  "      write:                                    \n"
-		  "        int_submatrix_0:                        \n"
-		  "          variable: int_matrix_var              \n"
-		  "          variable_selection:                   \n"
-		  "            start: [0, 0]                       \n"
-		  "            subsize: [4, 4]                     \n"
-		  "        int_submatrix_1:                        \n"
-		  "          variable: int_matrix_var              \n"
-		  "          variable_selection:                   \n"
-		  "            start: [0, 4]                       \n"
-		  "            subsize: [4, 4]                     \n"
-		  "        int_submatrix_2:                        \n"
-		  "          variable: int_matrix_var              \n"
-		  "          variable_selection:                   \n"
-		  "            start: [4, 0]                       \n"
-		  "            subsize: [4, 4]                     \n"
-		  "        int_submatrix_3:                        \n"
-		  "          variable: int_matrix_var              \n"
-		  "          variable_selection:                   \n"
-		  "            start: [4, 4]                       \n"
-		  "            subsize: [4, 4]                     \n"
-		  "    - file: 'test_05.nc'                        \n"
-		  "      on_event: 'read'                          \n"
-		  "      variables:                                \n"
-		  "        int_matrix_var:                         \n"
-		  "          type: array                           \n"
-		  "          subtype: int                          \n"
-		  "          size: [8, 8]                          \n"
-		  "          dimensions: ['height', 'width']       \n"
-		  "      read:                                     \n"
-		  "        int_submatrix_left:                     \n"
-		  "          variable: int_matrix_var              \n"
-		  "          variable_selection:                   \n"
-		  "            start: [0, 0]                       \n"
-		  "            subsize: [8, 4]                     \n"
-		  "        int_submatrix_right:                    \n"
-		  "          variable: int_matrix_var              \n"
-		  "          variable_selection:                   \n"
-		  "            start: [0, 4]                       \n"
-		  "            subsize: [8, 4]                     \n";
-
-	PDI_init(PC_parse_string(CONFIG_YAML));
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  int_submatrix_0:
+    type: array
+    subtype: int
+    size: [4, 4]
+  int_submatrix_1:
+    type: array
+    subtype: int
+    size: [4, 4]
+  int_submatrix_2:
+    type: array
+    subtype: int
+    size: [4, 4]
+  int_submatrix_3:
+    type: array
+    subtype: int
+    size: [4, 4]
+  int_submatrix_left:
+    type: array
+    subtype: int
+    size: [8, 4]
+  int_submatrix_right:
+    type: array
+    subtype: int
+    size: [8, 4]
+plugins:
+  decl_netcdf:
+    - file: 'test_05.nc'
+      on_event: 'write'
+      variables:
+        int_matrix_var:
+          type: array
+          subtype: int
+          size: [8, 8]
+          dimensions: ['height', 'width']
+      write:
+        int_submatrix_0:
+          variable: int_matrix_var
+          variable_selection:
+            start: [0, 0]
+            subsize: [4, 4]
+        int_submatrix_1:
+          variable: int_matrix_var
+          variable_selection:
+            start: [0, 4]
+            subsize: [4, 4]
+        int_submatrix_2:
+          variable: int_matrix_var
+          variable_selection:
+            start: [4, 0]
+            subsize: [4, 4]
+        int_submatrix_3:
+          variable: int_matrix_var
+          variable_selection:
+            start: [4, 4]
+            subsize: [4, 4]
+    - file: 'test_05.nc'
+      on_event: 'read'
+      variables:
+        int_matrix_var:
+          type: array
+          subtype: int
+          size: [8, 8]
+          dimensions: ['height', 'width']
+      read:
+        int_submatrix_left:
+          variable: int_matrix_var
+          variable_selection:
+            start: [0, 0]
+            subsize: [8, 4]
+        int_submatrix_right:
+          variable: int_matrix_var
+          variable_selection:
+            start: [0, 4]
+            subsize: [8, 4]
+)=="));
 
 	// init data
-	int int_matrix_0[4][4];
-	int int_matrix_1[4][4];
-	int int_matrix_2[4][4];
-	int int_matrix_3[4][4];
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			int_matrix_0[i][j] = i * 4 + j;
-		}
-	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			int_matrix_1[i][j] = 100 + i * 4 + j;
-		}
-	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			int_matrix_2[i][j] = 200 + i * 4 + j;
-		}
-	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			int_matrix_3[i][j] = 300 + i * 4 + j;
-		}
-	}
+	auto const int_matrix_0 = make_a<std::array<std::array<int, 4>, 4>>();
+	auto const int_matrix_1 = make_a<std::array<std::array<int, 4>, 4>>();
+	auto const int_matrix_2 = make_a<std::array<std::array<int, 4>, 4>>();
+	auto const int_matrix_3 = make_a<std::array<std::array<int, 4>, 4>>();
+
+	EXPECT_NE(int_matrix_0, int_matrix_1);
+	EXPECT_NE(int_matrix_0, int_matrix_2);
+	EXPECT_NE(int_matrix_0, int_matrix_3);
+	EXPECT_NE(int_matrix_1, int_matrix_2);
+	EXPECT_NE(int_matrix_1, int_matrix_3);
+	EXPECT_NE(int_matrix_2, int_matrix_3);
 
 	// write data
 	PDI_multi_expose(
 		"write",
 		"int_submatrix_0",
-		int_matrix_0,
+		int_matrix_0.data(),
 		PDI_OUT,
 		"int_submatrix_1",
-		int_matrix_1,
+		int_matrix_1.data(),
 		PDI_OUT,
 		"int_submatrix_2",
-		int_matrix_2,
+		int_matrix_2.data(),
 		PDI_OUT,
 		"int_submatrix_3",
-		int_matrix_3,
+		int_matrix_3.data(),
 		PDI_OUT,
 		NULL
 	);
 
-	// zero data
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			int_matrix_0[i][j] = 0;
-		}
-	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			int_matrix_1[i][j] = 0;
-		}
-	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			int_matrix_2[i][j] = 0;
-		}
-	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			int_matrix_3[i][j] = 0;
-		}
-	}
+	// check file exists
+	EXPECT_TRUE(std::filesystem::exists("test_05.nc"));
 
 	// read data
-	int int_matrix_left[8][4];
-	int int_matrix_right[8][4];
+	std::array<std::array<int, 4>, 8> int_matrix_left{};
+	std::array<std::array<int, 4>, 8> int_matrix_right{};
 
-	PDI_multi_expose("read", "int_submatrix_left", int_matrix_left, PDI_IN, "int_submatrix_right", int_matrix_right, PDI_IN, NULL);
+	PDI_multi_expose("read", "int_submatrix_left", int_matrix_left.data(), PDI_IN, "int_submatrix_right", int_matrix_right.data(), PDI_IN, NULL);
+
+	/*
+		                     |   int_matrix_0    |
+		int_matrix_left  =   |-------------------|
+		                     |   int_matrix_2    |
+
+		                     |   int_matrix_1    |
+		int_matrix_right  =  |-------------------|
+		                     |   int_matrix_3    |
+	*/
 
 	// verify
 	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			printf("[%d][%d] %d ?= %d\n", i, j, int_matrix_left[i][j], i * 4 + j);
-			ASSERT_EQ(int_matrix_left[i][j], i * 4 + j);
-		}
+		ASSERT_EQ(int_matrix_left[i], int_matrix_0[i]) << "Error in row " << i << " of int_matrix_left";
 	}
+
+	for (int i = 4; i < 8; i++) {
+		ASSERT_EQ(int_matrix_left[i], int_matrix_2[i-4]) << "Error in row " << i << " of int_matrix_left";
+	}
+
 	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			printf("[%d][%d] %d ?= %d\n", i, j, int_matrix_right[i][j], 100 + i * 4 + j);
-			ASSERT_EQ(int_matrix_right[i][j], 100 + i * 4 + j);
-		}
+		ASSERT_EQ(int_matrix_right[i], int_matrix_1[i]) << "Error in row " << i << " of int_matrix_left";
 	}
 
 	for (int i = 4; i < 8; i++) {
-		for (int j = 0; j < 4; j++) {
-			printf("[%d][%d] %d ?= %d\n", i, j, int_matrix_left[i][j], 200 + (i - 4) * 4 + j);
-			ASSERT_EQ(int_matrix_left[i][j], 200 + (i - 4) * 4 + j);
-		}
+		ASSERT_EQ(int_matrix_right[i], int_matrix_3[i-4]) << "Error in row " << i << " of int_matrix_right";
 	}
-
-	for (int i = 4; i < 8; i++) {
-		for (int j = 0; j < 4; j++) {
-			printf("[%d][%d] %d ?= %d\n", i, j, int_matrix_right[i][j], 300 + (i - 4) * 4 + j);
-			ASSERT_EQ(int_matrix_right[i][j], 300 + (i - 4) * 4 + j);
-		}
-	}
-
-	PDI_finalize();
 }
 
 /*
- * Name:                decl_netcdf_test.06
+ * Name:                DeclNetcdfTest.06
  *
  * Description:         Tests infinite dimension
  */
-TEST(DeclNetcdfTest, 06)
+TEST_F(DeclNetcdfTest, 06)
 {
-	const char* CONFIG_YAML
-		= "logging: trace                                      \n"
-		  "data:                                               \n"
-		  "  iter: int                                         \n"
-		  "  int_matrix:                                       \n"
-		  "    type: array                                     \n"
-		  "    subtype: int                                    \n"
-		  "    size: [8, 8]                                    \n"
-		  "                                                    \n"
-		  "plugins:                                            \n"
-		  "  decl_netcdf:                                      \n"
-		  "    - file: 'test_06.nc'                            \n"
-		  "      on_event: 'write'                             \n"
-		  "      variables:                                    \n"
-		  "        int_matrix_var:                             \n"
-		  "          type: array                               \n"
-		  "          subtype: int                              \n"
-		  "          size: [0, 8, 8]                           \n"
-		  "          dimensions: ['iter', 'height', 'width']   \n"
-		  "      write:                                        \n"
-		  "        int_matrix:                                 \n"
-		  "          variable: int_matrix_var                  \n"
-		  "          variable_selection:                       \n"
-		  "            start: ['$iter', 0, 0]                  \n"
-		  "            subsize: [1, 8, 8]                      \n"
-		  "    - file: 'test_06.nc'                            \n"
-		  "      on_event: 'read'                              \n"
-		  "      variables:                                    \n"
-		  "        int_matrix_var:                             \n"
-		  "          type: array                               \n"
-		  "          subtype: int                              \n"
-		  "          size: [0, 8, 8]                           \n"
-		  "      read:                                         \n"
-		  "        int_matrix:                                 \n"
-		  "          variable: int_matrix_var                  \n"
-		  "          variable_selection:                       \n"
-		  "            start: ['$iter', 0, 0]                  \n"
-		  "            subsize: [1, 8, 8]                      \n";
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  iter: int
+  int_matrix:
+    type: array
+    subtype: int
+    size: [8, 8]
+plugins:
+  decl_netcdf:
+    - file: 'test_06.nc'
+      on_event: 'write'
+      variables:
+        int_matrix_var:
+          type: array
+          subtype: int
+          size: [0, 8, 8]
+          dimensions: ['iter', 'height', 'width']
+      write:
+        int_matrix:
+          variable: int_matrix_var
+          variable_selection:
+            start: ['$iter', 0, 0]
+            subsize: [1, 8, 8]
+    - file: 'test_06.nc'
+      on_event: 'read'
+      variables:
+        int_matrix_var:
+          type: array
+          subtype: int
+          size: [0, 8, 8]
+      read:
+        int_matrix:
+          variable: int_matrix_var
+          variable_selection:
+            start: ['$iter', 0, 0]
+            subsize: [1, 8, 8]
+)=="));
 
-	PDI_init(PC_parse_string(CONFIG_YAML));
+	// init data
+	auto const int_matrix = make_a<std::array<std::array<std::array<int, 8>, 8>,32>>();
 
-	int int_matrix[8][8];
 	for (int iter = 0; iter < 32; iter++) {
-		// init data
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				int_matrix[i][j] = iter * 100 + i * 8 + j;
-			}
-		}
-
 		// write data
-		PDI_multi_expose("write", "iter", &iter, PDI_OUT, "int_matrix", int_matrix, PDI_OUT, NULL);
+		PDI_multi_expose("write", "iter", &iter, PDI_OUT, "int_matrix", int_matrix[iter].data(), PDI_OUT, NULL);
 	}
 
+	std::array<std::array<int, 8>, 8> int_matrix_read{};
 	for (int iter = 0; iter < 32; iter++) {
+
 		// read data
-		PDI_multi_expose("read", "iter", &iter, PDI_OUT, "int_matrix", int_matrix, PDI_IN, NULL);
+		for (auto & row : int_matrix_read) {
+			row.fill(0); // reinitialize to zero int_matrix_read
+		}
+		PDI_multi_expose("read", "iter", &iter, PDI_OUT, "int_matrix", int_matrix_read.data(), PDI_IN, NULL);
 
 		// verify
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				printf("[%d][%d] %d ?= %d\n", i, j, int_matrix[i][j], iter * 100 + i * 8 + j);
-				ASSERT_EQ(int_matrix[i][j], iter * 100 + i * 8 + j);
-			}
-		}
+		ASSERT_EQ(int_matrix[iter],int_matrix_read);
 	}
-
-	PDI_finalize();
 }
 
 /*
- * Name:                decl_netcdf_test.07
+ * Name:                DeclNetcdfTest.07
  *
  * Description:         Tests yaml syntaxe with `write: data`
  */
-TEST(DeclNetcdfTest, 07)
+TEST_F(DeclNetcdfTest, 07)
 {
-	const char* CONFIG_YAML
-		= "logging: trace                                      \n"
-		  "data:                                               \n"
-		  "  int_matrix:                                       \n"
-		  "    type: array                                     \n"
-		  "    subtype: int                                    \n"
-		  "    size: [8, 8]                                    \n"
-		  "                                                    \n"
-		  "plugins:                                            \n"
-		  "  decl_netcdf:                                      \n"
-		  "    - file: 'test_07.nc'                            \n"
-		  "      on_event: 'write'                             \n"
-		  "      write: int_matrix                             \n";
-
-	// Use the null error handle explicitly. Otherwise, the error is not captured.
-	// Need further investigation
-	PDI_errhandler(PDI_NULL_HANDLER);
-
-	ASSERT_EQ(PDI_OK, PDI_init(PC_parse_string(CONFIG_YAML)));
-
-	int int_matrix[8][8];
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  int_matrix:
+    type: array
+    subtype: int
+    size: [8, 8]
+plugins:
+  decl_netcdf:
+    - file: 'test_07.nc'
+      on_event: 'write'
+      write: int_matrix
+)=="));
 
 	// init data
-	for (int i = 0; i < 8; i++) {
-		for (int j = 0; j < 8; j++) {
-			int_matrix[i][j] = 100 + i * 8 + j;
-		}
-	}
+	auto const int_matrix = make_a<std::array<std::array<int, 8>, 8>>();
 
 	// write data
-	ASSERT_EQ(PDI_OK, PDI_multi_expose("write", "int_matrix", int_matrix, PDI_OUT, NULL));
+	ASSERT_EQ(PDI_OK, PDI_multi_expose("write", "int_matrix", int_matrix.data(), PDI_OUT, NULL));
 
-	PDI_finalize();
+	// check file exists
+	EXPECT_TRUE(std::filesystem::exists("test_07.nc"));
 }
 
 /*
- * Name:                decl_netcdf_test.size_of
+ * Name:                DeclNetcdfTest.size_of
  *
  * Description:         Tests simple write and read of scalar and array depending on `input' metadata
  */
-TEST(DeclNetcdfTest, size_of)
+TEST_F(DeclNetcdfTest, size_of)
 {
-	const char* CONFIG_YAML
-		= "logging: trace                                      \n"
-		  "metadata:                                           \n"
-		  "  input: int                                        \n"
-		  "data:                                               \n"
-		  "  int_scalar: int                                   \n"
-		  "  int_array: {type: array, subtype: int, size: 32}  \n"
-		  "  array_size: int                                   \n"
-		  "                                                    \n"
-		  "plugins:                                            \n"
-		  "  decl_netcdf:                                      \n"
-		  "    - file: 'test_07s.nc'                            \n"
-		  "      when: '${input}=0'                            \n"
-		  "      write: [int_scalar, int_array]                \n"
-		  "    - file: 'test_07s.nc'                            \n"
-		  "      when: '${input}=1'                            \n"
-		  "      read:                                         \n"
-		  "        int_scalar:                                 \n"
-		  "        int_array:                                  \n"
-		  "        array_size:                                 \n"
-		  "          size_of: int_array                        \n";
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata:
+  input: int
+data:
+  int_scalar: int
+  int_array: {type: array, subtype: int, size: 32}
+  array_size: int
+plugins:
+  decl_netcdf:
+    - file: 'test_07s.nc'
+      when: '${input}=0'
+      write: [int_scalar, int_array]
+    - file: 'test_07s.nc'
+      when: '${input}=1'
+      read:
+        int_scalar:
+        int_array:
+        array_size:
+          size_of: int_array
+)=="));
 
-	PDI_init(PC_parse_string(CONFIG_YAML));
 	// init data
 	int input = 0;
-	int int_scalar = 42;
-	int int_array[32];
-	for (int i = 0; i < 32; i++) {
-		int_array[i] = i;
-	}
+	int const array_size = 32;
+	int const int_scalar = 42;
+	auto const int_array = make_a<std::array<int, array_size>>();
 
 	// write data
 	PDI_expose("input", &input, PDI_OUT);
 	PDI_expose("int_scalar", &int_scalar, PDI_OUT);
-	PDI_expose("int_array", int_array, PDI_OUT);
+	PDI_expose("int_array", int_array.data(), PDI_OUT);
 
-	// zero data
-	int_scalar = 0;
-	for (int i = 0; i < 32; i++) {
-		int_array[i] = 0;
-	}
+	// check file exists
+	EXPECT_TRUE(std::filesystem::exists("test_07s.nc"));
 
 	// read data
+	int array_size_read = 0;
+	int int_scalar_read = 0;
+	std::array<int, array_size> int_array_read{};
+
 	input = 1;
 	PDI_expose("input", &input, PDI_OUT);
-	int array_size = 0;
-	PDI_expose("array_size", &array_size, PDI_IN);
-	PDI_expose("int_scalar", &int_scalar, PDI_IN);
-	PDI_expose("int_array", int_array, PDI_IN);
+	PDI_expose("array_size", &array_size_read, PDI_IN);
+	PDI_expose("int_scalar", &int_scalar_read, PDI_IN);
+	PDI_expose("int_array", int_array_read.data(), PDI_IN);
 
 	// verify
-	printf("array_size = %d\n", array_size);
-	printf("%d ?= %d\n", int_scalar, 42);
-	ASSERT_EQ(int_scalar, 42);
-	ASSERT_EQ(array_size, 32);
-	for (int i = 0; i < 32; i++) {
-		// printf("%d ?= %d\n", int_array[i], i);
-		ASSERT_EQ(int_array[i], i);
-	}
-
-	PDI_finalize();
+	ASSERT_EQ(array_size, array_size_read);
+	ASSERT_EQ(int_scalar, int_scalar_read);
+	ASSERT_EQ(int_array, int_array_read);
 }
 
 /*
- * Name:                decl_netcdf_test.defalte
+ * Name:                DeclNetcdfTest.defalte
  *
  * Description:         Tests simple write and read of compressed variables
 */
-TEST(DeclNetcdfTest, deflate)
+TEST_F(DeclNetcdfTest, deflate)
 {
-	constexpr char CONFIG_YAML[] = R"(
-    logging: trace
-    metadata:
-      pb_size: int
-      input: int
-      chunk: int
-    data:
-      int_scalar: int
-      int_array: {type: array, subtype: int, size: $pb_size}
-      int_matrix:
-        type: array
-        subtype: int
-        size: ['$pb_size', '$pb_size']
-    plugins:
-      decl_netcdf:
-      - file: 'test_deflate_0.nc'
-        variables:
-          int_scalar: int
-          int_array:
-            type: array
-            subtype: int
-            size: $pb_size
-            dimensions: ['time']
-          int_matrix:
-            type: array
-            subtype: int
-            size: ['$pb_size', '$pb_size']
-            dimensions: ['col', 'row']
-        when: '${input}=0'
-        write: [int_scalar, int_array, int_matrix]
-      - file: 'test_deflate_6.nc'
-        variables:
-          int_scalar: int
-          int_array:
-            type: array
-            subtype: int
-            size: $pb_size
-            dimensions: ['time']
-            deflate: 6
-          int_matrix:
-            type: array
-            subtype: int
-            size: ['$pb_size', '$pb_size']
-            dimensions: ['col', 'row']
-            deflate: 6
-        when: '${input}=0'
-        write: [int_scalar, int_array, int_matrix]
-      - file: 'test_deflate_9.nc'
-        deflate: 9
-        variables:
-          int_scalar: int
-          int_array:
-            type: array
-            subtype: int
-            size: $pb_size
-            dimensions: ['time']
-            chunking: $chunk
-          int_matrix:
-            type: array
-            subtype: int
-            size: ['$pb_size', '$pb_size']
-            dimensions: ['col', 'row']
-            chunking: ['$chunk', '$chunk']
-        when: '${input}=0'
-        write: [int_scalar, int_array, int_matrix]
-      - file: 'test_deflate_mix.nc'
-        deflate: 6
-        variables:
-          int_scalar: int
-          int_array:
-            type: array
-            subtype: int
-            size: $pb_size
-            dimensions: ['time']
-            deflate: 9
-            chunking: $chunk
-          int_matrix:
-            type: array
-            subtype: int
-            size: ['$pb_size', '$pb_size']
-            dimensions: ['col', 'row']
-            chunking: ['$chunk', '$chunk']
-        when: '${input}=0'
-        write: [int_scalar, int_array, int_matrix]
-      - file: 'test_deflate_6.nc'
-        when: '${input}=1'
-        read: [int_scalar, int_array, int_matrix]
-    )";
-
-	PDI_init(PC_parse_string(CONFIG_YAML));
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata:
+  pb_size: int
+  input: int
+  chunk: int
+data:
+  int_scalar: int
+  int_array: {type: array, subtype: int, size: $pb_size}
+  int_matrix:
+    type: array
+    subtype: int
+    size: ['$pb_size', '$pb_size']
+plugins:
+  decl_netcdf:
+    - file: 'test_deflate_0.nc'
+      variables:
+        int_scalar: int
+        int_array:
+          type: array
+          subtype: int
+          size: $pb_size
+          dimensions: ['time']
+        int_matrix:
+          type: array
+          subtype: int
+          size: ['$pb_size', '$pb_size']
+          dimensions: ['col', 'row']
+      when: '${input}=0'
+      write: [int_scalar, int_array, int_matrix]
+    - file: 'test_deflate_6.nc'
+      variables:
+        int_scalar: int
+        int_array:
+          type: array
+          subtype: int
+          size: $pb_size
+          dimensions: ['time']
+          deflate: 6
+        int_matrix:
+          type: array
+          subtype: int
+          size: ['$pb_size', '$pb_size']
+          dimensions: ['col', 'row']
+          deflate: 6
+      when: '${input}=0'
+      write: [int_scalar, int_array, int_matrix]
+    - file: 'test_deflate_9.nc'
+      deflate: 9
+      variables:
+        int_scalar: int
+        int_array:
+          type: array
+          subtype: int
+          size: $pb_size
+          dimensions: ['time']
+          chunking: $chunk
+        int_matrix:
+          type: array
+          subtype: int
+          size: ['$pb_size', '$pb_size']
+          dimensions: ['col', 'row']
+          chunking: ['$chunk', '$chunk']
+      when: '${input}=0'
+      write: [int_scalar, int_array, int_matrix]
+    - file: 'test_deflate_mix.nc'
+      deflate: 6
+      variables:
+        int_scalar: int
+        int_array:
+          type: array
+          subtype: int
+          size: $pb_size
+          dimensions: ['time']
+          deflate: 9
+          chunking: $chunk
+        int_matrix:
+          type: array
+          subtype: int
+          size: ['$pb_size', '$pb_size']
+          dimensions: ['col', 'row']
+          chunking: ['$chunk', '$chunk']
+      when: '${input}=0'
+      write: [int_scalar, int_array, int_matrix]
+    - file: 'test_deflate_6.nc'
+      when: '${input}=1'
+      read: [int_scalar, int_array, int_matrix]
+)=="));
 
 	// init data
 	int input = 0;
-	int int_scalar = 42;
-	int N = 1000;
-	int chunk = 1000;
-	int* int_array = new int[N];
-	int* int_matrix = new int[N * N];
+	int const int_scalar = 42;
+	int const N = 1000;
+	int const chunk = 1000;
 
-	// write data
-	for (int i = 0; i < N; i++) {
-		int_array[i] = i;
-	}
-
-	for (int i = 0; i < N * N; i++) {
-		int_matrix[i] = i;
-	}
+	auto const int_array = make_a<std::array<int, N>>();
+	auto const int_matrix = make_a<std::array<std::array<int, N>, N>>();
 
 	PDI_expose("input", &input, PDI_OUT);
 	PDI_expose("pb_size", &N, PDI_OUT);
 	PDI_expose("chunk", &chunk, PDI_OUT);
 
 	PDI_expose("int_scalar", &int_scalar, PDI_OUT);
-	PDI_expose("int_array", int_array, PDI_OUT);
-	PDI_expose("int_matrix", int_matrix, PDI_OUT);
+	PDI_expose("int_array", int_array.data(), PDI_OUT);
+	PDI_expose("int_matrix", int_matrix.data(), PDI_OUT);
 
 	// check the deflate level of output files
 	int result;
@@ -991,49 +842,35 @@ TEST(DeclNetcdfTest, deflate)
 		EXPECT_EQ(result, 0) << "Deflate level of int_matrix in test_deflate_mix.nc is not 6";
 	}
 
-
 	// read data
 	input = 1;
-	int_scalar = 0;
-	for (int i = 0; i < N; i++) {
-		int_array[i] = 0;
-	}
-	for (int i = 0; i < N * N; i++) {
-		int_matrix[i] = 0;
-	}
+	int int_scalar_read;
+	std::array<int, N> int_array_read{};
+	std::array<std::array<int, N>, N> int_matrix_read{};
 
 	PDI_expose("input", &input, PDI_OUT);
 
-	PDI_expose("int_scalar", &int_scalar, PDI_IN);
-	PDI_expose("int_array", int_array, PDI_IN);
-	PDI_expose("int_matrix", int_matrix, PDI_IN);
+	PDI_expose("int_scalar", &int_scalar_read, PDI_IN);
+	PDI_expose("int_array", int_array_read.data(), PDI_IN);
+	PDI_expose("int_matrix", int_matrix_read.data(), PDI_IN);
 
 	// verify
-	ASSERT_EQ(int_scalar, 42);
+	ASSERT_EQ(int_scalar, int_scalar_read);
 
-	for (int i = 0; i < N; i++) {
-		ASSERT_EQ(int_array[i], i);
+	ASSERT_EQ(int_array, int_array_read);
+
+	for (int ii = 0; ii < N; ii++) {
+		ASSERT_EQ(int_matrix[ii], int_matrix_read[ii]);
 	}
-
-	for (int i = 0; i < N * N; i++) {
-		ASSERT_EQ(int_matrix[i], i);
-	}
-
-	delete[] int_array;
-	delete[] int_matrix;
-
-	PDI_finalize();
 }
 
-class DeclNetcdfCheckType: public ::PDI::PdiTest
-{};
 
 /*
- * Name:                DeclNetcdfCheckType.IntReadMismatch
+ * Name:                DeclNetcdfTest.IntReadMismatch
  *
  * Description:         Tests write and read of int with type mismatch
  */
-TEST_F(DeclNetcdfCheckType, IntReadMismatch)
+TEST_F(DeclNetcdfTest, IntReadMismatch)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
@@ -1055,14 +892,14 @@ plugins:
             scalar_int32
 )=="));
 
-	// write data
+	// init data
 	int32_t int_in = 42;
+
+	// write data
 	PDI_multi_expose("write_data", "int_in", &int_in, PDI_OUT, NULL);
 
+	// check file exists
 	EXPECT_TRUE(std::filesystem::exists("test_int_read.nc"));
-
-	// read data
-	int64_t int_out = -1;
 
 	EXPECT_CALL(
 		*this,
@@ -1076,15 +913,17 @@ plugins:
 		)
 	);
 
+	// read data
+	int64_t int_out = -1;
 	EXPECT_EQ(PDI_ERR_TYPE, PDI_multi_expose("read_data", "int_out", &int_out, PDI_IN, NULL));
 }
 
 /*
- * Name:                DeclNetcdfCheckType.FloatReadMismatch
+ * Name:                DeclNetcdfTest.FloatReadMismatch
  *
  * Description:         Tests write and read of float/double with type mismatch
  */
-TEST_F(DeclNetcdfCheckType, FloatReadMismatch)
+TEST_F(DeclNetcdfTest, FloatReadMismatch)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
@@ -1105,10 +944,13 @@ plugins:
           variable: scalar_float
 )=="));
 
-	// write data
+	// init data
 	float var_in = 12.34;
+
+	// write data
 	PDI_multi_expose("write_data", "var_in", &var_in, PDI_OUT, NULL);
 
+	// check file exists
 	EXPECT_TRUE(std::filesystem::exists("test_float_read.nc"));
 
 	EXPECT_CALL(
@@ -1129,12 +971,12 @@ plugins:
 }
 
 /*
- * Name:                DeclNetcdfCheckType.ReadDataNotDefinedInYaml
+ * Name:                DeclNetcdfTest.ReadDataNotDefinedInYaml
  *
  * Description:         Tests write and read of float/double which is not defined in Yaml
  *                      Read with on_event
  */
-TEST_F(DeclNetcdfCheckType, ReadDataNotDefinedInYamlCaseOnEvent)
+TEST_F(DeclNetcdfTest, ReadDataNotDefinedInYamlCaseOnEvent)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
@@ -1154,10 +996,13 @@ plugins:
           variable: scalar_float
 )=="));
 
-	// write data
+	// init data
 	float var_in = 15.34;
+
+	// write data
 	PDI_multi_expose("write_data", "var_in", &var_in, PDI_OUT, NULL);
 
+	// check file exists
 	EXPECT_TRUE(std::filesystem::exists("test_float_read_data_not_defined.nc"));
 
 	EXPECT_CALL(
@@ -1179,12 +1024,12 @@ plugins:
 }
 
 /*
- * Name:                DeclNetcdfCheckType.ReadDataNotDefinedInYamlCaseOnData
+ * Name:                DeclNetcdfTest.ReadDataNotDefinedInYamlCaseOnData
  *
  * Description:         Tests write and read of float/double which is not defined in Yaml
  *                      Read with on_data
  */
-TEST_F(DeclNetcdfCheckType, ReadDataNotDefinedInYamlCaseOnData)
+TEST_F(DeclNetcdfTest, ReadDataNotDefinedInYamlCaseOnData)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
@@ -1204,10 +1049,13 @@ plugins:
           variable: scalar_float
 )=="));
 
-	// write data
+	// init data
 	float var_in = 15.34;
+
+	// write data
 	PDI_multi_expose("write_data", "var_in", &var_in, PDI_OUT, NULL);
 
+	// check file exists
 	EXPECT_TRUE(std::filesystem::exists("test_float_read_data_not_defined.nc"));
 
 	EXPECT_CALL(
@@ -1229,11 +1077,11 @@ plugins:
 }
 
 /*
- * Name:                DeclNetcdfCheckType.ReadDoubleArrayNotDefinedInYaml
+ * Name:                DeclNetcdfTest.ReadDoubleArrayNotDefinedInYaml
  *
  * Description:         Tests write and read of double array that not defined in Yaml
  */
-TEST_F(DeclNetcdfCheckType, ReadDoubleArrayNotDefinedInYaml)
+TEST_F(DeclNetcdfTest, ReadDoubleArrayNotDefinedInYaml)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
@@ -1259,18 +1107,16 @@ plugins:
           variable: nc_var
 )=="));
 
-
+	// init data
 	int const nn = 3;
-	PDI_expose("nn", &nn, PDI_INOUT);
-
 	auto const array_in = make_a<std::array<double, nn>>();
 
+	PDI_expose("nn", &nn, PDI_INOUT);
+
+	// write data
 	PDI_multi_expose("write_data", "array_in", array_in.data(), PDI_OUT, NULL);
 
-	// read data
-	std::array<double, nn> array_out{};
-	array_out.fill(-1.0);
-
+	// check file exists
 	EXPECT_TRUE(std::filesystem::exists("test_double_array_read.nc"));
 
 	EXPECT_CALL(
@@ -1286,5 +1132,8 @@ plugins:
 		)
 	);
 
+	// read data
+	std::array<double, nn> array_out{};
+	array_out.fill(0.0);
 	PDI_multi_expose("read_data", "array_out", array_out.data(), PDI_IN, NULL);
 }
