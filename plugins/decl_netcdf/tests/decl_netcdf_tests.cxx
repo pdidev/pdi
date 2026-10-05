@@ -543,7 +543,7 @@ plugins:
 	}
 
 	for (int i = 4; i < 8; i++) {
-		ASSERT_EQ(int_matrix_left[i], int_matrix_2[i-4]) << "Error in row " << i << " of int_matrix_left";
+		ASSERT_EQ(int_matrix_left[i], int_matrix_2[i - 4]) << "Error in row " << i << " of int_matrix_left";
 	}
 
 	for (int i = 0; i < 4; i++) {
@@ -551,7 +551,7 @@ plugins:
 	}
 
 	for (int i = 4; i < 8; i++) {
-		ASSERT_EQ(int_matrix_right[i], int_matrix_3[i-4]) << "Error in row " << i << " of int_matrix_right";
+		ASSERT_EQ(int_matrix_right[i], int_matrix_3[i - 4]) << "Error in row " << i << " of int_matrix_right";
 	}
 }
 
@@ -602,7 +602,7 @@ plugins:
 )=="));
 
 	// init data
-	auto const int_matrix = make_a<std::array<std::array<std::array<int, 8>, 8>,32>>();
+	auto const int_matrix = make_a<std::array<std::array<std::array<int, 8>, 8>, 32>>();
 
 	for (int iter = 0; iter < 32; iter++) {
 		// write data
@@ -611,15 +611,14 @@ plugins:
 
 	std::array<std::array<int, 8>, 8> int_matrix_read{};
 	for (int iter = 0; iter < 32; iter++) {
-
 		// read data
-		for (auto & row : int_matrix_read) {
+		for (auto& row: int_matrix_read) {
 			row.fill(0); // reinitialize to zero int_matrix_read
 		}
 		PDI_multi_expose("read", "iter", &iter, PDI_OUT, "int_matrix", int_matrix_read.data(), PDI_IN, NULL);
 
 		// verify
-		ASSERT_EQ(int_matrix[iter],int_matrix_read);
+		ASSERT_EQ(int_matrix[iter], int_matrix_read);
 	}
 }
 
@@ -863,7 +862,6 @@ plugins:
 		ASSERT_EQ(int_matrix[ii], int_matrix_read[ii]);
 	}
 }
-
 
 /*
  * Name:                DeclNetcdfTest.IntReadMismatch
