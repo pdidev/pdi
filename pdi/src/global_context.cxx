@@ -496,13 +496,17 @@ Datatype_template_sptr Global_context::datatype(PC_tree_t node)
 		type = to_string(node);
 	}
 
+	if (type.empty()) {
+		throw Spectree_error{node, "Data type specification cannot be empty"};
+	}
+
 	// check if someone didn't mean to create an array with the old syntax
-	if (type != "array") {
+	if (type != "array" && node.node) {
 		if (!PC_status(PC_get(node, ".size"))) {
-			logger().warn("In line {}: Non-array type with a `size' property", node.node->start_mark.line);
+			logger().warn("In line {}: Non-array type with a `size' property", node.node->start_mark.line + 1);
 		}
 		if (!PC_status(PC_get(node, ".sizes"))) {
-			logger().warn("In line {}: Non-array type with a `sizes' property", node.node->start_mark.line);
+			logger().warn("In line {}: Non-array type with a `sizes' property", node.node->start_mark.line + 1);
 		}
 	}
 

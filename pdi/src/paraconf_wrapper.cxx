@@ -39,7 +39,7 @@ namespace {
 void do_pc(PC_tree_t tree, PC_status_t status)
 {
 	if (status) {
-		throw Spectree_error{tree, "Configuration error #{}: {}", static_cast<int>(status), PC_errmsg()};
+		throw Spectree_error{tree, "{}", PC_errmsg()};
 	}
 }
 
@@ -84,7 +84,7 @@ Paraconf_wrapper::~Paraconf_wrapper()
 std::string to_string(Yaml_region location)
 {
 	return fmt::format(
-		"{}({}:{} -> {}:{})",
+		"{} (line {}, column {} to line {}, column {})",
 		location.file(),
 		location.start().line,
 		location.start().column,
@@ -174,17 +174,17 @@ bool to_bool(PC_tree_t tree, bool dflt)
 
 bool is_list(PC_tree_t tree)
 {
-	return tree.node->type == YAML_SEQUENCE_NODE;
+	return !PC_status(tree) && tree.node && tree.node->type == YAML_SEQUENCE_NODE;
 }
 
 bool is_map(PC_tree_t tree)
 {
-	return tree.node->type == YAML_MAPPING_NODE;
+	return !PC_status(tree) && tree.node && tree.node->type == YAML_MAPPING_NODE;
 }
 
 bool is_scalar(PC_tree_t tree)
 {
-	return tree.node->type == YAML_SCALAR_NODE;
+	return !PC_status(tree) && tree.node && tree.node->type == YAML_SCALAR_NODE;
 }
 
 void each(PC_tree_t tree, std::function<void(PC_tree_t)> operation)
