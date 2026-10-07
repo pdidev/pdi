@@ -20,6 +20,8 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* Fix YAML index mismatch between Paraconf and LibYAML. 
+  [#759](https://github.com/pdidev/pdi/issues/759)
 * Corrected an invalid test that prevented a deprecation warning message for
   order of arrays to ever be shown. This fixes
   [#758](https://github.com/pdidev/pdi/issues/758).
