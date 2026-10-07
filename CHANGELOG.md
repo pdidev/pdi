@@ -25,6 +25,8 @@ and this project adheres to
 * Corrected an invalid test that prevented a deprecation warning message for
   order of arrays to ever be shown. This fixes
   [#758](https://github.com/pdidev/pdi/issues/758).
+* Improved the error message if one test in Decl'NetCDF fails
+  [#739](https://github.com/pdidev/pdi/issues/739)
 
 #### Security
 
