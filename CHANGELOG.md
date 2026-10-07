@@ -14,6 +14,8 @@ and this project adheres to
 #### Added
 
 #### Changed
+* Improved error message in type check in Decl'NetCDF when reading scalar variable from file
+  [#731]https://github.com/pdidev/pdi/issues/731
 
 #### Deprecated
 
