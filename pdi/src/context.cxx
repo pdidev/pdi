@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,5 +88,17 @@ Context::Iterator Context::get_iterator(std::unordered_map<std::string, unique_p
 }
 
 Context::~Context() = default;
+
+Timer_event_handler::Timer_event_handler(Context& ctx, const std::string& plugin_name)
+	: m_ctx(ctx)
+	, m_plugin_name(plugin_name)
+{
+	m_ctx.event((m_plugin_name + "_start_timer").c_str());
+}
+
+Timer_event_handler::~Timer_event_handler()
+{
+	m_ctx.event((m_plugin_name + "_stop_timer").c_str());
+}
 
 } // namespace PDI

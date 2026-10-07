@@ -416,7 +416,7 @@ Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 {
 	{
 		string order_str = to_string(PC_get(node, ".order"), "");
-		if (order_str == "c" && order_str == "C") {
+		if (order_str == "c" || order_str == "C") {
 			ctx.logger().warn("`order: C' for array is the only supported order and its specification is deprecated");
 		} else if (order_str != "") {
 			throw Spectree_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};

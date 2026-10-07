@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -287,7 +288,6 @@ inline PdiTest::~PdiTest()
 	std::filesystem::current_path(m_workdir);
 	std::filesystem::remove_all(m_tmpdir);
 }
-
 
 } // namespace PDI
 
