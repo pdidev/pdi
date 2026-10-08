@@ -27,6 +27,9 @@ and this project adheres to
   [#758](https://github.com/pdidev/pdi/issues/758).
 * Improved the error message if one test in Decl'NetCDF fails
   [#739](https://github.com/pdidev/pdi/issues/739)
+* Corrected exports over Error members which were redundant,
+  as the class already has an export of its own, fixing warnings on PDI build
+  [#819](https://github.com/pdidev/pdi/issues/819)
 
 #### Security
 
