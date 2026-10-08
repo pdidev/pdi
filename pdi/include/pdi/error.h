@@ -152,43 +152,43 @@ public:
 /** An error class to use when a value expression is invalid
  */
 using Value_error = impl::Error_impl<PDI_ERR_VALUE>;
-extern template class PDI_EXPORT impl::Error_impl<PDI_ERR_VALUE>;
+extern template class impl::Error_impl<PDI_ERR_VALUE>;
 
 /** An error class to use when trying to load a non-existing plugin
  */
 using Plugin_error = impl::Error_impl<PDI_ERR_PLUGIN>;
-extern template class PDI_EXPORT impl::Error_impl<PDI_ERR_PLUGIN>;
+extern template class impl::Error_impl<PDI_ERR_PLUGIN>;
 
 /** An error class to use for implementation limitations (typically an unimplemented feature)
  */
 using Impl_error = impl::Error_impl<PDI_ERR_IMPL>;
-extern template class PDI_EXPORT impl::Error_impl<PDI_ERR_IMPL>;
+extern template class impl::Error_impl<PDI_ERR_IMPL>;
 
 /** An error class to use when a call to a function has been made at a wrong time (e.g. closing an
  *  unopened transaction)
  */
 using State_error = impl::Error_impl<PDI_ERR_STATE>;
-extern template class PDI_EXPORT impl::Error_impl<PDI_ERR_STATE>;
+extern template class impl::Error_impl<PDI_ERR_STATE>;
 
 /** An error class to use when a conflict of ownership over a content has been raised
  */
 using Permission_error = impl::Error_impl<PDI_ERR_PERMISSION>;
-extern template class PDI_EXPORT impl::Error_impl<PDI_ERR_PERMISSION>;
+extern template class impl::Error_impl<PDI_ERR_PERMISSION>;
 
 /** An error class to use when a system error occurred (OS, etc.)
  */
 using System_error = impl::Error_impl<PDI_ERR_SYSTEM>;
-extern template class PDI_EXPORT impl::Error_impl<PDI_ERR_SYSTEM>;
+extern template class impl::Error_impl<PDI_ERR_SYSTEM>;
 
 /** An error class to use for invalid types
  */
 using Type_error = impl::Error_impl<PDI_ERR_TYPE>;
-extern template class PDI_EXPORT impl::Error_impl<PDI_ERR_TYPE>;
+extern template class impl::Error_impl<PDI_ERR_TYPE>;
 
 /** An error class to use when an action described in the specification tree is invalid
  */
 using Invalid_action_error = impl::Error_impl<PDI_ERR_INVALIDACTION>;
-extern template class PDI_EXPORT impl::Error_impl<PDI_ERR_INVALIDACTION>;
+extern template class impl::Error_impl<PDI_ERR_INVALIDACTION>;
 
 /** An error class to use when there is an invalid entry in the specification tree
  */
