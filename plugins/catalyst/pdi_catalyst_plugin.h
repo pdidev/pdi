@@ -35,7 +35,7 @@ public:
 	/// @brief Builds a catalyst_plugin specification tree from its yaml config
 	catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree);
 
-	~catalyst_plugin() noexcept(false);
+	~catalyst_plugin() noexcept;
 
 private:
 	/// @brief callback to trigger action of catalyst_execute when an event occur
