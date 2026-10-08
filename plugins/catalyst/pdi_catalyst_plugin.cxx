@@ -30,7 +30,7 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 
 	if (PC_status(communicator_spec)) {
 		// case no communicator is given:
-		//  - communicator is considered to be  MPI_COMM_WORLD
+		//  - communicator is considered to be MPI_COMM_WORLD
 		//	- call catalyst_initialize on_init
 		ctx.callbacks().add_init_callback([this]() { this->run_catalyst_initialize(); });
 
@@ -79,24 +79,23 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 	);
 }
 
-catalyst_plugin::~catalyst_plugin() noexcept(false)
+catalyst_plugin::~catalyst_plugin() noexcept
 {
 	try {
 		run_catalyst_finalize();
 	} catch (const std::exception& e) {
-		if (std::uncaught_exceptions()) {
-			throw;
-		} else {
+		try {
 			context().logger().error("When closing catalyst plugin `{}'", e.what());
+			context().logger().info("Closing plugin");
+		} catch(...) {
 		}
 	} catch (...) {
-		if (std::uncaught_exceptions()) {
-			throw;
-		} else {
+		try {
 			context().logger().error("When closing catalyst plugin");
+			context().logger().info("Closing plugin");
+		} catch(...) {
 		}
 	}
-	context().logger().info("Closing plugin");
 }
 
 void catalyst_plugin::process_pdi_init_with_event(const std::string& event_name)
@@ -471,7 +470,6 @@ void catalyst_plugin::run_catalyst_finalize()
 		conduit_cpp::Node node;
 		auto result = catalyst_finalize(conduit_cpp::c_node(&node));
 		if (result != catalyst_status_ok) {
-			// context().logger().error("catalyst_finalize failure");
 			throw PDI::System_error{"catalyst_finalize failure"};
 		}
 	}
