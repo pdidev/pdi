@@ -20,7 +20,17 @@ and this project adheres to
 #### Removed
 
 #### Fixed
-* Fix typographical error in test and String_literal false_values, and asserts never satisfied [#753](https://github.com/pdidev/pdi/issues/753)
+
+* Fix YAML index mismatch between Paraconf and LibYAML. 
+  [#759](https://github.com/pdidev/pdi/issues/759)
+* Corrected an invalid test that prevented a deprecation warning message for
+  order of arrays to ever be shown. This fixes
+  [#758](https://github.com/pdidev/pdi/issues/758).
+* Improved the error message if one test in Decl'NetCDF fails
+  [#739](https://github.com/pdidev/pdi/issues/739)
+* Fix typographical error in test and String_literal false_values,
+  and asserts never satisfied
+  [#753](https://github.com/pdidev/pdi/issues/753)
 
 #### Security
 
@@ -32,8 +42,19 @@ and this project adheres to
 #### Changed
 * Merged `Callbacks` into `Global_context` and renamed the callback functions,
   as per [#720](https://github.com/pdidev/pdi/issues/720)
+* Renamed `PDI::TimerEventHandler` to `PDI::Timer_event_handler` to follow the
+  class naming convention, part of
+  [#755](https://github.com/pdidev/pdi/issues/755)
+* Renamed the `PLUGIN_API_VERSION*` macros to `PDI_PLUGIN_API_VERSION*` to
+  follow the macro naming convention, part of
+  [#755](https://github.com/pdidev/pdi/issues/755)
 
 #### Deprecated
+* `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
+  `PLUGIN_API_VERSION_MAJOR`, `PLUGIN_API_VERSION_MINOR` and
+  `PLUGIN_API_VERSION_PATCH` macros are deprecated in favour of their
+  correctly named replacements, part of
+  [#755](https://github.com/pdidev/pdi/issues/755)
 
 #### Removed
 * Removed performance micro-benchmarks of the core PDI library that were
