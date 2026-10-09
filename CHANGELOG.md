@@ -14,6 +14,9 @@ and this project adheres to
 #### Added
 
 #### Changed
+* `mpio` key can now be defined at file level as a default (in addition to the
+  current data level usage).
+  [#761](https://github.com/pdidev/pdi/issues/761)
 
 #### Deprecated
 
