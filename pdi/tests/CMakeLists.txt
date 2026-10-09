@@ -65,6 +65,7 @@ add_executable(PDI_unit_tests
 		PDI_error.cxx
 		PDI_expression.cxx
 # 		PDI_initialize_plugins.cxx
+		PDI_logger.cxx
 		PDI_member.cxx
 		PDI_pointer_datatype.cxx
 		PDI_record_datatype_empty.cxx

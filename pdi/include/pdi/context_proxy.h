@@ -84,7 +84,7 @@ public:
 	 *
 	 * \return pdi core logger
 	 */
-	Logger& pdi_core_logger();
+	Logger& pdi_core_logger() override;
 
 	Datatype_template_sptr datatype(PC_tree_t node) override;
 

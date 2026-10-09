@@ -93,3 +93,8 @@ add_executable(mpi_03_C mpi_test_03.c)
 target_link_libraries(mpi_03_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME mpi_03_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:mpi_03_C>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST mpi_03_C PROPERTY PROCESSORS 1)
+
+add_executable(mpi_04_C mpi_test_04.c)
+target_link_libraries(mpi_04_C PDI::PDI_C MPI::MPI_C)
+add_test(NAME mpi_04_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:mpi_04_C>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST mpi_04_C PROPERTY PROCESSORS 3)

@@ -12,6 +12,7 @@ and this project adheres to
 ### For users
 
 #### Added
+* Output redirection & output filter for master-rank only, fix [#552](https://github.com/pdidev/pdi/issues/552)
 
 #### Changed
 

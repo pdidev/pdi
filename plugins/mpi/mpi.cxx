@@ -240,10 +240,21 @@ struct mpi_plugin: Plugin {
 		ctx.logger().info("Plugin loaded successfully");
 	}
 
-	void set_up_logger(Context& ctx, PC_tree_t)
+	void set_up_logger(Context& ctx, PC_tree_t logging_tree)
 	{
 		ctx.logger().add_pattern_global_block("MPI %{MPI_COMM_WORLD_rank:06d}");
 		ctx.logger().evaluate_global_pattern(ctx);
+
+		int world_rank = 0;
+		MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+		PC_tree_t master_only_tree = PC_get(logging_tree, ".master_only");
+		if (!PC_status(master_only_tree)) {
+			int is_master_only = 0;
+			if (!PC_bool(master_only_tree, &is_master_only) && is_master_only && world_rank != 0) {
+				ctx.pdi_core_logger().mute(true);
+			}
+		}
 	}
 
 	void add_predefined(Context& ctx, const string& name, void* data, Datatype_sptr type)
