@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -261,7 +262,7 @@ File_op::File_op(Expression&& file, Collision_policy collision_policy)
 
 void File_op::execute(Context& ctx)
 {
-	PDI::TimerEventHandler hdf5_timer(ctx, "decl_hdf5");
+	PDI::Timer_event_handler hdf5_timer(ctx, "decl_hdf5");
 	// first gather the ops we actually want to do
 	vector<Dataset_op> dset_reads;
 	vector<Dataset_op> dset_writes;

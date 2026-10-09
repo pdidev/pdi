@@ -41,7 +41,7 @@ namespace PDI {
  * \param unescaped the colon separated string array
  * \result the actual array of unescaped strings
  */
-std::vector<std::string> string_array_parse(const std::string& unescaped);
+std::vector<std::string> PDI_NO_EXPORT string_array_parse(const std::string& unescaped);
 
 } // namespace PDI
 

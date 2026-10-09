@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,7 +62,6 @@ using pydict = pybind11::dict;
 using pymod = pybind11::module;
 using pyobj = pybind11::object;
 using namespace pybind11::literals;
-using std::cerr;
 using std::endl;
 using std::exception;
 using std::string;
@@ -153,7 +153,7 @@ public:
 			alias.expose(ctx, pyscope);
 		}
 		try {
-			PDI::TimerEventHandler pycall_timer(ctx, "pycall");
+			PDI::Timer_event_handler pycall_timer(ctx, "pycall");
 			pybind11::exec(m_code, pyscope);
 		} catch (const std::exception& e) {
 			ctx.logger().error("while calling python, caught exception: {}", e.what());
