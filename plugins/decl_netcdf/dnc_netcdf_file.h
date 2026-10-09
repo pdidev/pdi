@@ -126,7 +126,7 @@ public:
 	 */
 	void define_variable(const Dnc_variable& variable);
 
-	/// Ends definion mode in NetCDF file
+	/// Ends definition mode in NetCDF file
 	void enddef() const;
 
 	/** Puts variable to the file

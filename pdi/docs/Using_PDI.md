@@ -1,7 +1,7 @@
 # %PDI usage {#PDI_usage}
 
 After \ref Installation step, %PDI must be used in the application, that
-is written either in C/C++, Fortran or Pyhton.
+is written either in C/C++, Fortran or Python.
 
 ## Preparing the environment {#preparing_the_environment}
 
@@ -43,7 +43,7 @@ add_executable(exec_file source_files.c)
 target_link_libraries(exec_file PRIVATE PDI::PDI_C paraconf::paraconf)
 ```
 
-### Fortran compilation {#fortan_compiling_by_cmake_application}
+### Fortran compilation {#fortran_compiling_by_cmake_application}
 
 To compile Fortran applications, cmake must find the `C` component from %PDI and the `PDI::PDI_f90` target must be linked to the application target.
 Because in order to initialize %PDI, you also have to use Paraconf, you should do the same for Paraconf component `f90` and target `paraconf::paraconf_f90`.
@@ -72,7 +72,7 @@ Every used plugin in application needs to be found by %PDI.
 
 You may use the `mock_pdi` directory instead of the real %PDI to compile your application.
 This directory contains a [mock](https://en.wikipedia.org/wiki/Mock_object) %PDI implementation that you can use instead of the real %PDI, if you prefer not or can not to install it on your specific system.
-The recommandation is to copy the `mock_pdi` dirctory into your own application directory so as to be able to use it when required.
+The recommendation is to copy the `mock_pdi` directory into your own application directory so as to be able to use it when required.
 
 \remark
 As of now, only the C component of %PDI is provided by the mock %PDI.

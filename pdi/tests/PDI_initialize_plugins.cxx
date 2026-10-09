@@ -54,7 +54,7 @@ using Plugin_dependencies = pair<unordered_set<string>, unordered_set<string>>;
 using Plugin_info_map = map<string, Plugin_load_info>;
 
 /*
- * Special Mock class to check wheter functions were called.
+ * Special Mock class to check whether functions were called.
  */
 struct CheckerBase {
 	virtual void ctor_call(const string&) = 0;
@@ -168,7 +168,7 @@ struct InitializePluginsTest: public ::testing::Test {
  *
  * Tested functions:    initialize_plugins()
  *
- * Description:         Test checks if plugins without any reqirements
+ * Description:         Test checks if plugins without any requirements
  *                      and dependencies are correctly initialized.
  *
  */
@@ -189,7 +189,7 @@ TEST_F(InitializePluginsTest, empty)
  *
  * Tested functions:    initialize_plugins()
  *
- * Description:         Test checks if plugins with fulfilled reqirements
+ * Description:         Test checks if plugins with fulfilled requirements
  *                      are correctly initialized.
  *
  */

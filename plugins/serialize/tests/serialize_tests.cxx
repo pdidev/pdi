@@ -50,7 +50,7 @@ typedef struct {
 
 typedef struct {
 	Subregion** subregions; /* Array of pointers to subregions */
-	int size; /* Size of subgregion array */
+	int size; /* Size of subregion array */
 } SubregionArray;
 
 typedef struct {
@@ -78,7 +78,7 @@ typedef struct _Vector {
 // Serialized types:
 typedef struct {
 	Subregion subregions[SUBREGIONARRAY_SIZE]; /* Array of pointers to subregions */
-	int size; /* Size of subgregion array */
+	int size; /* Size of subregion array */
 } SubregionArraySerialized;
 
 typedef struct {

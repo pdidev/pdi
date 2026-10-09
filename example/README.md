@@ -49,7 +49,7 @@ All the communications instructions are written in `exchange` function.
 ## PDI integration {#pdi_integration}
 
 Now, when we know the algorithm, we can focus on analysing `decl_hdf5.yaml` specification tree.
- Fisrt 3 maps defined will not
+ First 3 maps defined will not
 be seen to %PDI:
 ```yaml
 duration: 0.75

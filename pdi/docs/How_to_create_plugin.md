@@ -418,3 +418,11 @@ gcc example_use.cxx -o example_use -lpdi -lparaconf
 
 You can see example of the program that uses this plugin on these [slides](https://docs.google.com/presentation/d/1jT416oALDkquBBgq_XkVrU48o4qx72wGHUPb4emXJw4).
 
+#### Typographical specificities
+In the case you code deliberately includes typographical mistakes, such as outstanding variable naming convention,
+you may exclude specific lines from the typographical check of the CI (as defined in the .typos.toml at the root of the project).
+You can either :  
+-Ignore the current line if it ends with `// typos:disable-line` or `# typos:disable-line`  
+-Ignore any line that contains `typos:ignore` anywhere on the line  
+-Ignore the line directly after a `// typos:ignore-next-line` comment  
+-Ignore multi-line blocks between `// typos:off` and `// typos:on`  

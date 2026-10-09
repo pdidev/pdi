@@ -457,7 +457,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 			throw System_error{"Dataset collision `{}': Dataset already exists", dataset_name};
 		} else {
 			// m_collision_policy & Collision_policy::WRITE_INTO == 1
-			notify("Writing into exisiting dataset", dataset_name);
+			notify("Writing into existing dataset", dataset_name);
 		}
 	}
 	Raii_hid h5_set = make_raii_hid(h5_set_raw, H5Dclose);
