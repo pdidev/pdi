@@ -1920,28 +1920,18 @@ TEST(StringExpressionBoolTest, to_long_boolean_string)
 	for (auto&& string_value: v_pos) {
 		ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 1);
 	}
-	const vector<string> v_neg{"n", "N", "no", "No", "NO", "false", "False", "FALSE", "Off", "Off", "OFF"};
+	const vector<string> v_neg{"n", "N", "no", "No", "NO", "false", "False", "FALSE", "off", "Off", "OFF"};
 	for (auto&& string_value: v_neg) {
 		ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 0);
 	}
 
 	const vector<string> v_fpos{"y1", "YY", "yEs", "Yess", "YE5", "tru", "TrUe", "TRRUE", "onn", "0n", "ONN"};
 	for (auto&& string_value: v_fpos) {
-		try {
-			ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 1);
-			FAIL();
-		} catch (PDI::Error& e) {
-			// ok
-		}
+		EXPECT_THROW(PDI::Expression(string_value).to_long(context_mock), PDI::Error);
 	}
 
 	const vector<string> v_fneg{"n1", "nO", "N0", "Nope", "NOO", "faLse", "Fals", "FaLSE", "OfF", "0f", "FF"};
 	for (auto&& string_value: v_fneg) {
-		try {
-			ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 1);
-			FAIL();
-		} catch (PDI::Error& e) {
-			// ok
-		}
+		EXPECT_THROW(PDI::Expression(string_value).to_long(context_mock), PDI::Error);
 	}
 }
