@@ -73,14 +73,14 @@ The possible values for the keys are as follow:
       * `SELECT_IOC_TOTAL`: same number of IOC as `count`
       * `SELECT_IOC_EVERY_NTH_RANK`: one IOC per `N` MPI ranks. To be used in conjunction with `H5FD_SUBFILING_IOC_SELECTION_CRITERIA` environment variable that defines `N`. If not defined, `N` will take the default value 1.
   * Yaml example
-    * full configuration: SELECT_IOC_TOTAL
-      ```
+    * full configuration: 
+      
       subfiling:
         count: 4              # generate 4 subfiles
         policy: CONTINUE      # Fallback to standard HDF5 if necessary
         stripe_size: 8388608  # 8MB stripes
-        ioc_selection: 
-      ```
+        ioc_selection: SELECT_IOC_TOTAL
+      
     * shorthand configuration:
       ```
       subfiling: 2 
