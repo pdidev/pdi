@@ -47,7 +47,7 @@ class Subfiling
 	PDI::Expression m_sf_policy = "STOP";
 
 	/// The strategy for selecting I/O Concentrator processes across MPI ranks.
-	std::string m_sf_selection = "SELECT_IOC_ONE_PER_NODE";
+	std::string m_sf_ioc_selection = "SELECT_IOC_ONE_PER_NODE";
 
 public:
 	/** The default constructor for an empty selection (everything selected)
@@ -88,7 +88,7 @@ public:
 	 *
 	 * \return The IOC strategy of subfiling
 	 */
-	const std::string& ioc_selection() const { return m_sf_selection; }
+	const std::string& ioc_selection() const { return m_sf_ioc_selection; }
 };
 
 } // namespace decl_hdf5
