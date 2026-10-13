@@ -351,24 +351,34 @@ void File_op::execute(Context& ctx)
 				if (ioc_selection == "SELECT_IOC_TOTAL") {
 					subf_config.shared_cfg.ioc_selection = SELECT_IOC_TOTAL;
 					if (const char* val = std::getenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA")) {
-						ctx.logger().debug("HDF5 subfiling ioc_selection set to SELECT_IOC_TOTAL. "
-                                           "Number of IOC = H5FD_SUBFILING_IOC_SELECTION_CRITERIA, "
-										   "H5FD_SUBFILING_IOC_SELECTION_CRITERIA = {}", val);
+						ctx.logger().debug(
+							"HDF5 subfiling ioc_selection set to SELECT_IOC_TOTAL. "
+							"Number of IOC = H5FD_SUBFILING_IOC_SELECTION_CRITERIA, "
+							"H5FD_SUBFILING_IOC_SELECTION_CRITERIA = {}",
+							val
+						);
 					} else {
-						ctx.logger().warn("HDF5 subfiling ioc_selection set to SELECT_IOC_TOTAL. "
-							              "H5FD_SUBFILING_IOC_SELECTION_CRITERIA not set. Use default value 1.");
+						ctx.logger().warn(
+							"HDF5 subfiling ioc_selection set to SELECT_IOC_TOTAL. "
+							"H5FD_SUBFILING_IOC_SELECTION_CRITERIA not set. Use default value 1."
+						);
 					}
 				} else if (ioc_selection == "SELECT_IOC_ONE_PER_NODE") {
 					subf_config.shared_cfg.ioc_selection = SELECT_IOC_ONE_PER_NODE;
 				} else if (ioc_selection == "SELECT_IOC_EVERY_NTH_RANK") {
 					subf_config.shared_cfg.ioc_selection = SELECT_IOC_EVERY_NTH_RANK;
 					if (const char* val = std::getenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA")) {
-						ctx.logger().debug("HDF5 subfiling ioc_selection set to SELECT_IOC_EVERY_NTH_RANK. "
-							               "number of IOC = mpi_size/H5FD_SUBFILING_IOC_SELECTION_CRITERIA, "
-										   "H5FD_SUBFILING_IOC_SELECTION_CRITERIA = {}", val);
+						ctx.logger().debug(
+							"HDF5 subfiling ioc_selection set to SELECT_IOC_EVERY_NTH_RANK. "
+							"number of IOC = mpi_size/H5FD_SUBFILING_IOC_SELECTION_CRITERIA, "
+							"H5FD_SUBFILING_IOC_SELECTION_CRITERIA = {}",
+							val
+						);
 					} else {
-						ctx.logger().warn("HDF5 subfiling ioc_selection set to SELECT_IOC_EVERY_NTH_RANK. "
-							              "H5FD_SUBFILING_IOC_SELECTION_CRITERIA not set. Use default value 1.");
+						ctx.logger().warn(
+							"HDF5 subfiling ioc_selection set to SELECT_IOC_EVERY_NTH_RANK. "
+							"H5FD_SUBFILING_IOC_SELECTION_CRITERIA not set. Use default value 1."
+						);
 					}
 				} else {
 					throw System_error{
