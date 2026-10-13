@@ -358,10 +358,8 @@ void File_op::execute(Context& ctx)
 							val
 						);
 					} else {
-						ctx.logger().warn(
-							"HDF5 subfiling ioc_selection set to SELECT_IOC_TOTAL. "
-							"H5FD_SUBFILING_IOC_SELECTION_CRITERIA not set. Use default value 1."
-						);
+						ctx.logger().warn("HDF5 subfiling ioc_selection set to SELECT_IOC_TOTAL. "
+							              "H5FD_SUBFILING_IOC_SELECTION_CRITERIA not set. Use default value 1.");
 					}
 				} else if (ioc_selection == "SELECT_IOC_ONE_PER_NODE") {
 					subf_config.shared_cfg.ioc_selection = SELECT_IOC_ONE_PER_NODE;
@@ -375,10 +373,8 @@ void File_op::execute(Context& ctx)
 							val
 						);
 					} else {
-						ctx.logger().warn(
-							"HDF5 subfiling ioc_selection set to SELECT_IOC_EVERY_NTH_RANK. "
-							"H5FD_SUBFILING_IOC_SELECTION_CRITERIA not set. Use default value 1."
-						);
+						ctx.logger().warn("HDF5 subfiling ioc_selection set to SELECT_IOC_EVERY_NTH_RANK. "
+							              "H5FD_SUBFILING_IOC_SELECTION_CRITERIA not set. Use default value 1.");
 					}
 				} else {
 					throw System_error{
