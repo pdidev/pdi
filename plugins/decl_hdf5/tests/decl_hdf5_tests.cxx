@@ -960,3 +960,124 @@ plugins:
 	H5Dclose(dataset_id);
 	H5Fclose(file_id);
 }
+
+// TEST(decl_hdf5_test, missing_descriptor_validation)
+// {
+//     constexpr char CONFIG_YAML[] = R"(
+//     logging: trace
+//     data:
+//       valid_data: int
+//     plugins:
+//       decl_hdf5:
+//         file: 'test_missing.h5'
+//         write:
+//           undeclared_data: {dataset: 'ds'}
+//     )";
+
+//     PC_tree_t tree = PC_parse_string(CONFIG_YAML);
+
+//     try {
+//         PDI_init(tree);
+//         FAIL() << "PDI_init aurait dû échouer pour le descripteur non déclaré `undeclared_data`";
+//     } catch (const PDI::Error& e) {
+//         EXPECT_THAT(e.what(), testing::HasSubstr("Cannot reference data `undeclared_data` in `decl_hdf5`"));
+//         EXPECT_THAT(e.what(), testing::HasSubstr("descriptor is not declared in `data` or `metadata`"));
+//     }
+
+//     PC_tree_destroy(&tree);
+// }
+
+// TEST(serialize_decl_hdf5_integration_test, registered_dynamic_descriptor)
+// {
+//     constexpr char CONFIG_YAML[] = R"(
+//     logging: trace
+//     data:
+//       subvector: int
+//     plugins:
+//       serialize:
+//         subvector: subvector_serialized
+//       decl_hdf5:
+//         file: 'serialize_test.h5'
+//         on_event: write
+//         write: [subvector_serialized]
+//     )";
+
+//     PC_tree_t tree = PC_parse_string(CONFIG_YAML);
+
+//     // Doit réussir sans lever d'exception "Cannot reference data `subvector_serialized`"
+//     EXPECT_EQ(PDI_OK, PDI_init(tree));
+
+//     PDI_finalize();
+//     PC_tree_destroy(&tree);
+// }
+
+// TEST(decl_hdf5_test, invalid_mpio_key_location)
+// {
+//     constexpr char CONFIG_YAML[] = R"(
+//     logging: trace
+//     data:
+//       array_data: { size: [5, 5], type: array, subtype: int }
+//     plugins:
+//       decl_hdf5:
+//         file: 'test_mpio.h5'
+//         mpio: INDEPENDENT
+//         write: [array_data]
+//     )";
+
+//     PC_tree_t tree = PC_parse_string(CONFIG_YAML);
+
+//     try {
+//         PDI_init(tree);
+//         FAIL() << "PDI_init aurait dû échouer en raison de la clé inconnue `mpio` au niveau du fichier";
+//     } catch (const PDI::Error& e) {
+//         EXPECT_THAT(e.what(), testing::HasSubstr("Unknown key in HDF5 file configuration: `mpio`"));
+//     }
+
+//     PC_tree_destroy(&tree);
+// }
+
+/* Validation of missing descriptor in decl_hdf5 */
+TEST_F(DeclHdf5, MissingDescriptorValidation)
+{
+	EXPECT_CALL(
+		*this,
+		PdiError(
+			testing::_,
+			testing::AllOf(
+				testing::HasSubstr("Cannot reference data `undeclared_data` in `decl_hdf5`"),
+				testing::HasSubstr("descriptor is not declared in `data` or `metadata`")
+			)
+		)
+	);
+
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  valid_data: int
+plugins:
+  decl_hdf5:
+    file: test_missing.h5
+    write:
+      undeclared_data: {dataset: ds}
+)=="));
+}
+
+/* Validation of invalid mpio key location in decl_hdf5 */
+TEST_F(DeclHdf5, InvalidMpioKeyLocation)
+{
+	EXPECT_CALL(
+		*this,
+		PdiError(testing::_, testing::AllOf(testing::HasSubstr("Unknown key in HDF5 file configuration"), testing::HasSubstr("mpio")))
+	);
+
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  array_data: {size: [5, 5], type: array, subtype: int}
+plugins:
+  decl_hdf5:
+    file: test_mpio.h5
+    mpio: INDEPENDENT
+    write: [array_data]
+)=="));
+}
