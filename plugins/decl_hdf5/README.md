@@ -67,7 +67,7 @@ The possible values for the keys are as follow:
     * `policy` (string, default: "STOP") : Determines behavior if subfiling requirements are not met.
       * `STOP`: Throw a runtime error.
       * `CONTINUE`: Fall back to a standard HDF5 output file.
-    * `stripe_size` (non-negative integer, default: 0): The amount of data (in bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MB) is used.
+    * `stripe_size` (non-negative integer, default: 0): The amount of data (in binary bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MiB = 32*1024*1024) is used.
     * `ioc_selection` (string): The strategy for selecting I/O Concentrator (IOC) processes across MPI ranks. Possible choices:
       * `SELECT_IOC_ONE_PER_NODE` (default): one IOC per node
       * `SELECT_IOC_TOTAL`: `N` IOC in total. To be used in conjunction with `H5FD_SUBFILING_IOC_SELECTION_CRITERIA` environment variable that defines `N`. If not defined, `N` will take the default value 1.
