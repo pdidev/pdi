@@ -95,7 +95,7 @@ data: {inner_array: {type: array, subtype: double, size: $array_size, subsize: $
 	Datatype_template_sptr data_template = global_ctx["inner_array"].default_type();
 	data_template->add_dependencies(global_ctx, result);
 
-	std::unordered_set<std::string> expected_dependencies = {"array_size","array_subsize","array_start"};
+	std::unordered_set<std::string> expected_dependencies = {"array_size", "array_subsize", "array_start"};
 
 	check_dependencies(expected_dependencies, result);
 }
@@ -121,7 +121,7 @@ data: {inner_array: {type: array, subtype: double, size: [$dim1, $dim2, $dim3]}}
 	data_template->add_dependencies(global_ctx, result);
 
 
-	std::unordered_set<std::string> expected_dependencies = {"dim1","dim2","dim3"};
+	std::unordered_set<std::string> expected_dependencies = {"dim1", "dim2", "dim3"};
 
 	check_dependencies(expected_dependencies, result);
 }
