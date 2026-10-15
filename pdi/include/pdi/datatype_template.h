@@ -72,15 +72,15 @@ public:
 	virtual Datatype_sptr evaluate(Context& ctx) const = 0;
 
 
-	/** Adds to name_of_dependencies the dependency of this datatype template
+	/** Adds to names_of_dependencies the dependency of this datatype template
 	 *
-	 * \param ctx the context in which to evaluate this template
-	 * \param name_of_dependencies
+	 * \param[in] ctx the context in which to evaluate this template
+	 * \param[in,out] names_of_dependencies
 	 *  input: list of data name (can be non null)
 	 *  output: input and list of data names on which this datatype template depend
 	 *
 	 */
-	virtual void add_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const;
+	virtual void add_dependencies(Context& ctx, std::unordered_set<std::string>& names_of_dependencies) const;
 
 	/** Returns attribute of given name as Expression
 	 * \param attribute_name attribute to get
@@ -95,15 +95,15 @@ public:
 	 */
 	const Attributes_map& attributes() const;
 
-	/** Adds to name_of_dependencies the dependency of all attributes
+	/** Adds to names_of_dependencies the dependency of all attributes
 	 *
-	 * \param ctx the context in which to evaluate this template
-	 * \param name_of_dependencies
+	 * \param[in] ctx the context in which to evaluate this template
+	 * \param[in,out] names_of_dependencies
 	 *  input: list of data name (can be non null)
 	 *  output: input and list of data names on which all attributes depend
 	 *
 	 */
-	void add_attributes_dependencies(Context& ctx, std::unordered_set<std::string>& name_of_dependencies) const;
+	void add_attributes_dependencies(Context& ctx, std::unordered_set<std::string>& names_of_dependencies) const;
 
 	/**
 	 * Adds to the context the basic Array, Record, C and Fortran datatypes

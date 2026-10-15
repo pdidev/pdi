@@ -94,8 +94,8 @@ void add_2(void)
 /*
  * Name:               CheckMultiExpose.DataWithSameNameWithDifferentPointer
  *
- * Description:        Verify the behavior of multi_expose when we shared two different
- *                     pointer in the same dataname in PDI store.
+ * Description:        Verify the behavior of multi_expose when we share two different
+ *                     pointers with the same dataname in PDI store.
  */
 
 TEST_F(CheckMultiExpose, DataWithSameNameWithDifferentPointer)
@@ -121,13 +121,13 @@ plugins:
 }
 
 /*
- * Name:               CheckMultiExpose.DataWithSameName
+ * Name:               CheckMultiExpose.DataSharedTwoTimes
  *
- * Description:        Verify the behavior of multi_expose when we shared two different
- *                     data in the same place in PDI store.
+ * Description:        Verify the behavior of multi_expose when a data is shared twice
+ *                     with the same dataname in PDI store.
  */
 
-TEST_F(CheckMultiExpose, DataWithSameName)
+TEST_F(CheckMultiExpose, DataSharedTwoTimes)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
@@ -141,7 +141,6 @@ plugins:
 )=="));
 
 	int var1 = 3;
-	int var2 = 11;
 
 	PDI_multi_expose("my_test", "pdi_var1", &var1, PDI_OUT, "pdi_var1", &var1, PDI_OUT, NULL);
 

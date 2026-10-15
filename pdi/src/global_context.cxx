@@ -338,7 +338,7 @@ public:
 
 	TT& get_name() { return m_name; }
 
-	std::unordered_set<TT> add_dependencies() { return m_all_deps; }
+	std::unordered_set<TT> get_dependencies() { return m_all_deps; }
 };
 
 template <typename TT>
@@ -359,7 +359,7 @@ void Data_dependencies<TT>::local_topological_sort(
 	case ALL_DEPS:
 		return;
 	case COMPUTE_DEPS:
-		throw Impl_error{"Error while evaluate dependencies: circular dependency between data"};
+		throw Impl_error{"Error while evaluate the dependency graph between data: a circular dependency between data is found."};
 	case INIT_DEPS:
 		m_state = COMPUTE_DEPS;
 		auto&& direct_dependencies = m_deps;
@@ -396,7 +396,7 @@ void Data_dependencies<TT>::topological_sort_and_evaluate_all_dependencies(
 	case ALL_DEPS:
 		return;
 	case COMPUTE_DEPS:
-		throw Impl_error{"Error while evaluate dependencies: circular dependency between data"};
+		throw Impl_error{"Error while evaluate the dependency graph between data: a circular dependency between data is found."};
 	case INIT_DEPS:
 		m_state = COMPUTE_DEPS;
 		auto&& direct_dependencies = m_deps;
@@ -419,7 +419,7 @@ void Data_dependencies<TT>::topological_sort_and_evaluate_all_dependencies(
 					data_info_it->second->topological_sort_and_evaluate_all_dependencies(data_in_store, ordering_stack);
 
 					// insert dependencies
-					for (auto&& elem_dependencies: data_info_it->second->add_dependencies()) {
+					for (auto&& elem_dependencies: data_info_it->second->get_dependencies()) {
 						m_all_deps.insert(elem_dependencies);
 					}
 				}
@@ -636,7 +636,7 @@ Global_context::Global_context(PC_tree_t conf)
 	}
 
 	for (auto& elem: data_depend_on) {
-		m_data_all_dependencies[elem.second->get_name()] = elem.second->add_dependencies();
+		m_data_all_dependencies[elem.second->get_name()] = elem.second->get_dependencies();
 	}
 
 	size_t counter = ordering_stack.size(); // zero value is for data that are not defined in (meta)data section

@@ -36,7 +36,7 @@
 using namespace PDI;
 
 // function to check the list of dependencies
-void check_dependecies(const std::unordered_set<std::string>& expected_dependencies, const std::unordered_set<std::string>& result)
+void check_dependencies(const std::unordered_set<std::string>& expected_dependencies, const std::unordered_set<std::string>& result)
 {
 	// check the size
 	EXPECT_EQ(expected_dependencies.size(), result.size()) << "number of dependencies is not correct";
@@ -50,12 +50,12 @@ void check_dependecies(const std::unordered_set<std::string>& expected_dependenc
 /*
  * Name:                DataDependenciesTest.ArrayDataTypeNoDependencies
  *
- * Tested functions:    PDI::Datatype_template::add_dependencies
+ * Tested functions:    PDI::Array_template::add_dependencies
  *
  * Description:         Test checks if no direct dependency is found
  *
  */
-TEST(DataDependenciesTest, ArrayDataTypeNoDependencies)
+TEST(DataDependenciesTest, ArrayDataTypeNoDependency)
 {
 	PC_tree_t tree = PC_parse_string(R"==(
 metadata: {array_size: int}
@@ -69,23 +69,50 @@ data: {inner_array: {type: array, subtype: double, size: '10'}}
 
 	std::unordered_set<std::string> expected_dependencies = {""};
 
-	// check there is no dependencies
-	ASSERT_EQ(0, result.size()) << "No dependencies case";
+	// check there is no dependency
+	ASSERT_EQ(0, result.size()) << "No dependency case";
 }
 
 /*
- * Name:                DataDependenciesTest.ArrayDataType
+ * Name:                DataDependenciesTest.ArrayDataTypeDependency
  *
- * Tested functions:    PDI::Datatype_template::add_dependencies
+ * Tested functions:    PDI::Array_template::add_dependencies
+ *
+ * Description:         Test checks if the direct size dependency of an array datatype is found
+ *                      Test checks if the direct subsize dependency of an array datatype is found
+ *                      Test checks if the direct start dependency of an array datatype is found
+ *
+ */
+TEST(DataDependenciesTest, ArrayDataTypeDependency)
+{
+	PC_tree_t tree = PC_parse_string(R"==(
+metadata: {array_size: int, array_subsize: int, array_start: int}
+data: {inner_array: {type: array, subtype: double, size: $array_size, subsize: $array_subsize, start: $array_start}}
+)==");
+	PDI::Paraconf_wrapper fw;
+	Global_context global_ctx{tree};
+	std::unordered_set<std::string> result;
+	Datatype_template_sptr data_template = global_ctx["inner_array"].default_type();
+	data_template->add_dependencies(global_ctx, result);
+
+	std::unordered_set<std::string> expected_dependencies = {"array_size","array_subsize","array_start"};
+
+	check_dependencies(expected_dependencies, result);
+}
+
+/*
+ * Name:                DataDependenciesTest.ArrayDataTypeMultidimensionDependency
+ *
+ * Tested functions:    PDI::Array_template::add_dependencies
  *
  * Description:         Test checks if the direct size dependency of an array datatype is found
  *
  */
-TEST(DataDependenciesTest, ArrayDataType)
+TEST(DataDependenciesTest, ArrayDataTypeMultidimensionDependency)
 {
 	PC_tree_t tree = PC_parse_string(R"==(
-metadata: {array_size: int}
-data: {inner_array: {type: array, subtype: double, size: $array_size}}
+metadata: {dim1: int, dim2: int, dim3: int}
+data: {inner_array: {type: array, subtype: double, size: [$dim1, $dim2, $dim3]}}
 )==");
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{tree};
@@ -94,17 +121,17 @@ data: {inner_array: {type: array, subtype: double, size: $array_size}}
 	data_template->add_dependencies(global_ctx, result);
 
 
-	std::unordered_set<std::string> expected_dependencies = {"array_size"};
+	std::unordered_set<std::string> expected_dependencies = {"dim1","dim2","dim3"};
 
-	check_dependecies(expected_dependencies, result);
+	check_dependencies(expected_dependencies, result);
 }
 
 /*
  * Name:                DataDependenciesTest.ArrayOfArrayDataType
  *
- * Tested functions:    PDI::Datatype_template::add_dependencies
+ * Tested functions:    PDI::Array_template::add_dependencies
  *
- * Description:         Test checks if the direct subtype dependency of an array datatype is added
+ * Description:         Test checks if the direct subtype dependency of an array datatype is found
  *                      Test checks if the indirect dependency due to a subtype of an array datatype is found
  */
 TEST(DataDependenciesTest, ArrayOfArrayDataType)
@@ -122,11 +149,11 @@ data: {inner_array: {type: array, subtype: inner_attr, size: [ "$array_size[0]",
 
 	// check for direct dependencies
 	std::unordered_set<std::string> expected_dependencies = {"array_size", "type_size"};
-	check_dependecies(expected_dependencies, result);
+	check_dependencies(expected_dependencies, result);
 
 	// check for all dependencies
 	std::unordered_set<std::string> expected_dependencies22 = {"array_size", "dim_size", "type_size"};
 	std::unordered_set<std::string> result22 = global_ctx.m_data_all_dependencies["inner_array"];
 
-	check_dependecies(expected_dependencies22, result22);
+	check_dependencies(expected_dependencies22, result22);
 }

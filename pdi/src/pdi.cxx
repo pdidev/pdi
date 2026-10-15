@@ -442,12 +442,12 @@ try {
 	Var_to_reclaim list_names{event_name}; // list of variables that will be reclaimed at the end of this function
 	Delayed_data_callbacks delayed_callbacks(Global_context::context());
 
-	int i = -1;
+	int index_name = -1;
 	for (auto& elem: sort_name) {
 		std::string elem_name = elem.first;
 		for (auto& index: name_indexes[elem_name]) {
 			PDI_inout_t v_access = data_access[index];
-			Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", elem_name, ++i, list_names.size());
+			Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", elem_name, ++index_name, list_names.size());
 			Global_context::context()[elem_name].share(data_pointer[index], v_access & PDI_OUT, v_access & PDI_IN, std::move(delayed_callbacks));
 			list_names.emplace_back(elem_name);
 		}

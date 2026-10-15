@@ -166,9 +166,9 @@ std::pair<Expression, long> Expression::parse_reference(const char* reference_st
 	return {std::move(reference_impl), reference_str_to_parse - reference_str};
 }
 
-void Expression::add_dependencies(Context& ctx, std::unordered_set<std::string>& dependencies) const
+void Expression::add_dependencies(Context& ctx, std::unordered_set<std::string>& names_of_dependencies) const
 {
-	m_impl->add_dependencies(ctx, dependencies);
+	m_impl->add_dependencies(ctx, names_of_dependencies);
 }
 
 } // namespace PDI
