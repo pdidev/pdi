@@ -442,12 +442,12 @@ endif()
 ## JSON
 
 if("${BUILD_JSON_PLUGIN}")
-	sbuild_add_dependency(JSON "${USE_DEFAULT}"
+	sbuild_add_dependency(nlohmann_json "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/json-3.11.4"
 		CMAKE_CACHE_ARGS
 			"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream is updated
 			"-DJSON_BuildTests:BOOL=OFF" # skip unit tests for json
-		VERSION 3.11
+		VERSION 3.9
 	)
 endif()
 
@@ -491,7 +491,7 @@ sbuild_add_module(DECL_NETCDF_PLUGIN
 sbuild_add_module(JSON_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_JSON_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json"
-	DEPENDS PDI JSON
+	DEPENDS PDI nlohmann_json
 	SUBSTEPS test
 )
 
