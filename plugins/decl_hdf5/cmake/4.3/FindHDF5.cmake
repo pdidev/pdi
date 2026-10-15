@@ -692,6 +692,9 @@ if(NOT HDF5_FOUND AND NOT HDF5_NO_FIND_PACKAGE_CONFIG_FILE)
         elseif(DEFINED HDF5_PROVIDES_PARALLEL)
           # Versions of >=2.0.0 use `HDF5_PROVIDES_PARALLEL`
           set(HDF5_IS_PARALLEL ${HDF5_PROVIDES_PARALLEL})
+        elseif(DEFINED HDF5_HAS_PARALLEL)
+          # Other versions of >=2.0.0 use `HDF5_HAS_PARALLEL`
+          set(HDF5_IS_PARALLEL ${HDF5_HAS_PARALLEL})
         else()
           set(HDF5_IS_PARALLEL NONE)
         endif()
