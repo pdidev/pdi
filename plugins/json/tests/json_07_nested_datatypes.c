@@ -96,7 +96,7 @@ int main(void)
 		double elem_double;
 		struct sub_struct elem_array[2];
 	};
-	struct tuple_t _var_tuple = {11, 12.3, {{22, 22.2}, {33, 33, 3}}};
+	struct tuple_t _var_tuple = {11, 12.3, {{22, 22.2}, {33, 33.3}}};
 	PDI_expose("var_tuple_array_record", &_var_tuple, PDI_OUT);
 
 	PDI_finalize();
