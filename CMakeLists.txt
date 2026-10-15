@@ -447,7 +447,7 @@ if("${BUILD_JSON_PLUGIN}")
 		CMAKE_CACHE_ARGS
 			"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream is updated
 			"-DJSON_BuildTests:BOOL=OFF" # skip unit tests for json
-		VERSION 3.9
+		VERSION 3.11
 	)
 endif()
 
