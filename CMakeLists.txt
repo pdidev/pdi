@@ -315,10 +315,58 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=OFF")
 	endif()
 	
+	# Debian/Ubuntu ship one hdf5-config.cmake per flavor (hdf5_serial, hdf5_openmpi, hdf5_mpich ...) and
+	# find_package(HDF5) ignores HDF5_PREFER_PARALLEL when looking for a config file, so it can pick the
+	# serial one (e.g. libnetcdf-dev pulls in the serial HDF5): select the parallel flavor explicitly
+	if("${BUILD_HDF5_PARALLEL}" AND NOT HDF5_DIR AND NOT HDF5_ROOT AND NOT "$ENV{HDF5_ROOT}" AND CMAKE_LIBRARY_ARCHITECTURE)
+		if(DEFINED USE_HDF5)
+			set(_HDF5_USE "${USE_HDF5}")
+		else()
+			set(_HDF5_USE "${USE_DEFAULT}")
+		endif()
+		if("${_HDF5_USE}" STREQUAL SYSTEM OR "${_HDF5_USE}" STREQUAL AUTO)
+			set(_HDF5_PARALLEL_DIRS)
+			foreach(_PREFIX IN LISTS CMAKE_SYSTEM_PREFIX_PATH)
+				file(GLOB _HDF5_CONFIGS "${_PREFIX}/lib/${CMAKE_LIBRARY_ARCHITECTURE}/cmake/hdf5_*/hdf5-config.cmake")
+				foreach(_HDF5_CONFIG IN LISTS _HDF5_CONFIGS)
+					file(STRINGS "${_HDF5_CONFIG}" _HDF5_IS_PAR REGEX "_(PROVIDES|ENABLE)_PARALLEL[ \t]+(ON|TRUE|1)")
+					if(_HDF5_IS_PAR)
+						get_filename_component(_HDF5_CONFIG_DIR "${_HDF5_CONFIG}" DIRECTORY)
+						list(APPEND _HDF5_PARALLEL_DIRS "${_HDF5_CONFIG_DIR}")
+					endif()
+				endforeach()
+			endforeach()
+			
+			set(_HDF5_CHOSEN)
+			list(LENGTH _HDF5_PARALLEL_DIRS _HDF5_NB)
+			if(1 EQUAL "${_HDF5_NB}")
+				set(_HDF5_CHOSEN "${_HDF5_PARALLEL_DIRS}")
+			elseif(_HDF5_NB GREATER 1)
+				# several parallel flavors: take the one matching the MPI implementation in use
+				get_filename_component(_HDF5_MPI_REAL "${MPI_C_COMPILER}" REALPATH)
+				foreach(_HDF5_CANDIDATE IN LISTS _HDF5_PARALLEL_DIRS)
+					get_filename_component(_HDF5_FLAVOR "${_HDF5_CANDIDATE}" NAME)
+					string(REPLACE "hdf5_" "" _HDF5_FLAVOR "${_HDF5_FLAVOR}")
+					if("${_HDF5_MPI_REAL}" MATCHES "${_HDF5_FLAVOR}")
+						set(_HDF5_CHOSEN "${_HDF5_CANDIDATE}")
+						break()
+					endif()
+				endforeach()
+			endif()
+			
+			if(_HDF5_CHOSEN)
+				message(STATUS " **HDF5**: selecting parallel HDF5 configuration in ${_HDF5_CHOSEN} (override with -DHDF5_DIR=...)")
+				set(HDF5_DIR "${_HDF5_CHOSEN}" CACHE PATH "Directory of the parallel HDF5 hdf5-config.cmake")
+			elseif(_HDF5_NB GREATER 1)
+				message(STATUS " **HDF5**: several parallel HDF5 flavors found (${_HDF5_PARALLEL_DIRS}), pass -DHDF5_DIR=... to choose")
+			endif()
+		endif()
+	endif()
+	
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/hdf5-1.12.3"
 		COMPONENTS ${HDF5_COMPONENTS}
-		MODULE_VARS HDF5_IS_PARALLEL HDF5_VERSION
+		MODULE_VARS HDF5_IS_PARALLEL HDF5_PROVIDES_PARALLEL HDF5_VERSION
 		CMAKE_CACHE_ARGS
 			-DBUILD_STATIC_LIBS:BOOL=OFF
 			-DBUILD_TESTING:BOOL=OFF
@@ -333,6 +381,9 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 		VERSION
 	)
 	if("${HDF5_FOUND}")
+		if(NOT "${HDF5_IS_PARALLEL}" AND "${HDF5_PROVIDES_PARALLEL}")
+			set(HDF5_IS_PARALLEL ON)
+		endif()
 		if("${HDF5_VERSION}" VERSION_LESS 1.10)
 			message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 		endif()
