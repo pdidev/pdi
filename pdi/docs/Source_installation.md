@@ -94,7 +94,6 @@ The following flags define which features of the distribution to enable or not.
 
 |Flag                       |Default|Description|
 |:--------------------------|:------|:----------|
-|`BUILD_BENCHMARKING`       |`ON`   |Build the benchmarks.|
 |`BUILD_DECL_HDF5_PLUGIN`   |`ON`   |Build the Decl'HDF5 plug-in.|
 |`BUILD_DECL_NETCDF_PLUGIN` |`ON`   |Build the Decl'NetCDF plug-in.|
 |`BUILD_FORTRAN`            |`ON`   |Build the Fortran interface.|
