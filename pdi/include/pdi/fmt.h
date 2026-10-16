@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,6 +23,9 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#ifndef PDI_FMT_H_
+#define PDI_FMT_H_
+
 // this is a header designed to support fmt provided as either a standalone of embedded in spdlog
 
 #include <spdlog/spdlog.h>
@@ -39,3 +43,5 @@
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #endif
+
+#endif // PDI_FMT_H_

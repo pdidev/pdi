@@ -45,6 +45,7 @@
 
 namespace PDI {
 
+// this is marked PDI_EXPORT because this is the entry point for language support libraries and should therefore be available to them
 class PDI_EXPORT Global_context: public Context
 {
 private:

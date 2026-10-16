@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -172,22 +173,34 @@ public:
 	virtual std::function<void()> on_missing_data(const std::function<void(const std::string&)>& callback, const std::string& name = {}) = 0;
 };
 
-class PDI_EXPORT TimerEventHandler
+/** A scoped timer for a plugin operation
+ *
+ * Triggers the `<plugin_name>_start_timer` event on construction and the
+ * matching `<plugin_name>_stop_timer` event on destruction, so that the timer
+ * plugin can measure the duration of the enclosing scope.
+ */
+class PDI_EXPORT Timer_event_handler
 {
 private:
 	Context& m_ctx;
+
 	const std::string m_plugin_name;
 
 public:
-	TimerEventHandler(Context& ctx, const std::string& plugin_name)
-		: m_ctx(ctx)
-		, m_plugin_name(plugin_name)
-	{
-		m_ctx.event((plugin_name + "_start_timer").c_str());
-	}
+	/** Triggers the start event of the timer
+	 *
+	 * \param[in] ctx the context in which to trigger the events
+	 * \param[in] plugin_name the name of the plugin the events are named after
+	 */
+	Timer_event_handler(Context& ctx, const std::string& plugin_name);
 
-	~TimerEventHandler() { m_ctx.event((m_plugin_name + "_stop_timer").c_str()); }
+	/** Triggers the stop event of the timer
+	 */
+	~Timer_event_handler();
 };
+
+/// \deprecated use Timer_event_handler instead
+using TimerEventHandler [[deprecated("use Timer_event_handler instead")]] = Timer_event_handler;
 
 } // namespace PDI
 

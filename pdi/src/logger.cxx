@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2018-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,6 +23,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include "config.h"
+
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -30,9 +33,9 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 
-#include <pdi/context.h>
-#include <pdi/error.h>
-#include <pdi/expression.h>
+#include "pdi/context.h"
+#include "pdi/error.h"
+#include "pdi/expression.h"
 
 #include "pdi/logger.h"
 
@@ -170,6 +173,8 @@ void Logger::build_pattern()
 	s_pattern << "[%n] *** %^%l%$: %v";
 	m_pattern = s_pattern.str();
 }
+
+Logger::Logger() = default;
 
 Logger::Logger(const string& logger_name, PC_tree_t config, level_enum level)
 {

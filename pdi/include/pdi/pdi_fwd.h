@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -113,6 +114,34 @@ enum class Scalar_kind : uint8_t {
  * References are not resolved, this is only the AST.
  */
 class Expression;
+
+/** The base class of all errors thrown by PDI
+ */
+class Error;
+
+/** An error tied to a location in the specification tree
+ */
+class Spectree_error;
+
+/** An error aggregating multiple errors that occurred together
+ */
+class Multiple_errors;
+
+/** A RAII wrapper that initializes and finalizes paraconf
+ */
+struct Paraconf_wrapper;
+
+/** A region of the specification tree, used to report error locations
+ */
+class Yaml_region;
+
+/** The base class of the reference-counted handles to shared buffers
+ */
+class Reference_base;
+
+/** A scoped timer triggering the start and stop events of a plugin
+ */
+class Timer_event_handler;
 
 } // namespace PDI
 

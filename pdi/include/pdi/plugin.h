@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,13 +62,25 @@ public:
 
 }; // class Plugin
 
-#define PLUGIN_API_VERSION_MAJOR (0ul)
+#define PDI_PLUGIN_API_VERSION_MAJOR (0ul)
 
-#define PLUGIN_API_VERSION_MINOR (0ul)
+#define PDI_PLUGIN_API_VERSION_MINOR (0ul)
 
-#define PLUGIN_API_VERSION_PATCH (1ul)
+#define PDI_PLUGIN_API_VERSION_PATCH (1ul)
 
-#define PLUGIN_API_VERSION ((PLUGIN_API_VERSION_MAJOR << 24) + (PLUGIN_API_VERSION_MINOR << 16) + (PLUGIN_API_VERSION_PATCH << 8))
+#define PDI_PLUGIN_API_VERSION ((PDI_PLUGIN_API_VERSION_MAJOR << 24) + (PDI_PLUGIN_API_VERSION_MINOR << 16) + (PDI_PLUGIN_API_VERSION_PATCH << 8))
+
+/// \deprecated use PDI_PLUGIN_API_VERSION_MAJOR instead
+#define PLUGIN_API_VERSION_MAJOR PDI_PLUGIN_API_VERSION_MAJOR
+
+/// \deprecated use PDI_PLUGIN_API_VERSION_MINOR instead
+#define PLUGIN_API_VERSION_MINOR PDI_PLUGIN_API_VERSION_MINOR
+
+/// \deprecated use PDI_PLUGIN_API_VERSION_PATCH instead
+#define PLUGIN_API_VERSION_PATCH PDI_PLUGIN_API_VERSION_PATCH
+
+/// \deprecated use PDI_PLUGIN_API_VERSION instead
+#define PLUGIN_API_VERSION PDI_PLUGIN_API_VERSION
 
 /** Checks compatibility with a plugin API
  *
@@ -191,7 +204,7 @@ typename std::enable_if<!has_pretty_name<T>::value, std::string>::type plugin_pr
 	    ) extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf)                     \
 	{                                                                                                                                                \
 		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf}};                                                                \
-		::PDI::plugin_api_version(PLUGIN_API_VERSION);                                                                                               \
+		::PDI::plugin_api_version(PDI_PLUGIN_API_VERSION);                                                                                           \
 		return plugin;                                                                                                                               \
 	}                                                                                                                                                \
 	extern "C" ::std::pair<::std::unordered_set<::std::string>, ::std::unordered_set<::std::string>> PDI_EXPORT PDI_plugin_##name##_dependencies()   \
