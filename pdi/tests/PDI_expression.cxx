@@ -955,7 +955,7 @@ INSTANTIATE_TEST_SUITE_P(, DoubleExpressionTest, ::testing::Values(numeric_limit
 
 INSTANTIATE_TEST_SUITE_P(, StringExpressionTest, ::testing::Values("test_string", "s", "a+b+c", "", "-100000", "0", "100000", "output/file"));
 
-INSTANTIATE_TEST_SUITE_P(, SpecialStringExpressionTest, ::testing::Values( "output/file", "dollar\$_test", "and&", "backslash\\"));
+INSTANTIATE_TEST_SUITE_P(, SpecialStringExpressionTest, ::testing::Values("output/file", "dollar\$_test", "and&", "backslash\\"));
 
 TEST(PCTreeToRefDefault, scalar_value_long)
 {
