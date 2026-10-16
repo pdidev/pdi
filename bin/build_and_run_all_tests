@@ -56,7 +56,6 @@ cd "${TEST_DIR}"
 # Gather options
 
 MAKEFLAGS="${MAKEFLAGS:--j}"
-CMAKE_FLAGS="${CMAKE_FLAGS:-}"
 EXCLUDED_PDI_TESTS=""
 
 if [[ -n "${PDI_PLUGIN_PATH}" ]]
@@ -94,6 +93,13 @@ then
 	#             https://github.com/pdidev/test_env/issues/30
 	#             (see  https://github.com/pdidev/test_env/actions/runs/27519792247/job/81335351522)
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_spdlog=SYSTEM"
+fi
+
+
+if [[ "${PDI_SYSTEM}" = "macos" || ( "${PDI_SYSTEM}" = "ubuntu" && "x${PDI_LIBS}" = "x" ) ]]
+then
+	# Test JSON plugin for a subset of the CI, macos and ubuntu with vendored dependencies
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_JSON_PLUGIN=ON"
 fi
 
 # And now for the actual tests
