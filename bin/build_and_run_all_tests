@@ -84,6 +84,11 @@ if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_LIBS}" = "xprovided" ]]
 then
 	# Workaround: parallel NetCDF detection broken in debuntu (and absent in mpich case)
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
+	HDF5_PARALLEL_CMAKE_DIR="/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)/cmake/hdf5_${PDI_MPI}"
+	if [[ -d "${HDF5_PARALLEL_CMAKE_DIR}" ]]
+	then
+		CMAKE_FLAGS="${CMAKE_FLAGS} -DHDF5_DIR=${HDF5_PARALLEL_CMAKE_DIR}"
+	fi
 fi
 
 
