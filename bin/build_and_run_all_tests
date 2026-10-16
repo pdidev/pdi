@@ -95,6 +95,13 @@ then
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_spdlog=SYSTEM"
 fi
 
+
+if [[ "x${PDI_SYSTEM}" = "xmacos" || ( "x${PDI_SYSTEM}" =~ "xubuntu" && "x${PDI_LIBS}" = "x" ) ]]
+then
+	# Test JSON plugin for a subset of the CI, macos and ubuntu with vendored dependencies
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_JSON_PLUGIN=ON"
+fi
+
 # And now for the actual tests
 
 printf "\n\n\n\e[1;36m *** Configure, build & test the whole pdi distribution\e[m\n\n"
