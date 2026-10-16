@@ -84,6 +84,10 @@ struct StringExpressionTest: public testing::TestWithParam<const char*> {
 	MockContext context_mock;
 };
 
+struct SpecialStringExpressionTest: public testing::TestWithParam<const char*> {
+	MockContext context_mock;
+};
+
 struct AdvancedExpressionTest: public testing::Test {
 	MockContext context_mock;
 };
@@ -455,6 +459,18 @@ TEST_P(StringExpressionTest, copy_cstr)
 	Expression copy{exp};
 
 	ASSERT_EQ(exp.to_string(context_mock), copy.to_string(context_mock));
+}
+
+TEST_P(SpecialStringExpressionTest, copy_cstr)
+{
+	const char* param = GetParam();
+	string exp{param};
+	string copy{exp};
+
+	// std::cout<<"exp="<<exp<<std::endl;
+	// std::cout<<"copy="<<copy<<std::endl;
+
+	ASSERT_EQ(exp, copy);
 }
 
 /*
@@ -937,7 +953,9 @@ INSTANTIATE_TEST_SUITE_P(, LongExpressionTest, ::testing::Values(numeric_limits<
 
 INSTANTIATE_TEST_SUITE_P(, DoubleExpressionTest, ::testing::Values(numeric_limits<double>::min(), -1.0, 0.0, 1.0, numeric_limits<double>::max()));
 
-INSTANTIATE_TEST_SUITE_P(, StringExpressionTest, ::testing::Values("test_string", "s", "a+b+c", "", "-100000", "0", "100000"));
+INSTANTIATE_TEST_SUITE_P(, StringExpressionTest, ::testing::Values("test_string", "s", "a+b+c", "", "-100000", "0", "100000", "output/file"));
+
+INSTANTIATE_TEST_SUITE_P(, SpecialStringExpressionTest, ::testing::Values("output/file", "dollar\$_test", "and&", "backslash\\"));
 
 TEST(PCTreeToRefDefault, scalar_value_long)
 {

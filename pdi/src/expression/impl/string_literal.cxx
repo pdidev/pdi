@@ -122,8 +122,16 @@ unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const 
 		str += sz;
 		switch (*str) {
 		case '\\': {
-			str += 2;
-			curstr->push_back('\\');
+			if (str[1] == '$') {
+				curstr->push_back('$');
+				str += 2;
+			} else if (str[1] == '\\') {
+				curstr->push_back('\\');
+				str += 2;
+			} else {
+				curstr->push_back('\\');
+				str += 1;
+			}
 		} break;
 		case '$': {
 			switch (str[1]) {
