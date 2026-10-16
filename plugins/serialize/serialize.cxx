@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -272,7 +273,7 @@ struct serialize_plugin: PDI::Plugin {
 	 */
 	void share_serialized(const std::string& desc_name, PDI::Ref ref)
 	{
-		PDI::TimerEventHandler serialize_timer(context(), "serialize");
+		PDI::Timer_event_handler serialize_timer(context(), "serialize");
 		std::string serialized_name = m_desc_to_serialize[desc_name];
 		context().logger().debug("Serializing `{}` as `{}`", desc_name, serialized_name);
 		PDI::Datatype_sptr serialized_type = serialize_type(ref.type());
@@ -292,10 +293,8 @@ struct serialize_plugin: PDI::Plugin {
 
 			context().logger().trace("Sharing `{}' PDI_INOUT", serialized_name);
 			context().desc(serialized_name).share(serialized_ref, false, false);
-			std::function<void()> remove_callback = context().callbacks().add_data_remove_callback(
-				[this](const std::string& desc_name, PDI::Ref ref) { release_serialized(desc_name, ref); },
-				desc_name
-			);
+			std::function<void()> remove_callback
+				= context().on_data_remove([this](const std::string& desc_name, PDI::Ref ref) { release_serialized(desc_name, ref); }, desc_name);
 			m_serialized_remove_callback.emplace_back(serialized_name, remove_callback, PDI_INOUT);
 
 		} else if (PDI::Ref_r ref_r = ref) {
@@ -313,10 +312,8 @@ struct serialize_plugin: PDI::Plugin {
 			}
 			context().logger().trace("Sharing `{}' PDI_OUT", serialized_name);
 			context().desc(serialized_name).share(serialized_ref, true, false);
-			std::function<void()> remove_callback = context().callbacks().add_data_remove_callback(
-				[this](const std::string& desc_name, PDI::Ref ref) { release_serialized(desc_name, ref); },
-				desc_name
-			);
+			std::function<void()> remove_callback
+				= context().on_data_remove([this](const std::string& desc_name, PDI::Ref ref) { release_serialized(desc_name, ref); }, desc_name);
 			m_serialized_remove_callback.emplace_back(serialized_name, remove_callback, PDI_OUT);
 
 		} else if (PDI::Ref_w ref_w{ref}) {
@@ -328,10 +325,8 @@ struct serialize_plugin: PDI::Plugin {
 
 			context().logger().trace("Sharing `{}' PDI_IN", serialized_name);
 			context().desc(serialized_name).share(serialized_ref, false, false);
-			std::function<void()> remove_callback = context().callbacks().add_data_remove_callback(
-				[this](const std::string& desc_name, PDI::Ref ref) { release_serialized(desc_name, ref); },
-				desc_name
-			);
+			std::function<void()> remove_callback
+				= context().on_data_remove([this](const std::string& desc_name, PDI::Ref ref) { release_serialized(desc_name, ref); }, desc_name);
 			m_serialized_remove_callback.emplace_back(serialized_name, remove_callback, PDI_IN);
 		}
 	}
@@ -389,10 +384,7 @@ struct serialize_plugin: PDI::Plugin {
 			std::string desc_name = PDI::to_string(key);
 			m_desc_to_serialize.emplace(desc_name, PDI::to_string(value));
 			context().logger().trace("`{}' will be serialized", desc_name);
-			context().callbacks().add_data_callback(
-				[this](const std::string& desc_name, PDI::Ref ref) { share_serialized(desc_name, ref); },
-				desc_name
-			);
+			context().on_data([this](const std::string& desc_name, PDI::Ref ref) { share_serialized(desc_name, ref); }, desc_name);
 		});
 	}
 

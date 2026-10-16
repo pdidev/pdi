@@ -59,7 +59,6 @@ add_executable(PDI_unit_tests
 		parsed_modulo.cxx
 		PDI_array_datatype.cxx
 		PDI_C_API.cxx
-		PDI_callbacks.cxx
 		PDI_context.cxx
 		PDI_data_descriptor.cxx
 		PDI_datatype_attributes.cxx

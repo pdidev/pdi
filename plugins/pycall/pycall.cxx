@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,7 +62,6 @@ using pydict = pybind11::dict;
 using pymod = pybind11::module;
 using pyobj = pybind11::object;
 using namespace pybind11::literals;
-using std::cerr;
 using std::endl;
 using std::exception;
 using std::string;
@@ -153,7 +153,7 @@ public:
 			alias.expose(ctx, pyscope);
 		}
 		try {
-			PDI::TimerEventHandler pycall_timer(ctx, "pycall");
+			PDI::Timer_event_handler pycall_timer(ctx, "pycall");
 			pybind11::exec(m_code, pyscope);
 		} catch (const std::exception& e) {
 			ctx.logger().error("while calling python, caught exception: {}", e.what());
@@ -188,7 +188,7 @@ struct pycall_plugin: Plugin {
 				for (int i = 0; i < len; i++) {
 					triggers.emplace_back(to_string(PC_get(event, "[%d].exec", i)), PC_get(event, "[%d].with", i));
 				}
-				ctx.callbacks().add_event_callback(
+				ctx.on_event(
 					[&ctx, triggers](const std::string&) mutable {
 						for (auto&& trigger: triggers) {
 							trigger.call(ctx);
@@ -198,7 +198,7 @@ struct pycall_plugin: Plugin {
 				);
 			} else {
 				Trigger event_trigger{to_string(PC_get(event, ".exec")), PC_get(event, ".with")};
-				ctx.callbacks().add_event_callback(
+				ctx.on_event(
 					[&ctx, event_trigger](const std::string&) mutable { event_trigger.call(ctx); },
 					to_string(PC_get(on_event, "{%d}", map_id))
 				);
@@ -211,7 +211,7 @@ struct pycall_plugin: Plugin {
 		for (int map_id = 0; map_id < nb_data; map_id++) {
 			string data_name = to_string(PC_get(on_data, "{%d}", map_id));
 			Trigger data_trigger{to_string(PC_get(on_data, "<%d>", map_id)), data_name};
-			ctx.callbacks().add_data_callback([&ctx, data_trigger](const std::string&, Ref) mutable { data_trigger.call(ctx); }, data_name);
+			ctx.on_data([&ctx, data_trigger](const std::string&, Ref) mutable { data_trigger.call(ctx); }, data_name);
 		}
 	}
 

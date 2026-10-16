@@ -29,50 +29,6 @@
 
 #include <pdi/testing.h>
 
-using PDI::make_random;
-using PDI::random_init;
-using testing::AllOf;
-using testing::Eq;
-using testing::HasSubstr;
-using testing::StartsWith;
-using testing::StrEq;
-
-struct Simple_record {
-	int x;
-	int y;
-	int z;
-	bool operator== (const Simple_record&) const = default;
-
-	void init_from(std::uniform_random_bit_generator auto& gen)
-	{
-		random_init(gen, x);
-		random_init(gen, y);
-		random_init(gen, z);
-	}
-};
-
-std::ostream& operator<< (std::ostream& out, Simple_record const & r)
-{
-	return out << "Simple_record(x=" << r.x << ", y=" << r.y << ", z=" << r.z << ")";
-}
-
-struct Complex_record {
-	int id;
-	Simple_record value[4];
-	bool operator== (const Complex_record&) const = default;
-
-	void init_from(std::uniform_random_bit_generator auto& gen)
-	{
-		random_init(gen, id);
-		random_init(gen, value);
-	}
-};
-
-std::ostream& operator<< (std::ostream& out, Complex_record const & r)
-{
-	return out << "Complex_record(id=" << r.id << ", value=" << r.value << ")";
-}
-
 class Timer: public ::PDI::PdiTest
 {};
 
@@ -101,7 +57,7 @@ plugins:
 	EXPECT_TRUE(std::filesystem::exists("file1.h5"));
 }
 
-TEST_F(Timer, netcdf)
+TEST_F(Timer, h5_output_to)
 {
 	InitPdi(PC_parse_string(R"==(
 logging: trace
@@ -109,12 +65,10 @@ metadata: { meta_var: int }
 data: { test_var: double }
 plugins:
   timer:
-    - timer_netcdf:
-        start: "decl_netcdf_start_timer"
-        stop: "decl_netcdf_stop_timer"
+    - output_to: timer.csv
     - timer_pdi: "pdi"
-  decl_netcdf:
-    file: "file${meta_var}.nc"
+  decl_hdf5:
+    file: "file${meta_var}.h5"
     write: [ test_var ]
 )=="));
 
@@ -123,5 +77,61 @@ plugins:
 
 	auto const test_var = make_a<double>();
 	PDI_expose("test_var", &test_var, PDI_OUT);
-	EXPECT_TRUE(std::filesystem::exists("file1.nc"));
+	EXPECT_TRUE(std::filesystem::exists("file1.h5"));
+	FinalizePdi();
+	EXPECT_TRUE(std::filesystem::exists("timer.csv"));
+}
+
+TEST_F(Timer, yaml_list)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata: { meta_var: int }
+data: { test_var: double }
+plugins:
+  timer:
+    - output_to: timer.csv
+    - timer_hdf5:
+        start: "decl_hdf5_start_timer"
+        stop:  "decl_hdf5_stop_timer"
+    - timer_pdi: {start: "pdi_start_timer", stop: "pdi_stop_timer"}
+  decl_hdf5:
+    file: "file${meta_var}.h5"
+    write: [ test_var ]
+)=="));
+
+	int const meta_var = 1;
+	PDI_expose("meta_var", &meta_var, PDI_OUT);
+
+	auto const test_var = make_a<double>();
+	PDI_expose("test_var", &test_var, PDI_OUT);
+	EXPECT_TRUE(std::filesystem::exists("file1.h5"));
+	FinalizePdi();
+	EXPECT_TRUE(std::filesystem::exists("timer.csv"));
+}
+
+TEST_F(Timer, yaml_map)
+{
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+metadata: { meta_var: int }
+data: { test_var: double }
+plugins:
+  timer:
+    output_to: timer.csv
+    timer_hdf5: "hdf5"
+    timer_pdi: ["pdi"]
+  decl_hdf5:
+    file: "file${meta_var}.h5"
+    write: [ test_var ]
+)=="));
+
+	int const meta_var = 1;
+	PDI_expose("meta_var", &meta_var, PDI_OUT);
+
+	auto const test_var = make_a<double>();
+	PDI_expose("test_var", &test_var, PDI_OUT);
+	EXPECT_TRUE(std::filesystem::exists("file1.h5"));
+	FinalizePdi();
+	EXPECT_TRUE(std::filesystem::exists("timer.csv"));
 }

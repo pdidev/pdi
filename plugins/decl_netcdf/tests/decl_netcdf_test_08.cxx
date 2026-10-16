@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -45,6 +46,20 @@ struct Record_t {
 		random_init(gen, double_array);
 	}
 };
+
+std::ostream& operator<< (std::ostream& out, Record_t const & r)
+{
+	out << "Record_t(int_scalar=" << r.int_scalar << ", double_array=(";
+
+	const char* sep = "";
+	for (auto&& value: r.double_array) {
+		out << sep << value;
+		sep = ", ";
+	}
+	out << "))";
+
+	return out;
+}
 
 class DeclNetcdf: public ::PDI::PdiTest
 {};

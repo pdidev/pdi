@@ -12,6 +12,63 @@ and this project adheres to
 ### For users
 
 #### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+* Fix YAML index mismatch between Paraconf and LibYAML. 
+  [#759](https://github.com/pdidev/pdi/issues/759)
+* Corrected an invalid test that prevented a deprecation warning message for
+  order of arrays to ever be shown. This fixes
+  [#758](https://github.com/pdidev/pdi/issues/758).
+* Improved the error message if one test in Decl'NetCDF fails
+  [#739](https://github.com/pdidev/pdi/issues/739)
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+* Merged `Callbacks` into `Global_context` and renamed the callback functions,
+  as per [#720](https://github.com/pdidev/pdi/issues/720)
+* Renamed `PDI::TimerEventHandler` to `PDI::Timer_event_handler` to follow the
+  class naming convention, part of
+  [#755](https://github.com/pdidev/pdi/issues/755)
+* Renamed the `PLUGIN_API_VERSION*` macros to `PDI_PLUGIN_API_VERSION*` to
+  follow the macro naming convention, part of
+  [#755](https://github.com/pdidev/pdi/issues/755)
+
+#### Deprecated
+* `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
+  `PLUGIN_API_VERSION_MAJOR`, `PLUGIN_API_VERSION_MINOR` and
+  `PLUGIN_API_VERSION_PATCH` macros are deprecated in favour of their
+  correctly named replacements, part of
+  [#755](https://github.com/pdidev/pdi/issues/755)
+
+#### Removed
+* Removed performance micro-benchmarks of the core PDI library that were
+  intended as examples but provided only misleading information and prevented
+  refactoring (Decl'HDF5 benchmarks remain for now). This partially answers
+  [#733](https://github.com/pdidev/pdi/issues/733)
+
+#### Fixed
+
+#### Security
+
+
+
+## [1.12.0] - 2026-07-29
+
+### For users
+
+#### Added
 * A timer plugin is added to reflect the time consumed by pdi and its plugins.
   [#710](https://github.com/pdidev/pdi/issues/710)
 * Add test for HDF5 precision conversion [#708](https://github.com/pdidev/pdi/issues/708)
@@ -36,19 +93,11 @@ and this project adheres to
 * Added new checkpointing plugin using the [VeloC library](https://veloc.readthedocs.io/en/latest/userguide.html)
   as requested in [#726](https://github.com/pdidev/pdi/issues/726)
 
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
 #### Fixed
 * Migrate from `TYPED_TEST_CASE` to `TYPED_TEST_SUITE`, from `INSTANTIATE_TEST_CASE_P`
   to `INSTANTIATE_TEST_SUITE_P` to resolve deprecation warnings.
 * Resolve compilation warning in `decl_netcdf_test_08`
  [#716](https://github.com/pdidev/pdi/issues/716)
-
-#### Security
 
 
 ### For plugin developers
@@ -57,16 +106,8 @@ and this project adheres to
 * Support conversion of `Yaml_region` to a `string`
   [#702](https://github.com/pdidev/pdi/issues/702)
 
-#### Changed
-
-#### Deprecated
-
 #### Removed
 * `PDI::Error` is now an abstract class and should never be used directly.
-
-#### Fixed
-
-#### Security
 
 
 

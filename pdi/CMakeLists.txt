@@ -50,13 +50,11 @@ set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
 
 # Build options
 
-option(BUILD_BENCHMARKING  "Build PDI benchmarks" ON)
 option(BUILD_DOCUMENTATION "Build documentation" ON)
 option(BUILD_SHARED_LIBS   "Build shared libraries rather than static ones" ON)
 option(BUILD_TESTING       "Build tests" ON)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
 option(BUILD_PYTHON        "Enable Python support" "${BUILD_UNSTABLE}")
-option(ENABLE_BENCHMARKING "Activate benchmarks in the test suite" OFF)
 
 if(NOT "${BUILD_SHARED_LIBS}") 
 	message(FATAL_ERROR "Building PDI as a static lib is not supported currently")
@@ -132,7 +130,6 @@ configure_file(src/version.h.in pdi/version.h @ONLY)
 
 set(PDI_C_SRC
 		src/array_datatype.cxx
-		src/callbacks.cxx
 		src/context.cxx
 		src/context_proxy.cxx
 		src/data_descriptor.cxx
@@ -345,10 +342,6 @@ endif()
 
 if("${BUILD_TESTING}")
 	add_subdirectory(tests tests)
-endif()
-
-if("${BUILD_BENCHMARKING}")
-	add_subdirectory(benchmarks)
 endif()
 
 # Installable config

@@ -40,6 +40,7 @@
 
 namespace PDI {
 
+// TODO: this is exported for now to make tests possible, this should be fixed
 class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 {
 	friend class Global_context;

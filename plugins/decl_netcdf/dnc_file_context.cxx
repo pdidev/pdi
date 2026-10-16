@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -156,7 +157,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 	}
 
 	for (auto&& event: events) {
-		m_ctx.callbacks().add_event_callback([this](const std::string&) { this->execute(); }, event);
+		m_ctx.on_event([this](const std::string&) { this->execute(); }, event);
 	}
 
 	if (events.empty()) {
@@ -172,7 +173,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 			desc_triggers.emplace(desc_io_pair.first);
 		}
 		for (auto&& desc_trigger: desc_triggers) {
-			m_ctx.callbacks().add_data_callback([this](const std::string& desc_name, PDI::Ref r) { this->execute(desc_name, r); }, desc_trigger);
+			m_ctx.on_data([this](const std::string& desc_name, PDI::Ref r) { this->execute(desc_name, r); }, desc_trigger);
 		}
 	}
 }
@@ -212,7 +213,7 @@ Dnc_variable* Dnc_file_context::variable(const std::string& desc_name, const std
 
 void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 {
-	PDI::TimerEventHandler netcdf_timer(m_ctx, "decl_netcdf");
+	PDI::Timer_event_handler netcdf_timer(m_ctx, "decl_netcdf");
 	if (m_when.to_long(m_ctx)) {
 		std::list<Dnc_variable> variables_holder; // memory for Variables created from descriptor
 
@@ -281,7 +282,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 
 void Dnc_file_context::execute()
 {
-	PDI::TimerEventHandler netcdf_timer(m_ctx, "decl_netcdf");
+	PDI::Timer_event_handler netcdf_timer(m_ctx, "decl_netcdf");
 	if (m_when.to_long(m_ctx)) {
 		std::list<Dnc_variable> variables_holder;
 		std::vector<Dnc_variable*> variables_to_get;

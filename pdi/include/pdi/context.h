@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +33,6 @@
 #include <unordered_map>
 
 #include <pdi/pdi_fwd.h>
-#include <pdi/callbacks.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/datatype_template.h>
 #include <pdi/logger.h>
@@ -114,11 +114,6 @@ public:
 	 */
 	virtual Logger& logger() = 0;
 
-	/** Callbacks of the context
-	 * \return context callbacks
-	 */
-	virtual Callbacks& callbacks() = 0;
-
 	/** Creates a new datatype template from a paraconf-style config
 	 * \param[in] node the configuration to read
 	 *
@@ -133,26 +128,79 @@ public:
 	 */
 	virtual void add_datatype(const std::string& name, Datatype_template_parser parser) = 0;
 
-	/// Finalizes PDI and exits application
-	virtual void finalize_and_exit() = 0;
+	/** Adds new init callback to context
+	 *
+	 * \param[in] callback function to call when data and metadata are loaded
+	 *
+	 * \return function that removes callback
+	 */
+	virtual std::function<void()> on_init(const std::function<void()>& callback) = 0;
+
+	/** Adds new data callback to context
+	 *
+	 * \param[in] callback function to call when data is being available
+	 * \param[in] name the name of the data on which call the callback, if not specified it's called on any data
+	 *
+	 * \return function that removes callback
+	 */
+	virtual std::function<void()> on_data(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {}) = 0;
+
+	/** Adds new data remove callback to context
+	 *
+	 * \param[in] callback function to call when data is reclaimed/released
+	 * \param[in] name the name of the data on which call the callback, if not specified it's called on any data
+	 *
+	 * \return function that removes callback
+	 */
+	virtual std::function<void()> on_data_remove(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {}) = 0;
+
+	/** Adds new event callback to context
+	 *
+	 * \param[in] callback function to call when event is called
+	 * \param[in] name the name of the event on which call the callback, if not specified it's called on any event
+	 *
+	 * \return function that removes callback
+	 */
+	virtual std::function<void()> on_event(const std::function<void(const std::string&)>& callback, const std::string& name = {}) = 0;
+
+	/** Adds new empty desc access callback to context
+	 *
+	 * \param[in] callback function to call when event is called
+	 * \param[in] name the name of the data on which call the callback, if not specified it's called on any data
+	 *
+	 * \return function that removes callback
+	 */
+	virtual std::function<void()> on_missing_data(const std::function<void(const std::string&)>& callback, const std::string& name = {}) = 0;
 };
 
-class PDI_EXPORT TimerEventHandler
+/** A scoped timer for a plugin operation
+ *
+ * Triggers the `<plugin_name>_start_timer` event on construction and the
+ * matching `<plugin_name>_stop_timer` event on destruction, so that the timer
+ * plugin can measure the duration of the enclosing scope.
+ */
+class PDI_EXPORT Timer_event_handler
 {
 private:
 	Context& m_ctx;
+
 	const std::string m_plugin_name;
 
 public:
-	TimerEventHandler(Context& ctx, const std::string& plugin_name)
-		: m_ctx(ctx)
-		, m_plugin_name(plugin_name)
-	{
-		m_ctx.event((plugin_name + "_start_timer").c_str());
-	}
+	/** Triggers the start event of the timer
+	 *
+	 * \param[in] ctx the context in which to trigger the events
+	 * \param[in] plugin_name the name of the plugin the events are named after
+	 */
+	Timer_event_handler(Context& ctx, const std::string& plugin_name);
 
-	~TimerEventHandler() { m_ctx.event((m_plugin_name + "_stop_timer").c_str()); }
+	/** Triggers the stop event of the timer
+	 */
+	~Timer_event_handler();
 };
+
+/// \deprecated use Timer_event_handler instead
+using TimerEventHandler [[deprecated("use Timer_event_handler instead")]] = Timer_event_handler;
 
 } // namespace PDI
 
