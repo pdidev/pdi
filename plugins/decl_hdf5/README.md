@@ -78,7 +78,7 @@ The possible values for the keys are as follow:
       subfiling:
         count: 4              # generate 4 subfiles
         policy: CONTINUE      # Fallback to standard HDF5 if necessary
-        stripe_size: 8388608  # 8MB stripes
+        stripe_size: 8388608  # 8MB stripes (8*1024*1024)
         ioc_selection: SELECT_IOC_TOTAL
       ```
     * shorthand configuration:
