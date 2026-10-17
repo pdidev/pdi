@@ -1,6 +1,7 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,33 +26,33 @@
 
 #include <pdi/context.h>
 #include <pdi/expression.h>
+#include <pdi/logger.h>
 #include <pdi/ref_any.h>
 
 #include "expose_operation.h"
 
 namespace set_value {
 
-Expose_operation::Expose_operation(PDI::Context& ctx, PC_tree_t list_of_values)
-	: Operation{ctx}
+Expose_operation::Expose_operation(PDI::Logger& logger, PC_tree_t list_of_values)
 {
 	size_t list_size = PDI::len(list_of_values);
-	context().logger().debug("Expose operation count: {}", list_size);
+	logger.debug("Expose operation count: {}", list_size);
 	for (int i = 0; i < list_size; i++) {
 		PC_tree_t value_element = PC_get(list_of_values, "[%d]", i);
 		std::string data_name{PDI::to_string(PC_get(value_element, "{0}"))};
-		context().logger().trace("\t {}: {}", i, data_name);
+		logger.trace("\t {}: {}", i, data_name);
 		m_data_to_expose.emplace_back(std::move(data_name), PC_get(value_element, "<0>"));
 	}
 }
 
-void Expose_operation::execute()
+void Expose_operation::execute(PDI::Logger& logger, PDI::Context& ctx)
 {
 	for (auto& data_to_expose: m_data_to_expose) {
-		PDI::Data_descriptor& data_desc = context().desc(data_to_expose.first);
-		PDI::Ref value_ref{PDI::Expression{data_to_expose.second}.to_ref(context(), data_desc.default_type()->evaluate(context()))};
-		context().logger().trace("Exposing {} with size {} B", data_to_expose.first, value_ref.type()->buffersize());
+		PDI::Data_descriptor& data_desc = ctx.desc(data_to_expose.first);
+		PDI::Ref value_ref{PDI::Expression{data_to_expose.second}.to_ref(ctx, data_desc.default_type()->evaluate(ctx))};
+		logger.trace("Exposing {} with size {} B", data_to_expose.first, value_ref.type()->buffersize());
 		data_desc.share(value_ref, false, false);
-		context().desc(data_to_expose.first).release();
+		ctx.desc(data_to_expose.first).release();
 	}
 }
 

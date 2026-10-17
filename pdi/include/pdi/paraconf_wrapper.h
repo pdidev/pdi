@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -208,19 +209,22 @@ std::string PDI_EXPORT to_string(PC_tree_t tree, const std::string& dflt);
 
 /** Returns the boolean value of a scalar node
  *
- * throws an Error if the provided tree is in error
+ * The node spells a boolean as YAML 1.1 does: `y`, `yes`, `true` or `on` for true, `n`, `no`, `false` or `off` for false, each in lower case,
+ * capitalized or in upper case.
  *
  * \param[in] tree the node
  * \return the boolean value of the scalar node
+ * \throw Spectree_error if the provided tree is in error, is not a scalar, or spells no boolean
  */
 bool PDI_EXPORT to_bool(PC_tree_t tree);
 
 /** Returns the boolean value of a scalar node
  *
- * returns the default value in case of error
+ * The node spells a boolean as YAML 1.1 does: `y`, `yes`, `true` or `on` for true, `n`, `no`, `false` or `off` for false, each in lower case,
+ * capitalized or in upper case.
  *
  * \param[in] tree the node
- * \param[in] dflt the default value in case of error
+ * \param[in] dflt the default value when the tree is in error, is not a scalar, or spells no boolean
  * \return the boolean value of the scalar node
  */
 bool PDI_EXPORT to_bool(PC_tree_t tree, bool dflt);

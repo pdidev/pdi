@@ -1,5 +1,7 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,76 +25,52 @@
  ******************************************************************************/
 
 #include <string>
-#include <unordered_map>
-
-#include <spdlog/spdlog.h>
 
 #include <pdi/context.h>
-#include <pdi/context_proxy.h>
 #include <pdi/error.h>
 #include <pdi/expression.h>
 #include <pdi/logger.h>
-#include <pdi/ref_any.h>
 
 #include "logger_operation.h"
 
 namespace set_value {
 
-Logger_operation::Logger_operation(PDI::Context& ctx, PC_tree_t logger_node)
-	: Operation{ctx}
+using std::string;
+
+Logger_operation::Logger_operation(PDI::Logger& logger, PC_tree_t logger_node)
 {
-	context().logger().debug("Logger operation:");
+	logger.debug("Logger operation:");
 	PC_tree_t level_node = PC_get(logger_node, ".level");
 	if (!PC_status(level_node)) {
-		context().logger().debug("\tlevel");
+		logger.debug("\tlevel");
 		m_level = level_node;
 	}
 
 	PC_tree_t pattern_node = PC_get(logger_node, ".pattern");
 	if (!PC_status(pattern_node)) {
-		context().logger().debug("\tpattern");
+		logger.debug("\tpattern");
 		m_pattern = PDI::to_string(pattern_node);
 	}
 
 	PC_tree_t evaluate_node = PC_get(logger_node, ".evaluate");
 	if (!PC_status(evaluate_node)) {
-		context().logger().debug("\tevaluate");
-		m_evaluate = static_cast<bool>(PDI::Expression(evaluate_node).to_long(context()));
+		throw PDI::Spectree_error(evaluate_node, "the `evaluate' key is not supported, use `pattern' instead");
 	}
 }
 
-void Logger_operation::execute()
+void Logger_operation::execute(PDI::Logger& logger, PDI::Context& ctx)
 {
-	try {
-		PDI::Context_proxy& ctx_proxy = dynamic_cast<PDI::Context_proxy&>(context());
-		if (m_level) {
-			static const std::unordered_map<std::string, spdlog::level::level_enum> level_map
-				= {{"trace", spdlog::level::level_enum::trace},
-			       {"debug", spdlog::level::level_enum::debug},
-			       {"info", spdlog::level::level_enum::info},
-			       {"warn", spdlog::level::level_enum::warn},
-			       {"error", spdlog::level::level_enum::err},
-			       {"off", spdlog::level::level_enum::off}};
-			std::string level_str = m_level.to_string(context());
-			auto level_it = level_map.find(level_str);
-			if (level_it != level_map.end()) {
-				context().logger().warn("Changing level to {}", level_str);
-				ctx_proxy.pdi_core_logger().level(level_map.find(level_str)->second);
-			} else {
-				context().logger().warn("Invalid logging level: {}. Available: 'trace', 'debug', 'info', 'warn', 'error', 'off'.", level_str);
-			}
-		}
-		if (!m_pattern.empty()) {
-			context().logger().global_pattern(m_pattern);
-			context().logger().evaluate_global_pattern(context());
-		}
-		if (m_evaluate) {
-			context().logger().evaluate_global_pattern(context());
-		}
-
-	} catch (std::bad_cast&) {
-		context().logger().warn("Cannot cast Context to Context_proxy");
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	if (m_level) {
+		string level_str = m_level.to_string(ctx);
+		logger.info("Changing default logging level to `{}'", level_str);
+		logger.default_level(std::move(level_str));
 	}
+	if (!m_pattern.empty()) {
+		logger.default_pattern(m_pattern, ctx);
+	}
+#pragma GCC diagnostic pop
 }
 
 } // namespace set_value

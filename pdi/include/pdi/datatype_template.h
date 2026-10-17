@@ -1,6 +1,7 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -86,9 +87,10 @@ public:
 	/**
 	 * Adds to the context the basic Array, Record, C and Fortran datatypes
 	 *
+	 * \param[in] logger the logger through which the parsers of these datatypes warn, it must outlive the context
 	 * \param[in,out] ctx the context where to add the datatypes
 	 */
-	static void load_basic_datatypes(Context& ctx);
+	static void load_basic_datatypes(Logger& logger, Context& ctx);
 
 	/**
 	 * Adds to the context the user defined datatypes

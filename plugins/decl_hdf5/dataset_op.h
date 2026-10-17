@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -105,13 +105,14 @@ private:
 
 	/** Creates dataset plist to pass to H5D_create
 	 *
+	 * \param logger the logger to use
 	 * \param ctx the context in which to operate
 	 * \param dataset_type type of the dataset
 	 * \param dataset_name name of the dataset
 	 *
 	 * \return dataset creation plist hid_t
 	 */
-	hid_t dataset_creation_plist(PDI::Context& ctx, const PDI::Datatype* dataset_type, const std::string& dataset_name);
+	hid_t dataset_creation_plist(PDI::Logger& logger, PDI::Context& ctx, const PDI::Datatype* dataset_type, const std::string& dataset_name);
 
 public:
 	/** Builds a Dataset_op from its yaml config
@@ -170,31 +171,32 @@ public:
 
 	/** Set deflate dataset level
 	 *
-	 * \param ctx the context in which to operate
+	 * \param logger the logger to use
 	 * \param level level of the deflate
 	 */
-	void deflate(PDI::Context& ctx, PDI::Expression level);
+	void deflate(PDI::Logger& logger, PDI::Expression level);
 
 	/** Set fletcher dataset
 	 *
-	 * \param ctx the context in which to operate
+	 * \param logger the logger to use
 	 * \param value turn on fletcher if true, turn off if false
 	 */
-	void fletcher(PDI::Context& ctx, PDI::Expression value);
+	void fletcher(PDI::Logger& logger, PDI::Expression value);
 
 	/** Executes the requested operation.
 	 *
+	 * \param logger the logger to use
 	 * \param ctx the context in which to operate
 	 * \param h5_file the already opened HDF5 file id
 	 * \param use_mpio whether the hdf5 read/write is parallel
 	 * \param dsets the vector of the explicitly typed datasets defined in Yaml file.
 	 */
-	void execute(PDI::Context& ctx, hid_t h5_file, bool use_mpio, const std::vector<Dataset_explicit_type>& dsets);
+	void execute(PDI::Logger& logger, PDI::Context& ctx, hid_t h5_file, bool use_mpio, const std::vector<Dataset_explicit_type>& dsets);
 
 private:
-	void do_read(PDI::Context& ctx, hid_t h5_file, hid_t read_lst);
+	void do_read(PDI::Logger& logger, PDI::Context& ctx, hid_t h5_file, hid_t read_lst);
 
-	void do_write(PDI::Context& ctx, hid_t h5_file, hid_t xfer_lst, const std::vector<Dataset_explicit_type>& dsets);
+	void do_write(PDI::Logger& logger, PDI::Context& ctx, hid_t h5_file, hid_t xfer_lst, const std::vector<Dataset_explicit_type>& dsets);
 };
 
 } // namespace decl_hdf5

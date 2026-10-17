@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -41,6 +41,9 @@ namespace decl_netcdf {
 class Dnc_netcdf_file
 {
 	using nc_id = int;
+
+	/// Logger of this opened file
+	PDI::Logger& m_logger;
 
 	/// Context of this opened file
 	PDI::Context& m_ctx;
@@ -89,12 +92,13 @@ class Dnc_netcdf_file
 public:
 	/** Opens NetCDF files with given right flag.
 	 *
+	 * \param logger logger for this file
 	 * \param ctx context for this file
 	 * \param filename path to the file to be opened
 	 * \param right_flag right flag which be used to open file
 	 * \param mpi_comm_expr if not empty, opens NetCDF file in parallel using this MPI_Comm
 	 */
-	Dnc_netcdf_file(PDI::Context& ctx, const std::string& filename, int rights_flag, PDI::Expression mpi_comm_expr);
+	Dnc_netcdf_file(PDI::Logger& logger, PDI::Context& ctx, const std::string& filename, int rights_flag, PDI::Expression mpi_comm_expr);
 
 	/// Deleted copy constructor
 	Dnc_netcdf_file(const Dnc_netcdf_file& other) = delete;

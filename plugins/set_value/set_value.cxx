@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2026 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -60,8 +61,8 @@ struct set_value_plugin: PDI::Plugin {
 	{
 		PC_tree_t on_init = PC_get(config, ".on_init");
 		if (!PC_status(on_init)) {
-			m_triggers_list.emplace_back(context(), on_init);
-			m_triggers_list.back().execute();
+			m_triggers_list.emplace_back(logger(), on_init);
+			m_triggers_list.back().execute(logger(), context());
 		}
 
 		PC_tree_t on_event = PC_get(config, ".on_event");
@@ -70,9 +71,9 @@ struct set_value_plugin: PDI::Plugin {
 			for (int i = 0; i < map_len; i++) {
 				std::string event_name = PDI::to_string(PC_get(on_event, "{%d}", i));
 				PC_tree_t value_node = PC_get(on_event, "<%d>", i);
-				m_triggers_list.emplace_back(context(), value_node);
+				m_triggers_list.emplace_back(logger(), value_node);
 				set_value::Trigger& trigger = m_triggers_list.back();
-				context().on_event([&trigger](const std::string&) { trigger.execute(); }, event_name);
+				context().on_event([this, &trigger](const std::string&) { trigger.execute(this->logger(), this->context()); }, event_name);
 			}
 		}
 
@@ -82,32 +83,32 @@ struct set_value_plugin: PDI::Plugin {
 			for (int i = 0; i < map_len; i++) {
 				std::string data_name = PDI::to_string(PC_get(on_data, "{%d}", i));
 				PC_tree_t value_node = PC_get(on_data, "<%d>", i);
-				m_triggers_list.emplace_back(context(), value_node);
+				m_triggers_list.emplace_back(logger(), value_node);
 				set_value::Trigger& trigger = m_triggers_list.back();
-				context().on_data([&trigger](const std::string&, PDI::Ref) { trigger.execute(); }, data_name);
+				context().on_data([this, &trigger](const std::string&, PDI::Ref) { trigger.execute(this->logger(), this->context()); }, data_name);
 			}
 		}
 
 		PC_tree_t on_finalize = PC_get(config, ".on_finalize");
 		if (!PC_status(on_finalize)) {
-			m_trigger_on_finalize.emplace_back(context(), on_finalize);
+			m_trigger_on_finalize.emplace_back(logger(), on_finalize);
 		}
 	}
 
-	set_value_plugin(PDI::Context& ctx, PC_tree_t config)
-		: PDI::Plugin{ctx}
+	set_value_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t config)
+		: PDI::Plugin{logger, ctx}
 	{
 		// initialize after all descriptors are loaded, user can set value on_init
 		context().on_init([this, config]() { this->load_config(config); });
-		context().logger().info("Plugin loaded successfully");
+		logger.info("Plugin loaded successfully");
 	}
 
 	~set_value_plugin()
 	{
 		for (auto&& trigger: m_trigger_on_finalize) {
-			trigger.execute();
+			trigger.execute(logger(), context());
 		}
-		context().logger().info("Closing plugin");
+		logger().info("Closing plugin");
 	}
 
 	/** Pretty name for the plugin that will be shown in the logger

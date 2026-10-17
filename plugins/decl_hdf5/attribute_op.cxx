@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,6 +25,7 @@
  ******************************************************************************/
 
 #include <pdi/error.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 
 #include "hdf5_wrapper.h"
@@ -36,6 +38,7 @@ namespace decl_hdf5 {
 using PDI::Context;
 using PDI::each;
 using PDI::Expression;
+using PDI::Logger;
 using PDI::Ref_r;
 using PDI::Ref_w;
 using PDI::Spectree_error;
@@ -113,21 +116,21 @@ string Attribute_op::desc() const
 	return m_desc;
 }
 
-void Attribute_op::do_write(Context& ctx, hid_t h5_file) const
+void Attribute_op::do_write(Logger& logger, Context& ctx, hid_t h5_file) const
 {
-	ctx.logger().trace("Preparing for writing `{}' attribute", m_name);
+	logger.trace("Preparing for writing `{}' attribute", m_name);
 	Ref_r ref = m_value.to_ref(ctx);
 	if (!ref) {
-		ctx.logger().warn("Cannot write `{}' attribute: data not available", m_name);
+		logger.warn("Cannot write `{}' attribute: data not available", m_name);
 		return;
 	}
 
 	// cannot use H5Oopen, because HDF5 1.8 does not support opening groups
 	std::string object_path_str = m_object_path.to_string(ctx);
-	ctx.logger().trace("Trying to open `{}' as a group", object_path_str);
+	logger.trace("Trying to open `{}' as a group", object_path_str);
 	Raii_hid h5_dest = Raii_hid{H5Gopen(h5_file, object_path_str.c_str(), H5P_DEFAULT), H5Gclose};
 	if (h5_dest < 0) {
-		ctx.logger().trace("Failed to open `{}' as a group, trying as a dataset", object_path_str);
+		logger.trace("Failed to open `{}' as a group, trying as a dataset", object_path_str);
 		h5_dest = make_raii_hid(
 			H5Dopen(h5_file, object_path_str.c_str(), H5P_DEFAULT),
 			H5Dclose,
@@ -138,10 +141,10 @@ void Attribute_op::do_write(Context& ctx, hid_t h5_file) const
 	Raii_hid h5_mem_space, h5_mem_type;
 	tie(h5_mem_space, h5_mem_type) = space(ref.type());
 
-	ctx.logger().trace("Opening `{}' attribute", m_name);
+	logger.trace("Opening `{}' attribute", m_name);
 	Raii_hid attr_id = Raii_hid{H5Aopen(h5_dest, m_name.c_str(), H5P_DEFAULT), H5Aclose};
 	if (attr_id < 0) {
-		ctx.logger().trace("Cannot open `{}' attribute, creating", m_name);
+		logger.trace("Cannot open `{}' attribute, creating", m_name);
 		attr_id = make_raii_hid(
 			H5Acreate(h5_dest, m_name.c_str(), h5_mem_type, h5_mem_space, H5P_DEFAULT, H5P_DEFAULT),
 			H5Aclose,
@@ -149,38 +152,38 @@ void Attribute_op::do_write(Context& ctx, hid_t h5_file) const
 		);
 	}
 
-	ctx.logger().trace("Writing `{}' attribute", m_name);
+	logger.trace("Writing `{}' attribute", m_name);
 	if (H5Awrite(attr_id, h5_mem_type, ref.get()) < 0) {
 		handle_hdf5_err(("Cannot write " + m_name + " attribute value: ").c_str());
 	}
 
-	ctx.logger().trace("`{}' attribute write finished", m_name);
+	logger.trace("`{}' attribute write finished", m_name);
 }
 
-void Attribute_op::execute(Context& ctx, hid_t h5_file) const
+void Attribute_op::execute(Logger& logger, Context& ctx, hid_t h5_file) const
 {
 	if (m_direction == Direction::WRITE) {
-		do_write(ctx, h5_file);
+		do_write(logger, ctx, h5_file);
 	} else {
-		do_read(ctx, h5_file);
+		do_read(logger, ctx, h5_file);
 	}
 }
 
-void Attribute_op::do_read(Context& ctx, hid_t h5_file) const
+void Attribute_op::do_read(Logger& logger, Context& ctx, hid_t h5_file) const
 {
-	ctx.logger().trace("Preparing for reading `{}' attribute", m_name);
+	logger.trace("Preparing for reading `{}' attribute", m_name);
 	Ref_w ref = m_value.to_ref(ctx);
 	if (!ref) {
-		ctx.logger().warn("Cannot read `{}' attribute: data not available", m_name);
+		logger.warn("Cannot read `{}' attribute: data not available", m_name);
 		return;
 	}
 
 	// cannot use H5Oopen, because HDF5 1.8 does not support opening groups
 	std::string object_path_str = m_object_path.to_string(ctx);
-	ctx.logger().trace("Trying to open `{}' as a group", object_path_str);
+	logger.trace("Trying to open `{}' as a group", object_path_str);
 	Raii_hid h5_dest = Raii_hid{H5Gopen(h5_file, object_path_str.c_str(), H5P_DEFAULT), H5Gclose};
 	if (h5_dest < 0) {
-		ctx.logger().trace("Failed to open `{}' as a group, trying as a dataset", object_path_str);
+		logger.trace("Failed to open `{}' as a group, trying as a dataset", object_path_str);
 		h5_dest = make_raii_hid(
 			H5Dopen(h5_file, object_path_str.c_str(), H5P_DEFAULT),
 			H5Dclose,
@@ -191,16 +194,16 @@ void Attribute_op::do_read(Context& ctx, hid_t h5_file) const
 	Raii_hid h5_mem_space, h5_mem_type;
 	tie(h5_mem_space, h5_mem_type) = space(ref.type());
 
-	ctx.logger().trace("Opening `{}' attribute", m_name);
+	logger.trace("Opening `{}' attribute", m_name);
 	Raii_hid attr_id
 		= make_raii_hid(H5Aopen(h5_dest, m_name.c_str(), H5P_DEFAULT), H5Aclose, ("Cannot open " + m_name + " attribute value: ").c_str());
 
-	ctx.logger().trace("Reading `{}' attribute", m_name);
+	logger.trace("Reading `{}' attribute", m_name);
 	if (H5Aread(attr_id, h5_mem_type, ref.get()) < 0) {
 		handle_hdf5_err(("Cannot read " + m_name + " attribute value: ").c_str());
 	}
 
-	ctx.logger().trace("`{}' attribute read finished", m_name);
+	logger.trace("`{}' attribute read finished", m_name);
 }
 
 } // namespace decl_hdf5

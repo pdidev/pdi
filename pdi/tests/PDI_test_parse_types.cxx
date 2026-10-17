@@ -42,13 +42,13 @@
 #include <pdi/scalar_datatype.h>
 #include <pdi/tuple_datatype.h>
 
-#include "global_context.h"
+#include "data_store.h"
 
 
 using PDI::Array_datatype;
+using PDI::Data_store;
 using PDI::Datatype;
 using PDI::Datatype_template;
-using PDI::Global_context;
 using PDI::Paraconf_wrapper;
 using PDI::Pointer_datatype;
 using PDI::Record_datatype;
@@ -83,9 +83,9 @@ struct PositiveTypeParseTest: public ::testing::TestWithParam<param_pair> {
  */
 TEST_P(PositiveTypeParseTest, parse)
 {
-	Global_context g_context{this->conf};
+	Data_store g_store{this->conf};
 	auto&& params = GetParam();
-	auto&& parsed_datatype = g_context.datatype(PC_parse_string(params.first.c_str()))->evaluate(g_context);
+	auto&& parsed_datatype = g_store.datatype(PC_parse_string(params.first.c_str()))->evaluate(g_store);
 	ASSERT_TRUE(*parsed_datatype == *params.second)
 		<< "When parsing: \"" << params.first << "\"" << std::endl
 		<< "Expected: \"" << params.second->debug_string() << "\"" << std::endl
@@ -110,8 +110,8 @@ struct NegativeTypeParseTest: public ::testing::TestWithParam<string> {
  */
 TEST_P(NegativeTypeParseTest, parse)
 {
-	Global_context g_context{this->conf};
-	ASSERT_THROW(g_context.datatype(PC_parse_string(GetParam().c_str())), PDI::Error);
+	Data_store g_store{this->conf};
+	ASSERT_THROW(g_store.datatype(PC_parse_string(GetParam().c_str())), PDI::Error);
 }
 
 vector<param_pair> scalar_types{

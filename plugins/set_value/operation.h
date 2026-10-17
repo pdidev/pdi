@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -31,27 +32,15 @@ namespace set_value {
 
 class Operation
 {
-	/// Context of the operation
-	PDI::Context& m_ctx;
-
-protected:
-	/** Getter of context
-     * \return context of the operation
-     */
-	PDI::Context& context();
-
 public:
-	/** Creates operation
-     * \param[in] ctx context of the operation
-     * \param[in] release_value_node yaml config tree of operation
-     */
-	Operation(PDI::Context& ctx);
+	/// Destroys the operation
+	virtual ~Operation();
 
-	/// Triggers an operation
-	virtual void execute() = 0;
-
-	/// Destroys operation
-	virtual ~Operation() = default;
+	/** Triggers the execution of the operation
+	 * \param[in] logger the logger to use
+	 * \param[in] ctx context of the operation
+	 */
+	virtual void execute(PDI::Logger& logger, PDI::Context& ctx) = 0;
 };
 
 } // namespace set_value

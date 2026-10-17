@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,8 +24,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_GLOBAL_CONTEXT_H_
-#define PDI_GLOBAL_CONTEXT_H_
+#ifndef PDI_DATA_STORE_H_
+#define PDI_DATA_STORE_H_
 
 #include <list>
 #include <map>
@@ -35,27 +36,27 @@
 
 #include "pdi/pdi_fwd.h"
 #include "pdi/context.h"
-#include "pdi/context_proxy.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/logger.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
 
+#include "pdi_logger.h"
 #include "plugin_store.h"
 
 namespace PDI {
 
 // this is marked PDI_EXPORT because this is the entry point for language support libraries and should therefore be available to them
-class PDI_EXPORT Global_context: public Context
+class PDI_EXPORT Data_store: public Context
 {
 private:
 	friend class Data_descriptor_impl;
 
 	/// The singleton Context instance
-	static std::unique_ptr<Global_context> s_context;
+	static std::unique_ptr<Data_store> s_store;
 
 	/// Global logger of PDI, should be constructed first, destroyed last
-	Logger m_logger;
+	Pdi_logger m_logger;
 
 	/// Datatype_template constructors available in PDI
 	std::unordered_map<std::string, Datatype_template_parser> m_datatype_parsers;
@@ -129,9 +130,9 @@ private:
 	 */
 	std::multimap<std::string, std::function<void(const std::string&)>> m_named_empty_desc_access_callbacks;
 
-	Global_context(const Global_context&) = delete;
+	Data_store(const Data_store&) = delete;
 
-	Global_context(Global_context&&) = delete;
+	Data_store(Data_store&&) = delete;
 
 	/// Calls init callbacks
 	void notify_init() const;
@@ -163,13 +164,13 @@ public:
 
 	static bool initialized();
 
-	static Global_context& context();
+	static Data_store& store();
 
 	static void finalize();
 
-	Global_context(PC_tree_t conf);
+	Data_store(PC_tree_t conf);
 
-	~Global_context() override;
+	~Data_store() override;
 
 	Data_descriptor& desc(const std::string& name) override;
 
@@ -187,7 +188,11 @@ public:
 
 	void event(const char* name) override;
 
-	Logger& logger() override;
+	/** Access the PDI logger, that holds the logging infrastructure
+	 *
+	 * \return the PDI logger
+	 */
+	Pdi_logger& logger();
 
 	Datatype_template_sptr datatype(PC_tree_t node) override;
 
@@ -206,4 +211,4 @@ public:
 
 } // namespace PDI
 
-#endif // PDI_GLOBAL_CONTEXT_H_
+#endif // PDI_DATA_STORE_H_

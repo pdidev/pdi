@@ -12,12 +12,40 @@ and this project adheres to
 ### For users
 
 #### Added
+* The top-level `logging` section can define named `outputs`, each of a `kind`,
+  `file` at a `path`, `stdout` or `stderr`, with a `level` and a `pattern` of
+  its own.
+  Its `core` key sets the level of the messages of PDI itself, and the outputs
+  they skip with `disabled_outputs`, which the `logging` section of a plugin
+  accepts too.
+  Part of [#552](https://github.com/pdidev/pdi/issues/552)
 
 #### Changed
+* An invalid logging level, in a `logging` section or in a Set-value `logger`
+  operation, is now an error instead of a warning; level names ignore case, and
+  `warning`, `err` and `critical` are accepted too.
+  A logging pattern ending with a lone `%` is now an error as well.
+  Both answer [#813](https://github.com/pdidev/pdi/issues/813)
+* An unknown key in a `logging` section is now an error instead of being
+  ignored.
+  Part of [#552](https://github.com/pdidev/pdi/issues/552)
+* The `%n` flag of a logging pattern now shows `PDI/<plugin>` for the messages
+  of a plugin, instead of the name of the plugin alone.
+  Part of [#552](https://github.com/pdidev/pdi/issues/552)
 
 #### Deprecated
+* The `output` key of the top-level `logging` section is deprecated in favour of
+  `outputs`, and PDI warns when it is used.
+  Part of [#552](https://github.com/pdidev/pdi/issues/552)
 
 #### Removed
+* The `logging` section of a plugin no longer accepts `pattern` and `output`:
+  the messages of every plugin go to the outputs of the top-level `logging`
+  section, with their patterns.
+  Part of [#552](https://github.com/pdidev/pdi/issues/552)
+* The Set-value `logger` operation no longer accepts the `evaluate` key: setting
+  a `pattern` evaluates its references right away, as per
+  [#814](https://github.com/pdidev/pdi/issues/814)
 
 #### Fixed
 * Fix YAML index mismatch between Paraconf and LibYAML. 
@@ -27,6 +55,27 @@ and this project adheres to
   [#758](https://github.com/pdidev/pdi/issues/758).
 * Improved the error message if one test in Decl'NetCDF fails
   [#739](https://github.com/pdidev/pdi/issues/739)
+* A level set by the Set-value `logger` operation now applies to the messages of
+  the plugins whose `logging` sets no level, not only to those of PDI, fixing
+  [#815](https://github.com/pdidev/pdi/issues/815)
+* A `pattern` set in the top-level `logging` section now applies to the messages
+  of PDI, even when the MPI plugin is loaded, fixing
+  [#807](https://github.com/pdidev/pdi/issues/807)
+* A logging pattern can hold `%%{` to write a literal `%{`, fixing
+  [#810](https://github.com/pdidev/pdi/issues/810)
+* A logging pattern prints the values it references as they are: a `%` in them
+  is no longer read as a pattern flag, and one holding `%{` no longer hangs PDI,
+  fixing [#811](https://github.com/pdidev/pdi/issues/811)
+* The messages of the plugins now go where the top-level `logging` section sends
+  those of PDI, to the same file and in the order they are written, fixing
+  [#817](https://github.com/pdidev/pdi/issues/817)
+* Any YAML spelling of false, such as `OFF`, `false` or `no`, now turns the
+  console off in the `output` of a `logging` section, as `off` does, and a
+  `console` that is not a boolean is an error, fixing
+  [#818](https://github.com/pdidev/pdi/issues/818)
+* The logging sections of the specification tree reference now describe the
+  levels, the patterns and the outputs as PDI reads them, with examples that
+  run, fixing [#808](https://github.com/pdidev/pdi/issues/808)
 
 #### Security
 
@@ -34,18 +83,53 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* Added unit tests of the logger of PDI and of those of the plugins: their
+  levels, patterns and outputs, as configured and as changed afterwards, and of
+  plugin loading, that check the logger each plugin is given uses the logging
+  infrastructure of PDI.
+  Part of [#721](https://github.com/pdidev/pdi/issues/721)
 
 #### Changed
-* Merged `Callbacks` into `Global_context` and renamed the callback functions,
-  as per [#720](https://github.com/pdidev/pdi/issues/720)
+* `PDI::Callbacks` and `Context::callbacks()` are gone: a plugin registers its
+  callbacks on the context itself, with `on_init`, `on_data`, `on_data_remove`,
+  `on_event` and `on_missing_data` in place of `add_init_callback`,
+  `add_data_callback`, `add_data_remove_callback`, `add_event_callback` and
+  `add_empty_desc_access_callback`, as per
+  [#720](https://github.com/pdidev/pdi/issues/720)
 * Renamed `PDI::TimerEventHandler` to `PDI::Timer_event_handler` to follow the
   class naming convention, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
 * Renamed the `PLUGIN_API_VERSION*` macros to `PDI_PLUGIN_API_VERSION*` to
   follow the macro naming convention, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
+* `Context` no longer has a `logger()` accessor.
+  A plugin's constructor must now accept an additional `PDI::Logger&` parameter
+  (before `PDI::Context&`), available afterwards through the inherited
+  `Plugin::logger()` accessor.
+  `PDI::Logger` is now an abstract class that can be neither copied nor moved: a
+  plugin writes through it with `trace`, `debug`, `info`, `warn`, `error` and
+  the new `log`, and adds a block to the default pattern with
+  `add_default_pattern_block` while the plugins are loaded, a `PDI::State_error`
+  afterwards; `level`, `pattern`, `global_pattern`, `add_pattern_block`,
+  `add_pattern_global_block`, `evaluate_pattern`, `evaluate_global_pattern` and
+  `real_logger` are gone.
+  `pdi/context.h` no longer includes `pdi/logger.h`, nor does `pdi/logger.h`
+  include `spdlog/spdlog.h`: include them where they are used, `pdi/plugin.h`
+  still includes `pdi/logger.h`; `pdi/pdi_fwd.h` declares `PDI::Logger`.
+  `Datatype_template::load_basic_datatypes` takes the logger to warn through.
+  This completes [#721](https://github.com/pdidev/pdi/issues/721)
+* `PDI::to_bool` now accepts every YAML 1.1 spelling of a boolean, `on`, `off`,
+  `y` and `n` included, and new unit tests cover each spelling.
+  This works around
+  [pdidev/paraconf#6](https://github.com/pdidev/paraconf/issues/6)
 
 #### Deprecated
+* Setting the default logging level or the default pattern through the logger of
+  a plugin, with `PDI::Logger::default_level` and
+  `PDI::Logger::default_pattern`, is deprecated: a plugin should not change the
+  logging of PDI as a whole.
+  `default_pattern` now takes the context in which to evaluate the references of
+  the pattern. Part of [#721](https://github.com/pdidev/pdi/issues/721)
 * `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
   `PLUGIN_API_VERSION_MAJOR`, `PLUGIN_API_VERSION_MINOR` and
   `PLUGIN_API_VERSION_PATCH` macros are deprecated in favour of their
@@ -57,8 +141,16 @@ and this project adheres to
   intended as examples but provided only misleading information and prevented
   refactoring (Decl'HDF5 benchmarks remain for now). This partially answers
   [#733](https://github.com/pdidev/pdi/issues/733)
+* Removed the `Context_proxy` class.
+  Part of [#721](https://github.com/pdidev/pdi/issues/721)
 
 #### Fixed
+* `PDI::is_list`, `PDI::is_map` and `PDI::is_scalar` return false for a tree in
+  error, instead of answering for the node it was looked up from or crashing,
+  fixing [#806](https://github.com/pdidev/pdi/issues/806)
+* Removed an invalid Windows-specific choice of the console log output, which
+  could not compile: spdlog now picks the console output for the platform,
+  fixing [#816](https://github.com/pdidev/pdi/issues/816)
 
 #### Security
 
