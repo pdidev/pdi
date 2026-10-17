@@ -319,6 +319,12 @@ The rules for evaluating an expression are close to those of BASH for example.
 In addition to raw text, a `STRING_LITERAL` can contain references to the string
 value of some data in the store as well as the result of an operation by
 enclosing it inside a dollar-parenthesis `$()`.
+A backslash `\` escapes the character that follows it, whatever it is: `\$`
+stands for a dollar `$`, `\\` for a backslash `\`, and `\x` for `x`.
+There is nothing to escape after the last character, so a string that ends with
+a lone backslash is an error.
+YAML itself gives a meaning to `\` in a double-quoted scalar, so write `5\$`
+there as `"5\\$"`, or use a plain or single-quoted scalar: `'5\$'`.
 
 An `OPERATION` can include logical and arithmetic operators grouped by
 parenthesis.
