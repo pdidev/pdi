@@ -122,8 +122,11 @@ unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const 
 		str += sz;
 		switch (*str) {
 		case '\\': {
+			if (!str[1]) {
+				throw Value_error{"String expression ends with a lone `\\', there is nothing to escape"};
+			}
+			curstr->push_back(str[1]);
 			str += 2;
-			curstr->push_back('\\');
 		} break;
 		case '$': {
 			switch (str[1]) {

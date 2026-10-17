@@ -34,6 +34,10 @@ and this project adheres to
 * The example project asks for the Fortran component of Paraconf when it is
   built with Fortran support, as per
   [#784](https://github.com/pdidev/pdi/issues/784).
+* A `\` in a string $-expression now escapes the character after it correctly,
+  whatever it is, and an expression that ends with a lone `\` is now reported
+  as an error instead of crashing, fixing
+  [#846](https://github.com/pdidev/pdi/issues/846)
 
 #### Security
 
