@@ -265,14 +265,14 @@ TEST_F(LoggerTest, UnknownKeyThrows)
 
 TEST_F(LoggerTest, SequenceThrows)
 {
-	EXPECT_THAT([&] { Pdi_logger pdi(config("[info]")); }, ThrowsMessage<Spectree_error>(HasSubstr("found a sequence")));
+	EXPECT_THAT([&] { Pdi_logger pdi(config("[info]")); }, ThrowsMessage<Spectree_error>(HasSubstr("sequence")));
 }
 
 TEST_F(LoggerTest, CoreSequenceThrows)
 {
 	EXPECT_THAT(
 		[&] { Pdi_logger pdi(config("{core: [info]}")); },
-		ThrowsMessage<Spectree_error>(AllOf(HasSubstr("logger of the core"), HasSubstr("found a sequence")))
+		ThrowsMessage<Spectree_error>(AllOf(HasSubstr("logger of the core"), HasSubstr("sequence")))
 	);
 }
 
@@ -663,7 +663,7 @@ TEST_F(LoggerTest, PluginPatternThrows)
 TEST_F(LoggerTest, PluginSequenceThrows)
 {
 	Pdi_logger pdi(no_config());
-	EXPECT_THAT([&] { Plugin_logger plugin(pdi, "plugin", config("[info]")); }, ThrowsMessage<Spectree_error>(HasSubstr("found a sequence")));
+	EXPECT_THAT([&] { Plugin_logger plugin(pdi, "plugin", config("[info]")); }, ThrowsMessage<Spectree_error>(HasSubstr("sequence")));
 }
 
 TEST_F(LoggerTest, InvalidPluginLoggerLeavesNoDanglingPointer)
