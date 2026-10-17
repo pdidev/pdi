@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -205,7 +206,7 @@ endif()
 ## Threads
 
 if("${BUILD_TESTING}")
-	sbuild_add_dependency(Threads SYSTEM)
+	find_package(Threads REQUIRED)
 endif()
 
 
@@ -227,12 +228,9 @@ endif()
 if("${BUILD_MPI_PLUGIN}")
 	list(APPEND MPI_COMPONENTS CXX)
 endif()
-if(NOT "x${MPI_COMPONENTS}x" STREQUAL xx)
+if(NOT "x${MPI_COMPONENTS}x" STREQUAL "xx")
 	list(REMOVE_DUPLICATES MPI_COMPONENTS)
-	sbuild_add_dependency(MPI SYSTEM
-		COMPONENTS ${MPI_COMPONENTS}
-		MODULE_VARS MPI_C_COMPILER
-	)
+	find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 endif()
 
 
