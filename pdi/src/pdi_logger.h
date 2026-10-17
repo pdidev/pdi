@@ -40,6 +40,8 @@
 #include "pdi/pdi_fwd.h"
 #include "pdi/logger.h"
 
+#include "logger_common.h"
+
 namespace PDI {
 
 class Plugin_logger;
@@ -56,7 +58,7 @@ class Plugin_logger;
  *
  * It is exported for the unit tests only, until they can link to the objects of the library, see https://github.com/pdidev/pdi/issues/834
  */
-class PDI_EXPORT Pdi_logger: public Logger
+class PDI_EXPORT Pdi_logger: public Logger_common
 {
 	friend class Plugin_logger;
 

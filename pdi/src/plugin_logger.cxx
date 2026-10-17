@@ -42,7 +42,7 @@ using std::string_view;
 namespace PDI {
 
 Plugin_logger::Plugin_logger(Pdi_logger& pdi_logger, string_view name, PC_tree_t logging_tree)
-	: Logger(fmt::format("PDI/{}", name))
+	: Logger_common(fmt::format("PDI/{}", name))
 	, m_pdi_logger(&pdi_logger)
 {
 	setup(logging_tree, pdi_logger.m_outputs);

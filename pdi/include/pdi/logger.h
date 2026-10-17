@@ -27,20 +27,13 @@
 #ifndef PDI_LOGGER_H_
 #define PDI_LOGGER_H_
 
-#include <functional>
-#include <optional>
 #include <string>
 #include <string_view>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
-
-#include <paraconf.h>
 
 #include <spdlog/logger.h>
 
 #include <pdi/pdi_fwd.h>
-#include <pdi/paraconf_wrapper.h>
 
 namespace PDI {
 
@@ -83,71 +76,14 @@ public:
 	using Level = spdlog::level::level_enum;
 
 protected:
-	/// An output of the infrastructure
-	struct Output {
-		/** Where the output writes, with its level and pattern set
-		 *
-		 * An output of kind `stream` writes nowhere until its stream is set, it holds a spdlog::sinks::null_sink_st until then.
-		 */
-		spdlog::sink_ptr sink;
-
-		/** The pattern of the output, empty to use the default pattern
-		 *
-		 * It holds references to evaluate until the infrastructure is sealed, and is evaluated from then on.
-		 */
-		std::optional<std::string> pattern;
-	};
-
-	/// A hash of strings that hashes string views alike, so that a container keyed by strings can be searched with a string view
-	struct Transparent_string_hash: std::hash<std::string_view> {
-		/// Tell the containers that this hash accepts any type that converts to a string view
-		using is_transparent = void;
-	};
-
 	/// The spdlog logger, that holds the name, level and outputs of this logger
 	spdlog::logger m_logger;
-
-	/// Whether this logger has a level explicitly set
-	bool m_explicitly_set_logging_level = false;
-
-	/// The names of the outputs of the infrastructure this logger does not write to
-	std::unordered_set<std::string, Transparent_string_hash, std::equal_to<>> m_disabled_outputs;
 
 	/** Create a logger that writes to no output
 	 *
 	 * \param[in] name the name of the logger, shown by the `%n` flag of the pattern
 	 */
 	Logger(std::string name);
-
-	/** Read the configuration of a logger: its level, and the outputs it writes to
-	 *
-	 * It adds to the spdlog logger every output of the infrastructure, except those the configuration disables and the outputs of kind `stream` whose
-	 * stream is not set yet.
-	 * It is meant to be called once, by the constructor of a derived class.
-	 *
-	 * \param[in] logger_tree the configuration: a level, or a mapping with optional `level` and `disabled_outputs` keys; a tree in error configures
-	 *                        nothing
-	 * \param[in] outputs the outputs of the infrastructure, by name
-	 *
-	 * \throw Spectree_error if the configuration is neither a level nor a mapping, names no known level or output, or holds an unexpected key
-	 */
-	void setup(PC_tree_t logger_tree, const std::unordered_map<std::string, Output, Transparent_string_hash, std::equal_to<>>& outputs);
-
-	/** Set the level of the spdlog logger to the default logging level, unless this logger has a level set explicitly
-	 *
-	 * \param[in] default_logging_level the default logging level of the infrastructure
-	 */
-	void update_level(Level default_logging_level);
-
-	/** Replace the sink of an output of kind `stream` by a new one, unless this logger does not write to that output
-	 *
-	 * The new sink is added if this logger does not hold the old one, as for an output whose stream was not set.
-	 *
-	 * \param[in] name the name of the output
-	 * \param[in] old_output the output to replace
-	 * \param[in] output the output to replace it with
-	 */
-	void output_updated(std::string_view name, const spdlog::sink_ptr& old_output, const spdlog::sink_ptr& output);
 
 public:
 	Logger(const Logger&) = delete;

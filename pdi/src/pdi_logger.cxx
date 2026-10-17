@@ -29,7 +29,6 @@
 #include <memory>
 #include <optional>
 #include <ostream>
-#include <ranges>
 #include <set>
 #include <sstream>
 #include <string>
@@ -48,7 +47,6 @@
 #include "pdi/fmt.h"
 #include "pdi/paraconf_wrapper.h"
 
-#include "logger_tools.h"
 #include "plugin_logger.h"
 
 #include "pdi_logger.h"
@@ -73,7 +71,6 @@ using std::set;
 using std::string;
 using std::string_view;
 using std::swap;
-namespace views = std::views;
 
 namespace PDI {
 
@@ -151,7 +148,7 @@ void Pdi_logger::add_output(string name, Level lvl, optional<string> pattern, Ar
 }
 
 Pdi_logger::Pdi_logger(PC_tree_t logging_tree)
-	: Logger("PDI")
+	: Logger_common("PDI")
 {
 	bool log_to_stdout = true; // unless outputs are configured, write to stdout
 	PC_tree_t warn_about_deprecated_output{PC_NODE_NOT_FOUND, nullptr, nullptr};
@@ -255,7 +252,7 @@ Pdi_logger::Pdi_logger(PC_tree_t logging_tree)
 	// and propagate the defaults
 	default_level(m_default_logging_level);
 	string default_pattern = build_pattern(nullopt, m_default_pattern_source);
-	for (auto&& output: m_outputs | views::values) {
+	for (auto&& [out_name, output]: m_outputs) {
 		if (output.pattern) {
 			output.sink->set_pattern(build_pattern(output.pattern, Pattern_source::UNEVALUATED_EXPLICIT));
 		} else {
@@ -286,8 +283,8 @@ void Pdi_logger::add_default_pattern_block(string_view block)
 	constexpr string_view built_in_end = "[%n] *** %^%l%$: %v";
 	m_default_pattern
 		= fmt::format("{}[{}]{}", string_view(m_default_pattern).substr(0, m_default_pattern.size() - built_in_end.size()), block, built_in_end);
-	for (auto&& output: m_outputs | views::values | views::filter([](auto&& output) { return !output.pattern; })) {
-		output.sink->set_pattern(m_default_pattern);
+	for (auto&& [out_name, output]: m_outputs) {
+		if (!output.pattern) output.sink->set_pattern(m_default_pattern);
 	}
 }
 
@@ -303,7 +300,7 @@ void Pdi_logger::evaluate_patterns(Context& ctx)
 	}
 	m_default_pattern_source = Pattern_source::EVALUATED;
 
-	for (auto&& output: m_outputs | views::values) {
+	for (auto&& [out_name, output]: m_outputs) {
 		if (output.pattern) {
 			// keep the evaluated pattern, for the stream that may later be set
 			output.pattern = build_pattern(output.pattern, Pattern_source::UNEVALUATED_EXPLICIT, ctx);
@@ -329,8 +326,8 @@ void Pdi_logger::default_pattern(string pattern, Context& ctx)
 		m_default_pattern_source = Pattern_source::UNEVALUATED_EXPLICIT;
 		return local_default_pattern;
 	}();
-	for (auto&& output: m_outputs | views::values | views::filter([](auto&& output) { return !output.pattern; })) {
-		output.sink->set_pattern(default_pattern);
+	for (auto&& [out_name, output]: m_outputs) {
+		if (!output.pattern) output.sink->set_pattern(default_pattern);
 	}
 }
 
