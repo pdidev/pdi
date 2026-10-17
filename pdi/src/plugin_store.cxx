@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,12 +105,10 @@ Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, st
 	}
 	if (!pretty_name_f) {
 		pretty_name_f = reinterpret_cast<std::string (*)()>(dlsym(lib_handle, pretty_name_symbol.c_str()));
-		if (!m_deps) {
-			throw Plugin_error{"Unable to load plugin pretty name for `{}': {}", name, dlerror()};
-		}
 	}
 
-	m_ctx.setup_logger(pretty_name_f(), PC_get(conf, ".logging"));
+	// a plugin built without PDI_PLUGIN may provide no pretty name, its name stands for it then
+	m_ctx.setup_logger(pretty_name_f ? pretty_name_f() : name, PC_get(conf, ".logging"));
 }
 
 void Plugin_store::Stored_plugin::ensure_loaded(map<string, shared_ptr<Stored_plugin>>& plugins)
