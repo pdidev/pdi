@@ -58,6 +58,10 @@ and this project adheres to
   [#753](https://github.com/pdidev/pdi/issues/753)
 * The configuration no longer suggests setting `USE_MPI` and `USE_Threads`,
   which have no effect, fixing [#791](https://github.com/pdidev/pdi/issues/791).
+* A `\` in a string $-expression now escapes the character after it correctly,
+  whatever it is, and an expression that ends with a lone `\` is now reported
+  as an error instead of crashing, fixing
+  [#846](https://github.com/pdidev/pdi/issues/846)
 
 #### Security
 
