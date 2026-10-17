@@ -27,6 +27,8 @@ and this project adheres to
   [#758](https://github.com/pdidev/pdi/issues/758).
 * Improved the error message if one test in Decl'NetCDF fails
   [#739](https://github.com/pdidev/pdi/issues/739)
+* The configuration no longer suggests setting `USE_MPI` and `USE_Threads`,
+  which have no effect, fixing [#791](https://github.com/pdidev/pdi/issues/791).
 
 #### Security
 
