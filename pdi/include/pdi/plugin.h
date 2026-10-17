@@ -28,7 +28,6 @@
 
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <unordered_set>
 #include <utility>
 
@@ -93,93 +92,22 @@ unsigned long PDI_EXPORT plugin_api_version(unsigned long expected_version = 0);
 
 } // namespace PDI
 
-namespace {
-
-/** Checks whether a class contains static method named dependencies at compile time
- */
-template <class T>
-struct has_dependencies {
-	template <typename C>
-	static constexpr decltype(C::dependencies(), bool()) test(int)
-	{
-		return true;
-	}
-
-	template <typename C>
-	static constexpr bool test(...)
-	{
-		return false;
-	}
-
-	static constexpr bool value = test<T>(int());
-};
-
-/** Returns dependencies of a plugin
- * Overload called if the class contains dependencies method
+#if defined(__clang__)
+/** Silence the warnings Clang emits about the functions PDI_PLUGIN defines
  *
- * \returns plugin dependencies
+ * The loading functions are looked up by name, so they have no prototype, and they have C linkage while returning C++ types.
+ * GCC emits neither warning, and it warns about the `clang diagnostic` pragmas, hence a definition for Clang only.
  */
-template <class T>
-typename std::enable_if<has_dependencies<T>::value, std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>>>::type
-plugin_dependencies()
-{
-	return T::dependencies();
-}
+#define PDI_PLUGIN_IGNORE_WARNINGS_BEGIN                                                                                                             \
+	_Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")                                                    \
+		_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\"")
 
-/**  Returns dependencies of a plugin
- * Overload called if the class doesn't contain dependencies method
- *
- * \returns empty dependencies sets (i.e no dependencies)
- */
-template <class T>
-typename std::enable_if<!has_dependencies<T>::value, std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>>>::type
-plugin_dependencies()
-{
-	return {};
-}
-
-/** Checks whether a class contains static method named pretty_name at compile time
- */
-template <class T>
-struct has_pretty_name {
-	template <typename C>
-	static constexpr decltype(C::pretty_name(), bool()) test(int)
-	{
-		return true;
-	}
-
-	template <typename C>
-	static constexpr bool test(...)
-	{
-		return false;
-	}
-
-	static constexpr bool value = test<T>(int());
-};
-
-/** Returns pretty name of a plugin
- * Overload called if the class contains pretty name method
- *
- * \returns plugin pretty name
- */
-template <class T>
-typename std::enable_if<has_pretty_name<T>::value, std::string>::type plugin_pretty_name(const std::string& plugin_name)
-{
-	return T::pretty_name();
-}
-
-/**  Returns pretty name of a plugin
- * Overload called if the class doesn't contain pretty name method
- *
- * \returns empty pretty name sets (i.e no pretty name)
- */
-template <class T>
-typename std::enable_if<!has_pretty_name<T>::value, std::string>::type plugin_pretty_name(const std::string& plugin_name)
-{
-	return plugin_name;
-}
-
-} // namespace
+/// Restore the warnings PDI_PLUGIN_IGNORE_WARNINGS_BEGIN silenced
+#define PDI_PLUGIN_IGNORE_WARNINGS_END _Pragma("clang diagnostic pop")
+#else
+#define PDI_PLUGIN_IGNORE_WARNINGS_BEGIN
+#define PDI_PLUGIN_IGNORE_WARNINGS_END
+#endif
 
 /** Declares a plugin to be used with PDI and its dependencies
  *
@@ -199,9 +127,10 @@ typename std::enable_if<!has_pretty_name<T>::value, std::string>::type plugin_pr
  * \param name the name of the plugin
  */
 #define PDI_PLUGIN(name)                                                                                                                             \
-	_Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")                                                    \
-		_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\""                                                                               \
-	    ) extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf)                     \
+	PDI_PLUGIN_IGNORE_WARNINGS_BEGIN extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(                              \
+		::PDI::Context& ctx,                                                                                                                         \
+		PC_tree_t conf                                                                                                                               \
+	)                                                                                                                                                \
 	{                                                                                                                                                \
 		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf}};                                                                \
 		::PDI::plugin_api_version(PDI_PLUGIN_API_VERSION);                                                                                           \
@@ -209,12 +138,24 @@ typename std::enable_if<!has_pretty_name<T>::value, std::string>::type plugin_pr
 	}                                                                                                                                                \
 	extern "C" ::std::pair<::std::unordered_set<::std::string>, ::std::unordered_set<::std::string>> PDI_EXPORT PDI_plugin_##name##_dependencies()   \
 	{                                                                                                                                                \
-		return ::plugin_dependencies<name##_plugin>();                                                                                               \
+		return []<class P>() {                                                                                                                       \
+			if constexpr (requires { P::dependencies(); }) {                                                                                         \
+				return P::dependencies();                                                                                                            \
+			} else {                                                                                                                                 \
+				return ::std::pair<::std::unordered_set<::std::string>, ::std::unordered_set<::std::string>>{};                                      \
+			}                                                                                                                                        \
+		}.template operator()<name##_plugin>();                                                                                                      \
 	}                                                                                                                                                \
 	extern "C" ::std::string PDI_EXPORT PDI_plugin_##name##_pretty_name()                                                                            \
 	{                                                                                                                                                \
-		return ::plugin_pretty_name<name##_plugin>(#name);                                                                                           \
+		return []<class P>(const char* fallback) -> ::std::string {                                                                                  \
+			if constexpr (requires { P::pretty_name(); }) {                                                                                          \
+				return P::pretty_name();                                                                                                             \
+			} else {                                                                                                                                 \
+				return fallback;                                                                                                                     \
+			}                                                                                                                                        \
+		}.template operator()<name##_plugin>(#name);                                                                                                 \
 	}                                                                                                                                                \
-	_Pragma("clang diagnostic pop")
+	PDI_PLUGIN_IGNORE_WARNINGS_END
 
 #endif // PDI_PLUGIN_H_
