@@ -96,6 +96,8 @@ and this project adheres to
   longer includes `pdi/logger.h`, nor does `pdi/logger.h` include
   `spdlog/spdlog.h`: include them where they are used.
   This is part of [#721](https://github.com/pdidev/pdi/issues/721)
+* `<pdi/plugin.h>` no longer declares anything at global scope. Fixes
+  [#756](https://github.com/pdidev/pdi/issues/756)
 
 #### Deprecated
 * `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
@@ -123,6 +125,8 @@ and this project adheres to
 * Flags passed to `bin/build_and_run_all_tests` through `CMAKE_FLAGS` take
   precedence over those the script chooses, as per
   [#782](https://github.com/pdidev/pdi/issues/782).
+* Building a plugin with `-Wall -Wextra` no longer warns about `pdi/plugin.h`,
+  fixing [#812](https://github.com/pdidev/pdi/issues/812)
 
 #### Security
 
