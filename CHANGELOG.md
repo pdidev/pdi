@@ -24,6 +24,9 @@ and this project adheres to
 #### Fixed
 * Fix JSON unit tests failing under parallel execution (with `ctest -j`).
   [#772](https://github.com/pdidev/pdi/issues/772)
+* On macOS, a plugin linked into the application is now found, instead of PDI
+  searching for its library and failing when there is none, fixing
+  [#860](https://github.com/pdidev/pdi/issues/860)
 * Fix YAML index mismatch between Paraconf and LibYAML. 
   [#759](https://github.com/pdidev/pdi/issues/759)
 * Corrected an invalid test that prevented a deprecation warning message for
