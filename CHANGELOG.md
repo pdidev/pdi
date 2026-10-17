@@ -27,6 +27,10 @@ and this project adheres to
   [#758](https://github.com/pdidev/pdi/issues/758).
 * Improved the error message if one test in Decl'NetCDF fails
   [#739](https://github.com/pdidev/pdi/issues/739)
+* A `\` in a string $-expression now escapes the character after it correctly,
+  whatever it is, and an expression that ends with a lone `\` is now reported
+  as an error instead of crashing, fixing
+  [#846](https://github.com/pdidev/pdi/issues/846)
 
 #### Security
 
