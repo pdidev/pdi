@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -42,7 +43,7 @@ option(BUILD_JSON_PLUGIN        "Build JSON plug-in"         OFF)
 option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in"       OFF)
 option(BUILD_PYTHON             "Build with Python support"  OFF)
 option(BUILD_TIMER_PLUGIN       "Build Timer plugin"         OFF)
-option(DISABLE_PDI              "Disable the use of both PDI and Paraconf in the project" OFF)
+option(PDI_EXAMPLE_USE_MOCK_PDI "Disable the use of both PDI and Paraconf in the project" OFF)
 
 if("${BUILD_FORTRAN}")
 	enable_language(Fortran)
@@ -59,7 +60,7 @@ endif()
 # Includes
 include(CTest)
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
-if("${DISABLE_PDI}")
+if("${PDI_EXAMPLE_USE_MOCK_PDI}")
 	set(PDI_MOCK_PARACONF_TARGET TRUE)
 	add_subdirectory(../mock_pdi mock_pdi)
 else()
