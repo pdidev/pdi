@@ -59,6 +59,9 @@ and this project adheres to
   [#733](https://github.com/pdidev/pdi/issues/733)
 
 #### Fixed
+* Flags passed to `bin/build_and_run_all_tests` through `CMAKE_FLAGS` take
+  precedence over those the script chooses, as per
+  [#782](https://github.com/pdidev/pdi/issues/782).
 
 #### Security
 
