@@ -27,6 +27,9 @@ and this project adheres to
   [#758](https://github.com/pdidev/pdi/issues/758).
 * Improved the error message if one test in Decl'NetCDF fails
   [#739](https://github.com/pdidev/pdi/issues/739)
+* The build type the distribution profile selects is now actually applied:
+  `DIST_PROFILE=User` builds `Release` and `Devel` builds `Debug`, as per
+  [#773](https://github.com/pdidev/pdi/issues/773).
 
 #### Security
 
