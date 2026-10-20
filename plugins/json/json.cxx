@@ -53,19 +53,19 @@ class json_plugin: public PDI::Plugin
 	std::unordered_map<std::string, std::vector<std::pair<Expression, Expression>>> m_data_to_path_map;
 
 public:
-	json_plugin(Context& ctx, PC_tree_t spec_tree)
-		: Plugin{ctx}
+	json_plugin(Logger& logger, Context& ctx, PC_tree_t spec_tree)
+		: Plugin{logger, ctx}
 	{
 		// initialize m_data_to_path_map from config.yml
-		read_config_tree(ctx.logger(), spec_tree);
+		read_config_tree(logger, spec_tree);
 
 		for (const auto& data_path_pair: m_data_to_path_map) {
 			ctx.on_data([&](const std::string& data_name, Ref&& ref) { write_data(data_name, std::move(ref)); }, data_path_pair.first);
 		}
-		ctx.logger().info("Plugin loaded successfully");
+		logger.info("Plugin loaded successfully");
 	}
 
-	~json_plugin() { context().logger().info("Closing plugin"); }
+	~json_plugin() { logger().info("Closing plugin"); }
 
 	static std::string pretty_name() { return "JSON"; }
 
@@ -149,7 +149,7 @@ private:
 	 */
 	nlohmann::json write_scalar_to_json(Ref_r&& reference)
 	{
-		context().logger().debug("write to json a scalar type data !");
+		logger().debug("write to json a scalar type data !");
 		nlohmann::json json_data;
 		auto scalar_type = std::dynamic_pointer_cast<const Scalar_datatype>(reference.type());
 		if (scalar_type->kind() == Scalar_kind::UNSIGNED) {
@@ -199,7 +199,7 @@ private:
 	nlohmann::json write_array_to_json(Ref_r&& reference)
 	{
 		auto array_type = std::dynamic_pointer_cast<const Array_datatype>(reference.type());
-		context().logger().debug("write to json an array type data with size {}!", array_type->size());
+		logger().debug("write to json an array type data with size {}!", array_type->size());
 		nlohmann::json json_data;
 		if (const auto&& sub_type = std::dynamic_pointer_cast<const Scalar_datatype>(array_type->subtype())) {
 			if (sub_type->kind() == Scalar_kind::UNSIGNED && sub_type->buffersize() == 1L) {
@@ -235,7 +235,7 @@ private:
 	 */
 	nlohmann::json write_record_to_json(Ref_r&& reference)
 	{
-		context().logger().debug("write to json a record type data !");
+		logger().debug("write to json a record type data !");
 		nlohmann::json json_data;
 		auto record_type = std::dynamic_pointer_cast<const Record_datatype>(reference.type());
 		for (const auto& member: record_type->members()) {
@@ -264,7 +264,7 @@ private:
 	{
 		nlohmann::json json_data;
 		auto tuple_type = std::dynamic_pointer_cast<const Tuple_datatype>(reference.type());
-		context().logger().debug("write to json a tuple type data with size {}!", tuple_type->size());
+		logger().debug("write to json a tuple type data with size {}!", tuple_type->size());
 		for (int i = 0; i < tuple_type->size(); i++) {
 			if (const auto&& sub_type = std::dynamic_pointer_cast<const Scalar_datatype>(tuple_type->elements()[i].type())) {
 				json_data.emplace_back(write_scalar_to_json(Ref_r{std::move(reference[i])}));
@@ -289,7 +289,7 @@ private:
 	 */
 	nlohmann::json write_pointer_to_json(Ref_r&& reference)
 	{
-		context().logger().debug("write to json a pointer type data !");
+		logger().debug("write to json a pointer type data !");
 		Ref dereferenced_ref = reference.dereference();
 		if (!dereferenced_ref) throw Value_error{"Can't dereference with read permissions"};
 		return choose_type_and_dump_to_json(std::move(dereferenced_ref));
@@ -328,7 +328,7 @@ private:
 	void write_data(const std::string& data_name, Ref_r&& reference)
 	{
 		PDI::Timer_event_handler json_timer(context(), "json");
-		Logger& logger = context().logger();
+		Logger& logger = this->logger();
 
 		for (const auto& [condition, fpath]: m_data_to_path_map[data_name]) {
 			if (!condition.to_long(context())) {

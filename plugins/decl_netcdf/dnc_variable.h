@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,11 +66,12 @@ class Dnc_variable
 public:
 	/** Creates NetCDF variable information from yaml
 	 *
+	 * \param logger Logger to use while creating this variable
 	 * \param ctx Context of this variable
 	 * \param config Configuration node of this variable
 	 * \param deflate Deflate level of the file
 	 */
-	Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate = PDI::Expression(0L));
+	Dnc_variable(PDI::Logger& logger, PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate = PDI::Expression(0L));
 
 	/** Getter for variable name
 	 *

@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,14 +29,6 @@
 
 namespace set_value {
 
-Operation::Operation(PDI::Context& ctx)
-	: m_ctx{ctx}
-{}
-
-PDI::Context& Operation::context()
-{
-	return m_ctx;
-}
-
+Operation::~Operation() = default;
 
 } // namespace set_value

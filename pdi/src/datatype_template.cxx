@@ -414,12 +414,12 @@ void validate_array(PC_tree_t node, vector<Expression>& size, vector<Expression>
 	}
 }
 
-Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_array_datatype_template(Logger& logger, Context& ctx, PC_tree_t node)
 {
 	{
 		string order_str = to_string(PC_get(node, ".order"), "");
 		if (order_str == "c" || order_str == "C") {
-			ctx.logger().warn("`order: C' for array is the only supported order and its specification is deprecated");
+			logger.warn("`order: C' for array is the only supported order and its specification is deprecated");
 		} else if (order_str != "") {
 			throw Spectree_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};
 		}
@@ -626,10 +626,10 @@ inline void add_float(Context& ctx, const string& name, size_t size)
 	add_scalar_datatype_T<Scalar_kind, Scalar_kind::FLOAT>(ctx, name, size);
 }
 
-void Datatype_template::load_basic_datatypes(Context& ctx)
+void Datatype_template::load_basic_datatypes(Logger& logger, Context& ctx)
 {
 	// holder types
-	ctx.add_datatype("array", to_array_datatype_template);
+	ctx.add_datatype("array", [&logger](Context& ctx, PC_tree_t node) { return to_array_datatype_template(logger, ctx, node); });
 	ctx.add_datatype("struct", to_struct_datatype_template);
 	ctx.add_datatype("record", to_record_datatype_template);
 	ctx.add_datatype("pointer", to_pointer_datatype_template);

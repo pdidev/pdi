@@ -116,6 +116,14 @@ public:
 	 */
 	void global_pattern(const std::string& pattern);
 
+	/** Changes level of the global logger
+	 *
+	 * \param[in] log_level level to set
+	 *
+	 * The global logger is the logger without a parent.
+	 */
+	void global_level(spdlog::level::level_enum log_level);
+
 	/** Changes default pattern of the logger
 	 *  (won't be updated if current pattern  is from config)
 	 *
