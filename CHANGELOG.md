@@ -51,6 +51,10 @@ and this project adheres to
 * Renamed the `PLUGIN_API_VERSION*` macros to `PDI_PLUGIN_API_VERSION*` to
   follow the macro naming convention, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
+* `pdi/pdi_fwd.h` now forward declares `PDI::Logger`, but `pdi/context.h` no
+  longer includes `pdi/logger.h`, nor does `pdi/logger.h` include
+  `spdlog/spdlog.h`: include them where they are used.
+  This is part of [#721](https://github.com/pdidev/pdi/issues/721)
 
 #### Deprecated
 * `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
