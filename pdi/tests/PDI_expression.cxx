@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,17 +42,17 @@
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
 
-#include "global_context.h"
+#include "data_store.h"
 
 #include "mocks/context_mock.h"
 #include "mocks/data_descriptor_mock.h"
 
 using PDI::Array_datatype;
 using PDI::Context;
+using PDI::Data_store;
 using PDI::Datatype_sptr;
 using PDI::Error;
 using PDI::Expression;
-using PDI::Global_context;
 using PDI::Paraconf_wrapper;
 using PDI::Ref;
 using PDI::Ref_r;
@@ -1219,7 +1220,7 @@ struct ExpresionOperators: public ::testing::Test {
 		: test_conf{PC_parse_string("data: {x : int, y : int}")}
 	{}
 
-	void SetUp() override { test_context.reset(new PDI::Global_context{test_conf}); }
+	void SetUp() override { test_context.reset(new PDI::Data_store{test_conf}); }
 
 	PDI::Paraconf_wrapper fw;
 	PC_tree_t test_conf;
@@ -1617,7 +1618,7 @@ struct ExpresionFMTFormat: public ::testing::Test {
 		: test_conf{PC_parse_string("data: {x : int, y : double, z: {type: array, subtype: char, size: 16}}")}
 	{}
 
-	void SetUp() override { test_context.reset(new PDI::Global_context{test_conf}); }
+	void SetUp() override { test_context.reset(new PDI::Data_store{test_conf}); }
 
 	PDI::Paraconf_wrapper fw;
 	PC_tree_t test_conf;
@@ -1727,7 +1728,7 @@ TEST(ExpresionMemberAccess, access_simple_member)
 	test.e = 1234.5;
 	test.f = 1234.56;
 
-	unique_ptr<Context> ctx{new Global_context{config}};
+	unique_ptr<Context> ctx{new Data_store{config}};
 
 	ctx->desc("record_data").share(&test, true, false);
 
@@ -1772,7 +1773,7 @@ TEST(ExpresionMemberAccess, access_string_member)
 	Test test;
 	strcpy(test.string, "abcdefgh");
 
-	unique_ptr<Context> ctx{new Global_context{config}};
+	unique_ptr<Context> ctx{new Data_store{config}};
 
 	ctx->desc("record_data").share(&test, true, false);
 
@@ -1823,7 +1824,7 @@ TEST(ExpresionMemberAccess, access_array_record)
 		}
 	}
 
-	unique_ptr<Context> ctx{new Global_context{config}};
+	unique_ptr<Context> ctx{new Data_store{config}};
 
 	ctx->desc("array_data").share(array_record, true, false);
 
@@ -1890,7 +1891,7 @@ TEST(ExpresionMemberAccess, access_complex_member)
 	}
 
 
-	unique_ptr<Context> ctx{new Global_context{config}};
+	unique_ptr<Context> ctx{new Data_store{config}};
 
 	ctx->desc("record_data").share(&record, true, false);
 

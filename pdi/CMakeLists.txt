@@ -132,6 +132,7 @@ set(PDI_C_SRC
 		src/context_proxy.cxx
 		src/data_descriptor.cxx
 		src/data_descriptor_impl.cxx
+		src/data_store.cxx
 		src/datatype.cxx
 		src/datatype_template.cxx
 		src/error.cxx
@@ -144,7 +145,6 @@ set(PDI_C_SRC
 		src/expression/impl/reference_expression.cxx
 		src/expression/impl/sequence.cxx
 		src/expression/impl/string_literal.cxx
-		src/global_context.cxx
 		src/logger.cxx
 		src/paraconf_wrapper.cxx
 		src/pdi.cxx
