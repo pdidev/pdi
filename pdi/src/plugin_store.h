@@ -30,6 +30,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -47,8 +48,21 @@ class PDI_NO_EXPORT Plugin_store
 	/// A factory function for a plugin
 	using plugin_factory_f = std::unique_ptr<Plugin> (*)(Logger&, Context&, PC_tree_t);
 
-	/// A function listing the dependencies of a plugin
-	using plugin_deps_f = std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> (*)();
+	/// A list of dependencies of a plugin (required, optional)
+	using Plugin_deps = std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>>;
+
+	/** The symbols a plugin exports
+	 */
+	struct Symbols {
+		/// The factory function of the plugin
+		plugin_factory_f ctr;
+
+		/// The dependencies of the plugin
+		Plugin_deps deps;
+
+		/// The name of the plugin, as shown in the logs: the one the plugin provides, or the name it is loaded by if it provides none
+		std::string pretty_name;
+	};
 
 	/** Information about the load state of a plugin
 	 */
@@ -68,10 +82,10 @@ class PDI_NO_EXPORT Plugin_store
 		/// The factory function of the plugin
 		plugin_factory_f m_ctr;
 
-		/// The function listing the dependencies of the plugin
-		plugin_deps_f m_deps;
+		/// The dependencies of the plugin
+		Plugin_deps m_deps;
 
-		/// The plugins we depend on to ensure they remain alive as long as we exist
+		/// The plugins we depend on; this ensures correct destruction order
 		std::vector<std::shared_ptr<Stored_plugin>> m_dependencies;
 
 		/// The name of this plugin
@@ -83,17 +97,28 @@ class PDI_NO_EXPORT Plugin_store
 		 */
 		Logger m_plugin_logger;
 
-		/// The actual plugin, declared after its logger to be destroyed before it
+		/// Whether this plugin is loaded or not
+		Init_state m_state = PRELOADED;
+
+		/// The actual plugin, declared after its logger to be destroyed before what it depends on above
 		std::unique_ptr<Plugin> m_loaded_plugin;
 
-		/// Whether this plugin is loaded or not
-		Init_state m_state;
-
-	public:
-		/** Pre-loads a plugin
-		 * \param store the store in which this plugin is loaded
+		/** Pre-load a plugin whose symbols are already looked up
+		 * \param store the store in which the plugin is loaded
 		 * \param name the name of the plugin
 		 * \param conf the configuration subtree of the plugin
+		 * \param symbols the symbols the plugin exports
+		 * \throw Spectree_error if the `logging` subtree of the configuration is invalid
+		 */
+		Stored_plugin(Plugin_store& store, std::string name, PC_tree_t conf, Symbols symbols);
+
+	public:
+		/** Pre-load a plugin
+		 * \param store the store in which the plugin is loaded
+		 * \param name the name of the plugin
+		 * \param conf the configuration subtree of the plugin
+		 * \throw Plugin_error if the library of the plugin cannot be loaded or lacks its constructor
+		 * \throw Spectree_error if the `logging` subtree of the configuration is invalid
 		 */
 		Stored_plugin(Plugin_store& store, std::string name, PC_tree_t conf);
 
@@ -118,11 +143,13 @@ class PDI_NO_EXPORT Plugin_store
 	 */
 	void initialize_path(std::vector<PC_tree_t> const & confs);
 
-	/** dlopen's a plugin taking m_plugin_path into account
+	/** Look up the symbols a plugin exports, loading its library if its constructor is not linked in: from m_plugin_path, from
+	 * the default plugin path, or from the system path
 	 * \param name the name of the plugin
-	 * \return a handle for the loaded object, same as dlopen
+	 * \return the symbols of the plugin
+	 * \throw Plugin_error if the library cannot be loaded or lacks the constructor of the plugin
 	 */
-	void* plugin_dlopen(const std::string& name);
+	Symbols load_plugin_symbols(std::string_view name);
 
 public:
 	/** Builds a plugin store
