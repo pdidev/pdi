@@ -18,6 +18,8 @@ and this project adheres to
 #### Deprecated
 
 #### Removed
+* Remove `BUILD_BENCHMARKING` CMake option from the root CMakeLists.
+  [#845](https://github.com/pdidev/pdi/issues/845)
 
 #### Fixed
 * Fix YAML index mismatch between Paraconf and LibYAML. 
