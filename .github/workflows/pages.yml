@@ -47,7 +47,7 @@ jobs:
         IMG="ghcr.io/pdidev/debian/unstable/openmpi/all:v3"
         cat<<-'EOF' > run.sh
           set -xe
-          cmake -DBUILD_DOCUMENTATION=ON -DBUILD_BENCHMARKING=OFF -DBUILD_TESTING=OFF /src/pdi
+          cmake -DBUILD_DOCUMENTATION=ON -DBUILD_TESTING=OFF /src/pdi
           if make doc 2>&1 | tee >(cat>&2) | grep ' warning: ' > /dev/null
           then
             make doc 2>&1 | tee >(cat>&2) | grep ' warning: '
