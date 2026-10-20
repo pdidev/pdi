@@ -29,8 +29,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <spdlog/sinks/ansicolor_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
 #include "pdi/context.h"
@@ -57,11 +57,7 @@ using spdlog::level::off;
 using spdlog::level::trace;
 using spdlog::level::warn;
 using spdlog::sinks::basic_file_sink_st;
-#if defined _WIN32 && !defined(__cplusplus_winrt)
-using spdlog::sinks::wincolor_stdout_sink_st;
-#else
-using spdlog::sinks::ansicolor_stdout_sink_st;
-#endif
+using spdlog::sinks::stdout_color_sink_st;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
@@ -94,11 +90,7 @@ shared_ptr<logger> select_log_sinks(const string& logger_name, PC_tree_t logging
 	)
 	{
 		//logging to console is turned on
-#if defined _WIN32 && !defined(__cplusplus_winrt)
-		sinks.push_back(make_shared<wincolor_stdout_sink_st>());
-#else
-		sinks.push_back(make_shared<ansicolor_stdout_sink_st>());
-#endif
+		sinks.push_back(make_shared<stdout_color_sink_st>());
 	}
 
 	return make_shared<logger>(logger_name, sinks.begin(), sinks.end());

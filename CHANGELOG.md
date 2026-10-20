@@ -59,6 +59,9 @@ and this project adheres to
   [#733](https://github.com/pdidev/pdi/issues/733)
 
 #### Fixed
+* Removed an invalid Windows-specific choice of the console log output, which
+  could not compile: spdlog now picks the console output for the platform,
+  fixing [#816](https://github.com/pdidev/pdi/issues/816)
 
 #### Security
 
