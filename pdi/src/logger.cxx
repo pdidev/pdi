@@ -230,6 +230,15 @@ void Logger::global_pattern(const string& pattern_str)
 	}
 }
 
+void Logger::global_level(level_enum log_level)
+{
+	if (m_parent_logger != nullptr) {
+		m_parent_logger->global_level(log_level);
+	} else {
+		level(log_level);
+	}
+}
+
 void Logger::default_pattern(const string& pattern)
 {
 	if (!m_pattern_from_config) {

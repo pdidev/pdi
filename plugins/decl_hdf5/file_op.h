@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,11 +90,12 @@ public:
 	 * Multiple File_op's are created when a "file" subtree is data activated
 	 * and contains multiple data.
 	 *
+	 * \param logger the logger to use
 	 * \param ctx the context from which to access datatypes used
 	 * \param tree the "file" subtree
 	 * \return a vector containing all parsed File_op's
 	 */
-	static std::vector<File_op> parse(PDI::Context& ctx, PC_tree_t tree);
+	static std::vector<File_op> parse(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t tree);
 
 	File_op(File_op&&) = default;
 
@@ -129,9 +131,10 @@ public:
 
 	/** Executes the requested operation.
 	 *
+	 * \param logger the logger to use
 	 * \param ctx the context in which to operate
 	 */
-	void execute(PDI::Context& ctx);
+	void execute(PDI::Logger& logger, PDI::Context& ctx);
 };
 
 } // namespace decl_hdf5
