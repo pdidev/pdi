@@ -1,6 +1,7 @@
 /*******************************************************************************
 * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+* Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -45,7 +46,7 @@
 #include "pdi/python/tools.h"
 #include "pdi/ref_any.h"
 
-#include "global_context.h"
+#include "data_store.h"
 
 namespace {
 
@@ -111,7 +112,7 @@ PYBIND11_MODULE(_pdi, m)
 		"init",
 		[](char* conf) {
 			Paraconf_wrapper fw;
-			Global_context::init(PC_parse_string(conf));
+			Data_store::init(PC_parse_string(conf));
 		},
 		"Initialize PDI"
 	);
@@ -120,7 +121,7 @@ PYBIND11_MODULE(_pdi, m)
 		"finalize",
 		[]() {
 			Paraconf_wrapper fw;
-			Global_context::finalize();
+			Data_store::finalize();
 		},
 		"Finalize PDI"
 	);
@@ -129,7 +130,7 @@ PYBIND11_MODULE(_pdi, m)
 		"event",
 		[](const char* name) {
 			Paraconf_wrapper fw;
-			Global_context::context().event(name);
+			Data_store::store().event(name);
 		},
 		"Triggers a PDI \"event\""
 	);
@@ -146,7 +147,7 @@ PYBIND11_MODULE(_pdi, m)
 				static_cast<bool>(access & PDI_IN)
 			};
 			try {
-				Global_context::context()[name].share(r, false, false);
+				Data_store::store()[name].share(r, false, false);
 			} catch (...) {
 				// on error, do not free the data as would be done automatically otherwise
 				r.release();
@@ -160,7 +161,7 @@ PYBIND11_MODULE(_pdi, m)
 		"access",
 		[](const char* name, PDI_inout_t inout) {
 			Paraconf_wrapper fw;
-			Data_descriptor& desc = Global_context::context()[name];
+			Data_descriptor& desc = Data_store::store()[name];
 			desc.share(desc.ref(), false, false);
 			return to_python(desc.ref(), !(inout & PDI_OUT));
 		},
@@ -171,7 +172,7 @@ PYBIND11_MODULE(_pdi, m)
 		"release",
 		[](const char* name) {
 			Paraconf_wrapper fw;
-			Global_context::context()[name].release();
+			Data_store::store()[name].release();
 		},
 		"Releases ownership of a data shared with PDI. PDI is then responsible to free the associated memory whenever necessary."
 	);
@@ -180,7 +181,7 @@ PYBIND11_MODULE(_pdi, m)
 		"reclaim",
 		[](const char* name) {
 			Paraconf_wrapper fw;
-			Global_context::context()[name].reclaim();
+			Data_store::store()[name].reclaim();
 		},
 		"Reclaims ownership of a data buffer shared with PDI. PDI does not manage the buffer memory anymore."
 	);
