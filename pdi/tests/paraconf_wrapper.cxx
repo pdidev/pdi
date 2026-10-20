@@ -26,6 +26,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "pdi/error.h"
 #include "pdi/paraconf_wrapper.h"
 
 using namespace PDI;
@@ -44,4 +45,26 @@ subtree2:
 	EXPECT_THAT(to_string(*Yaml_region::make(PC_get(tree, ".subtree2"))), testing::HasSubstr("(4:3 -> 6:1)"));
 	PC_errhandler(PC_NULL_HANDLER);
 	EXPECT_EQ(to_string(Yaml_region::make(PC_get(tree, ".invalid"))), "");
+}
+
+TEST(ParaconfWrapper, ToBool)
+{
+	PC_errhandler(PC_NULL_HANDLER);
+	for (auto&& yaml: {"y", "Y", "yes", "Yes", "YES", "true", "True", "TRUE", "on", "On", "ON"}) {
+		EXPECT_TRUE(to_bool(PC_parse_string(yaml))) << yaml;
+		EXPECT_TRUE(to_bool(PC_parse_string(yaml), false)) << yaml;
+	}
+	for (auto&& yaml: {"n", "N", "no", "No", "NO", "false", "False", "FALSE", "off", "Off", "OFF"}) {
+		EXPECT_FALSE(to_bool(PC_parse_string(yaml))) << yaml;
+		EXPECT_FALSE(to_bool(PC_parse_string(yaml), true)) << yaml;
+	}
+	for (auto&& yaml: {"''", "maybe", "1", "yES", "nO", "tRUE", "oN", "oFF", "of", "onn", "yess", "[on]", "{on: on}"}) {
+		EXPECT_THROW(to_bool(PC_parse_string(yaml)), Spectree_error) << yaml;
+		EXPECT_TRUE(to_bool(PC_parse_string(yaml), true)) << yaml;
+		EXPECT_FALSE(to_bool(PC_parse_string(yaml), false)) << yaml;
+	}
+	PC_tree_t missing = PC_get(PC_parse_string("{}"), ".missing");
+	EXPECT_THROW(to_bool(missing), Spectree_error);
+	EXPECT_TRUE(to_bool(missing, true));
+	EXPECT_FALSE(to_bool(missing, false));
 }
