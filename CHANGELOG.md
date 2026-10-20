@@ -20,7 +20,6 @@ and this project adheres to
 #### Removed
 
 #### Fixed
-
 * Fix YAML index mismatch between Paraconf and LibYAML. 
   [#759](https://github.com/pdidev/pdi/issues/759)
 * Corrected an invalid test that prevented a deprecation warning message for
@@ -28,9 +27,8 @@ and this project adheres to
   [#758](https://github.com/pdidev/pdi/issues/758).
 * Improved the error message if one test in Decl'NetCDF fails
   [#739](https://github.com/pdidev/pdi/issues/739)
-* Fix typographical error in test and String_literal false_values,
-  and asserts never satisfied
-  [#753](https://github.com/pdidev/pdi/issues/753)
+* Fix an error in String_literal and its test that would refuse "off" as a valid
+  false value. This fixes [#753](https://github.com/pdidev/pdi/issues/753)
 
 #### Security
 
