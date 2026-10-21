@@ -88,7 +88,7 @@ fi
 
 if [[ ( "x${PDI_SYSTEM}" = "xdebian-unstable" && "x${PDI_MPI}" = "xmpich" ) ||
       "x${PDI_SPACK_VERSION}" = "xoldest" ||
-      ( "x${PDI_SYSTEM}" = "ubuntu-rolling" && "x${PDI_MPI}" = "xmpich" ) ]]
+      ( "x${PDI_SYSTEM}" = "xubuntu-rolling" && "x${PDI_MPI}" = "xmpich" ) ]]
 then
    # Workaround: the VeloC plugin cannot work with the default installation of mpich package version > 4.3.2
    #             nor with oldest spack
