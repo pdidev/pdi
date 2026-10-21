@@ -81,6 +81,14 @@ public:
 /// \deprecated use PDI_PLUGIN_API_VERSION instead
 #define PLUGIN_API_VERSION PDI_PLUGIN_API_VERSION
 
+// GCC has no way to deprecate a macro that works in `#if` too, Clang does
+#if defined(__clang__) && __clang_major__ >= 14
+#pragma clang deprecated(PLUGIN_API_VERSION_MAJOR, "use PDI_PLUGIN_API_VERSION_MAJOR instead")
+#pragma clang deprecated(PLUGIN_API_VERSION_MINOR, "use PDI_PLUGIN_API_VERSION_MINOR instead")
+#pragma clang deprecated(PLUGIN_API_VERSION_PATCH, "use PDI_PLUGIN_API_VERSION_PATCH instead")
+#pragma clang deprecated(PLUGIN_API_VERSION, "use PDI_PLUGIN_API_VERSION instead")
+#endif
+
 /** Checks compatibility with a plugin API
  *
  * \param expected_version the expected version of the API or 0 for no check
