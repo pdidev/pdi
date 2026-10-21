@@ -18,6 +18,8 @@ and this project adheres to
 #### Deprecated
 
 #### Removed
+* Remove `BUILD_BENCHMARKING` CMake option from the root CMakeLists.
+  [#845](https://github.com/pdidev/pdi/issues/845)
 
 #### Fixed
 * Fix YAML index mismatch between Paraconf and LibYAML. 
@@ -27,6 +29,9 @@ and this project adheres to
   [#758](https://github.com/pdidev/pdi/issues/758).
 * Improved the error message if one test in Decl'NetCDF fails
   [#739](https://github.com/pdidev/pdi/issues/739)
+* The example project asks for the Fortran component of Paraconf when it is
+  built with Fortran support, as per
+  [#784](https://github.com/pdidev/pdi/issues/784).
 
 #### Security
 
