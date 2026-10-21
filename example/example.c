@@ -162,10 +162,12 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "Usage: %s <config_file>\n", argv[0]);
 		exit(1);
 	}
+
 #ifdef WITH_PARACONF
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	PDI_init(PC_get(conf, ".pdi"));
 #endif
+
 	MPI_Comm main_comm = MPI_COMM_WORLD;
 
 	PDI_expose("mpi_comm", &main_comm, PDI_INOUT);
@@ -187,18 +189,6 @@ int main(int argc, char* argv[])
 #ifdef WITH_PARACONF
 	PC_int(PC_get(conf, ".datasize[0]"), &longval);
 	dsize[0] = longval;
-
-#else
-	dsize[0] = 8;
-	dsize[1] = 8 * psize_1d;
-
-	int psize[2];
-	psize[0] = 1;
-	psize[1] = psize_1d;
-
-	double duration = 0.1;
-	veloc_checkpoint_status = 1;
-#endif
 
 	PC_int(PC_get(conf, ".datasize[1]"), &longval);
 	dsize[1] = longval;
@@ -223,6 +213,18 @@ int main(int argc, char* argv[])
 	} else {
 		veloc_checkpoint_status = 1;
 	}
+
+#else
+	dsize[0] = 8;
+	dsize[1] = 8 * psize_1d;
+
+	int psize[2];
+	psize[0] = 1;
+	psize[1] = psize_1d;
+
+	double duration = 0.1;
+	veloc_checkpoint_status = 1;
+#endif
 
 	// get local & add ghosts to sizes
 	assert(dsize[0] % psize[0] == 0);
