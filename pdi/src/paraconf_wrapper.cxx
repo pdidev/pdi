@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +40,7 @@ namespace {
 void do_pc(PC_tree_t tree, PC_status_t status)
 {
 	if (status) {
-		throw Spectree_error{tree, "Configuration error #{}: {}", static_cast<int>(status), PC_errmsg()};
+		throw Spectree_error{tree, "{}", PC_errmsg()};
 	}
 }
 
