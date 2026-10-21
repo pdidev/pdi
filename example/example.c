@@ -27,7 +27,10 @@
 #include <mpi.h>
 #include <assert.h>
 #include <math.h>
+#ifndef WITHOUT_PARACONF
+#define WITH_PARACONF
 #include <paraconf.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -159,10 +162,10 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "Usage: %s <config_file>\n", argv[0]);
 		exit(1);
 	}
-
+#ifdef WITH_PARACONF
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	PDI_init(PC_get(conf, ".pdi"));
-
+#endif
 	MPI_Comm main_comm = MPI_COMM_WORLD;
 
 	PDI_expose("mpi_comm", &main_comm, PDI_INOUT);
@@ -181,8 +184,21 @@ int main(int argc, char* argv[])
 
 	int dsize[2];
 
+#ifdef WITH_PARACONF
 	PC_int(PC_get(conf, ".datasize[0]"), &longval);
 	dsize[0] = longval;
+
+#else
+	dsize[0] = 8;
+	dsize[1] = 8 * psize_1d;
+
+	int psize[2];
+	psize[0] = 1;
+	psize[1] = psize_1d;
+
+	double duration = 0.1;
+	veloc_checkpoint_status = 1;
+#endif
 
 	PC_int(PC_get(conf, ".datasize[1]"), &longval);
 	dsize[1] = longval;
@@ -278,7 +294,9 @@ int main(int argc, char* argv[])
 
 	PDI_finalize();
 
+#ifdef WITH_PARACONF
 	PC_tree_destroy(&conf);
+#endif
 
 	free(cur);
 	free(next);
