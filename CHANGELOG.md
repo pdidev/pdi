@@ -31,6 +31,8 @@ and this project adheres to
   [#739](https://github.com/pdidev/pdi/issues/739)
 * Fix an error in String_literal and its test that would refuse "off" as a valid
   false value. This fixes [#753](https://github.com/pdidev/pdi/issues/753)
+* Fix a test of PDI_expression which which could not fail
+ [[#753](https://github.com/pdidev/pdi/issues/753)]
 
 #### Security
 
