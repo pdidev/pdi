@@ -53,10 +53,12 @@ TEST(ParaconfWrapper, ToBool)
 	for (auto&& yaml: {"y", "Y", "yes", "Yes", "YES", "true", "True", "TRUE", "on", "On", "ON"}) {
 		EXPECT_TRUE(to_bool(PC_parse_string(yaml))) << yaml;
 		EXPECT_TRUE(to_bool(PC_parse_string(yaml), false)) << yaml;
+		EXPECT_TRUE(to_bool(PC_parse_string(yaml), true)) << yaml;
 	}
 	for (auto&& yaml: {"n", "N", "no", "No", "NO", "false", "False", "FALSE", "off", "Off", "OFF"}) {
 		EXPECT_FALSE(to_bool(PC_parse_string(yaml))) << yaml;
 		EXPECT_FALSE(to_bool(PC_parse_string(yaml), true)) << yaml;
+		EXPECT_FALSE(to_bool(PC_parse_string(yaml), false)) << yaml;
 	}
 	for (auto&& yaml: {"''", "maybe", "1", "yES", "nO", "tRUE", "oN", "oFF", "of", "onn", "yess", "[on]", "{on: on}"}) {
 		EXPECT_THROW(to_bool(PC_parse_string(yaml)), Spectree_error) << yaml;
