@@ -1220,7 +1220,7 @@ struct ExpresionOperators: public ::testing::Test {
 		: test_conf{PC_parse_string("data: {x : int, y : int}")}
 	{}
 
-	void SetUp() override { test_context.reset(new PDI::Data_store{test_conf}); }
+	void SetUp() override { test_context.reset(new Data_store{test_conf}); }
 
 	PDI::Paraconf_wrapper fw;
 	PC_tree_t test_conf;
@@ -1618,7 +1618,7 @@ struct ExpresionFMTFormat: public ::testing::Test {
 		: test_conf{PC_parse_string("data: {x : int, y : double, z: {type: array, subtype: char, size: 16}}")}
 	{}
 
-	void SetUp() override { test_context.reset(new PDI::Data_store{test_conf}); }
+	void SetUp() override { test_context.reset(new Data_store{test_conf}); }
 
 	PDI::Paraconf_wrapper fw;
 	PC_tree_t test_conf;
