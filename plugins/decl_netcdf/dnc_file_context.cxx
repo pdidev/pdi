@@ -151,7 +151,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 			PDI::each(write_node, [this](PC_tree_t desc_name, PC_tree_t write_value) {
 				std::string write_desc = PDI::to_string(desc_name);
 				m_ctx.logger().trace("Creating new write info for: {}", write_desc);
-				this->m_write.emplace(to_string(desc_name), Dnc_io{this->m_ctx, write_value});
+				this->m_write.emplace(write_desc, Dnc_io{this->m_ctx, write_value});
 			});
 		} else {
 			throw PDI::Spectree_error{write_node, "write node is not parsed correctly"};
