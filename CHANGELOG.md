@@ -41,6 +41,8 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* Tests check that an array type accepts `order: C` and `order: c` and rejects
+  any other order, as per [#758](https://github.com/pdidev/pdi/issues/758)
 
 #### Changed
 * Merged `Callbacks` into `Global_context` and renamed the callback functions,
