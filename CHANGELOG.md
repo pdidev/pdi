@@ -32,6 +32,11 @@ and this project adheres to
 * The example project asks for the Fortran component of Paraconf when it is
   built with Fortran support, as per
   [#784](https://github.com/pdidev/pdi/issues/784).
+* Fix an error in String_literal and its test that would refuse "off" as a valid
+  false value.
+  [#753](https://github.com/pdidev/pdi/issues/753)
+* Fix a test of PDI_expression which which could not fail.
+  [#753](https://github.com/pdidev/pdi/issues/753)
 
 #### Security
 
