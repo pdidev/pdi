@@ -49,6 +49,8 @@ and this project adheres to
 * Renamed the `PLUGIN_API_VERSION*` macros to `PDI_PLUGIN_API_VERSION*` to
   follow the macro naming convention, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
+* `<pdi/plugin.h>` no longer declares anything at global scope. Fixes
+  [#756](https://github.com/pdidev/pdi/issues/756)
 
 #### Deprecated
 * `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
@@ -64,6 +66,8 @@ and this project adheres to
   [#733](https://github.com/pdidev/pdi/issues/733)
 
 #### Fixed
+* Building a plugin with `-Wall -Wextra` no longer warns about `pdi/plugin.h`,
+  fixing [#812](https://github.com/pdidev/pdi/issues/812)
 
 #### Security
 
