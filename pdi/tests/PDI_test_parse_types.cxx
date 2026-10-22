@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -346,6 +347,8 @@ vector<param_pair> scalar_types{
 
 vector<param_pair> array_types{
 	{"{size: 10, type: array, subtype: char}", Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), 10)},
+	{"{size: 10, type: array, subtype: char, order: C}", Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), 10)},
+	{"{size: 10, type: array, subtype: char, order: c}", Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), 10)},
 	{"{type: array, size: 20, subsize: 15, start: 5, subtype: char}",
      Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), 20, 5, 15)},
 	{"{size: 30, subsize: 15, type: array, subtype: char}",
@@ -738,6 +741,7 @@ vector<string> invalid_data{
 	"{size: [10, 20], subsize: 10, type: array, subtype: char}",
 	"{subsize: 10, start: [30, 20, 20], type: array, subtype: char}",
 	"{sizes: [10, 20], type: array, subtype: char}",
+	"{size: 10, type: array, subtype: char, order: F}",
 	"{type: record, members: {my_char: {disp: 0, type: char}, my_int: {disp: 4, type: int} }}",
 	"{type: record, buffersize: 8, members: {my_char: {type: char}, my_int: {disp: 4, type: int} }}",
 	"{type: tuple, buffersize: 13, elements: [char, int, double]}",
