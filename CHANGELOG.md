@@ -64,6 +64,9 @@ and this project adheres to
   [#733](https://github.com/pdidev/pdi/issues/733)
 
 #### Fixed
+* A plugin that does not export its pretty name, now loads under its own name
+  instead of crashing PDI, fixing
+  [#836](https://github.com/pdidev/pdi/issues/836)
 
 #### Security
 
