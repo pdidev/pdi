@@ -61,6 +61,7 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 
 # Modules to build
 
+option(BUILD_BENCHMARKING       "Build the Decl'HDF5 benchmarks" ON)
 option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
 option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
