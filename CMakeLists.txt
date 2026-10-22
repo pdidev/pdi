@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -177,8 +178,11 @@ endif()
 
 ### Dependencies
 
+include(DeprecatedAlias)
 include(GNUInstallDirs)
 include(SuperBuild)
+# Before any dependency is added, since each is handed a copy of the cache: Paraconf reads INSTALL_CMAKEDIR for its own package files.
+pdi_deprecated_alias(INSTALL_CMAKEDIR INSTALL_PDICMAKEDIR "PDI cmake modules (PDIDATADIR/cmake)")
 sbuild_get_env(SBUILD_PATH PATH)
 sbuild_get_env(SBUILD_CPATH CPATH)
 sbuild_get_env(SBUILD_LIBRARY_PATH LIBRARY_PATH)

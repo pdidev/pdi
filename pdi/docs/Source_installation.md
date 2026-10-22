@@ -160,8 +160,8 @@ cmake module.
 
 |Flag                      |Default                                                                                |Description|
 |:-------------------------|:--------------------------------------------------------------------------------------|:----------|
-|`INSTALL_CMAKEDIR`        |`PDIDATADIR/cmake`                                                                     |Cmake modules.|
 |`INSTALL_FMODDIR`         |`LIBDIR/pdi/finclude/${COMPILER_VERSION}`                                              |Fortran modules|
+|`INSTALL_PDICMAKEDIR`     |`PDIDATADIR/cmake`                                                                     |Cmake modules, set by the deprecated `INSTALL_CMAKEDIR` when that is given instead.|
 |`INSTALL_PDIDATADIR`      |`DATADIR/pdi`                                                                          |PDI data|
 |`INSTALL_PDIPLUGINDIR`    |`LIBDIR/pdi/plugins_${PDI_VERSION}`                                                    |PDI plugins|
 |`CMAKE_INSTALL_BINDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |user executables|
