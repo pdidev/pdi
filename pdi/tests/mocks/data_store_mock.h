@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,19 +24,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_GLOBAL_CONTEXT_MOCK_H_
-#define PDI_GLOBAL_CONTEXT_MOCK_H_
+#ifndef PDI_DATA_STORE_MOCK_H_
+#define PDI_DATA_STORE_MOCK_H_
 
 #include <gmock/gmock.h>
 #include <pdi/datatype_template.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 
-#include "global_context.h"
+#include "data_store.h"
 
-struct MockGlobalContext: public PDI::Global_context {
-	MockGlobalContext(PC_tree_t conf)
-		: Global_context(conf)
+struct MockDataStore: public PDI::Data_store {
+	MockDataStore(PC_tree_t conf)
+		: Data_store(conf)
 	{}
 
 	PDI::Paraconf_wrapper fw;
@@ -64,4 +65,4 @@ struct MockGlobalContext: public PDI::Global_context {
 };
 
 
-#endif //PDI_GLOBAL_CONTEXT_MOCK_H_
+#endif //PDI_DATA_STORE_MOCK_H_

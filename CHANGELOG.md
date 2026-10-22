@@ -41,8 +41,12 @@ and this project adheres to
 #### Added
 
 #### Changed
-* Merged `Callbacks` into `Global_context` and renamed the callback functions,
-  as per [#720](https://github.com/pdidev/pdi/issues/720)
+* `PDI::Callbacks` and `Context::callbacks()` are gone: a plugin registers its
+  callbacks on the context itself, with `on_init`, `on_data`, `on_data_remove`,
+  `on_event` and `on_missing_data` in place of `add_init_callback`,
+  `add_data_callback`, `add_data_remove_callback`, `add_event_callback` and
+  `add_empty_desc_access_callback`, as per
+  [#720](https://github.com/pdidev/pdi/issues/720)
 * Renamed `PDI::TimerEventHandler` to `PDI::Timer_event_handler` to follow the
   class naming convention, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
