@@ -14,6 +14,9 @@ and this project adheres to
 #### Added
 
 #### Changed
+* The `DISABLE_PDI` CMake option of the example project, which builds it against
+  the mock PDI, is renamed `PDI_EXAMPLE_USE_MOCK_PDI`, as per
+  [#785](https://github.com/pdidev/pdi/issues/785).
 
 #### Deprecated
 
