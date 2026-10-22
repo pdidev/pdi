@@ -95,18 +95,18 @@ then
    CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_VELOC_PLUGIN=OFF"
 fi
 
+if [[ "x${PDI_LIBS}" != "xprovided" ]]
+then
+	# Workaround: mini images do not ship VeloC
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_VELOC_PLUGIN=OFF"
+fi
+
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) ]] && dpkg-query -W 'libspdlog-dev' > /dev/null
 then
 	# Workaround: spdlog mismatch between the vendored version and dependency of doxygen
 	#             https://github.com/pdidev/test_env/issues/30
 	#             (see  https://github.com/pdidev/test_env/actions/runs/27519792247/job/81335351522)
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_spdlog=SYSTEM"
-fi
-
-if [[ "x${PDI_VARIANT}" = "xmini" ]]
-then
-	# Workaround: mini images do not ship VeloC
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_VELOC_PLUGIN=OFF"
 fi
 
 # And now for the actual tests
