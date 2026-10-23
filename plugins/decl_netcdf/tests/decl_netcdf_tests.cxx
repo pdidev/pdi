@@ -1119,8 +1119,6 @@ plugins:
 	// check file exists
 	EXPECT_TRUE(std::filesystem::exists("test_double_array_read.nc"));
 
-	// PDI_ERR_TYPE --> PDI_ERR_STATE pour enlever les tests d'erreur
-
 	EXPECT_CALL(
 		*this,
 		PdiError(
