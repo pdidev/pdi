@@ -41,6 +41,9 @@ and this project adheres to
 #### Added
 
 #### Changed
+* The API tests project chooses how it gets PDI with `API_TESTS_PDI`, `FIND` or
+  `MOCK`, instead of the `DISABLE_PDI` option, as per
+  [#786](https://github.com/pdidev/pdi/issues/786).
 * Merged `Callbacks` into `Global_context` and renamed the callback functions,
   as per [#720](https://github.com/pdidev/pdi/issues/720)
 * Renamed `PDI::TimerEventHandler` to `PDI::Timer_event_handler` to follow the
