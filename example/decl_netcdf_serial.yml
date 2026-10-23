@@ -10,7 +10,6 @@ pdi:
   include:
   - pdi.yml
   plugins:
-    mpi:
     decl_netcdf:
       file: data_${mpi_rank}.nc
       variables: # type of the datasets to create in file

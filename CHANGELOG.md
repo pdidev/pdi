@@ -14,6 +14,8 @@ and this project adheres to
 #### Added
 
 #### Changed
+* Split the example of HDF5 between serial and parallel versions, 
+  to match NetCDF [#822](https://github.com/pdidev/pdi/issues/822)
 
 #### Deprecated
 
