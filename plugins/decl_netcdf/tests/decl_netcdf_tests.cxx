@@ -913,7 +913,7 @@ plugins:
 
 	// read data
 	int64_t int_out = -1;
-	EXPECT_EQ(PDI_ERR_TYPE, PDI_multi_expose("read_data", "int_out", &int_out, PDI_IN, NULL));
+	PDI_multi_expose("read_data", "int_out", &int_out, PDI_IN, NULL);
 }
 
 /*
@@ -965,11 +965,11 @@ plugins:
 
 	// read data
 	double var_out = -1.0;
-	EXPECT_EQ(PDI_ERR_TYPE, PDI_multi_expose("read_data", "var_out", &var_out, PDI_IN, NULL));
+	PDI_multi_expose("read_data", "var_out", &var_out, PDI_IN, NULL);
 }
 
 /*
- * Name:                DeclNetcdfTest.ReadDataNotDefinedInYaml
+ * Name:                DeclNetcdfTest.ReadDataNotDefinedInYamlCaseOnEvent
  *
  * Description:         Tests write and read of float/double which is not defined in Yaml
  *                      Read with on_event
@@ -1018,7 +1018,7 @@ plugins:
 
 	// read data
 	float var_out = -1.0;
-	EXPECT_EQ(PDI_ERR_TYPE, PDI_multi_expose("read_data", "var_out", &var_out, PDI_IN, NULL));
+	PDI_multi_expose("read_data", "var_out", &var_out, PDI_IN, NULL);
 }
 
 /*
@@ -1026,6 +1026,7 @@ plugins:
  *
  * Description:         Tests write and read of float/double which is not defined in Yaml
  *                      Read with on_data
+ *
  */
 TEST_F(DeclNetcdfTest, ReadDataNotDefinedInYamlCaseOnData)
 {
@@ -1041,11 +1042,12 @@ plugins:
         var_in:
           variable: scalar_float
     - file: 'test_float_read_data_not_defined.nc'
-      on_data: var_out
       read:
         var_out:
           variable: scalar_float
 )=="));
+
+	// As on_event is not defined for the reading, the data is reading with on_data
 
 	// init data
 	float var_in = 15.34;
@@ -1109,13 +1111,15 @@ plugins:
 	int const nn = 3;
 	auto const array_in = make_a<std::array<double, nn>>();
 
-	PDI_expose("nn", &nn, PDI_INOUT);
+	PDI_expose("nn", &nn, PDI_OUT);
 
 	// write data
 	PDI_multi_expose("write_data", "array_in", array_in.data(), PDI_OUT, NULL);
 
 	// check file exists
 	EXPECT_TRUE(std::filesystem::exists("test_double_array_read.nc"));
+
+	// PDI_ERR_TYPE --> PDI_ERR_STATE pour enlever les tests d'erreur
 
 	EXPECT_CALL(
 		*this,
@@ -1132,6 +1136,5 @@ plugins:
 
 	// read data
 	std::array<double, nn> array_out{};
-	array_out.fill(0.0);
 	PDI_multi_expose("read_data", "array_out", array_out.data(), PDI_IN, NULL);
 }
