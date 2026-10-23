@@ -22,6 +22,8 @@ and this project adheres to
   [#845](https://github.com/pdidev/pdi/issues/845)
 
 #### Fixed
+* Change JSON package name to `nlohmann_json` so that `USE_nlohmann_json=SYSTEM/AUTO` will find the system version if available.
+  [#769](https://github.com/pdidev/pdi/issues/769) 
 * Fix YAML index mismatch between Paraconf and LibYAML. 
   [#759](https://github.com/pdidev/pdi/issues/759)
 * Corrected an invalid test that prevented a deprecation warning message for
