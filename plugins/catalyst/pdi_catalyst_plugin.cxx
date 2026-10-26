@@ -19,6 +19,7 @@
 #include <pdi/context.h>
 #include <pdi/error.h>
 
+#include "catalyst_plugin_structured_ghost.h"
 #include "pdi_catalyst_plugin.h"
 
 // return the comment defined in catalyst_api.h for each catalyst_status
@@ -291,7 +292,7 @@ void catalyst_plugin::run_catalyst_initialize()
 	}
 }
 
-void catalyst_plugin::read_info_for_creating_vtk_ghost(
+void catalyst_plugin::build_vtk_ghost_type(
 	conduit_node* execute_node,
 	PC_tree_t& execute_spec,
 	std::vector<Catalyst_plugin_structured_ghost>& list_vtkGhostType_to_create
@@ -308,7 +309,6 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 
 	// value to keep the parent tree of the current.tree
 	PC_tree_t current_parent_tree;
-
 
 	std::stack<Spec_tree_node> remaining_tree_and_parent_node;
 	remaining_tree_and_parent_node.push({execute_spec, "catalyst", execute_node});
@@ -369,6 +369,20 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 				}
 			}
 		}
+	}
+
+	auto current_node = conduit_cpp::cpp_node(execute_node);
+	// create vtkGhostType vector
+	for (auto&& vtk_ghost_type: list_vtkGhostType_to_create) {
+		std::string tmp_path = vtk_ghost_type.get_node_path();
+		std::string meshname = vtk_ghost_type.get_topology_name();
+		vtk_ghost_type.create_vtk_ghost_type();
+
+		// create the node corresponding to the different vtkGhostType
+		current_node[tmp_path + "/fields/vtkGhostType/association"].set("element");
+		current_node[tmp_path + "/fields/vtkGhostType/topology"].set(meshname);
+		current_node[tmp_path + "/fields/vtkGhostType/volume_dependent"].set("false");
+		current_node[tmp_path + "/fields/vtkGhostType/values"].set_external(vtk_ghost_type.get_vector(), vtk_ghost_type.get_size(), 0, 1, sizeof(uint8_t));
 	}
 }
 
@@ -499,20 +513,7 @@ void catalyst_plugin::run_catalyst_execute()
 
 	context().logger().debug("Read Ghost layers for creating vtk_ghost_type");
 	// read information to create the vtkGhostType for paraview (read "ghost_layers" node in the yaml file)
-	read_info_for_creating_vtk_ghost(node_pointer, execute_spec, list_vtkGhostType_to_create);
-
-	// creation vtkGhostType vector
-	for (auto&& vtk_ghost_type: list_vtkGhostType_to_create) {
-		std::string tmp_path = vtk_ghost_type.get_node_path();
-		std::string meshname = vtk_ghost_type.get_topology_name();
-		vtk_ghost_type.create_vtk_ghost_type();
-
-		// create the node corresponding to the different vtkGhostType
-		node[tmp_path + "/fields/vtkGhostType/association"].set("element");
-		node[tmp_path + "/fields/vtkGhostType/topology"].set(meshname);
-		node[tmp_path + "/fields/vtkGhostType/volume_dependent"].set("false");
-		node[tmp_path + "/fields/vtkGhostType/values"].set_external(vtk_ghost_type.get_vector(), vtk_ghost_type.get_size(), 0, 1, sizeof(uint8_t));
-	}
+	build_vtk_ghost_type(node_pointer, execute_spec, list_vtkGhostType_to_create);
 
 	if (context().logger().level() == spdlog::level::debug || context().logger().level() == spdlog::level::trace) {
 		context().logger().info("Print Conduit Node including vtk ghost type created ...");
