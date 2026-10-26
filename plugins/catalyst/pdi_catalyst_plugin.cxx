@@ -21,6 +21,30 @@
 
 #include "pdi_catalyst_plugin.h"
 
+// return the comment defined in catalyst_api.h for each catalyst_status
+const char* status_to_string(catalyst_status & status) {
+	switch (status) {
+	case catalyst_status_ok:
+		return "OK";
+	case catalyst_status_error_no_implementation:
+		return "An implementation has not been loaded.";
+	case catalyst_status_error_already_loaded:
+		return "An implementation has already been loaded";
+	case catalyst_status_error_not_found:
+		return "The implementation library was not found";
+	case catalyst_status_error_not_catalyst:
+		return "The library did not contain a Catalyst API structure";
+	case catalyst_status_error_incomplete:
+		return "The library did not provide all of the required API functions";
+	case catalyst_status_error_unsupported_version:
+		return "The library did not provide a supported version of the API.";
+	case catalyst_status_error_conduit_mismatch:
+		return "The Conduit state for the implementation does not match Catalyst's Conduit state";
+	default:
+		return "[Unknown catalyst_status]";
+	}
+}
+
 catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 	: Plugin{ctx}
 	, m_spec_tree(spec_tree)
@@ -139,16 +163,58 @@ void catalyst_plugin::run_catalyst_initialize()
 {
 	conduit_cpp::Node node;
 
+	// bool catalyst_implementation_env_exists = false;
+
+	const char* env_catalyst_impl_preference = std::getenv("CATALYST_IMPLEMENTATION_PREFER_ENV");
+	if (!(env_catalyst_impl_preference == nullptr)) {
+		context().logger().warn("The environnment variables CATALYST_IMPLEMENTATION_* will be used instead of the value in the specification tree.");
+	} else {
+		context().logger().trace("Read information for implementation");
+		auto implementation_spec = PC_get(this->m_spec_tree, ".implementation");
+		if (!PC_status(implementation_spec)) {
+			std::string implementation_name = PDI::to_string(implementation_spec);
+			node["catalyst_load/implementation"].set(implementation_name.c_str()) ;
+		} else {
+			context().logger().trace("No catalyst implementation is given in specification tree.");
+			const char* env_catalyst_to_check = std::getenv("CATALYST_IMPLEMENTATION_NAME");
+			if (env_catalyst_to_check == nullptr) {
+				context().logger().warn("No CATALYST_IMPLEMENTATION_NAME environement variable is not defined.");
+			}
+			// else: check library exists ??
+		}
+
+		context().logger().trace("Read information for implementation paths");
+		auto impl_paths_spec = PC_get(this->m_spec_tree, ".implementation_paths");
+		if (!PC_status(impl_paths_spec)) {
+			int number_paths = 0;
+			PC_len(impl_paths_spec, &number_paths);
+			auto paths_node = node["catalyst_load/search_paths"];
+			for (int index = 0; index < number_paths; ++index) {
+				auto key = PC_get(impl_paths_spec, "{%d}", index);
+				auto value = PC_get(impl_paths_spec, "<%d>", index);
+				paths_node[PDI::to_string(key)] = PDI::to_string(value);
+			}
+		} else {
+			context().logger().trace("No catalyst implementation paths is given in specification tree.");
+			const char* env_catalyst_to_check = std::getenv("CATALYST_IMPLEMENTATION_PATHS");
+			if (env_catalyst_to_check == nullptr) {
+				context().logger().warn("No CATALYST_IMPLEMENTATION_PATHS environement variable is not defined.");
+			}
+			// else: check library exists ??
+		}
+	}
+	node.print();
+
 	context().logger().trace("Read information for script.");
 	auto scripts_spec = PC_get(this->m_spec_tree, ".scripts");
 	if (PC_status(scripts_spec)) {
-		throw PDI::Spectree_error(m_spec_tree, "No scripts tree is defined for catalyst plugin.");
+		throw PDI::Spectree_error(m_spec_tree, "No python script is defined for catalyst plugin.");
 	}
 
 	int script_number = 0;
 	PC_len(scripts_spec, &script_number);
 	if (script_number == 0) {
-		throw PDI::Spectree_error(scripts_spec, "No python script is defined for catalyst python.");
+		throw PDI::Spectree_error(scripts_spec, "No python script is defined for catalyst plugin.");
 	} else {
 		context().logger().debug("The number of python script is `{}'", script_number);
 	}
@@ -211,8 +277,6 @@ void catalyst_plugin::run_catalyst_initialize()
 #endif
 	// The following node is supported in the latest version of Paraview.
 	// These nodes are not defined yet because we need some investigations.
-	// node["catalyst_load/implementation"].set("stub") ;
-	// node["catalyst_load/search_paths"].set("/path/to/install/catalyst/lib/catalyst/");
 	// node["catalyst/pipelines"]
 	// node["catalyst/python_path"]
 
@@ -220,9 +284,9 @@ void catalyst_plugin::run_catalyst_initialize()
 		context().logger().debug("catalyst_initialize call...");
 		auto result = catalyst_initialize(conduit_cpp::c_node(&node));
 		if (result != catalyst_status_ok) {
-			context().logger().error("catalyst_initialize failure");
-			throw PDI::System_error("catalyst_initialize failure");
+			throw PDI::System_error("catalyst_initialize fails with error message `{}`", status_to_string(result));
 		}
+		context().logger().debug("end catalyst_initialize call...");
 		catalyst_is_initialized = true;
 	}
 }
@@ -455,12 +519,12 @@ void catalyst_plugin::run_catalyst_execute()
 		node.print();
 	}
 
-	context().logger().trace("catalyst_execute call...");
+	context().logger().debug("catalyst_execute call...");
 	auto result = catalyst_execute(node_pointer);
 	if (result != catalyst_status_ok) {
-		throw PDI::System_error{"catalyst_execute failure"};
+		throw PDI::System_error("catalyst_execute fails with error message `{}`", status_to_string(result));
 	}
-	context().logger().trace("end catalyst_execute call...");
+	context().logger().debug("end catalyst_execute call...");
 }
 
 void catalyst_plugin::run_catalyst_finalize()
@@ -470,8 +534,9 @@ void catalyst_plugin::run_catalyst_finalize()
 		conduit_cpp::Node node;
 		auto result = catalyst_finalize(conduit_cpp::c_node(&node));
 		if (result != catalyst_status_ok) {
-			throw PDI::System_error{"catalyst_finalize failure"};
+			throw PDI::System_error("catalyst_finalize fails with error message `{}`", status_to_string(result));
 		}
+		context().logger().debug("end catalyst_finalize call...");
 	}
 }
 
