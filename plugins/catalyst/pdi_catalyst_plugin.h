@@ -60,7 +60,7 @@ private:
 	/// @param execute_node
 	/// @param execute_spec
 	/// @param list_vtkGhostType_to_create
-	void read_info_for_creating_vtk_ghost(
+	void build_vtk_ghost_type(
 		conduit_node* execute_node,
 		PC_tree_t& execute_spec,
 		std::vector<Catalyst_plugin_structured_ghost>& list_vtkGhostType_to_create
