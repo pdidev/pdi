@@ -503,7 +503,7 @@ void catalyst_plugin::run_catalyst_execute()
 
 	context().logger().trace("Run catalyst_execute()");
 	conduit_cpp::Node node;
-	std::vector<Catalyst_plugin_structured_ghost> list_vtkGhostType_to_create; // object contains vector vtkGhostType
+	std::vector<Catalyst_plugin_structured_ghost> list_vtkGhostType_to_create; // the object used to construct and to store the vtkGhostType field(s)
 	auto execute_spec = PC_get(this->m_spec_tree, ".execute");
 
 	context().logger().debug("Read m_spec_tree execute");
