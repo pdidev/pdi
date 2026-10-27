@@ -1,5 +1,5 @@
 !*******************************************************************************
-! Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+! Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,9 @@ program PDI_example_f90
   call MPI_Comm_size(main_comm, psize_1d, err)
   call MPI_Comm_rank(main_comm, pcoord_1d, err)
 
+  iptr => pcoord_1d; call PDI_expose("mpi_rank", iptr, PDI_INOUT)
+  iptr => psize_1d;  call PDI_expose("mpi_size", iptr, PDI_INOUT)
+
   call PC_int(PC_get(conf,".datasize[0]"), dsize(1))
   call PC_int(PC_get(conf,".datasize[1]"), dsize(2))
   
@@ -89,6 +92,9 @@ program PDI_example_f90
   call MPI_Cart_coords(cart_comm, pcoord_1d, 2, pcoord, err)
   
   ! passing target argument to pointer dummy argument is F2008, not well supported
+  iptr => pcoord_1d;  call PDI_expose("mpi_rank", iptr, PDI_OUT);
+  iptr => psize_1d;   call PDI_expose("mpi_size", iptr, PDI_OUT);
+  iptr => ii;      call PDI_expose("iter", iptr, PDI_OUT)
   iaptr => dsize;  call PDI_expose("dsize",  iaptr, PDI_OUT)
   iaptr => psize;  call PDI_expose("psize", iaptr, PDI_OUT)
   iaptr => pcoord; call PDI_expose("pcoord", iaptr, PDI_OUT)
