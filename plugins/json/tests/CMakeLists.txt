@@ -42,18 +42,16 @@ function(build_test_compare TEST_NAME)
     set(EXPECTED_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}_expected.json")
     set(ACTUAL_OUTPUT_PATH "${CMAKE_BINARY_DIR}/tests/${TEST_NAME}.json")
 
-    # Test
+    # Build the executable (but don't add it as a separate CTest test)
     add_executable(${TEST_NAME} "${TEST_NAME}.c")
     target_link_libraries(${TEST_NAME} PDI::PDI_C)
-    add_test(NAME ${TEST_NAME} COMMAND "$<TARGET_FILE:${TEST_NAME}>" PRE_BUILD)
 
-    # Compare content
-    add_test(NAME verify_content_${TEST_NAME}
+    # Single test that runs the executable and verifies the content safely
+    add_test(NAME ${TEST_NAME}
              COMMAND ${CMAKE_COMMAND} -DTEST_NAME=${TEST_NAME}
                                       -DEXPECTED_OUTPUT_PATH=${EXPECTED_OUTPUT_PATH}
                                       -DACTUAL_OUTPUT_PATH=${ACTUAL_OUTPUT_PATH}
                                       -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compare_content.cmake)
-    set_tests_properties(verify_content_${TEST_NAME} PROPERTIES FIXTURES_REQUIRED ${TEST_NAME})
 endfunction()
 
 
