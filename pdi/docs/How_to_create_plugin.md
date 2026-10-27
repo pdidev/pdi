@@ -32,7 +32,7 @@ PDI_PLUGIN(example)
 ```
 
 ### Adding a callback {#adding_callback}
-PDI::Context has a member with all the functions (callbacks) that are called when user is sharing the data (calls PDI_share). To add a new function to the plugin must call `on_data`.
+To be notified when the user shares data (calls `PDI_share`, `PDI_expose` or `PDI_multiexpose`), a plugin registers a function (a callback) with `PDI::Context::on_data`.
 
 ```cpp
 std::function<void()> on_data(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {}))
