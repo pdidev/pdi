@@ -18,12 +18,12 @@ and this project adheres to
 #### Deprecated
 
 #### Removed
-* Remove `BUILD_BENCHMARKING` CMake option from the root CMakeLists.
-  [#845](https://github.com/pdidev/pdi/issues/845)
 
 #### Fixed
 * Change JSON package name to `nlohmann_json` so that `USE_nlohmann_json=SYSTEM/AUTO` will find the system version if available.
   [#769](https://github.com/pdidev/pdi/issues/769) 
+* Fix JSON unit tests failing under parallel execution (with `ctest -j`).
+  [#772](https://github.com/pdidev/pdi/issues/772)
 * Fix YAML index mismatch between Paraconf and LibYAML. 
   [#759](https://github.com/pdidev/pdi/issues/759)
 * Corrected an invalid test that prevented a deprecation warning message for
@@ -31,6 +31,9 @@ and this project adheres to
   [#758](https://github.com/pdidev/pdi/issues/758).
 * Improved the error message if one test in Decl'NetCDF fails
   [#739](https://github.com/pdidev/pdi/issues/739)
+* The example project asks for the Fortran component of Paraconf when it is
+  built with Fortran support, as per
+  [#784](https://github.com/pdidev/pdi/issues/784).
 
 #### Security
 
