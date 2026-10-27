@@ -59,6 +59,9 @@ program PDI_example_f90
   call MPI_Comm_size(main_comm, psize_1d, err)
   call MPI_Comm_rank(main_comm, pcoord_1d, err)
 
+  iptr => pcoord_1d; call PDI_expose("mpi_rank", iptr, PDI_INOUT)
+  iptr => psize_1d;  call PDI_expose("mpi_size", iptr, PDI_INOUT)
+
   call PC_int(PC_get(conf,".datasize[0]"), dsize(1))
   call PC_int(PC_get(conf,".datasize[1]"), dsize(2))
   
