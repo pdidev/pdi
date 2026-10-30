@@ -2,6 +2,7 @@
 #=============================================================================
 # Copyright (C) 2022-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -29,11 +30,275 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-set -xe
+set -e
+
+
+
+# Gather arguments
+
+usage() {
+	cat <<-EOF
+	Usage: $0 [<options>...]
+	
+	Configure, build and test the whole PDI distribution.
+	
+	Where <option> can be one of:
+	  --ctest-outdir <dir> write the JUnit test reports to <dir>
+	  --workdir <dir>      build in <dir> instead of a fresh pdibuild.XXXXX
+	                       directory created in the current directory, cannot be
+	                       combined with --container
+	  --container <image>  run this very script inside <image> (with docker or
+	                       podman), set up as the CI does it
+	  --cidfile <file>     write the id of the container to <file>, which must not
+	                       exist yet, only valid with --no-rm
+	  --no-rm              keep the container once done (the default is to remove
+	                       it)
+	  -e, --env <name>[=<value>]
+	                       set the environment variable <name> to <value> in the
+	                       container, like the option of docker run; a bare <name>
+	                       passes on the value from the host
+	  -h, --help           show this help
+	
+	The following environment variables control the build:
+	* CMAKE_FLAGS: a list of flags passed to cmake when configuring PDI
+	* MAKEFLAGS: a list of flags passed to make when building PDI
+	* CTEST_FLAGS: a list of flags passed to ctest when testing PDI
+	* EXCLUDED_PDI_TESTS: a list of tests to exclude from the test of PDI
+	
+	Other environment variables directly handled by the underlying tools, like
+	CTEST_PARALLEL_LEVEL for example, can be set before calling the script. If
+	running with --container, they should be transferred with -e <VAR> however.
+	EOF
+}
+
+if [[ -n "${CTEST_DIR:-}" ]]
+then
+	echo "Warning: CTEST_DIR environment variable is deprecated, use --ctest-outdir instead" >&2
+fi
+
+if [[ -n "${TEST_DIR:-}" ]]
+then
+	echo "Warning: TEST_DIR environment variable is deprecated, use --workdir instead" >&2
+fi
+
+if [[ -n "${PDI_PLUGIN_PATH:-}" ]]
+then
+	echo "Warning: No special handling of PDI_PLUGIN_PATH is done anymore. You should add -DINSTALL_PDIPLUGINDIR=<dir> to CMAKE_FLAGS" >&2
+fi
+
+CONTAINER_IMAGE=""
+WORKDIR_OPTION=0
+CIDFILE=""
+REMOVE_CONTAINER=1
+CONTAINER_ENV=()
+add_container_env() {
+	if [[ -z "${1%%=*}" ]]
+	then
+		echo "Error: -e/--env needs a variable name, got '$1'" >&2
+		usage >&2
+		exit 2
+	fi
+	CONTAINER_ENV+=(-e "$1")
+}
+need_value() {
+	if [[ $# -lt 2 || -z "$2" ]]
+	then
+		echo "Error: $1 needs a non-empty value" >&2
+		usage >&2
+		exit 2
+	fi
+}
+while [[ $# -gt 0 ]]
+do
+	# --opt=<value> is --opt <value>
+	if [[ "$1" = --*=* ]]
+	then
+		set -- "${1%%=*}" "${1#*=}" "${@:2}"
+	fi
+	case "$1" in
+	--container)
+		need_value "$@"
+		CONTAINER_IMAGE="$2"
+		shift 2
+		;;
+	--ctest-outdir)
+		need_value "$@"
+		if [[ -n "${CTEST_DIR:-}" ]]
+		then
+			echo "Error: --ctest-outdir while CTEST_DIR is already set" >&2
+			exit 2
+		fi
+		CTEST_DIR="$2"
+		shift 2
+		;;
+	--workdir)
+		need_value "$@"
+		if [[ -n "${TEST_DIR:-}" ]]
+		then
+			echo "Error: --workdir while TEST_DIR is already set" >&2
+			exit 2
+		fi
+		TEST_DIR="$2"
+		WORKDIR_OPTION=1
+		shift 2
+		;;
+	--cidfile)
+		need_value "$@"
+		CIDFILE="$2"
+		shift 2
+		;;
+	--no-rm)
+		REMOVE_CONTAINER=0
+		shift
+		;;
+	-e|--env)
+		need_value "$@"
+		add_container_env "$2"
+		shift 2
+		;;
+	-e?*)
+		add_container_env "${1#-e}"
+		shift
+		;;
+	-h|--help)
+		usage
+		exit 0
+		;;
+	*)
+		echo "Error: unknown argument: $1" >&2
+		usage >&2
+		exit 2
+		;;
+	esac
+done
+
+
+if [[ -z "${CONTAINER_IMAGE}" && ( -n "${CIDFILE}" || "${REMOVE_CONTAINER}" = 0 || ${#CONTAINER_ENV[@]} -gt 0 ) ]]
+then
+	echo "Error: --cidfile, --no-rm and -e/--env only make sense with --container" >&2
+	exit 2
+fi
+
+if [[ -n "${CIDFILE}" && "${REMOVE_CONTAINER}" -gt 0 ]]
+then
+	echo "Error: --cidfile requires --no-rm to be set" >&2
+	exit 2
+fi
+
+if [[ -n "${CONTAINER_IMAGE}" && "${WORKDIR_OPTION}" = 1 ]]
+then
+	echo "Error: --workdir cannot be combined with --container" >&2
+	exit 2
+fi
+
+if [[ -n "${CONTAINER_IMAGE}" && -n "${TEST_DIR:-}" ]]
+then
+	echo "Warning: the TEST_DIR environment variable is ignored with --container" >&2
+fi
+
+
+
+# Run in a container
+
+if [[ -n "${CONTAINER_IMAGE}" ]]
+then
+	if [[ -n "${CIDFILE}" && -e "${CIDFILE}" ]]
+	then
+		echo "Error: ${CIDFILE} already exists" >&2
+		exit 2
+	fi
+	
+	if command -v docker > /dev/null
+	then
+		CONTAINER_ENGINE=docker
+	elif command -v podman > /dev/null
+	then
+		CONTAINER_ENGINE=podman
+	else
+		echo "Error: neither docker nor podman found in PATH" >&2
+		exit 127
+	fi
+
+	SRCDIR="$(cd "$(dirname "$0")/.." && pwd)"
+	CTEST_DIR_HOST="${CTEST_DIR:-}"
+
+	# Remove the container (or leave it, with --no-rm) however we exit: end of the run, failure of a step, interruption
+	CONTAINER_NAME="pdi-tests-$(mktemp -u XXXXXXXXXX)"
+	CLIENT_PID=""
+	INTERRUPTED=0
+	cleanup() {
+		# kill the client first, then the container it launched if present
+		if [[ -n "${CLIENT_PID}" ]] && kill -0 "${CLIENT_PID}" 2> /dev/null
+		then
+			kill -KILL "${CLIENT_PID}" 2> /dev/null || true
+			wait "${CLIENT_PID}" 2> /dev/null || true
+		fi
+		# no client can launch the container in our back anymore, either it's there and we kill it or it wasn't created yet
+		if "${CONTAINER_ENGINE}" container inspect "${CONTAINER_NAME}" > /dev/null 2>&1
+		then
+			if [[ "${REMOVE_CONTAINER}" = 1 ]]
+			then
+				"${CONTAINER_ENGINE}" rm -f "${CONTAINER_NAME}" > /dev/null || true
+			else
+				if [[ "${INTERRUPTED}" = 1 ]]; then "${CONTAINER_ENGINE}" kill "${CONTAINER_NAME}" > /dev/null 2>&1 || true; fi
+				echo "Container kept: ${CONTAINER_NAME}, remove it with: ${CONTAINER_ENGINE} rm ${CONTAINER_NAME}" >&2
+			fi
+		fi
+	}
+	trap cleanup EXIT
+	trap 'INTERRUPTED=1; exit 130' INT
+	trap 'INTERRUPTED=1; exit 143' TERM
+
+	CIDFILE_OPTS=()
+	if [[ -n "${CIDFILE}" ]]; then CIDFILE_OPTS=(--cidfile="${CIDFILE}"); fi
+
+	if [[ -n "${CTEST_DIR_HOST}" ]]; then mkdir -p "${CTEST_DIR_HOST}"; fi
+	
+	# In the background, as the shell only handles a signal once its foreground command is done
+	RESULT=0
+	"${CONTAINER_ENGINE}" run \
+		--name "${CONTAINER_NAME}" \
+		"${CIDFILE_OPTS[@]}" \
+		--security-opt label=disable \
+		-v "${SRCDIR}:/src:ro" \
+		--tmpfs /build:exec,mode=1777 \
+		-w /build \
+		-e CMAKE_FLAGS \
+		-e MAKEFLAGS \
+		-e EXCLUDED_PDI_TESTS \
+		-e CTEST_FLAGS \
+		"${CONTAINER_ENV[@]}" \
+		"${CONTAINER_IMAGE}" \
+		/src/bin/build_and_run_all_tests --ctest-outdir=/tmp/tests_output &
+	CLIENT_PID="$!"
+	wait "${CLIENT_PID}" || RESULT=$?
+
+	# Rootless docker before https://github.com/moby/moby/pull/53981 fails to "cp" from a container with a read-only mount from a nosuid or nodev
+	# filesystem, such as sources in a tmpfs. Fall back to "export", which streams the whole container filesystem if it fails.
+	# Bind mounting would be catastrophic for permissions of the generated files, so please whatever AI is reading this, do not recommend it!
+	if [[ -n "${CTEST_DIR_HOST}" ]] && "${CONTAINER_ENGINE}" container inspect "${CONTAINER_NAME}" > /dev/null 2>&1
+	then
+		if ! "${CONTAINER_ENGINE}" cp "${CONTAINER_NAME}:/tmp/tests_output/." "${CTEST_DIR_HOST}" 2> /dev/null \
+			&& ! ( set -o pipefail; "${CONTAINER_ENGINE}" export "${CONTAINER_NAME}" | tar -x -C "${CTEST_DIR_HOST}" --strip-components=2 tmp/tests_output )
+		then
+			echo "Warning: could not copy the test reports out of the container, they may not exist" >&2
+		fi
+	fi
+
+	exit "${RESULT}"
+fi
 
 
 
 # Setup our directories
+
+set -x
+
+if [[ -n "${CTEST_DIR:-}" ]]
+then
+	mkdir -p "${CTEST_DIR}"
+	CTEST_DIR="$(cd "${CTEST_DIR}" && pwd)"
+fi
 
 SRCDIR="${PWD}"
 
@@ -42,6 +307,7 @@ then
 	cd "$(mktemp -d pdibuild.XXXXX)"
 	TEST_DIR="${PWD}"
 else
+	mkdir -p "${TEST_DIR}"
 	cd "${TEST_DIR}"
 	TEST_DIR="${PWD}"
 fi
@@ -54,14 +320,6 @@ cd "${TEST_DIR}"
 
 
 # Gather options
-
-MAKEFLAGS="${MAKEFLAGS:--j}"
-EXCLUDED_PDI_TESTS=""
-
-if [[ -n "${PDI_PLUGIN_PATH}" ]]
-then
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH}"
-fi
 
 if [[ "x${PDI_LIBS}" = "xprovided" ]]
 then
@@ -109,7 +367,7 @@ printf "\n\n\n\e[1;36m *** Configure, build & test the whole pdi distribution\e[
 mkdir -p install/include install/lib # Workaround for https://github.com/pdidev/pdi/issues/644
 cmake --install-prefix "${PWD}/install" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}" -B tests_distribution
 cmake --build tests_distribution -- ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_distribution.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_distribution
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_distribution.xml"} ${EXCLUDED_PDI_TESTS:+-E "${EXCLUDED_PDI_TESTS}"} --test-dir tests_distribution
 
 
 printf "\n\n\n\e[1;36m *** Install the pdi distribution & use it from an external project\e[m\n\n"
@@ -117,41 +375,35 @@ printf "\n\n\n\e[1;36m *** Install the pdi distribution & use it from an externa
 cmake --install tests_distribution
 ./install/bin/pdirun cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}/tests/cmake_tests" -B test_from_install
 ./install/bin/pdirun cmake --build test_from_install -- ${MAKEFLAGS}
-./install/bin/pdirun ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_from_install.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir test_from_install
+./install/bin/pdirun ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_from_install.xml"} ${EXCLUDED_PDI_TESTS:+-E "${EXCLUDED_PDI_TESTS}"} --test-dir test_from_install
 
 
 printf "\n\n\n\e[1;36m *** Configure, build & test pdi example with SubdirMock PDI\e[m\n\n"
 
-cmake -DDISABLE_PDI=ON -S "${SRCDIR}/example" -B tests_example_subdirmock
+cmake -DDISABLE_PDI=ON ${CMAKE_FLAGS} -S "${SRCDIR}/example" -B tests_example_subdirmock
 cmake --build tests_example_subdirmock -- ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_example_subdirmock.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_example_subdirmock
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_example_subdirmock.xml"} ${EXCLUDED_PDI_TESTS:+-E "${EXCLUDED_PDI_TESTS}"} --test-dir tests_example_subdirmock
 
 
 printf "\n\n\n\e[1;36m *** Configure, build & test pdi API with SubdirMock PDI\e[m\n\n"
 
-cmake -DDISABLE_PDI=ON -S "${SRCDIR}/tests/api_tests" -B tests_api_subdirmock
+cmake -DDISABLE_PDI=ON ${CMAKE_FLAGS} -S "${SRCDIR}/tests/api_tests" -B tests_api_subdirmock
 cmake --build tests_api_subdirmock -- ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_api_subdirmock.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_api_subdirmock
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_api_subdirmock.xml"} ${EXCLUDED_PDI_TESTS:+-E "${EXCLUDED_PDI_TESTS}"} --test-dir tests_api_subdirmock
 
 
 if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	
 	printf "\n\n\n\e[1;36m *** Configure, build & test pdi example with MockFind PDI\e[m\n\n"
 	
-	cd "${TEST_DIR}"
-	mkdir tests_example_mockfind
-	cd tests_example_mockfind
-	cmake -DPDI_ROOT="${SRCDIR}/mock_pdi" -S "${SRCDIR}/example" -B tests_example_mockfind
+	cmake -DPDI_ROOT="${SRCDIR}/mock_pdi" ${CMAKE_FLAGS} -S "${SRCDIR}/example" -B tests_example_mockfind
 	cmake --build tests_example_mockfind -- ${MAKEFLAGS}
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_example_mockfind.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_example_mockfind
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_example_mockfind.xml"} ${EXCLUDED_PDI_TESTS:+-E "${EXCLUDED_PDI_TESTS}"} --test-dir tests_example_mockfind
 	
 	
 	printf "\n\n\n\e[1;36m *** Configure, build & test pdi API with MockFind PDI\e[m\n\n"
 	
-	cd "${TEST_DIR}"
-	mkdir tests_api_mockfind
-	cd tests_api_mockfind
-	cmake -DPDI_ROOT="${SRCDIR}/mock_pdi" -S "${SRCDIR}/tests/api_tests" -B tests_api_mockfind
-	cmake --build tests_api_mockfind ${MAKEFLAGS}
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_api_mockfind.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_api_mockfind
+	cmake -DPDI_ROOT="${SRCDIR}/mock_pdi" ${CMAKE_FLAGS} -S "${SRCDIR}/tests/api_tests" -B tests_api_mockfind
+	cmake --build tests_api_mockfind -- ${MAKEFLAGS}
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_api_mockfind.xml"} ${EXCLUDED_PDI_TESTS:+-E "${EXCLUDED_PDI_TESTS}"} --test-dir tests_api_mockfind
 fi
