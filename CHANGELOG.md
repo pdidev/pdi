@@ -51,6 +51,10 @@ and this project adheres to
 * Renamed the `PLUGIN_API_VERSION*` macros to `PDI_PLUGIN_API_VERSION*` to
   follow the macro naming convention, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
+* `PDI::to_bool` now accepts every YAML 1.1 spelling of a boolean, `on`, `off`,
+  `y` and `n` included, and new unit tests cover each spelling.
+  This works around
+  [pdidev/paraconf#6](https://github.com/pdidev/paraconf/issues/6)
 
 #### Deprecated
 * `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
