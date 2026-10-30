@@ -122,10 +122,22 @@ Before submitting, check the formatting, which is the first thing CI verifies an
 
 It configures and builds the distribution from scratch, runs the whole test suite, installs it, then configures, builds and runs `tests/cmake_tests`
 against that installation, so it also checks that the installed package is usable through `find_package`.
-It takes no argument and builds in a fresh `pdibuild.XXXXX` directory created in the current directory, so it leaves your own build tree alone.
-Set `TEST_DIR` to build somewhere specific, `MAKEFLAGS` to control the parallelism, and `EXCLUDED_PDI_TESTS` to skip tests.
-CI runs that same script inside the project docker images across a matrix of compilers, MPI implementations and dependency sources, so running it
-before submitting is the closest you can get to knowing CI will pass.
+It builds in a fresh `pdibuild.XXXXX` directory created in the current directory, or in the one given with `--workdir <dir>`, so it leaves your own
+build tree alone.
+Set `MAKEFLAGS` to control the parallelism, and `EXCLUDED_PDI_TESTS` to skip tests.
+`--ctest-outdir <dir>` copies the JUnit reports to `<dir>`.
+
+`--container <image>` runs it inside the specified image, using docker or podman.
+CI runs that way under all available linux environments, so running it before submitting is the closest you can get to knowing CI will pass.
+
+```bash
+./bin/build_and_run_all_tests --container ghcr.io/pdidev/ubuntu/rolling/openmpi/all:v4
+```
+
+`-e VAR`, `--env VAR`, `-e VAR=VALUE` and `--env VAR=VALUE` behave as in `docker run`: they set the environment variable in the container.
+`-e|--env VAR` forwards the current value, while `-e|--env VAR=VALUE` sets a specific value.
+`--cidfile <file>` writes the container id to a location you choose.
+The container is removed at the end, unless you specify `--no-rm` to keep it for inspection or to copy more out of it.
 
 ## Project structure
 

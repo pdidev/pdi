@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -119,7 +120,6 @@ jobs:
       PDI_SYSTEM: macos
       PDI_COMPILER: clang
       PDI_MPI: openmpi
-      CTEST_DIR: "/tmp/tests_output"
     steps:
     - name: Set up Python
       uses: actions/setup-python@v6
@@ -136,7 +136,7 @@ jobs:
       with:
         submodules: recursive
     - name: Build PDI
-      run: bin/build_and_run_all_tests
+      run: bin/build_and_run_all_tests --ctest-outdir "/tmp/tests_output"
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v6
       if: ( success() || failure() )  # always run even if the previous step fails
