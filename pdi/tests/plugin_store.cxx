@@ -32,67 +32,60 @@
 #include <paraconf.h>
 #include <spdlog/logger.h>
 
+#include <pdi.h>
+#include <pdi/array_datatype.h>
 #include <pdi/context.h>
+#include <pdi/data_descriptor.h>
 #include <pdi/logger.h>
 #include <pdi/plugin.h>
+#include <pdi/scalar_datatype.h>
 #include <pdi/testing.h>
 
+using PDI::Array_datatype;
 using PDI::Context;
 using PDI::PdiTest;
 using PDI::Plugin;
-using std::pair;
+using PDI::Scalar_datatype;
+using PDI::Scalar_kind;
 using std::string;
-using std::unique_ptr;
-using std::unordered_set;
 
 namespace {
 
-/// The name of the logger of the last `prelinked` plugin created
-string prelinked_logger_name;
+/// The name of the data holding the loaded plugin name
+constexpr char PLUGIN_NAME_DATA[] = "LOADED_PLUGIN_NAME";
 
-/// A plugin that records the name of its logger
+/// A plugin that reports the name of its logger in the Context
 struct prelinked_plugin: Plugin {
+	/// The name of the plugin as reported by our logger, this should match our pretty name
+	string m_name;
+
+	static const char* pretty_name() { return "prelinked_plugin"; }
+
 	prelinked_plugin(Context& ctx, PC_tree_t)
 		: Plugin{ctx}
+		, m_name(ctx.logger().real_logger()->name())
 	{
-		prelinked_logger_name = ctx.logger().real_logger()->name();
+		// share a reference to the name with no memory destruction function
+		ctx[PLUGIN_NAME_DATA].share(
+			PDI::Ref(
+				m_name.data(),
+				[](void*) {},
+				Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), m_name.size() + 1),
+				true,
+				false
+			),
+			true,
+			false
+		);
 	}
+
+	~prelinked_plugin() { context()[PLUGIN_NAME_DATA].reclaim(); }
 };
 
 } // namespace
 
-/*
- * The symbols of the `prelinked` plugin, written by hand, as PDI_PLUGIN would define them.
- * PDI finds them in the test executable, that exports them, with no plugin library to load.
- */
-
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-prototypes"
-#pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
-#endif
-
-/// The constructor of the `prelinked` plugin
-extern "C" unique_ptr<Plugin> PDI_EXPORT PDI_plugin_prelinked_loader(Context& ctx, PC_tree_t conf)
-{
-	return unique_ptr<Plugin>{new prelinked_plugin{ctx, conf}};
-}
-
-/// The dependencies of the `prelinked` plugin: none
-extern "C" pair<unordered_set<string>, unordered_set<string>> PDI_EXPORT PDI_plugin_prelinked_dependencies()
-{
-	return {};
-}
-
-/// The pretty name of the `prelinked` plugin
-extern "C" string PDI_EXPORT PDI_plugin_prelinked_pretty_name()
-{
-	return "Prelinked";
-}
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
+/// The `prelinked` plugin, to be found by PDI in the test executable, with no plugin library to load.
+PDI_PLUGIN(prelinked)
 
 /// The tests of plugin loading
 struct PluginLoaderTest: PdiTest {};
@@ -103,5 +96,8 @@ struct PluginLoaderTest: PdiTest {};
 TEST_F(PluginLoaderTest, PrelinkedPluginLoads)
 {
 	InitPdi(PC_parse_string("plugins: {prelinked: ~}"));
-	EXPECT_EQ(prelinked_logger_name, "Prelinked");
+	void* name = nullptr;
+	ASSERT_EQ(PDI_OK, PDI_access(PLUGIN_NAME_DATA, &name, PDI_IN));
+	EXPECT_STREQ(prelinked_plugin::pretty_name(), static_cast<const char*>(name));
+	EXPECT_EQ(PDI_OK, PDI_release(PLUGIN_NAME_DATA));
 }
