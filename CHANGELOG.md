@@ -18,6 +18,10 @@ and this project adheres to
   to match NetCDF [#822](https://github.com/pdidev/pdi/issues/822)
 
 #### Deprecated
+* The `INSTALL_CMAKEDIR` CMake variable, which sets where the PDI CMake package
+  files are installed, is renamed `INSTALL_PDICMAKEDIR`; the old name still
+  works but prints a deprecation warning, as per
+  [#788](https://github.com/pdidev/pdi/issues/788).
 
 #### Removed
 
