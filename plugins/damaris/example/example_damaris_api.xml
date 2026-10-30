@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+ <simulation name="example" language="c" 
+    xmlns="http://damaris.gforge.inria.fr/damaris/model">
+     <architecture>
+         <domains count="1"/>
+         <dedicated cores="1" nodes="0"/>
+         <buffer name="example_buffer" size="67108864" />
+         <placement />
+         <queue  name="queue" size="300" />
+     </architecture>
+ 
+     <data>
+        <!-- global [height, width] (excluding boundary conditions or ghosts) -->
+        <parameter name="global_height" type="int" value="60"/>
+        <parameter name="global_width" type="int" value="12"/>
+        <!-- degree of parallelism -->
+        <parameter name="parallelism_h" type="int" value="3"/>
+        <parameter name="parallelism_w" type="int" value="1"/>
+
+         <variable name="main_field" layout="main_field_layout" mesh="mesh2d" type="scalar" visualizable="true" unit="#" time-varying="true" enabled="true" centering="zonal" store="hdf5_example" select-mem="#"/>
+        <parameter name="main_field_layout_dim0" type="int" value="1"/>
+        <parameter name="main_field_layout_global0" type="int" value="1"/>
+        <parameter name="main_field_layout_dim1" type="int" value="1"/>
+        <parameter name="main_field_layout_global1" type="int" value="1"/>
+        <layout name="main_field_layout" type="double" dimensions="main_field_layout_dim0,main_field_layout_dim1" global="main_field_layout_global0,main_field_layout_global1" ghosts="1:1,1:1" visualizable="true"/>
+     </data>
+ 
+     <storage>
+         <store name="hdf5_example" type="HDF5">  
+            <option key="FileMode">Collective</option>  
+            <option key="XDMFMode">NoIteration</option>  
+            <option key="FilesPath">./HDF5_files_damaris_only/</option>
+        </store>        
+     </storage>
+ 
+     <actions>
+     </actions>
+ 
+     <scripts>     
+     </scripts>
+ 
+     <log FileName="./log_damaris_only/example" RotationSize="5" LogFormat="[%TimeStamp%]: %Message%"  Flush="true"  LogLevel="info" />
+     
+ </simulation>
