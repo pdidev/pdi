@@ -28,7 +28,7 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
-if(${CATALYST_USE_MPI})
+if("${CATALYST_USE_MPI}")
   set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/runtest-dir")
   # MPI
   find_package(MPI COMPONENTS C CXX REQUIRED)

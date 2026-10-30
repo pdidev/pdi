@@ -27,7 +27,7 @@ find_package(Python3 COMPONENTS Interpreter)
 add_test(NAME TestPDICatalystSerial COMMAND "${RUNTEST_DIR}" ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests/test_CxxFullExample/run_test.py" "${CMAKE_BINARY_DIR}/tests/test_CxxFullExample/" "${CMAKE_SOURCE_DIR}/tests/test_CxxFullExample/")
 
 # test with MPI
-if(${CATALYST_USE_MPI})
+if("${CATALYST_USE_MPI}")
   add_test(NAME TestPDICatalystMPI COMMAND "${RUNTEST_DIR}" ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests/test_CxxFullExample/run_test_mpi.py" "${CMAKE_BINARY_DIR}/tests/test_CxxFullExample/" "${CMAKE_SOURCE_DIR}/tests/test_CxxFullExample/" "${MPIEXEC_EXECUTABLE}")
   set_property(TEST TestPDICatalystMPI PROPERTY TIMEOUT 15)
 endif()

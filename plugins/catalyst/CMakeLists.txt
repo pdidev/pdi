@@ -26,6 +26,8 @@ endif()
 if("${CATALYST_USE_MPI}")
 	find_package(MPI REQUIRED COMPONENTS C CXX)
 	set(CATALYST_DEPS catalyst::catalyst MPI::MPI_C MPI::MPI_CXX)
+else()
+    set(CATALYST_DEPS catalyst::catalyst)
 endif()
 
 option(CATALYST_IS_PARALLEL "Catalyst is build in parallel" "${CATALYST_USE_MPI}")
