@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,17 +26,20 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_test_api LANGUAGES C CXX)
 
-option(DISABLE_PDI "Disable the use of both PDI and Paraconf in the project" OFF)
+set(API_TESTS_PDI "FIND" CACHE STRING "How to get PDI: FIND it (installed, or the mock through PDI_ROOT), or MOCK it with mock_pdi as a subdirectory, Paraconf's target included")
+set_property(CACHE API_TESTS_PDI PROPERTY STRINGS FIND MOCK)
 
 include(CTest)
 
 
-if("${DISABLE_PDI}")
+if("FIND" STREQUAL "${API_TESTS_PDI}")
+	find_package(paraconf REQUIRED COMPONENTS C)
+	find_package(PDI REQUIRED COMPONENTS C)
+elseif("MOCK" STREQUAL "${API_TESTS_PDI}")
 	set(PDI_MOCK_PARACONF_TARGET TRUE)
 	add_subdirectory(../../mock_pdi mock_pdi)
 else()
-	find_package(paraconf REQUIRED COMPONENTS C)
-	find_package(PDI REQUIRED COMPONENTS C)
+	message(FATAL_ERROR "API_TESTS_PDI should be set to one of: FIND, MOCK")
 endif()
 
 
