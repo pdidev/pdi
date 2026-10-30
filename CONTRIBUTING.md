@@ -354,6 +354,22 @@ File organization:
 * No implementation should be provided in header files, even `= default` implementations.
   Templates, whose definition the compiler requires at the point of instantiation, are the exception.
 
+### String parameters
+
+A function receiving a string as parameter *should* receive it as:
+* a `std::string` by value when it consumes it; that is, when it modifies it or moves it to keep it beyond the call;
+* a `std::string_view` by value otherwise, when the function only reads the string during the call;
+* a `std::string &` (non-const reference) when the parameter is used as an output parameter;
+* a `fmt::format_string<Args...>` when the parameter is a compile-time format string.
+
+There only very few cases that do not follow this, `const std::string&` and `const char*` parameters *should not* be used, and any exception
+introduced in the C++ code **must** be documented.
+Exceptions might for example include a function that requires a NUL-terminated string to pass to a C API, or an overload set that also accepts a
+`bool` and needs a `const char*` one for disambiguation.
+
+Pre-existing APIs should be reworked carefully to move towards these good practices without breaking existing code too much.
+
+
 ### Namespaces
 
 All PDI code lives in the `PDI` namespace.
