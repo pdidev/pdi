@@ -144,8 +144,9 @@ cmake --build .build --target TRACE_PLUGIN_pkg
 
 Sub-builds install into `<build>/staging` and are declared `BUILD_ALWAYS`, so they are reconsidered on every build of the top-level project.
 
-Dependencies are declared with `sbuild_add_dependency(<name> AUTO|SYSTEM|EMBEDDED ...)`:
-they are either found on the system or built from `vendor/`.
+Vendored dependencies are declared with `sbuild_add_dependency(<name> AUTO|SYSTEM|EMBEDDED EMBEDDED_PATH vendor/<dir> ...)`:
+they are either found on the system or built from their `EMBEDDED_PATH`.
+Dependencies the distribution does not vendor, such as MPI or Threads, are looked up with a plain `find_package()` instead.
 `USE_DEFAULT` sets the global policy and `USE_<name>` overrides it for a single dependency, e.g. `-DUSE_spdlog=EMBEDDED`.
 
 ### The core library
