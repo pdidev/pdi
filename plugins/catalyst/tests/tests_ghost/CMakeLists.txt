@@ -43,11 +43,11 @@ target_link_libraries(TestPDICatalystGhost
   PRIVATE PDI::PDI_C MPI::MPI_C)
 
 set(CATALYST_SCRIPT_FOLDER ${CMAKE_SOURCE_DIR}/tests/tests_ghost)
-configure_file(catalyst_serial.yml.in pdi.yml)
+configure_file(catalyst_serial_uniform.yml.in pdi_uniform.yml)
 
 set(CATALYST_SCRIPT_FOLDER ${CMAKE_SOURCE_DIR}/tests/tests_ghost)
 configure_file(catalyst_serial_structured.yml.in pdi_structured.yml)
 
 find_package(Python3 COMPONENTS Interpreter)
-add_test(NAME TestPDICatalystGhost_uniform COMMAND "${RUNTEST_DIR}" ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests/tests_ghost/run_test.py" "${CMAKE_BINARY_DIR}/tests/tests_ghost/" "${CMAKE_SOURCE_DIR}/tests/tests_ghost/" "true_uniform")
-add_test(NAME TestPDICatalystGhost_structured COMMAND "${RUNTEST_DIR}" ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests/tests_ghost/run_test.py" "${CMAKE_BINARY_DIR}/tests/tests_ghost/" "${CMAKE_SOURCE_DIR}/tests/tests_ghost/" "true_structured")
+add_test(NAME TestPDICatalystGhost_uniform COMMAND "${RUNTEST_DIR}" ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests/tests_ghost/run_test.py" "${CMAKE_BINARY_DIR}/tests/tests_ghost/" "${CMAKE_SOURCE_DIR}/tests/tests_ghost/" "uniform")
+add_test(NAME TestPDICatalystGhost_structured COMMAND "${RUNTEST_DIR}" ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests/tests_ghost/run_test.py" "${CMAKE_BINARY_DIR}/tests/tests_ghost/" "${CMAKE_SOURCE_DIR}/tests/tests_ghost/" "structured")

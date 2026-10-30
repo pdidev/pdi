@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: Copyright (c) 2024-2025 Kitware SAS
-# SPDX-FileCopyrightText: Copyright (c) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# SPDX-FileCopyrightText: Copyright (c) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # SPDX-License-Identifier: Apache 2.0
 
 import subprocess
@@ -21,11 +21,13 @@ env["CATALYST_IMPLEMENTATION_NAME"] = 'stub' # need to get the Conduit json file
 
 env["PDI_PLUGIN_PATH"] = binary_folder + '/..'
 
-if test_name == 'true_uniform':
-    result = subprocess.run([binary_folder + "/TestPDICatalystGhost", binary_folder + "/pdi.yml"], env=env)
-elif test_name == 'true_structured':
+if test_name == 'uniform':
+    result = subprocess.run([binary_folder + "/TestPDICatalystGhost", binary_folder + "/pdi_uniform.yml"], env=env)
+elif test_name == 'structured':
     result = subprocess.run([binary_folder + "/TestPDICatalystGhost", binary_folder + "/pdi_structured.yml"], env=env)
-
+else:
+    print(f'For tests_ghost, the test_name must be uniform or strutured.')
+    exit(1)
 if(result.returncode != 0):
     exit(result.returncode)
 
