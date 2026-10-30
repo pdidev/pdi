@@ -958,7 +958,7 @@ TEST_F(AdvancedExpressionTest, string_escapes)
 
 	for (auto&& entry: checks) {
 		Expression exp{entry.first};
-		ASSERT_EQ(entry.second, exp.to_string(context_mock)) << "'" << entry.first << "' should be: " << entry.second;
+		EXPECT_EQ(entry.second, exp.to_string(context_mock)) << "'" << entry.first << "' should be: " << entry.second;
 	}
 }
 
@@ -974,7 +974,7 @@ TEST_F(AdvancedExpressionTest, invalid_string_escapes)
 	vector<string> checks{R"(abc\)", R"(\)", R"(\\\)"};
 
 	for (auto&& entry: checks) {
-		ASSERT_THROW(Expression{entry}, PDI::Value_error) << "'" << entry << "' should be rejected";
+		EXPECT_THROW(Expression{entry}, PDI::Value_error) << "'" << entry << "' should be rejected";
 	}
 }
 
