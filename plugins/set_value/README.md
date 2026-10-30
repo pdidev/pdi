@@ -129,11 +129,10 @@ It defines an operation to execute inside a \ref value_list.
 |`"logger"` (*optional*)|a \ref logger_map|
 
 
-**Share warning**  
-
+\warning
 Share is always done with read and write rights.
-Plugin allocates memory by `malloc`. If you reclaim the data, you should
-free it with `free` instruction.
+Plugin allocates memory by `malloc`.
+If you reclaim the data, you should deallocate it with `free`.
 
 ### value list {#value_list}
 Is a list of the
