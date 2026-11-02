@@ -61,7 +61,7 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 
 # Modules to build
 
-option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
+option(BUILD_BENCHMARKING       "Build the Decl'HDF5 benchmarks" ON)
 option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
 option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
@@ -442,7 +442,7 @@ endif()
 ## JSON
 
 if("${BUILD_JSON_PLUGIN}")
-	sbuild_add_dependency(JSON "${USE_DEFAULT}"
+	sbuild_add_dependency(nlohmann_json "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/json-3.11.4"
 		CMAKE_CACHE_ARGS
 			"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream is updated
@@ -491,7 +491,7 @@ sbuild_add_module(DECL_NETCDF_PLUGIN
 sbuild_add_module(JSON_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_JSON_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json"
-	DEPENDS PDI JSON
+	DEPENDS PDI nlohmann_json
 	SUBSTEPS test
 )
 
