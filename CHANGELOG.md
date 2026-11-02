@@ -16,14 +16,16 @@ and this project adheres to
 #### Changed
 * Improved error message in type check in Decl'NetCDF when reading scalar variable from file
   as requested [#731](https://github.com/pdidev/pdi/issues/731)
+* Split the example of HDF5 between serial and parallel versions, 
+  to match NetCDF [#822](https://github.com/pdidev/pdi/issues/822)
 
 #### Deprecated
 
 #### Removed
-* Remove `BUILD_BENCHMARKING` CMake option from the root CMakeLists.
-  [#845](https://github.com/pdidev/pdi/issues/845)
 
 #### Fixed
+* Fix JSON unit tests failing under parallel execution (with `ctest -j`).
+  [#772](https://github.com/pdidev/pdi/issues/772)
 * Fix YAML index mismatch between Paraconf and LibYAML. 
   [#759](https://github.com/pdidev/pdi/issues/759)
 * Corrected an invalid test that prevented a deprecation warning message for
