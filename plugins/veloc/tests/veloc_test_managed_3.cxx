@@ -90,14 +90,13 @@ int main(int argc, char* argv[])
 
 	if (cp_counter != 5) {
 		fprintf(stderr, "Rank %d veloc_test_managed_3:: counter value  %d does not match expected value %d\n", rank, cp_counter, 5);
-		exit(1);
+		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
 
-	if (rank == 0) {
-		printf("veloc_test_managed_3 PASSED\n");
-	}
+	if (rank == 0) printf("veloc_test_managed_3 PASSED\n");
 
 	PDI_finalize();
+	delete[] arr;
 	MPI_Finalize();
 
 	return 0;

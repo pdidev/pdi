@@ -274,6 +274,8 @@ plugins:
 
 	PDI_event("r_end");
 
+	printf("veloc_test_custom PASSED\n");
+
 	FinalizePdi();
 	MPI_Finalize();
 }

@@ -60,17 +60,15 @@ int main(int argc, char* argv[])
 
 	if (rec_ii != 0) {
 		fprintf(stderr, "Rank %d : veloc_test_managed_2 FAILED recovered iter value  %d does not match expected value %d\n", rank, rec_ii, 0);
-		exit(1);
+		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
 
 	if (rec_var != 51) {
 		fprintf(stderr, "Rank %d : veloc_test_managed_2 FAILED recovered var value  %d does not match expected value %d\n", rank, rec_var, 51);
-		exit(1);
+		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
 
-	if (rank == 0) {
-		printf("veloc_test_managed_2 PASSED\n");
-	}
+	if (rank == 0) printf("veloc_test_managed_2 PASSED\n");
 
 	PDI_finalize();
 	MPI_Finalize();

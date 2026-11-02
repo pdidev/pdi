@@ -104,6 +104,9 @@ class Veloc_cfg
 	/// The path of VeloC configuration file
 	std::string m_config_file;
 
+	// The MPI communicator used to initialize VeloC
+	std::string m_veloc_comm;
+
 	/// The subtree defining the behaviour of the plugin
 	PC_tree_t m_tree;
 
@@ -148,6 +151,13 @@ public:
 	 * @return std::string VeloC's configuration file path
 	 */
 	std::string config() { return m_config_file; }
+
+	/**
+	 * @brief returns communicator used to initialize VeloC 
+	 * 
+	 * @return std::string VeloC's communicator 
+	 */
+	std::string communicator() { return m_veloc_comm; }
 
 	/**
      * @brief returns the common checkpoint label

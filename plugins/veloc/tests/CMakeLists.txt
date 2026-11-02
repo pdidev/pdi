@@ -127,6 +127,17 @@ add_test(NAME veloc_test_managed_3
 set_property(TEST veloc_test_managed_3 PROPERTY TIMEOUT 15)
 set_property(TEST veloc_test_managed_3 PROPERTY PROCESSORS ${VELOC_TEST_NPROC})
 
+# veloc_test_with_comm 
+add_executable(veloc_test_with_comm veloc_test_with_comm.cxx)
+target_link_libraries(veloc_test_with_comm PDI::PDI_C MPI::MPI_C)
+add_test(NAME veloc_test_with_comm
+    COMMAND "${RUNTEST_DIR}"
+        --runtest-dir-copy-file "${CMAKE_CURRENT_SOURCE_DIR}/${VELOC_CONFIG_FILE_NAME}"
+        "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" ${VELOC_TEST_NPROC} ${MPIEXEC_PREFLAGS}
+        "$<TARGET_FILE:veloc_test_with_comm>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST veloc_test_with_comm PROPERTY TIMEOUT 15)
+set_property(TEST veloc_test_with_comm PROPERTY PROCESSORS ${VELOC_TEST_NPROC})
+
 if(HDF5_FOUND)
 # veloc_test_custom
 add_executable(veloc_test_custom veloc_test_custom.cxx)

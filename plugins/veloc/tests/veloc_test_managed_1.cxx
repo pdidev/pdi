@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 
 	if (cp_status != 1) {
 		fprintf(stderr, "Rank %d veloc_test_managed_1 FAILED status value %d does not match expected value %d\n", rank, cp_status, 1);
-		exit(1);
+		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
 
 	// write 2 checkpoints
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 
 	if (cp_counter != 2) {
 		fprintf(stderr, "Rank %d veloc_test_managed_1 FAILED counter value %d does not match expected value %d\n", rank, cp_counter, 2);
-		exit(1);
+		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
 
 	/* Recovery Part */
@@ -98,23 +98,21 @@ int main(int argc, char* argv[])
 
 	if (cp_status != 1) {
 		fprintf(stderr, "Rank %d :veloc_test_managed_1 FAILED status value %d does not match expected value %d\n", rank, cp_status, 1);
-		exit(1);
+		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
 
 	if (ii != 1) {
 		fprintf(stderr, "Rank %d : veloc_test_managed_1 FAILED recovered iter value %d does not match expected value %d\n", rank, ii, 1);
-		exit(1);
+		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
 
 	if (var != 52) {
 		fprintf(stderr, "Rank %d : veloc_test_managed_1 FAILED recovered var value %d does not match expected value %d\n", rank, var, 52);
-		exit(1);
+		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
 
-	if (rank == 0) {
-		printf("veloc_test_managed_1 PASSED\n");
-	}
-
+	if (rank == 0) printf("veloc_test_managed_1 PASSED\n");
+	
 	PDI_finalize();
 	MPI_Finalize();
 
