@@ -49,6 +49,9 @@ class Subfiling
 	/// The strategy for selecting I/O Concentrator processes across MPI ranks.
 	std::string m_sf_ioc_selection = "SELECT_IOC_ONE_PER_NODE";
 
+	/// H5FD_SUBFILING_IOC_SELECTION_CRITERIA
+	PDI::Expression m_sf_ioc_criteria = 1L;
+
 public:
 	/** The default constructor for an empty selection (everything selected)
 	 */
@@ -89,6 +92,12 @@ public:
 	 * \return The IOC strategy of subfiling
 	 */
 	const std::string& ioc_selection() const { return m_sf_ioc_selection; }
+
+	/** Accesses the H5FD_SUBFILING_IOC_SELECTION_CRITERIA of subfiling configuration.
+	 *
+	 * \return The H5FD_SUBFILING_IOC_SELECTION_CRITERIA of subfiling
+	 */
+	const PDI::Expression& ioc_criteria() const { return m_sf_ioc_criteria; }
 };
 
 } // namespace decl_hdf5

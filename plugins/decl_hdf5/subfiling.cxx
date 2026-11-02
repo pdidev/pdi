@@ -54,6 +54,8 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 				m_sf_stripe_size = value;
 			} else if (key == "ioc_selection") {
 				m_sf_ioc_selection = to_string(value);
+			} else if (key == "ioc_criteria") {
+				m_sf_ioc_criteria = value;
 			} else {
 				throw Spectree_error{key_tree, "Invalid configuration key in subfiling: `{}'", key};
 			}
