@@ -86,6 +86,20 @@ then
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
 fi
 
+if [[ ( "x${PDI_SYSTEM}" = "xdebian-unstable" && "x${PDI_MPI}" = "xmpich" ) ||
+      "x${PDI_SPACK_VERSION}" = "xoldest" ||
+      ( "x${PDI_SYSTEM}" = "xubuntu-rolling" && "x${PDI_MPI}" = "xmpich" ) ]]
+then
+   # Workaround: the VeloC plugin cannot work with the default installation of mpich package version > 4.3.2
+   #             nor with oldest spack
+   CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_VELOC_PLUGIN=OFF"
+fi
+
+if [[ "x${PDI_LIBS}" != "xprovided" ]]
+then
+	# Workaround: mini images do not ship VeloC
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_VELOC_PLUGIN=OFF"
+fi
 
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) ]] && dpkg-query -W 'libspdlog-dev' > /dev/null
 then
