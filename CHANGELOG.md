@@ -14,6 +14,8 @@ and this project adheres to
 #### Added
 
 #### Changed
+* Improved error message in type check in Decl'NetCDF when reading scalar variable from file
+  as requested [#731](https://github.com/pdidev/pdi/issues/731)
 * Split the example of HDF5 between serial and parallel versions, 
   to match NetCDF [#822](https://github.com/pdidev/pdi/issues/822)
 
@@ -22,6 +24,8 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* Change JSON package name to `nlohmann_json` so that `USE_nlohmann_json=SYSTEM/AUTO` will find the system version if available.
+  [#769](https://github.com/pdidev/pdi/issues/769) 
 * Fix JSON unit tests failing under parallel execution (with `ctest -j`).
   [#772](https://github.com/pdidev/pdi/issues/772)
 * Fix YAML index mismatch between Paraconf and LibYAML. 
@@ -41,6 +45,8 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* Tests check that an array type accepts `order: C` and `order: c` and rejects
+  any other order, as per [#758](https://github.com/pdidev/pdi/issues/758)
 
 #### Changed
 * Merged `Callbacks` into `Global_context` and renamed the callback functions,
@@ -69,6 +75,9 @@ and this project adheres to
 * `PDI::is_list`, `PDI::is_map` and `PDI::is_scalar` return false for a tree in
   error, instead of answering for the node it was looked up from or crashing,
   fixing [#806](https://github.com/pdidev/pdi/issues/806)
+* Removed an invalid Windows-specific choice of the console log output, which
+  could not compile: spdlog now picks the console output for the platform,
+  fixing [#816](https://github.com/pdidev/pdi/issues/816)
 
 #### Security
 
