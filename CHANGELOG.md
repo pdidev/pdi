@@ -14,6 +14,8 @@ and this project adheres to
 #### Added
 
 #### Changed
+* Improved error message in type check in Decl'NetCDF when reading scalar variable from file
+  as requested [#731](https://github.com/pdidev/pdi/issues/731)
 * Split the example of HDF5 between serial and parallel versions, 
   to match NetCDF [#822](https://github.com/pdidev/pdi/issues/822)
 
