@@ -36,7 +36,6 @@
 
 #include "pdi/pdi_fwd.h"
 #include "pdi/context.h"
-#include "pdi/context_proxy.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/logger.h"
 #include "pdi/plugin.h"
@@ -52,7 +51,7 @@ class PDI_EXPORT Data_store: public Context
 private:
 	friend class Data_descriptor_impl;
 
-	/// The singleton Context instance
+	/// The singleton data store instance
 	static std::unique_ptr<Data_store> s_store;
 
 	/// Global logger of PDI, should be constructed first, destroyed last

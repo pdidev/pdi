@@ -227,7 +227,7 @@ std::vector<PC_tree_t> get_includes(Logger& logger, PC_tree_t conf)
 }
 
 /** Loads the data (or metadata) from a yaml tree
- * \param store the context in which to load
+ * \param store the data store in which to load
  * \param node the tree from where to load
  * \param is_metadata whether this is a metadata subtree instead of a data one
  * \param def_location the location of all loaded data/metadata for duplicate detection
