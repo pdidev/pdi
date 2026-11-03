@@ -80,6 +80,9 @@ and this project adheres to
   [#733](https://github.com/pdidev/pdi/issues/733)
 
 #### Fixed
+* `PDI::is_list`, `PDI::is_map` and `PDI::is_scalar` return false for a tree in
+  error, instead of answering for the node it was looked up from or crashing,
+  fixing [#806](https://github.com/pdidev/pdi/issues/806)
 * Removed an invalid Windows-specific choice of the console log output, which
   could not compile: spdlog now picks the console output for the platform,
   fixing [#816](https://github.com/pdidev/pdi/issues/816)
