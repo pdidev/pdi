@@ -934,6 +934,50 @@ TEST_F(AdvancedExpressionTest, parse_reference)
 	ASSERT_EQ(10L, parse_result.second);
 }
 
+/*
+ * Name:                AdvancedExpressionTest.string_escapes
+ *
+ * Tested functions:    PDI::Expression::to_string(Context&)
+ *
+ * Description:         Checks if a `\' followed by any character in a string expression is evaluated to that character.
+ */
+TEST_F(AdvancedExpressionTest, string_escapes)
+{
+	//pairs of strings to parse and expected value
+	vector<pair<string, string>> checks{
+		{R"(cost: 5\$)", R"(cost: 5$)"},
+		{R"(C:\\temp)", R"(C:\temp)"},
+		{R"(\$value)", R"($value)"},
+		{R"(\$(1+1))", R"($(1+1))"},
+		{R"(\\\$)", R"(\$)"},
+		{R"(\\)", R"(\)"},
+		{R"(ab\xcd)", R"(abxcd)"},
+		{R"(\n)", R"(n)"},
+		{R"(a\ b)", R"(a b)"},
+	};
+
+	for (auto&& entry: checks) {
+		Expression exp{entry.first};
+		EXPECT_EQ(entry.second, exp.to_string(context_mock)) << "'" << entry.first << "' should be: " << entry.second;
+	}
+}
+
+/*
+ * Name:                AdvancedExpressionTest.invalid_string_escapes
+ *
+ * Tested functions:    PDI::Expression::Expression(const std::string&)
+ *
+ * Description:         Checks if a string expression ending with a lone `\' is rejected.
+ */
+TEST_F(AdvancedExpressionTest, invalid_string_escapes)
+{
+	vector<string> checks{R"(abc\)", R"(\)", R"(\\\)"};
+
+	for (auto&& entry: checks) {
+		EXPECT_THROW(Expression{entry}, PDI::Value_error) << "'" << entry << "' should be rejected";
+	}
+}
+
 INSTANTIATE_TEST_SUITE_P(, LongExpressionTest, ::testing::Values(numeric_limits<long>::min(), -1l, 0l, 1l, numeric_limits<long>::max()));
 
 INSTANTIATE_TEST_SUITE_P(, DoubleExpressionTest, ::testing::Values(numeric_limits<double>::min(), -1.0, 0.0, 1.0, numeric_limits<double>::max()));
