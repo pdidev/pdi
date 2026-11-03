@@ -304,7 +304,8 @@ The blocks *should* be in order:
 7. in case of an implementation file (cxx), the implemented PDI header
 
 Includes *should* use the bracket notation, except for the headers of the component being compiled when included from one of its implementation (cxx)
-files, which *should* use the quote notation.
+files or from one of its private headers, which *should* use the quote notation.
+An installed header always uses the bracket notation, since it is compiled as part of the code that includes it.
 In practice, an implementation file of the PDI library refers to the library's own headers as `"pdi/error.h"`, whereas a plugin refers to them as
 `<pdi/error.h>`.
 
