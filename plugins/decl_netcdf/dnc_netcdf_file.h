@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -142,8 +142,9 @@ public:
 	 * \param variable variable to get
 	 * \param write Dnc_io that deteremines the read operation
 	 * \param ref_w reference where the data will be written
+	 * \param ref_name name of the reference ref_w
 	 */
-	void get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w);
+	void get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w, const std::string& ref_name);
 
 	/** Gets variable from the file
 	 *

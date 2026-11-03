@@ -70,3 +70,22 @@ TEST(ParaconfWrapper, ToBool)
 	EXPECT_TRUE(to_bool(missing, true));
 	EXPECT_FALSE(to_bool(missing, false));
 }
+
+TEST(ParaconfWrapper, NodeKindOfTreeInError)
+{
+	PC_errhandler(PC_NULL_HANDLER);
+	PC_tree_t tree = PC_parse_string("{map: {key: value}, list: [elem], scalar: value}");
+	PC_tree_t map = PC_get(tree, ".map");
+	PC_tree_t list = PC_get(tree, ".list");
+	PC_tree_t scalar = PC_get(tree, ".scalar");
+	EXPECT_TRUE(is_map(map));
+	EXPECT_TRUE(is_list(list));
+	EXPECT_TRUE(is_scalar(scalar));
+	// a tree in error, or with no node, is of no kind, whatever the node it was looked up from
+	for (PC_tree_t no_kind: {PC_get(map, ".missing"), PC_get(list, "[1]"), PC_get(scalar, ".missing"), PC_tree_t{}}) {
+		EXPECT_FALSE(is_map(no_kind));
+		EXPECT_FALSE(is_list(no_kind));
+		EXPECT_FALSE(is_scalar(no_kind));
+	}
+	PC_tree_destroy(&tree);
+}
