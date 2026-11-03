@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,7 +28,9 @@
 
 namespace decl_netcdf {
 
-Dnc_io::Dnc_io(PDI::Context& ctx, PC_tree_t config)
+using PDI::Context;
+
+Dnc_io::Dnc_io(Context& ctx, PC_tree_t config)
 	: m_ctx{ctx}
 {
 	PC_tree_t variable_node = PC_get(config, ".variable");
