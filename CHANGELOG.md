@@ -26,6 +26,9 @@ and this project adheres to
   [#788](https://github.com/pdidev/pdi/issues/788).
 
 #### Removed
+* The `BUILD_SHARED_LIBS` CMake option is no longer read: the PDI libraries are
+  always shared, where setting it to `OFF` used to stop the configuration, as
+  per [#789](https://github.com/pdidev/pdi/issues/789).
 
 #### Fixed
 * Change JSON package name to `nlohmann_json` so that `USE_nlohmann_json=SYSTEM/AUTO` will find the system version if available.

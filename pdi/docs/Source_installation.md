@@ -78,6 +78,9 @@ For example, the installation directory can be changed with the following comman
 cmake -DCMAKE_INSTALL_PREFIX=/home/user/ ..
 ```
 
+%PDI is only supported as a shared library, so `BUILD_SHARED_LIBS` is not a choice
+the distribution offers; every library it builds says so for itself.
+
 The following general flags are useful to configure the distribution as a whole.
 
 |Flag                  |Default     |Description|
