@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,13 +35,13 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/python/tools.h>
-#include "global_context.h"
+#include "data_store.h"
 
 using std::unique_ptr;
 
 using PDI::Context;
+using PDI::Data_store;
 using PDI::Datatype_sptr;
-using PDI::Global_context;
 using PDI::Paraconf_wrapper;
 using PDI::Ref;
 
@@ -49,7 +50,7 @@ TEST(Python, ref_to_python)
 	pybind11::initialize_interpreter();
 
 	Paraconf_wrapper _;
-	unique_ptr<Context> ctx{new Global_context{PC_parse_string("logging: off")}};
+	unique_ptr<Context> ctx{new Data_store{PC_parse_string("logging: off")}};
 
 	Datatype_sptr type
 		= ctx->datatype(PC_parse_string("{type: array, subtype: int, size: [10, 6, 3], subsize: [3, 2, 1], start: [3, 2, 1]}"))->evaluate(*ctx);
