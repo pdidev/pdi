@@ -85,6 +85,10 @@ using Datatype_sptr = std::shared_ptr<const Datatype>;
  */
 class Data_descriptor;
 
+/** A logger of the PDI logging infrastructure
+ */
+class Logger;
+
 /** A class used as base for all PDI plugins
  */
 class Plugin;
