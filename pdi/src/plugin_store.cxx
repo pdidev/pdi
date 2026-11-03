@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,9 +80,9 @@ Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, st
 	string pretty_name_symbol = "PDI_plugin_" + name + "_pretty_name";
 
 	// case where the library was prelinked
-	m_ctr = reinterpret_cast<plugin_factory_f>(dlsym(NULL, ctor_symbol.c_str()));
-	m_deps = reinterpret_cast<plugin_deps_f>(dlsym(NULL, deps_symbol.c_str()));
-	auto pretty_name_f = reinterpret_cast<std::string (*)()>(dlsym(NULL, pretty_name_symbol.c_str()));
+	m_ctr = reinterpret_cast<plugin_factory_f>(dlsym(RTLD_DEFAULT, ctor_symbol.c_str()));
+	m_deps = reinterpret_cast<plugin_deps_f>(dlsym(RTLD_DEFAULT, deps_symbol.c_str()));
+	auto pretty_name_f = reinterpret_cast<std::string (*)()>(dlsym(RTLD_DEFAULT, pretty_name_symbol.c_str()));
 
 	// case where the library was not prelinked
 	void* lib_handle = NULL;
