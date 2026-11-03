@@ -111,6 +111,9 @@ and this project adheres to
 * Removed an invalid Windows-specific choice of the console log output, which
   could not compile: spdlog now picks the console output for the platform,
   fixing [#816](https://github.com/pdidev/pdi/issues/816)
+* `bin/build_and_run_all_tests` configures, builds and tests every project the
+  same way, and passes `CMAKE_FLAGS` to all of them, as per
+  [#783](https://github.com/pdidev/pdi/issues/783).
 
 #### Security
 
