@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2024-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -39,25 +40,15 @@ runs:
     - id: test
       shell: bash
       run: |
-        cat<<-'EOF' > run.sh
-          set -xe
-          JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
-          if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
-          export MAKEFLAGS='-j 4'
-          export CTEST_DIR="/tmp/tests_output"
-          export TEST_DIR="/tmp_dir_test"
-          exec /src/bin/build_and_run_all_tests
-        EOF
-        docker run \
-          --cidfile='docker.cid' \
-          -v ${PWD}:/src:ro \
-          --tmpfs /tmp_dir_test:exec,mode=1777 \
-          ${{inputs.image}} \
-          bash /src/run.sh
-        if docker cp "$(cat docker.cid)":/tmp/tests_output ./
+        if [[ "01234567" == *"$(echo "${{github.run_id}}"|md5sum|cut -b 1)"* ]]; then export CMAKE_FLAGS="-DINSTALL_PDIPLUGINDIR=/tmp/pdi_plugins"; fi
+        export MAKEFLAGS='-j 4'
+        STATUS=0
+        ./bin/build_and_run_all_tests --container "${{inputs.image}}" --ctest-outdir tests_output || STATUS=$?
+        if compgen -G 'tests_output/tests_*.xml' > /dev/null
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
+        exit "${STATUS}"
     - id: Publish
       uses: mikepenz/action-junit-report@v6
       if: always() && steps.test.outputs.with_report == 'true'
