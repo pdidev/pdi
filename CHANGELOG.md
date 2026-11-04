@@ -56,6 +56,12 @@ and this project adheres to
   [#753](https://github.com/pdidev/pdi/issues/753)
 * Fix a test of PDI_expression which which could not fail.
   [#753](https://github.com/pdidev/pdi/issues/753)
+* The configuration no longer suggests setting `USE_MPI` and `USE_Threads`,
+  which have no effect, fixing [#791](https://github.com/pdidev/pdi/issues/791).
+* A `\` in a string $-expression now escapes the character after it correctly,
+  whatever it is, and an expression that ends with a lone `\` is now reported
+  as an error instead of crashing, fixing
+  [#846](https://github.com/pdidev/pdi/issues/846)
 
 #### Security
 
@@ -90,6 +96,8 @@ and this project adheres to
   longer includes `pdi/logger.h`, nor does `pdi/logger.h` include
   `spdlog/spdlog.h`: include them where they are used.
   This is part of [#721](https://github.com/pdidev/pdi/issues/721)
+* `<pdi/plugin.h>` no longer declares anything at global scope. Fixes
+  [#756](https://github.com/pdidev/pdi/issues/756)
 
 #### Deprecated
 * `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
@@ -114,6 +122,17 @@ and this project adheres to
 * Fix [#737](https://github.com/pdidev/pdi/issues/737) as random_init
   from integral did not match IntType used (while bool and char remain
   intentionally unsupported) 
+* `bin/build_and_run_all_tests` configures, builds and tests every project the
+  same way, and passes `CMAKE_FLAGS` to all of them, as per
+  [#783](https://github.com/pdidev/pdi/issues/783).
+* Flags passed to `bin/build_and_run_all_tests` through `CMAKE_FLAGS` take
+  precedence over those the script chooses, as per
+  [#782](https://github.com/pdidev/pdi/issues/782).
+* Building a plugin with `-Wall -Wextra` no longer warns about `pdi/plugin.h`,
+  fixing [#812](https://github.com/pdidev/pdi/issues/812)
+* A plugin that does not export its pretty name, now loads under its own name
+  instead of crashing PDI, fixing
+  [#836](https://github.com/pdidev/pdi/issues/836)
 
 #### Security
 

@@ -120,7 +120,8 @@ Before submitting, check the formatting, which is the first thing CI verifies an
 It configures and builds the distribution from scratch, runs the whole test suite, installs it, then configures, builds and runs `tests/cmake_tests`
 against that installation, so it also checks that the installed package is usable through `find_package`.
 It takes no argument and builds in a fresh `pdibuild.XXXXX` directory created in the current directory, so it leaves your own build tree alone.
-Set `TEST_DIR` to build somewhere specific, `MAKEFLAGS` to control the parallelism, and `EXCLUDED_PDI_TESTS` to skip tests.
+Set `TEST_DIR` to build somewhere specific, `MAKEFLAGS` to control the parallelism, `EXCLUDED_PDI_TESTS` to skip tests, and `CMAKE_FLAGS` to pass
+configure flags of your own, which take precedence over those the script chooses.
 CI runs that same script inside the project docker images across a matrix of compilers, MPI implementations and dependency sources, so running it
 before submitting is the closest you can get to knowing CI will pass.
 
@@ -141,8 +142,9 @@ cmake --build .build --target TRACE_PLUGIN_pkg
 
 Sub-builds install into `<build>/staging` and are declared `BUILD_ALWAYS`, so they are reconsidered on every build of the top-level project.
 
-Dependencies are declared with `sbuild_add_dependency(<name> AUTO|SYSTEM|EMBEDDED ...)`:
-they are either found on the system or built from `vendor/`.
+Vendored dependencies are declared with `sbuild_add_dependency(<name> AUTO|SYSTEM|EMBEDDED EMBEDDED_PATH vendor/<dir> ...)`:
+they are either found on the system or built from their `EMBEDDED_PATH`.
+Dependencies the distribution does not vendor, such as MPI or Threads, are looked up with a plain `find_package()` instead.
 `USE_DEFAULT` sets the global policy and `USE_<name>` overrides it for a single dependency, e.g. `-DUSE_spdlog=EMBEDDED`.
 
 ### The core library
