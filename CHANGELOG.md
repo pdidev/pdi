@@ -127,6 +127,9 @@ and this project adheres to
   [#782](https://github.com/pdidev/pdi/issues/782).
 * Building a plugin with `-Wall -Wextra` no longer warns about `pdi/plugin.h`,
   fixing [#812](https://github.com/pdidev/pdi/issues/812)
+* A plugin that does not export its pretty name, now loads under its own name
+  instead of crashing PDI, fixing
+  [#836](https://github.com/pdidev/pdi/issues/836)
 
 #### Security
 
