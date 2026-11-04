@@ -139,7 +139,7 @@ public:
 		if (PC_status(result)) {
 			throw System_error("Unable to include file `{}': {}", file_path().string(), PC_errmsg());
 		}
-		result = PC_get(result, ypath().c_str());
+		result = PC_get(result, "%s", ypath().c_str());
 		if (PC_status(result)) {
 			throw System_error("Unable to include subtree `{}' from file `{}': {}", ypath(), file_path().string(), PC_errmsg());
 		}

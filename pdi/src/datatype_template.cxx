@@ -371,14 +371,14 @@ public:
 	}
 };
 
-vector<Expression> get_array_property(PC_tree_t node, string property)
+vector<Expression> get_array_property(PC_tree_t node, std::string_view property)
 {
 	vector<Expression> prop_vector;
-	PC_tree_t config = PC_get(node, property.c_str());
+	PC_tree_t config = PC_get(node, "%.*s", static_cast<int>(property.size()), property.data());
 	if (!PC_status(PC_get(config, "[0]"))) {
 		int rank = len(config);
 		for (int i = 0; i < rank; i++) {
-			prop_vector.emplace_back(to_string(PC_get(node, (property + string("[%d]")).c_str(), i)));
+			prop_vector.emplace_back(to_string(PC_get(node, "%.*s[%d]", static_cast<int>(property.size()), property.data(), i)));
 		}
 	} else {
 		string prop = to_string(config, "");

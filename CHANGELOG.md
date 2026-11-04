@@ -70,6 +70,9 @@ and this project adheres to
   [#846](https://github.com/pdidev/pdi/issues/846)
 
 #### Security
+* PDI builds again against paraconf 1.2.0 with `-Werror=format-security`, and
+  the `subtree` of an `include` that contains a `%` now selects the key written,
+  fixing [#873](https://github.com/pdidev/pdi/issues/873).
 
 
 ### For plugin developers
