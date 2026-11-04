@@ -33,7 +33,6 @@
 #include <vector>
 
 #include <spdlog/logger.h>
-#include <spdlog/spdlog.h>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/paraconf_wrapper.h>

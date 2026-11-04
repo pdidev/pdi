@@ -78,6 +78,9 @@ For example, the installation directory can be changed with the following comman
 cmake -DCMAKE_INSTALL_PREFIX=/home/user/ ..
 ```
 
+%PDI is only supported as a shared library, so `BUILD_SHARED_LIBS` is not a choice
+the distribution offers; every library it builds says so for itself.
+
 The following general flags are useful to configure the distribution as a whole.
 
 |Flag                  |Default     |Description|
@@ -161,8 +164,8 @@ cmake module.
 
 |Flag                      |Default                                                                                |Description|
 |:-------------------------|:--------------------------------------------------------------------------------------|:----------|
-|`INSTALL_CMAKEDIR`        |`PDIDATADIR/cmake`                                                                     |Cmake modules.|
 |`INSTALL_FMODDIR`         |`LIBDIR/pdi/finclude/${COMPILER_VERSION}`                                              |Fortran modules|
+|`INSTALL_PDICMAKEDIR`     |`PDIDATADIR/cmake`                                                                     |Cmake modules, set by the deprecated `INSTALL_CMAKEDIR` when that is given instead.|
 |`INSTALL_PDIDATADIR`      |`DATADIR/pdi`                                                                          |PDI data|
 |`INSTALL_PDIPLUGINDIR`    |`LIBDIR/pdi/plugins_${PDI_VERSION}`                                                    |PDI plugins|
 |`CMAKE_INSTALL_BINDIR`    |See [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html).   |user executables|

@@ -39,6 +39,7 @@
 
 #include <pdi/context.h>
 #include <pdi/error.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
 

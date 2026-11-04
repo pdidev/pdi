@@ -27,6 +27,8 @@
 #include <set>
 #include <netcdf.h>
 
+#include <pdi/logger.h>
+
 #include "dnc_netcdf_file.h"
 
 #include "dnc_file_context.h"
