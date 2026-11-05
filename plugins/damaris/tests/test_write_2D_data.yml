@@ -1,0 +1,73 @@
+# dimension of the problem
+dimension: 2
+
+# local size with ghost
+datasize: [10, 7]
+
+# number of cells in the ghost in the left side (doesn't change these value, these are hard coded in layout.ghost for the moment)
+ghost_left: [2, 1]
+
+# number of cells in the ghost in the right side (doesn't change these value, these are hard coded in layout.ghost for the moment)
+ghost_right: [0, 3]
+
+pdi:
+  metadata:
+    mpi_comm: MPI_Comm
+    is_client: int
+    dim: int  # must be equal to dimension 
+    global_size: {size: "$dim",  type: array, subtype: int}  # global size without ghost
+    datasize:  {size: "$dim",  type: array, subtype: int}  # local size with ghost 
+    ghost_left:  {size: "$dim",  type: array, subtype: int}  
+    ghost_right: {size: "$dim",  type: array, subtype: int}
+  data:
+    int_values: {size: ["$datasize[0]", "$datasize[1]"], type: array, subtype: int}
+  logging: debug
+  plugins:
+    trace: debug
+    mpi:
+    decl_hdf5:
+      - file: 'data_2D_without_ghost.h5'
+        datasets:
+          int_values: {type: array, subtype: int, size: ["$global_size[0]", "$global_size[1]"]} 
+        on_event: write
+        write: 
+          int_values:
+            memory_selection:
+              start: ["$ghost_left[0]", "$ghost_left[1]"]
+              size: ["$global_size[0]", "$global_size[1]"]
+    damaris:
+      architecture:
+        sim_name: damaris_2D
+        domains: 1
+        dedicated:
+          core: 1
+          node: 0
+      get_is_client: is_client
+      client_comm_get: mpi_comm
+      datasets:
+        - dataset:
+            name: int_values
+            layout: int_values_layout
+            storage: hdf5_storage
+      layouts:
+        - layout:
+            name: int_values_layout
+            type: int
+            global: [ "$global_size[0]", "$global_size[1]"]
+            dimensions: [ "$datasize[0]", "$datasize[1]"]
+            ghosts: [ "2:0, 1:3"] # ghosts must be pass as values not with $expression (Not supported by Damaris v 1.13)
+            depends_on: [global_size, datasize]
+      storages:
+        - storage:
+            name: hdf5_storage
+            type: HDF5
+            file_mode: Collective
+            files_path: ./HDF5_files/
+      write: 
+        int_values:
+          dataset: int_values
+          position: ["0","0"]
+      log:
+        rotation_size: 5
+        log_level: info
+        flush: true
