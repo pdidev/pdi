@@ -66,7 +66,6 @@ class File_op
 
 	Subfiling m_subfiling;
 
-#ifdef H5_HAVE_PARALLEL
 	/// default MPI-I/O transfer mode of the datasets of this file (COLLECTIVE or INDEPENDENT)
 	H5FD_mpio_xfer_t m_mpio = H5FD_MPIO_COLLECTIVE;
 

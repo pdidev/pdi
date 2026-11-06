@@ -67,9 +67,6 @@ cmake -DDIST_PROFILE=Devel -S . -B .build
 cmake --build .build -j
 ```
 
-Building PDI as a static library is not supported:
-`BUILD_SHARED_LIBS` must stay `ON`, and the configure step fails outright if it is not.
-
 Anything that links PDI needs its runtime environment set up.
 Use the generated `pdirun` wrapper (`<install>/bin/pdirun <command>`) or source the generated `env.bash`.
 
@@ -123,7 +120,8 @@ Before submitting, check the formatting, which is the first thing CI verifies an
 It configures and builds the distribution from scratch, runs the whole test suite, installs it, then configures, builds and runs `tests/cmake_tests`
 against that installation, so it also checks that the installed package is usable through `find_package`.
 It takes no argument and builds in a fresh `pdibuild.XXXXX` directory created in the current directory, so it leaves your own build tree alone.
-Set `TEST_DIR` to build somewhere specific, `MAKEFLAGS` to control the parallelism, and `EXCLUDED_PDI_TESTS` to skip tests.
+Set `TEST_DIR` to build somewhere specific, `MAKEFLAGS` to control the parallelism, `EXCLUDED_PDI_TESTS` to skip tests, and `CMAKE_FLAGS` to pass
+configure flags of your own, which take precedence over those the script chooses.
 CI runs that same script inside the project docker images across a matrix of compilers, MPI implementations and dependency sources, so running it
 before submitting is the closest you can get to knowing CI will pass.
 
@@ -144,8 +142,9 @@ cmake --build .build --target TRACE_PLUGIN_pkg
 
 Sub-builds install into `<build>/staging` and are declared `BUILD_ALWAYS`, so they are reconsidered on every build of the top-level project.
 
-Dependencies are declared with `sbuild_add_dependency(<name> AUTO|SYSTEM|EMBEDDED ...)`:
-they are either found on the system or built from `vendor/`.
+Vendored dependencies are declared with `sbuild_add_dependency(<name> AUTO|SYSTEM|EMBEDDED EMBEDDED_PATH vendor/<dir> ...)`:
+they are either found on the system or built from their `EMBEDDED_PATH`.
+Dependencies the distribution does not vendor, such as MPI or Threads, are looked up with a plain `find_package()` instead.
 `USE_DEFAULT` sets the global policy and `USE_<name>` overrides it for a single dependency, e.g. `-DUSE_spdlog=EMBEDDED`.
 
 ### The core library
@@ -304,7 +303,8 @@ The blocks *should* be in order:
 7. in case of an implementation file (cxx), the implemented PDI header
 
 Includes *should* use the bracket notation, except for the headers of the component being compiled when included from one of its implementation (cxx)
-files, which *should* use the quote notation.
+files or from one of its private headers, which *should* use the quote notation.
+An installed header always uses the bracket notation, since it is compiled as part of the code that includes it.
 In practice, an implementation file of the PDI library refers to the library's own headers as `"pdi/error.h"`, whereas a plugin refers to them as
 `<pdi/error.h>`.
 
@@ -353,6 +353,22 @@ File organization:
 * public plugin classes and structures *must* be forward-declared in the `pdi/pdi_fwd.h` header
 * No implementation should be provided in header files, even `= default` implementations.
   Templates, whose definition the compiler requires at the point of instantiation, are the exception.
+
+### String parameters
+
+A function receiving a string as parameter *should* receive it as:
+* a `std::string` by value when it consumes it; that is, when it modifies it or moves it to keep it beyond the call;
+* a `std::string_view` by value otherwise, when the function only reads the string during the call;
+* a `std::string &` (non-const reference) when the parameter is used as an output parameter;
+* a `fmt::format_string<Args...>` when the parameter is a compile-time format string.
+
+There only very few cases that do not follow this, `const std::string&` and `const char*` parameters *should not* be used, and any exception
+introduced in the C++ code **must** be documented.
+Exceptions might for example include a function that requires a NUL-terminated string to pass to a C API, or an overload set that also accepts a
+`bool` and needs a `const char*` one for disambiguation.
+
+Pre-existing APIs should be reworked carefully to move towards these good practices without breaking existing code too much.
+
 
 ### Namespaces
 

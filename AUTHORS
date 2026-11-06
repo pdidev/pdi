@@ -6,6 +6,8 @@ Julian Auriac - CEA (julian.auriac@cea.fr)
 * Fix CI bug where tests.xml file could not be written
 * Improvement of a Decl'HDF5 test to work on OSX
 * Addition of API tests
+* Fix a test that could not fail
+* Fix examples to distinguish MPI behaviours
 * Handling of a default `mpio` transfer mode at file level in Decl'HDF5
 
 Julien Bigot - CEA (julien.bigot@cea.fr)

@@ -1,17 +1,18 @@
 ################################################################################
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-#     * Redistributions of source code must retain the above copyright
-#     notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above copyright
-#     notice, this list of conditions and the following disclaimer in the
-#     documentation and/or other materials provided with the distribution.
-#     * Neither the name of the <organization> nor the
-#     names of its contributors may be used to endorse or promote products
-#     derived from this software without specific prior written permission.
+# * Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in the
+#   documentation and/or other materials provided with the distribution.
+# * Neither the name of CEA nor the names of its contributors may be used to
+#   endorse or promote products derived from this software without specific
+#   prior written permission.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -101,11 +102,10 @@ endfunction()
 function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	cmake_parse_arguments(PARSE_ARGV 2 _SBUILD "BUILD_DEPENDENCY;NO_INSTALL" "EMBEDDED_PATH;BUILD_IN_SOURCE;VERSION;SOURCE_SUBDIR" "CMAKE_CACHE_ARGS;DEPENDS;CONFIGURE_COMMAND;BUILD_COMMAND;INSTALL_COMMAND;COMPONENTS;OPTIONAL_COMPONENTS;PATCH_COMMAND;MODULE_VARS;ENV")
 	
-	if(DEFINED _SBUILD_EMBEDDED_PATH)
-		set("USE_${_SBUILD_NAME}" "${_SBUILD_DEFAULT}" CACHE STRING "version of ${_SBUILD_NAME} to use, this can be 1) a path to the library source, 2) EMBEDDED to use the provided version, 3) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 4) AUTO to use SYSTEM if available and EMBEDDED otherwise")
-	else()
-		set("USE_${_SBUILD_NAME}" "${_SBUILD_DEFAULT}")
+	if(NOT DEFINED _SBUILD_EMBEDDED_PATH)
+		message(FATAL_ERROR "sbuild_add_dependency(${_SBUILD_NAME}) requires an EMBEDDED_PATH")
 	endif()
+	set("USE_${_SBUILD_NAME}" "${_SBUILD_DEFAULT}" CACHE STRING "version of ${_SBUILD_NAME} to use, this can be 1) a path to the library source, 2) EMBEDDED to use the provided version, 3) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 4) AUTO to use SYSTEM if available and EMBEDDED otherwise")
 	
 	set(_SBUILD_TOBUILD FALSE)
 	
@@ -182,6 +182,8 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	endif()
 	
 	__sbuild_collect_variables(_SBUILD_VARS)
+	# PDI is only ever linked against shared, position-independent dependencies.
+	list(APPEND _SBUILD_VARS "-DBUILD_SHARED_LIBS:BOOL=ON" "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON")
 	set(_SBUILD_CMAKE_CACHE_ARGS ${_SBUILD_VARS} ${_SBUILD_CMAKE_CACHE_ARGS})
 	
 	if(NOT DEFINED _SBUILD_BUILD_COMMAND)

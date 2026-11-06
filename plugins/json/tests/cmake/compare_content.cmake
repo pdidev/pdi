@@ -28,18 +28,28 @@ if (NOT DEFINED TEST_NAME OR NOT DEFINED ACTUAL_OUTPUT_PATH OR NOT DEFINED EXPEC
     message(FATAL_ERROR "Required variables not set. This script should be invoked using CTest.")
 endif ()
 
-file(REMOVE ${ACTUAL_OUTPUT_PATH})
+file(REMOVE "${ACTUAL_OUTPUT_PATH}")
 
 # Execute test
-execute_process(COMMAND "${CMAKE_BINARY_DIR}/${TEST_NAME}")
+execute_process(
+    COMMAND "${CMAKE_BINARY_DIR}/${TEST_NAME}"
+    RESULT_VARIABLE EXEC_RESULT
+)
+
+if (NOT EXEC_RESULT EQUAL 0)
+    message(FATAL_ERROR "${TEST_NAME} : Executable failed with exit code ${EXEC_RESULT}")
+endif ()
+
+if (NOT EXISTS "${ACTUAL_OUTPUT_PATH}")
+    message(FATAL_ERROR "${TEST_NAME} : Executable ran but did not produce output file: ${ACTUAL_OUTPUT_PATH}")
+endif ()
 
 file(READ "${EXPECTED_OUTPUT_PATH}" EXPECTED_CONTENT)
 file(READ "${ACTUAL_OUTPUT_PATH}" ACTUAL_CONTENT)
 
 # Compare the actual and expected content
 if (ACTUAL_CONTENT STREQUAL EXPECTED_CONTENT)
-    message(STATUS "${TEST_NAME} : Produced and expected contents corresponds\nTest verify_content_${TEST_NAME} passed.")
+    message(STATUS "${TEST_NAME} : Produced and expected contents correspond. Test passed.")
 else ()
-    message(FATAL_ERROR "${TEST_NAME} : Produced and expected contents does not corresponds\nTest verify_content_${TEST_NAME} failed."
-)
+    message(FATAL_ERROR "${TEST_NAME} : Produced and expected contents do NOT correspond.Test failed.")
 endif ()

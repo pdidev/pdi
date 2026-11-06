@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -32,7 +33,33 @@
 ### Project header
 
 cmake_minimum_required(VERSION 3.22...4.2)
-project(PDI_DIST LANGUAGES C CXX)
+project(PDI_DIST LANGUAGES NONE)
+
+
+
+## Required versions of the dependencies
+
+# pdi/docs/Source_installation.md is the authoritative list: keep both in sync.
+set(PDI_REQUIRED_DOXYGEN_VERSION  1.9)
+set(PDI_REQUIRED_HDF5_VERSION     1.10)
+set(PDI_REQUIRED_JSON_VERSION     3.11)
+set(PDI_REQUIRED_NETCDF_VERSION   4.8)
+set(PDI_REQUIRED_PARACONF_VERSION 1.0)
+set(PDI_REQUIRED_PYBIND11_VERSION 2.9)
+set(PDI_REQUIRED_PYTHON_VERSION   3.10)
+set(PDI_REQUIRED_SPDLOG_VERSION   1.9)
+set(PDI_REQUIRED_YAML_VERSION     0.2.2)
+
+set(PDI_VENDORED_BENCHMARK_DIR  "vendor/benchmark-4ed29ae")
+set(PDI_VENDORED_GOOGLETEST_DIR "vendor/googletest-56efe39")
+set(PDI_VENDORED_HDF5_DIR       "vendor/hdf5-1.12.3")
+set(PDI_VENDORED_JSON_DIR       "vendor/json-3.11.4")
+set(PDI_VENDORED_NETCDF_DIR     "vendor/netcdf-c-4.9.3")
+set(PDI_VENDORED_PARACONF_DIR   "vendor/paraconf-1.0.3")
+set(PDI_VENDORED_PYBIND11_DIR   "vendor/pybind11-3.0.1")
+set(PDI_VENDORED_SPDLOG_DIR     "vendor/spdlog-1.15.3")
+set(PDI_VENDORED_YAML_DIR       "vendor/libyaml-0.2.5")
+set(PDI_VENDORED_ZPP_DIR        "vendor/zpp-1.1.2")
 
 
 
@@ -61,6 +88,7 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 
 # Modules to build
 
+option(BUILD_BENCHMARKING       "Build the Decl'HDF5 benchmarks" ON)
 option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
 option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
@@ -72,7 +100,6 @@ option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
 option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
 option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
-option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
 option(BUILD_TIMER_PLUGIN       "Build Timer plugin" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
@@ -82,8 +109,9 @@ option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 
 ### Default build type
 
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build, options are: None Debug Release(default) RelWithDebInfo MinSizeRel ..." FORCE)
+if(NOT DEFINED CMAKE_BUILD_TYPE AND "${CMAKE_CONFIGURATION_TYPES}" STREQUAL "")
+	set(CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel ...")
+	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS None Debug Release RelWithDebInfo MinSizeRel)
 endif()
 message(STATUS " **Profile**: Distribution profile is: `${DIST_PROFILE}' (-DDIST_PROFILE=${DIST_PROFILE})")
 message(STATUS " **Profile**: Build type is: `${CMAKE_BUILD_TYPE}' (-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})")
@@ -126,14 +154,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" CACHE STRING "" FORCE)
 
 ### Sanity check
 
-if(NOT "${BUILD_SHARED_LIBS}")
-	message(FATAL_ERROR "Building PDI as a static lib is not supported. Please add the flag `BUILD_SHARED_LIBS=ON` to the cmake command line.")
-else()
-	set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "" FORCE)
-	set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
-	mark_as_advanced(CMAKE_POSITION_INDEPENDENT_CODE BUILD_SHARED_LIBS)
-endif()
-
 if("${BUILD_PYCALL_PLUGIN}" AND NOT "${BUILD_PYTHON}")
 	message(FATAL_ERROR
 		"The Pycall plugin is enabled but Python support is disabled.\n"
@@ -175,36 +195,43 @@ endif()
 
 
 
+### Languages
+
+# This has to come after the build type is settled and before any try_compile or include(GNUInstallDirs).
+enable_language(C)
+enable_language(CXX)
+if("${BUILD_FORTRAN}")
+	enable_language(Fortran)
+endif()
+
+
+
 ### Dependencies
 
+include(DeprecatedAlias)
 include(GNUInstallDirs)
 include(SuperBuild)
+# Before any dependency is added, since each is handed a copy of the cache: Paraconf reads INSTALL_CMAKEDIR for its own package files.
+pdi_deprecated_alias(INSTALL_CMAKEDIR INSTALL_PDICMAKEDIR "PDI cmake modules (PDIDATADIR/cmake)")
 sbuild_get_env(SBUILD_PATH PATH)
 sbuild_get_env(SBUILD_CPATH CPATH)
 sbuild_get_env(SBUILD_LIBRARY_PATH LIBRARY_PATH)
 sbuild_get_env(SBUILD_LD_LIBRARY_PATH LD_LIBRARY_PATH)
 
 
-## Fortran
-
-if("${BUILD_FORTRAN}") # and (paraconf or PDI or ...)
-	enable_language(Fortran)
-endif()
-
-
 ## Python3
 
 if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.10 REQUIRED COMPONENTS Interpreter Development)
+	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter Development)
 elseif("${BUILD_FORTRAN}")
-	find_package(Python3Path 3.10 REQUIRED COMPONENTS Interpreter)
+	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter)
 endif()
 
 
 ## Threads
 
 if("${BUILD_TESTING}")
-	sbuild_add_dependency(Threads SYSTEM)
+	find_package(Threads REQUIRED)
 endif()
 
 
@@ -226,12 +253,9 @@ endif()
 if("${BUILD_MPI_PLUGIN}")
 	list(APPEND MPI_COMPONENTS CXX)
 endif()
-if(NOT "x${MPI_COMPONENTS}x" STREQUAL xx)
+if(NOT "x${MPI_COMPONENTS}x" STREQUAL "xx")
 	list(REMOVE_DUPLICATES MPI_COMPONENTS)
-	sbuild_add_dependency(MPI SYSTEM
-		COMPONENTS ${MPI_COMPONENTS}
-		MODULE_VARS MPI_C_COMPILER
-	)
+	find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 endif()
 
 
@@ -239,7 +263,7 @@ endif()
 
 # if ( paraconf )
 sbuild_add_dependency(yaml "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/libyaml-0.2.5"
+	EMBEDDED_PATH "${PDI_VENDORED_YAML_DIR}"
 	CMAKE_CACHE_ARGS
 		"-DBUILD_TESTING:BOOL=OFF"
 		"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream libyaml is updated (https://github.com/yaml/libyaml/pull/314)
@@ -247,7 +271,7 @@ sbuild_add_dependency(yaml "${USE_DEFAULT}"
 		"-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
 		"-DINSTALL_INCLUDE_DIR:STRING=${CMAKE_INSTALL_INCLUDEDIR}"
 		"-DINSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}"
-	VERSION 0.2.2
+	VERSION "${PDI_REQUIRED_YAML_VERSION}"
 )
 
 
@@ -259,14 +283,13 @@ if("${BUILD_FORTRAN}")
 endif()
 # if ( PDI or ... )
 sbuild_add_dependency(paraconf "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/paraconf-1.0.3"
+	EMBEDDED_PATH "${PDI_VENDORED_PARACONF_DIR}"
 	COMPONENTS ${PARACONF_COMPONENTS}
 	CMAKE_CACHE_ARGS
-		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=TRUE"
 		"-DUSE_yaml:STRING=SYSTEM"
 		"-DBUILD_TESTING:BOOL=OFF"
 	DEPENDS "yaml"
-	VERSION 1.0
+	VERSION "${PDI_REQUIRED_PARACONF_VERSION}"
 )
 
 
@@ -274,21 +297,20 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 
 # if ( PDI or ... )
 sbuild_add_dependency(spdlog "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/spdlog-1.15.3"
+	EMBEDDED_PATH "${PDI_VENDORED_SPDLOG_DIR}"
 	CMAKE_CACHE_ARGS
-		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
 		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
 		"-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF"
 		"-DSPDLOG_BUILD_TESTS:BOOL=OFF"
 		"-DSPDLOG_FMT_EXTERNAL:BOOL=OFF"
-	VERSION 1.9
+	VERSION "${PDI_REQUIRED_SPDLOG_VERSION}"
 )
 
 
 ## Doxygen
 
 if("${BUILD_DOCUMENTATION}")
-	find_package(Doxygen 1.9 REQUIRED OPTIONAL_COMPONENTS dot)
+	find_package(Doxygen "${PDI_REQUIRED_DOXYGEN_VERSION}" REQUIRED OPTIONAL_COMPONENTS dot)
 endif()
 
 
@@ -315,7 +337,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 	endif()
 	
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/hdf5-1.12.3"
+		EMBEDDED_PATH "${PDI_VENDORED_HDF5_DIR}"
 		COMPONENTS ${HDF5_COMPONENTS}
 		MODULE_VARS HDF5_IS_PARALLEL HDF5_VERSION
 		CMAKE_CACHE_ARGS
@@ -329,11 +351,10 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 			"-DHDF5_INSTALL_DATA_DIR:STRING=${CMAKE_INSTALL_DATADIR}/hdf5"
 			"-DHDF5_INSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}"
 			${HDF5_CMAKE_CACHE_ARGS}
-		VERSION
 	)
 	if("${HDF5_FOUND}")
-		if("${HDF5_VERSION}" VERSION_LESS 1.10)
-			message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
+		if("${HDF5_VERSION}" VERSION_LESS "${PDI_REQUIRED_HDF5_VERSION}")
+			message(FATAL_ERROR "HDF5 version ${PDI_REQUIRED_HDF5_VERSION} at least required, HDF5 ${HDF5_VERSION} found.")
 		endif()
 		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 			message(FATAL_ERROR
@@ -346,7 +367,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 		endif()
 	elseif(NOT "EMBEDDED" STREQUAL "${USE_HDF5}")
 		message(FATAL_ERROR
-			"HDF5 setup failed: A suitable SYSTEM version (>= 1.10) could not be found.\n"
+			"HDF5 setup failed: A suitable SYSTEM version (>= ${PDI_REQUIRED_HDF5_VERSION}) could not be found.\n"
 			"    you have the following options:\n"
 			"     * build the EMBEDDED HDF5 from PDI distribution => pass `-DUSE_HDF5=EMBEDDED' to cmake\n"
 			"     * use another version of HDF5 from the system => pass `-DHDF5_ROOT=/path/to/hdf5/root/' to cmake"
@@ -379,7 +400,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 	endif()
 	
 	sbuild_add_dependency(NetCDF "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/netcdf-c-4.9.3"
+		EMBEDDED_PATH "${PDI_VENDORED_NETCDF_DIR}"
 		DEPENDS HDF5
 		MODULE_VARS NetCDF_FEATURES
 		CMAKE_CACHE_ARGS
@@ -395,7 +416,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			-DNETCDF_ENABLE_EXAMPLES:BOOL=OFF
 			-DNETCDF_ENABLE_FILTER_TESTING:BOOL=OFF
 			-DNETCDF_ENABLE_TESTS:BOOL=OFF
-		VERSION 4.8
+		VERSION "${PDI_REQUIRED_NETCDF_VERSION}"
 	)
 	if("${NetCDF_FOUND}")
 		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
@@ -411,7 +432,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 		endif()
 	elseif(NOT "EMBEDDED" STREQUAL "${USE_NetCDF}")
 		message(FATAL_ERROR
-			"NetCDF setup failed: A suitable SYSTEM version (>= 4.8) could not be found.\n"
+			"NetCDF setup failed: A suitable SYSTEM version (>= ${PDI_REQUIRED_NETCDF_VERSION}) could not be found.\n"
 			"    you have the following options:\n"
 			"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NetCDF=EMBEDDED' to cmake\n"
 			"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake\n"
@@ -428,12 +449,12 @@ if("${BUILD_PYTHON}")
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 	sbuild_add_dependency(pybind11 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/pybind11-3.0.1"
+		EMBEDDED_PATH "${PDI_VENDORED_PYBIND11_DIR}"
 		CMAKE_CACHE_ARGS
 			"-DBUILD_TESTING:BOOL=OFF"
 			"-DPYBIND11_TEST:BOOL=OFF"
 			"-DPYBIND11_PYTHON_VERSION:STRING=${Python3_VERSION}"
-		VERSION 2.9
+		VERSION "${PDI_REQUIRED_PYBIND11_VERSION}"
 	)
 endif()
 
@@ -441,12 +462,12 @@ endif()
 ## JSON
 
 if("${BUILD_JSON_PLUGIN}")
-	sbuild_add_dependency(JSON "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/json-3.11.4"
+	sbuild_add_dependency(nlohmann_json "${USE_DEFAULT}"
+		EMBEDDED_PATH "${PDI_VENDORED_JSON_DIR}"
 		CMAKE_CACHE_ARGS
 			"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream is updated
 			"-DJSON_BuildTests:BOOL=OFF" # skip unit tests for json
-		VERSION 3.11
+		VERSION "${PDI_REQUIRED_JSON_VERSION}"
 	)
 endif()
 
@@ -490,7 +511,7 @@ sbuild_add_module(DECL_NETCDF_PLUGIN
 sbuild_add_module(JSON_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_JSON_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json"
-	DEPENDS PDI JSON
+	DEPENDS PDI nlohmann_json
 	SUBSTEPS test
 )
 

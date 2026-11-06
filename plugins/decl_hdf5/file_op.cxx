@@ -39,6 +39,7 @@
 
 #include <pdi/context.h>
 #include <pdi/error.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
 
@@ -251,8 +252,6 @@ File_op::File_op(const File_op& other)
 	: m_collision_policy{other.m_collision_policy}
 	, m_file{other.m_file}
 	, m_event{other.m_event}
-	,
-	, m_mpio{other.m_mpio}
 	,
 #ifdef H5_HAVE_PARALLEL
 	m_communicator{other.m_communicator}

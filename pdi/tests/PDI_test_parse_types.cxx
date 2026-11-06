@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,13 +43,13 @@
 #include <pdi/scalar_datatype.h>
 #include <pdi/tuple_datatype.h>
 
-#include "global_context.h"
+#include "data_store.h"
 
 
 using PDI::Array_datatype;
+using PDI::Data_store;
 using PDI::Datatype;
 using PDI::Datatype_template;
-using PDI::Global_context;
 using PDI::Paraconf_wrapper;
 using PDI::Pointer_datatype;
 using PDI::Record_datatype;
@@ -83,9 +84,9 @@ struct PositiveTypeParseTest: public ::testing::TestWithParam<param_pair> {
  */
 TEST_P(PositiveTypeParseTest, parse)
 {
-	Global_context g_context{this->conf};
+	Data_store g_store{this->conf};
 	auto&& params = GetParam();
-	auto&& parsed_datatype = g_context.datatype(PC_parse_string(params.first.c_str()))->evaluate(g_context);
+	auto&& parsed_datatype = g_store.datatype(PC_parse_string(params.first.c_str()))->evaluate(g_store);
 	ASSERT_TRUE(*parsed_datatype == *params.second)
 		<< "When parsing: \"" << params.first << "\"" << std::endl
 		<< "Expected: \"" << params.second->debug_string() << "\"" << std::endl
@@ -110,8 +111,8 @@ struct NegativeTypeParseTest: public ::testing::TestWithParam<string> {
  */
 TEST_P(NegativeTypeParseTest, parse)
 {
-	Global_context g_context{this->conf};
-	ASSERT_THROW(g_context.datatype(PC_parse_string(GetParam().c_str())), PDI::Error);
+	Data_store g_store{this->conf};
+	ASSERT_THROW(g_store.datatype(PC_parse_string(GetParam().c_str())), PDI::Error);
 }
 
 vector<param_pair> scalar_types{
@@ -346,6 +347,8 @@ vector<param_pair> scalar_types{
 
 vector<param_pair> array_types{
 	{"{size: 10, type: array, subtype: char}", Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), 10)},
+	{"{size: 10, type: array, subtype: char, order: C}", Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), 10)},
+	{"{size: 10, type: array, subtype: char, order: c}", Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), 10)},
 	{"{type: array, size: 20, subsize: 15, start: 5, subtype: char}",
      Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), 20, 5, 15)},
 	{"{size: 30, subsize: 15, type: array, subtype: char}",
@@ -738,6 +741,7 @@ vector<string> invalid_data{
 	"{size: [10, 20], subsize: 10, type: array, subtype: char}",
 	"{subsize: 10, start: [30, 20, 20], type: array, subtype: char}",
 	"{sizes: [10, 20], type: array, subtype: char}",
+	"{size: 10, type: array, subtype: char, order: F}",
 	"{type: record, members: {my_char: {disp: 0, type: char}, my_int: {disp: 4, type: int} }}",
 	"{type: record, buffersize: 8, members: {my_char: {type: char}, my_int: {disp: 4, type: int} }}",
 	"{type: tuple, buffersize: 13, elements: [char, int, double]}",

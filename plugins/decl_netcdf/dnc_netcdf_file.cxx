@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +38,7 @@
 #include <spdlog/spdlog.h>
 
 #include <pdi/array_datatype.h>
+#include <pdi/logger.h>
 #include <pdi/scalar_datatype.h>
 
 #include "dnc_netcdf_file.h"
@@ -661,7 +663,7 @@ void Dnc_netcdf_file::put_variable(const Dnc_variable& variable, const Dnc_io& w
 	m_ctx.logger().trace("Variable `{}' written", variable_name);
 }
 
-void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w)
+void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w, const std::string& ref_name)
 {
 	if (!ref_w) {
 		throw PDI::Permission_error{"Decl_netcdf plugin: Cannot read `{}'. Need write access to read it from file", variable.path()};
@@ -690,12 +692,12 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	}
 	nc_id var_id = var_it->second;
 
-	// read variable and check for scalar type match
 	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type())) {
 		nc_type var_nc_type;
 		size_t var_nc_type_size;
 		nc_try(nc_inq_vartype(src_id, var_id, &var_nc_type), "cannot get type of `{}' from file", variable.path());
 		nc_try(nc_inq_type(0, var_nc_type, NULL, &var_nc_type_size), "can not inquire the size of `{}'", var_nc_type);
+
 		if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
 			switch (var_nc_type) {
 			case NC_BYTE:
@@ -749,8 +751,21 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 					scalar_type->datasize()
 				};
 			}
+		} else if ((*scalar_type) == (*PDI::UNDEF_TYPE)) {
+			throw PDI::Type_error{
+				"can not read `{}', the type of the exposed data `{}' is undefined (likely not "
+				"listed in (meta)data section of the specification tree).",
+				variable_name,
+				ref_name
+			};
 		} else {
-			throw PDI::Type_error{"Can not read `{}' : buffer has unknown type", variable_name};
+			throw PDI::Impl_error{
+				"can not read `{}', the type of the exposed data `{}' is unsupported by the "
+				"plugin: {}",
+				variable_name,
+				ref_name,
+				scalar_type->debug_string()
+			};
 		}
 	}
 
