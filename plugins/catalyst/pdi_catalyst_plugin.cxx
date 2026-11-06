@@ -58,7 +58,7 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 	if (!PC_status(communicator_spec)) {
 		#ifdef CATALYST_IS_PARALLEL
 			m_communicator = PDI::to_string(communicator_spec);
-			ctx.callbacks().add_data_callback(
+			ctx.on_data(
 				[this](const std::string& data_name, PDI::Ref ref) {
 					this->init_communicator( data_name, ref);
 				}
@@ -69,7 +69,7 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 			context().logger().warn("Catalyst is compiled with no mpi support and a communicator is defined.");
 		#endif
 	} else {
-		ctx.callbacks().add_init_callback([this]() { this->run_catalyst_initialize(); });
+		ctx.on_init([this]() { this->run_catalyst_initialize(); });
 	}
 
 	// get when condition
@@ -82,7 +82,7 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 
 	// get event for catalyst_execute
 	std::string pdi_execute_event_name = read_pdi_execute_event_name();
-	ctx.callbacks().add_event_callback(
+	ctx.on_event(
 		[this](const std::string& event_name) {
 			if (m_when.to_long(context())) {
 				this->process_event(event_name);

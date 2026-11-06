@@ -1,10 +1,12 @@
 #ifndef catalyst_plugin_structured_ghost_H
 #define catalyst_plugin_structured_ghost_H
 
-#include "catalyst.hpp"
 #include <cstdint>
+#include <list>
 #include <stack>
 #include <vector>
+
+#include <catalyst.hpp>
 
 #include <pdi/context.h>
 #include <pdi/error.h>
