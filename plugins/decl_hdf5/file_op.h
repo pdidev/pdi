@@ -67,11 +67,12 @@ class File_op
 	Subfiling m_subfiling;
 
 #ifdef H5_HAVE_PARALLEL
+	/// default MPI-I/O transfer mode of the datasets of this file (COLLECTIVE or INDEPENDENT)
+	H5FD_mpio_xfer_t m_mpio = H5FD_MPIO_COLLECTIVE;
+
+#ifdef H5_HAVE_PARALLEL
 	/// a communicator for parallel HDF5 (null if no comm is specified)
 	PDI::Expression m_communicator;
-
-	/// default MPIO transfer mode for this file (COLLECTIVE or INDEPENDENT)
-	H5FD_mpio_xfer_t m_mpio = H5FD_MPIO_COLLECTIVE;
 #endif
 
 	/// type information for the datasets for which an explicit type is specified
@@ -126,8 +127,6 @@ public:
 
 #ifdef H5_HAVE_PARALLEL
 	PDI::Expression communicator() const { return m_communicator; }
-
-	H5FD_mpio_xfer_t mpio() const { return m_mpio; }
 #endif
 
 	Subfiling const & subfiling() const { return m_subfiling; }

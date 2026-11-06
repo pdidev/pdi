@@ -89,7 +89,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 #ifdef H5_HAVE_PARALLEL
 			template_op.m_communicator = to_string(value);
 #else
-			throw Spectree_error{value, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
+			throw Spectree_error(key_tree, "Sequential HDF5 used, specifying a communicator is invalid");
 #endif
 		} else if (key == "mpio") {
 #ifdef H5_HAVE_PARALLEL
@@ -102,6 +102,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			}
 #else
 		throw Spectree_error{value, "Used HDF5 is not parallel. Invalid mpio: `{}'", to_string(value)};
+		throw Spectree_error(key_tree, "Sequential HDF5 used, specifying mpio is invalid");
 #endif
 		} else if (key == "datasets") {
 			each(value, [&](PC_tree_t dset_name, PC_tree_t dset_type) {
@@ -251,9 +252,10 @@ File_op::File_op(const File_op& other)
 	, m_file{other.m_file}
 	, m_event{other.m_event}
 	,
+	, m_mpio{other.m_mpio}
+	,
 #ifdef H5_HAVE_PARALLEL
 	m_communicator{other.m_communicator}
-	, m_mpio{other.m_mpio}
 #ifdef H5_HAVE_SUBFILING_VFD
 	, m_subfiling{other.m_subfiling}
 #endif
@@ -410,26 +412,10 @@ void File_op::execute(Context& ctx)
 	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose, ("Cannot open `" + filename + "' file").c_str());
 
 	for (auto&& one_dset_op: dset_writes) {
-		one_dset_op.execute(
-			ctx,
-			h5_file,
-			use_mpio,
-#ifdef H5_HAVE_PARALLEL
-			m_mpio,
-#endif
-			m_datasets
-		);
+		one_dset_op.execute(ctx, h5_file, use_mpio, m_datasets);
 	}
 	for (auto&& one_dset_op: dset_reads) {
-		one_dset_op.execute(
-			ctx,
-			h5_file,
-			use_mpio,
-#ifdef H5_HAVE_PARALLEL
-			m_mpio,
-#endif
-			m_datasets
-		);
+		one_dset_op.execute(ctx, h5_file, use_mpio, m_datasets);
 	}
 	for (auto&& one_attr_op: attr_writes) {
 		one_attr_op.execute(ctx, h5_file);

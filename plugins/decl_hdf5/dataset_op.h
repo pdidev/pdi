@@ -68,10 +68,8 @@ private:
 	/// direction of the transfer (read or write)
 	Direction m_direction;
 
-	/// the type of MPI-I/O parallel pointer (optional, so unset remain std::nullopt)
-#ifdef H5_HAVE_PARALLEL
-	std::optional<H5FD_mpio_xfer_t> m_mpio;
-#endif
+	/// the type of MPI-I/O parallel pointer (defaults to the one of the file)
+	H5FD_mpio_xfer_t m_mpio;
 
 	/// the name of the dataset where to transfer
 	PDI::Expression m_dataset;
@@ -192,11 +190,7 @@ public:
 	 * \param default_mpio default MPI-I/O transfer mode inherited from the file level, used if not overridden by this dataset operation
 	 * \param dsets the vector of the explicitly typed datasets defined in Yaml file.
 	 */
-#ifdef H5_HAVE_PARALLEL
-	void execute(PDI::Context& ctx, hid_t h5_file, bool use_mpio, H5FD_mpio_xfer_t default_mpio, const std::vector<Dataset_explicit_type>& dsets);
-#else
 	void execute(PDI::Context& ctx, hid_t h5_file, bool use_mpio, const std::vector<Dataset_explicit_type>& dsets);
-#endif
 
 private:
 	void do_read(PDI::Context& ctx, hid_t h5_file, hid_t read_lst);

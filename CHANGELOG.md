@@ -12,11 +12,10 @@ and this project adheres to
 ### For users
 
 #### Added
+* In Decl'HDF5 the `mpio` key at file level sets the default for the datasets
+  of the file, as requested in [#761](https://github.com/pdidev/pdi/issues/761)
 
 #### Changed
-* `mpio` key can now be defined at file level as a default (in addition to the
-  current data level usage).
-  [#761](https://github.com/pdidev/pdi/issues/761)
 
 #### Deprecated
 
