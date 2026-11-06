@@ -1,8 +1,5 @@
-# SPDX-FileCopyrightText: Copyright (c) 2024-2025 Kitware SAS
-# SPDX-FileCopyrightText: Copyright (c) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# SPDX-FileCopyrightText: Copyright (c) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # SPDX-License-Identifier: Apache 2.0
-
-set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/runtest-dir")
 
 # Creation of executable
 add_executable(ExampleParaviewCatalyst main.c)

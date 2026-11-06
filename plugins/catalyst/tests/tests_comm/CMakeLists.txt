@@ -42,6 +42,7 @@ if("${CATALYST_USE_MPI}")
 
   set(CATALYST_SCRIPT_FOLDER ${CMAKE_SOURCE_DIR}/tests/tests_comm)
   configure_file(catalyst_comm.yml.in pdi.yml)
+  configure_file(bash_exec.sh bash_exec.sh COPYONLY)
 
   # Remark: [ISSUE] This test needs to use the paraview backend of catalyst to see if it works
   #         as we want to test another communicator than MPI_COMM_WORLD.

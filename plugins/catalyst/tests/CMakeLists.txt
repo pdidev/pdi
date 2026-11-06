@@ -1,4 +1,5 @@
 add_subdirectory(test_CxxFullExample)
 add_subdirectory(tests_comm)
 add_subdirectory(tests_ghost)
+add_subdirectory(tests_load_impl)
 add_subdirectory(tests_rectilinear)
