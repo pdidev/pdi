@@ -30,8 +30,8 @@
 #include <time.h>
 
 #include <gtest/gtest.h>
-#include "catalyst.hpp"
 #include "pdi.h"
+#include "catalyst.hpp"
 
 #include <filesystem>
 
@@ -39,7 +39,7 @@ TEST(Gcatalyst, RectilinearMesh)
 {
 	PC_tree_t conf = PC_parse_path("../pdi.yml");
 
-	int dsize[2] = {2,2};
+	int dsize[2] = {2, 2};
 
 	// create a Conduit node to hold our mesh data
 	conduit_cpp::Node rect_linear;
@@ -48,17 +48,16 @@ TEST(Gcatalyst, RectilinearMesh)
 	rect_linear["coordsets/my_coords/type"].set_string("rectilinear");
 	// add origin and spacing to the coordset (optional)
 
-	double x_coord[3]; 
+	double x_coord[3];
 	double y_coord[3];
 
-	for(int ii=0;ii<3;++ii)
-	{
-		x_coord[ii] = -10.0 + ii*10.0;
-		y_coord[ii] = cos(-2.0  + x_coord[ii]*1.0);
+	for (int ii = 0; ii < 3; ++ii) {
+		x_coord[ii] = -10.0 + ii * 10.0;
+		y_coord[ii] = cos(-2.0 + x_coord[ii] * 1.0);
 	}
 
-	rect_linear["coordsets/my_coords/values/x"].set(x_coord, dsize[0]+1, 0, 1*sizeof(double));
-	rect_linear["coordsets/my_coords/values/y"].set(y_coord, dsize[1]+1, 0, 1*sizeof(double));
+	rect_linear["coordsets/my_coords/values/x"].set(x_coord, dsize[0] + 1, 0, 1 * sizeof(double));
+	rect_linear["coordsets/my_coords/values/y"].set(y_coord, dsize[1] + 1, 0, 1 * sizeof(double));
 
 	// add the topology
 	// this case is simple b/c it's implicitly derived from the coordinate set
@@ -70,21 +69,9 @@ TEST(Gcatalyst, RectilinearMesh)
 	int ii = 0;
 
 	PDI_expose("iter", &ii, PDI_OUT);
- 	PDI_expose("dsize", dsize, PDI_OUT);
+	PDI_expose("dsize", dsize, PDI_OUT);
 
-	PDI_multi_expose(
-		"newiter",
-		"iter",
-		&ii,
-		PDI_INOUT,
-		"coords_x",
-		x_coord,
-		PDI_INOUT,
-		"coords_y",
-		y_coord,
-		PDI_INOUT,
-		NULL
-	);
+	PDI_multi_expose("newiter", "iter", &ii, PDI_INOUT, "coords_x", x_coord, PDI_INOUT, "coords_y", y_coord, PDI_INOUT, NULL);
 
 
 	PDI_finalize();
@@ -96,61 +83,57 @@ TEST(Gcatalyst, RectilinearMesh)
 	conduit_cpp::Node node_catalyst;
 
 	std::string filename_generated = "./catalyst_output/execute_invc0_params.conduit_bin.1.0";
-	catalyst_conduit_node_load(conduit_cpp::c_node(&node_catalyst), filename_generated .c_str(), "conduit_bin");
+	catalyst_conduit_node_load(conduit_cpp::c_node(&node_catalyst), filename_generated.c_str(), "conduit_bin");
 
 
 	// path of mesh blueprint data
 	std::string path_mesh_blue_print = "catalyst/channels/grid/data/";
-	
+
 	// coordset path
 
 	std::string path_coord_type = path_mesh_blue_print + "coordsets/my_coords/type";
-	std::string path_coord_x    = path_mesh_blue_print +"coordsets/my_coords/values/x";
-	std::string path_coord_y    = path_mesh_blue_print +"coordsets/my_coords/values/y";
+	std::string path_coord_x = path_mesh_blue_print + "coordsets/my_coords/values/x";
+	std::string path_coord_y = path_mesh_blue_print + "coordsets/my_coords/values/y";
 
 
-	EXPECT_TRUE( node_catalyst.has_path(path_coord_type) ) << "Catalyst node generated doesn't contain the following path" + path_coord_type;
+	EXPECT_TRUE(node_catalyst.has_path(path_coord_type)) << "Catalyst node generated doesn't contain the following path" + path_coord_type;
 	if (node_catalyst.has_path(path_coord_type)) {
-		std::string type_name=node_catalyst[path_coord_type].as_string();
+		std::string type_name = node_catalyst[path_coord_type].as_string();
 		EXPECT_STREQ("rectilinear", type_name.c_str());
-	} 
+	}
 
 
-	EXPECT_TRUE( node_catalyst.has_path(path_coord_x) ) << "Catalyst node generated doesn't contain the following path" + path_coord_x;
+	EXPECT_TRUE(node_catalyst.has_path(path_coord_x)) << "Catalyst node generated doesn't contain the following path" + path_coord_x;
 	if (node_catalyst.has_path(path_coord_x)) {
+		double* x_coords_cata = (double*)node_catalyst[path_coord_x].as_double_ptr();
 
-		double * x_coords_cata = (double*) node_catalyst[path_coord_x].as_double_ptr();
-	
-		for (int ii=0; ii<3; ++ii) {
-
-			EXPECT_EQ(x_coord[ii], x_coords_cata[ii]) << "The "+std::to_string(ii)+"-th coordinates in x doesn't match";
+		for (int ii = 0; ii < 3; ++ii) {
+			EXPECT_EQ(x_coord[ii], x_coords_cata[ii]) << "The " + std::to_string(ii) + "-th coordinates in x doesn't match";
 		}
-	} 
+	}
 
-	EXPECT_TRUE( node_catalyst.has_path(path_coord_y) ) << "Catalyst node generated doesn't contain the following path" + path_coord_y;
+	EXPECT_TRUE(node_catalyst.has_path(path_coord_y)) << "Catalyst node generated doesn't contain the following path" + path_coord_y;
 	if (node_catalyst.has_path(path_coord_y)) {
+		double* y_coords_cata = (double*)node_catalyst[path_coord_y].as_double_ptr();
 
-		double * y_coords_cata = (double*) node_catalyst[path_coord_y].as_double_ptr();
-	
-		for (int ii=0; ii<3; ++ii) {
-
-			EXPECT_EQ(y_coord[ii], y_coords_cata[ii])  << "The "+std::to_string(ii)+"-th coordinates in y doesn't match";
+		for (int ii = 0; ii < 3; ++ii) {
+			EXPECT_EQ(y_coord[ii], y_coords_cata[ii]) << "The " + std::to_string(ii) + "-th coordinates in y doesn't match";
 		}
-	} 
+	}
 
 
 	// topology path
 
-	std::string topo_type     = path_mesh_blue_print + "topologies/my_mesh/type";
+	std::string topo_type = path_mesh_blue_print + "topologies/my_mesh/type";
 	std::string topo_coordset = path_mesh_blue_print + "topologies/my_mesh/coordset";
 
-	EXPECT_TRUE( node_catalyst.has_path(topo_type) ) << "Catalyst node generated doesn't contain the following path" + topo_type;
+	EXPECT_TRUE(node_catalyst.has_path(topo_type)) << "Catalyst node generated doesn't contain the following path" + topo_type;
 	if (node_catalyst.has_path(topo_type)) {
 		std::string type_name = node_catalyst[topo_type].as_string();
 		EXPECT_STREQ("rectilinear", type_name.c_str()) << "The type of topology is not correct";
-	} 
+	}
 
-	EXPECT_TRUE( node_catalyst.has_path(topo_coordset) ) << "Catalyst node generated doesn't contain the following path" + topo_type;
+	EXPECT_TRUE(node_catalyst.has_path(topo_coordset)) << "Catalyst node generated doesn't contain the following path" + topo_type;
 	if (node_catalyst.has_path(topo_coordset)) {
 		std::string type_name = node_catalyst[topo_coordset].as_string();
 		EXPECT_STREQ("my_coords", type_name.c_str()) << "The name of coordset of topology is not correct";
