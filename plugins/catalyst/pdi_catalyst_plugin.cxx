@@ -23,7 +23,8 @@
 #include "pdi_catalyst_plugin.h"
 
 // return the comment defined in catalyst_api.h for each catalyst_status
-const char* status_to_string(catalyst_status & status) {
+const char* status_to_string(catalyst_status& status)
+{
 	switch (status) {
 	case catalyst_status_ok:
 		return "OK";
@@ -56,18 +57,13 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 	auto communicator_spec = PC_get(m_spec_tree, ".communicator");
 
 	if (!PC_status(communicator_spec)) {
-		#ifdef CATALYST_IS_PARALLEL
-			m_communicator = PDI::to_string(communicator_spec);
-			ctx.on_data(
-				[this](const std::string& data_name, PDI::Ref ref) {
-					this->init_communicator( data_name, ref);
-				}
-				, m_communicator
-			);
-		#else
-			// m_communicator is not defined in this case
-			context().logger().warn("Catalyst is compiled with no mpi support and a communicator is defined.");
-		#endif
+#ifdef CATALYST_IS_PARALLEL
+		m_communicator = PDI::to_string(communicator_spec);
+		ctx.on_data([this](const std::string& data_name, PDI::Ref ref) { this->init_communicator(data_name, ref); }, m_communicator);
+#else
+		// m_communicator is not defined in this case
+		context().logger().warn("Catalyst is compiled with no mpi support and a communicator is defined.");
+#endif
 	} else {
 		ctx.on_init([this]() { this->run_catalyst_initialize(); });
 	}
@@ -87,8 +83,8 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 			if (m_when.to_long(context())) {
 				this->process_event(event_name);
 			}
-		}
-		, pdi_execute_event_name
+		},
+		pdi_execute_event_name
 	);
 }
 
@@ -100,19 +96,20 @@ catalyst_plugin::~catalyst_plugin() noexcept
 		try {
 			context().logger().error("When closing catalyst plugin `{}'", e.what());
 			context().logger().info("Closing plugin");
-		} catch(...) {
+		} catch (...) {
 		}
 	} catch (...) {
 		try {
 			context().logger().error("When closing catalyst plugin");
 			context().logger().info("Closing plugin");
-		} catch(...) {
+		} catch (...) {
 		}
 	}
 }
 
 #ifdef CATALYST_IS_PARALLEL
-void catalyst_plugin::init_communicator(std::string data_name, PDI::Ref ref) {
+void catalyst_plugin::init_communicator(std::string data_name, PDI::Ref ref)
+{
 	if (!m_communicator_is_exposed) {
 		if (PDI::Ref_r read_ref = ref) {
 			context().logger().trace("call init communicator for data `{}'...", data_name);
@@ -182,7 +179,7 @@ void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm
 		auto implementation_spec = PC_get(this->m_spec_tree, ".implementation");
 		if (!PC_status(implementation_spec)) {
 			implementation_name = PDI::to_string(implementation_spec);
-			node["catalyst_load/implementation"].set(implementation_name.c_str()) ;
+			node["catalyst_load/implementation"].set(implementation_name.c_str());
 		} else {
 			context().logger().trace("No catalyst implementation is given in specification tree.");
 			const char* env_catalyst_to_check = std::getenv("CATALYST_IMPLEMENTATION_NAME");
@@ -256,7 +253,7 @@ void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm
 	}
 
 #ifdef CATALYST_IS_PARALLEL
-	if ( implementation_name == "paraview") {
+	if (implementation_name == "paraview") {
 		// define the communicator if it exists
 		if (!m_communicator.empty()) {
 			context().logger().trace("Read communicator");
@@ -277,7 +274,7 @@ void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm
 		} else {
 			context().logger().warn("No communicator is given by default the communicator is considering to be MPI_COMM_WORLD.");
 		}
-	}  else if ((implementation_name.empty() || implementation_name == "stub")) {
+	} else if ((implementation_name.empty() || implementation_name == "stub")) {
 		if (env_data_dump == nullptr) {
 			context().logger().warn("The communicator is considered to be MPI_COMM_WORLD.");
 		} else {
@@ -395,7 +392,8 @@ void catalyst_plugin::build_vtk_ghost_type(
 		current_node[tmp_path + "/fields/vtkGhostType/association"].set("element");
 		current_node[tmp_path + "/fields/vtkGhostType/topology"].set(meshname);
 		current_node[tmp_path + "/fields/vtkGhostType/volume_dependent"].set("false");
-		current_node[tmp_path + "/fields/vtkGhostType/values"].set_external(vtk_ghost_type.get_vector(), vtk_ghost_type.get_size(), 0, 1, sizeof(uint8_t));
+		current_node[tmp_path + "/fields/vtkGhostType/values"]
+			.set_external(vtk_ghost_type.get_vector(), vtk_ghost_type.get_size(), 0, 1, sizeof(uint8_t));
 	}
 }
 

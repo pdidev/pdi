@@ -32,8 +32,6 @@
 
 #include "pdi.h"
 
-
-
 int main(int argc, char* argv[])
 {
 	MPI_Init(&argc, &argv);
@@ -110,16 +108,7 @@ int main(int argc, char* argv[])
 	PDI_multi_expose("catalyst_initialize", "catalyst_comm", &subcomm, PDI_OUT, NULL);
 
 	// call catalyst execute
-	PDI_multi_expose(
-		"newiter",
-		"iter",
-		&ii,
-		PDI_INOUT,
-		"main_field",
-		cur,
-		PDI_INOUT,
-		NULL
-	);
+	PDI_multi_expose("newiter", "iter", &ii, PDI_INOUT, "main_field", cur, PDI_INOUT, NULL);
 
 	// free cur
 	free(cur);
