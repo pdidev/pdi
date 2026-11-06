@@ -42,8 +42,6 @@ pdi:
                 my_mesh:
                   type: "uniform"
                   coordset: "my_coords"
-#                  elements:
-#                    dims: {offsets: [] strides: []}
               fields:
                 temperature:
                   association: "element"
