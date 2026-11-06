@@ -176,8 +176,9 @@ The possible values for the keys are as follow:
   See
   https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
   for more information.
-* `mpio` : a string expression to define the type of MPI-I/O parallel pointer 
-for the operation among two choices : `COLLECTIVE` (default) and `INDEPENDENT`.
+* `mpio`: a string to define the type of MPI-I/O parallel pointer for the operation among two choices: `COLLECTIVE` and `INDEPENDENT`.
+  If not specified, this defaults to the value specified at file level, that itself defaults to `COLLECTIVE`.
+
 
 ### SELECTION_DESC
 

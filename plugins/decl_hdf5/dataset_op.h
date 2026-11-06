@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -68,8 +68,8 @@ private:
 	/// direction of the transfer (read or write)
 	Direction m_direction;
 
-	/// the type of MPI-I/O parallel pointer (default = COLLECTIVE)
-	H5FD_mpio_xfer_t m_mpio = H5FD_MPIO_COLLECTIVE;
+	/// the type of MPI-I/O parallel pointer (defaults to the one of the file)
+	H5FD_mpio_xfer_t m_mpio;
 
 	/// the name of the dataset where to transfer
 	PDI::Expression m_dataset;

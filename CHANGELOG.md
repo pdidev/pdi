@@ -12,6 +12,8 @@ and this project adheres to
 ### For users
 
 #### Added
+* In Decl'HDF5 the `mpio` key at file level sets the default for the datasets
+  of the file, as requested in [#761](https://github.com/pdidev/pdi/issues/761)
 
 #### Changed
 * Improved error message in type check in Decl'NetCDF when reading scalar variable from file
