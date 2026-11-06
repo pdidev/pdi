@@ -34,7 +34,8 @@ and this project adheres to
   per [#789](https://github.com/pdidev/pdi/issues/789).
 
 #### Fixed
-* Change JSON package name to `nlohmann_json` so that `USE_nlohmann_json=SYSTEM/AUTO` will find the system version if available.
+* Change JSON package name to `nlohmann_json` so that `USE_nlohmann_json=SYSTEM/AUTO`
+  will find the system version if available.
   [#769](https://github.com/pdidev/pdi/issues/769) 
 * Fix JSON unit tests failing under parallel execution (with `ctest -j`).
   [#772](https://github.com/pdidev/pdi/issues/772)
@@ -57,7 +58,7 @@ and this project adheres to
 * Fix an error in String_literal and its test that would refuse "off" as a valid
   false value.
   [#753](https://github.com/pdidev/pdi/issues/753)
-* Fix a test of PDI_expression which which could not fail.
+* Fix a test of PDI_expression that could not fail.
   [#753](https://github.com/pdidev/pdi/issues/753)
 * The configuration no longer suggests setting `USE_MPI` and `USE_Threads`,
   which have no effect, fixing [#791](https://github.com/pdidev/pdi/issues/791).
@@ -105,7 +106,7 @@ and this project adheres to
 #### Deprecated
 * `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
   `PLUGIN_API_VERSION_MAJOR`, `PLUGIN_API_VERSION_MINOR` and
-  `PLUGIN_API_VERSION_PATCH` macros are deprecated in favour of their
+  `PLUGIN_API_VERSION_PATCH` macros are deprecated in favor of their
   correctly named replacements, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
 
@@ -122,6 +123,9 @@ and this project adheres to
 * Removed an invalid Windows-specific choice of the console log output, which
   could not compile: spdlog now picks the console output for the platform,
   fixing [#816](https://github.com/pdidev/pdi/issues/816)
+* `random_init` from the testing API now matches the `IntType` used (while
+  bool and char remain intentionally unsupported).
+  Fix [#737](https://github.com/pdidev/pdi/issues/737)
 * `bin/build_and_run_all_tests` configures, builds and tests every project the
   same way, and passes `CMAKE_FLAGS` to all of them, as per
   [#783](https://github.com/pdidev/pdi/issues/783).
