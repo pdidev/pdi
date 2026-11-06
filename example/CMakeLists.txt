@@ -125,29 +125,17 @@ endif("${BUILD_PYTHON}")
 endif("${BUILD_DECL_HDF5_PLUGIN}")
 
 if("${BUILD_VELOC_PLUGIN}")
-set(VELOC_EXAMPLE_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/veloc_test_workdir")
-file(MAKE_DIRECTORY "${VELOC_EXAMPLE_WORKDIR}")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/veloc_example.cfg" DESTINATION "${VELOC_EXAMPLE_WORKDIR}")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/pdi.yml" DESTINATION "${VELOC_EXAMPLE_WORKDIR}")
-
 add_test(NAME PDI_example_veloc COMMAND
-	"${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS}
-	"$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS}
-	"${CMAKE_CURRENT_SOURCE_DIR}/veloc.yml")
+    ${RUNTEST_DIR}
+    "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/veloc_example.cfg"
+    "/bin/bash" "-c"
+        "\"$0\" ${MPIEXEC_NUMPROC_FLAG} 3 ${MPIEXEC_PREFLAGS} \"$1\" ${MPIEXEC_POSTFLAGS} \"$2\" && \"$0\" ${MPIEXEC_NUMPROC_FLAG} 3 ${MPIEXEC_PREFLAGS} \"$1\" ${MPIEXEC_POSTFLAGS} \"$3\""
+    "${MPIEXEC}" "$<TARGET_FILE:PDI_example_C>"
+    "${CMAKE_CURRENT_SOURCE_DIR}/veloc.yml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/veloc_recovery.yml")
 set_tests_properties(PDI_example_veloc PROPERTIES
-	TIMEOUT 15
-	PROCESSORS 3
-	WORKING_DIRECTORY "${VELOC_EXAMPLE_WORKDIR}")
-
-add_test(NAME PDI_example_veloc_recovery COMMAND
-	"${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS}
-	"$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS}
-	"${CMAKE_CURRENT_SOURCE_DIR}/veloc_recovery.yml")
-set_tests_properties(PDI_example_veloc_recovery PROPERTIES
-	TIMEOUT 15
-	PROCESSORS 3
-	WORKING_DIRECTORY "${VELOC_EXAMPLE_WORKDIR}"
-	DEPENDS PDI_example_veloc)
+    TIMEOUT 30
+    PROCESSORS 3)
 endif()
 
 if("${BUILD_DECL_NETCDF_PLUGIN}")
