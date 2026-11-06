@@ -50,38 +50,26 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 	: Plugin{ctx}
 	, m_spec_tree(spec_tree)
 	, catalyst_is_initialized{false}
+	, m_proc_in_communicator{true}
+	, m_communicator_is_exposed{false}
 {
 	auto communicator_spec = PC_get(m_spec_tree, ".communicator");
 
-	if (PC_status(communicator_spec)) {
-		// case no communicator is given:
-		//  - communicator is considered to be MPI_COMM_WORLD
-		//	- call catalyst_initialize on_init
-		ctx.callbacks().add_init_callback([this]() { this->run_catalyst_initialize(); });
-
-		auto initialize_event_spec = PC_get(m_spec_tree, ".initialize_on_event");
-		// Perhaps to change in the future
-		if (!PC_status(initialize_event_spec)) {
-			context().logger().warn("No communicator is given. The value of initialize_on_event is not taking account.");
-		}
-		context().logger().warn("No communicator is given. catalyst_initialize is executed inside PDI_initialize.");
+	if (!PC_status(communicator_spec)) {
+		#ifdef CATALYST_IS_PARALLEL
+			m_communicator = PDI::to_string(communicator_spec);
+			ctx.callbacks().add_data_callback(
+				[this](const std::string& data_name, PDI::Ref ref) {
+					this->init_communicator( data_name, ref);
+				}
+				, m_communicator
+			);
+		#else
+			// m_communicator is not defined in this case
+			context().logger().warn("Catalyst is compiled with no mpi support and a communicator is defined.");
+		#endif
 	} else {
-		// case communicator is given:
-		//	- call catalyst_initialize on event given in initialize_on_event
-#ifdef CATALYST_IS_PARALLEL
-		m_communicator = PDI::to_string(communicator_spec);
-#else
-		// m_communicator is not defined in this case
-		context().logger().warn("Catalyst is compiled with no mpi support and a communicator is defined.");
-#endif
-		auto initialize_event_spec = PC_get(m_spec_tree, ".initialize_on_event");
-		if (PC_status(initialize_event_spec)) {
-			throw PDI::Spectree_error{m_spec_tree, "Catalyst: A communicator is given without specified initialize_on_event"};
-		} else {
-			m_pdi_initialize_event_name = PDI::to_string(initialize_event_spec); // get event name for initialize
-			context().logger().trace("catalyst_initialize will be executed in event `{}'", m_pdi_initialize_event_name);
-			ctx.callbacks().add_event_callback([this](const std::string& event_name) { this->process_pdi_init_with_event(event_name); }, m_pdi_initialize_event_name);
-		}
+		ctx.callbacks().add_init_callback([this]() { this->run_catalyst_initialize(); });
 	}
 
 	// get when condition
@@ -123,13 +111,19 @@ catalyst_plugin::~catalyst_plugin() noexcept
 	}
 }
 
-void catalyst_plugin::process_pdi_init_with_event(const std::string& event_name)
-{
-	if (!catalyst_is_initialized) {
-		context().logger().trace("call catalyst_initialize in event `{}'", event_name);
-		this->run_catalyst_initialize();
+#ifdef CATALYST_IS_PARALLEL
+void catalyst_plugin::init_communicator(std::string data_name, PDI::Ref ref) {
+	if (!m_communicator_is_exposed) {
+		if (PDI::Ref_r read_ref = ref) {
+			context().logger().trace("call init communicator for data `{}'...", data_name);
+			run_catalyst_initialize(read_ref);
+			m_communicator_is_exposed = true;
+		}
+		// TODO: define the behavior when the communicator don't given read access
 	}
+	// TODO: define the behavior when the communicator is exposed before
 }
+#endif
 
 void catalyst_plugin::process_event(const std::string& event_name)
 {
@@ -140,12 +134,10 @@ void catalyst_plugin::process_event(const std::string& event_name)
 #ifdef CATALYST_IS_PARALLEL
 		// "catalyst_execute" is a collective call between process defined in "m_communicator" or MPI_COMM_WORLD (if "m_communicator" is not defined).
 		// If a process is not in this set, we don't have an error.
-		if (m_communicator) {
-			MPI_Comm tmp_comm = *(static_cast<const MPI_Comm*>(PDI::Ref_r{m_communicator.to_ref(context())}.get()));
-			if (tmp_comm != MPI_COMM_NULL) {
+		if (!m_communicator.empty()) {
+			if (m_proc_in_communicator) {
 				// process inside m_communicator
 				context().logger().error("Try to execute catalyst_execute before catalyst_initialize.");
-				context().logger().error("The event defined to call catalyst_initialize is `{}'", m_pdi_initialize_event_name);
 				throw PDI::System_error("Try to execute catalyst_execute before catalyst_initialize.");
 			} else {
 				// process outside m_communicator
@@ -160,28 +152,45 @@ void catalyst_plugin::process_event(const std::string& event_name)
 	}
 }
 
-void catalyst_plugin::run_catalyst_initialize()
+void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm)
 {
 	conduit_cpp::Node node;
 
-	// bool catalyst_implementation_env_exists = false;
+	std::string implementation_name; // Remark: implementation_name.empty() correspond to stub implementation
+	bool is_path_implementation = false;
 
-	const char* env_catalyst_impl_preference = std::getenv("CATALYST_IMPLEMENTATION_PREFER_ENV");
+	const char* env_data_dump = std::getenv("CATALYST_DATA_DUMP_DIRECTORY"); // env for stub implementation
+	const char* env_catalyst_impl_preference = std::getenv("CATALYST_IMPLEMENTATION_PREFER_ENV"); // env to only consider env variables
 	if (!(env_catalyst_impl_preference == nullptr)) {
 		context().logger().warn("The environnment variables CATALYST_IMPLEMENTATION_* will be used instead of the value in the specification tree.");
+
+		context().logger().warn("The environnment variables CATALYST_IMPLEMENTATION_* will be used instead of the value in the specification tree.");
+		const char* env_name_to_check = std::getenv("CATALYST_IMPLEMENTATION_NAME");
+		if (env_name_to_check == nullptr) {
+			context().logger().warn("No CATALYST_IMPLEMENTATION_NAME environement variable is not defined.");
+		} else {
+			implementation_name = env_name_to_check;
+		}
+		const char* env_paths_to_check = std::getenv("CATALYST_IMPLEMENTATION_PATHS");
+		if (env_paths_to_check == nullptr) {
+			context().logger().warn("No CATALYST_IMPLEMENTATION_PATHS environement variable is not defined.");
+		} else {
+			is_path_implementation = true;
+		}
 	} else {
 		context().logger().trace("Read information for implementation");
 		auto implementation_spec = PC_get(this->m_spec_tree, ".implementation");
 		if (!PC_status(implementation_spec)) {
-			std::string implementation_name = PDI::to_string(implementation_spec);
+			implementation_name = PDI::to_string(implementation_spec);
 			node["catalyst_load/implementation"].set(implementation_name.c_str()) ;
 		} else {
 			context().logger().trace("No catalyst implementation is given in specification tree.");
 			const char* env_catalyst_to_check = std::getenv("CATALYST_IMPLEMENTATION_NAME");
 			if (env_catalyst_to_check == nullptr) {
 				context().logger().warn("No CATALYST_IMPLEMENTATION_NAME environement variable is not defined.");
+			} else {
+				implementation_name = env_catalyst_to_check;
 			}
-			// else: check library exists ??
 		}
 
 		context().logger().trace("Read information for implementation paths");
@@ -194,17 +203,27 @@ void catalyst_plugin::run_catalyst_initialize()
 				auto key = PC_get(impl_paths_spec, "{%d}", index);
 				auto value = PC_get(impl_paths_spec, "<%d>", index);
 				paths_node[PDI::to_string(key)] = PDI::to_string(value);
+				is_path_implementation = true;
 			}
 		} else {
 			context().logger().trace("No catalyst implementation paths is given in specification tree.");
 			const char* env_catalyst_to_check = std::getenv("CATALYST_IMPLEMENTATION_PATHS");
 			if (env_catalyst_to_check == nullptr) {
 				context().logger().warn("No CATALYST_IMPLEMENTATION_PATHS environement variable is not defined.");
+			} else {
+				is_path_implementation = true;
 			}
-			// else: check library exists ??
 		}
 	}
-	node.print();
+
+	if (implementation_name == "paraview" && !is_path_implementation) {
+		throw PDI::System_error("Try to execute catalyst with paraview backend but no implementation path is defined.");
+	}
+
+	if ((implementation_name.empty() || implementation_name == "stub") && env_data_dump == nullptr) {
+		context().logger().warn("Try to execute catalyst with stub backend but the environnement variable CATALYST_DATA_DUMP_DIRECTORY is defined.");
+		context().logger().warn("No stub output will be generated.");
+	}
 
 	context().logger().trace("Read information for script.");
 	auto scripts_spec = PC_get(this->m_spec_tree, ".scripts");
@@ -215,65 +234,57 @@ void catalyst_plugin::run_catalyst_initialize()
 	int script_number = 0;
 	PC_len(scripts_spec, &script_number);
 	if (script_number == 0) {
-		throw PDI::Spectree_error(scripts_spec, "No python script is defined for catalyst plugin.");
+		// no script is not an error for stub
+		if ((implementation_name.empty() || implementation_name == "stub")) {
+			throw PDI::Spectree_error(scripts_spec, "No python script is defined for catalyst plugin.");
+		}
 	} else {
 		context().logger().debug("The number of python script is `{}'", script_number);
+		// Remark: the name of the script(s) mustn't depend on $expression.
+		auto scripts_node = node["catalyst/scripts"];
+		for (int index = 0; index < script_number; ++index) {
+			auto key = PC_get(scripts_spec, "{%d}", index);
+			auto value = PC_get(scripts_spec, "<%d>", index);
+			scripts_node[PDI::to_string(key)] = PDI::to_string(value);
+		}
+		// Remark: Each script is defined as a string (i.e. node["catalyst/scripts/[name_of_the_script]"] = filename)
+		//
+		// We don't consider yet the object script supported by the latest version of paraview.
+		// In others word, the following node is not supported:
+		// node["catalyst/scripts/[name_of_the_script]/filename"] = string
+		// node["catalyst/scripts/[name_of_the_script]/args"] = string
 	}
-
-	// Remark: the name of the script(s) mustn't depend on $expression. 
-	auto scripts_node = node["catalyst/scripts"];
-	for (int index = 0; index < script_number; ++index) {
-		auto key = PC_get(scripts_spec, "{%d}", index);
-		auto value = PC_get(scripts_spec, "<%d>", index);
-		scripts_node[PDI::to_string(key)] = PDI::to_string(value);
-	}
-
-	// Remark: Each script is defined as a string (i.e. node["catalyst/scripts/[name_of_the_script]"] = filename )
-	//
-	// We don't consider yet the object script supported by the latest version of paraview.
-	// In others word, the following node is not supported:
-	// node["catalyst/scripts/[name_of_the_script]/filename"] = string
-	// node["catalyst/scripts/[name_of_the_script]/args"] = string
-	//
- 
-	bool process_run_catalayst = true;
 
 #ifdef CATALYST_IS_PARALLEL
+	if ( implementation_name == "paraview") {
+		// define the communicator if it exists
+		if (!m_communicator.empty()) {
+			context().logger().trace("Read communicator");
+			MPI_Comm tmp_comm = *(static_cast<const MPI_Comm*>(ref_comm->get()));
 
-	const char* env_catalyst_backend = std::getenv("CATALYST_IMPLEMENTATION_NAME");
+			// create communicator node
+			auto communicator_node = node["catalyst/mpi_comm"];
 
-	if (env_catalyst_backend == nullptr) {
-		context().logger().warn("No CATALYST_IMPLEMENTATION_NAME is given");
-		context().logger().warn("The communicator corresponds to MPI_COMM_WORLD.");
-		// Question: throw an error ?
-	} else {
-		std::string st_env_catalyst_backend = env_catalyst_backend;
-		if (st_env_catalyst_backend == "paraview") {
-			// define the communicator if it exists
+			// set the fortran MPI_COMMUNICATOR
+			communicator_node.set_int64(static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
 
-			if (m_communicator) {
-				context().logger().trace("Read communicator");
-				MPI_Comm tmp_comm = *(static_cast<const MPI_Comm*>(PDI::Ref_r{m_communicator.to_ref(context())}.get()));
+			context().logger().debug("Value of the communicator is {}:", static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
+			context().logger().debug("Value of the implementation is {}:", implementation_name);
 
-				// create communicator node
-				auto communicator_node = node["catalyst/mpi_comm"];
-
-				// set the fortran MPI_COMMUNICATOR
-				communicator_node.set_int64(static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
-
-				context().logger().debug("Value of the communicator is {}:", static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
-
-				if (tmp_comm == MPI_COMM_NULL) {
-					process_run_catalayst = false;
-				}
-			} else {
-				context().logger().warn("No communicator is given by default the communicator is MPI_COMM_WORLD.");
+			if (tmp_comm == MPI_COMM_NULL) {
+				m_proc_in_communicator = false;
 			}
-		} else if (st_env_catalyst_backend == "stub") {
-			context().logger().warn("The communicator corresponds to MPI_COMM_WORLD.");
 		} else {
-			throw PDI::Impl_error("CATALYST_IMPLEMENTATION_NAME is not recognized:`{}'. The implemented ", env_catalyst_backend);
+			context().logger().warn("No communicator is given by default the communicator is considering to be MPI_COMM_WORLD.");
 		}
+	}  else if ((implementation_name.empty() || implementation_name == "stub")) {
+		if (env_data_dump == nullptr) {
+			context().logger().warn("The communicator is considered to be MPI_COMM_WORLD.");
+		} else {
+			// need to be checked before if it is works
+		}
+	} else {
+		throw PDI::Impl_error("The implemented name is not recognized:`{}'.", implementation_name);
 	}
 #endif
 	// The following node is supported in the latest version of Paraview.
@@ -281,7 +292,7 @@ void catalyst_plugin::run_catalyst_initialize()
 	// node["catalyst/pipelines"]
 	// node["catalyst/python_path"]
 
-	if (process_run_catalayst) {
+	if (m_proc_in_communicator) {
 		context().logger().debug("catalyst_initialize call...");
 		auto result = catalyst_initialize(conduit_cpp::c_node(&node));
 		if (result != catalyst_status_ok) {
@@ -289,6 +300,8 @@ void catalyst_plugin::run_catalyst_initialize()
 		}
 		context().logger().debug("end catalyst_initialize call...");
 		catalyst_is_initialized = true;
+	} else {
+		context().logger().debug("the proc is outside. JAJAJA");
 	}
 }
 

@@ -1,18 +1,17 @@
 #ifndef CATALYST_PLUGIN_H
 #define CATALYST_PLUGIN_H
 
-#include "catalyst.hpp" // ???
-#include "catalyst_plugin_structured_ghost.h" // ???
-
+#include <mpi.h>
 #include <unordered_set>
 
 #include <pdi/context.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 
+#include "catalyst_plugin_structured_ghost.h"
 
-struct conduit_node_impl; // ??
-typedef struct conduit_node_impl conduit_node; // ??
+struct conduit_node_impl;
+typedef struct conduit_node_impl conduit_node;
 
 /**
  * \brief Translates PDI calls to Catalyst calls.
@@ -52,13 +51,13 @@ private:
 	/// \param event_name: name of the event
 	void process_event(const std::string& event_name);
 
-	/// \brief callback to trigger action of catalyst_initialize when an event occur
-	/// This function is used when a communicator is given by the user
-	/// \param event_name: name of the current event
-	void process_pdi_init_with_event(const std::string& event_name);
+	// /// \brief callback to trigger action of catalyst_initialize when an event occur
+	// /// This function is used when a communicator is given by the user
+	// /// \param event_name: name of the current event
+	// void process_pdi_init_with_event(const std::string& event_name);
 
 	/// \brief function running in pdi_init
-	void run_catalyst_initialize();
+	void run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm = std::nullopt);
 
 	/// \brief function running in the event corresponding to catalyst_execute
 	void run_catalyst_execute();
@@ -120,6 +119,11 @@ private:
 	/// \param value: value of the index
 	void get_conduit_index_t_value(PC_tree_t& spec, const std::string& name, conduit_index_t& value);
 
+
+#ifdef CATALYST_IS_PARALLEL
+	void init_communicator(std::string data_name, PDI::Ref ref);
+#endif
+
 	/// \return the event name to call catalyst_execute
 	std::string read_pdi_execute_event_name();
 
@@ -129,18 +133,23 @@ private:
 	///         Moreover, the config error message cannot be see by the user.
 	bool catalyst_is_initialized;
 
+
 	/// specification tree for catalyst plugin
 	PC_tree_t m_spec_tree;
 
 	/////////////////////////////////////////////////////////
 	// variable read from the specification tree
 
-	/// name of event use to call catalyst_initialize
-	std::string m_pdi_initialize_event_name; // keep only for logger message
+	// /// name of event use to call catalyst_initialize
+	// std::string m_pdi_initialize_event_name; // keep only for logger message
 
 #ifdef CATALYST_IS_PARALLEL
-	/// communicator use in catalyst
-	PDI::Expression m_communicator;
+	/// nale of the communicator use in catalyst
+	std::string m_communicator;
+	/// variable to know if the processor is inside the communicator (warning message only)
+	bool m_proc_in_communicator;
+	/// variable to know if the communicator is exposed to PDI before
+	bool m_communicator_is_exposed;
 #endif
 
 	/// when condition for catalyst_execute
