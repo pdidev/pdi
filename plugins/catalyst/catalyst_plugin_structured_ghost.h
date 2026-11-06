@@ -217,10 +217,10 @@ public:
 	/// get the name path in the Conduit Node
 	const std::string& get_node_path() const { return m_parent_node_path; }
 
-	/// @brief get the name of topology(mesh)
+	/// get the name of topology(mesh)
 	const std::string& get_topology_name() const { return m_topology_name; }
 
-	/// @brief retrieve the corresponding PC_tree for a given coordset or a given topology
+	/// retrieve the corresponding PC_tree for a given coordset or a given topology
 	PC_tree_t retrieve_pc_tree_from_parent_node(const std::string& structname, const std::string& dataname)
 	{
 		std::string index_all = "." + structname + "." + m_topology_name + "." + dataname;
@@ -258,12 +258,12 @@ public:
 		}
 	}
 
-	/// @brief Retrieve the dimension of the mask ghost
-	/// @param parent_node
-	/// @param path_to_dims    // path in the Conduit Node where the dimensions are
-	/// @param PC_to_dataname  // path in the PC_tree to get the PC_tree for error message
-	/// @param data_type       // type of data (coordset or topology) where the dimensions are defined for error message
-	/// @param data_type_name  // name of coordset or name of topology for error message
+	/// Retrieve the dimension of the mask ghost
+	/// \param parent_node
+	/// \param path_to_dims    // path in the Conduit Node where the dimensions are
+	/// \param PC_to_dataname  // path in the PC_tree to get the PC_tree for error message
+	/// \param data_type       // type of data (coordset or topology) where the dimensions are defined for error message
+	/// \param data_type_name  // name of coordset or name of topology for error message
 	void get_dimension(
 		conduit_node* parent_node,
 		std::string& path_to_dims,
