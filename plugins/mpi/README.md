@@ -1,11 +1,11 @@
 # The MPI plugin {#mpi_plugin}
 
 **WARNING** This documentation is a work in progress and does not reflect the
-full MPI plugin potential.
+full potential of the MPI plugin.
 
-MPI plugin defines 2 types in PDI:
-* `MPI_Comm` - C MPI_Comm type
-* `MPI_Comm_f` - Fortran MPI_Comm type
+The MPI plugin defines two types in PDI:
+* `MPI_Comm` - the C `MPI_Comm` type,
+* `MPI_Comm_f` - the Fortran communicator type, an integer.
 
 MPI plugin exposes several metadata that correspond with mpi library.
 * `MPI_COMM_WORLD.rank` - an integer value, represents the rank of the proccess
@@ -17,7 +17,7 @@ MPI plugin exposes several metadata that correspond with mpi library.
 * `MPI_COMM_SELF_F` - an integer, MPI_COMM_SELF for Fortran language
 * `MPI_COMM_NULL_F` - an integer, MPI_COMM_NULL for Fortran language
 
-All above metadata are available from PDI_init call to PDI_finalize call.
+All the metadata above are available from the call to `PDI_init` to the call to `PDI_finalize`.
 
 At the yaml tree root plugin is a map that contains the following keys:
 |key|value|
