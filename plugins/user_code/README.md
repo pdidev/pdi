@@ -9,7 +9,7 @@ emitted, or when some data becomes available.
   flag (in CMake, set the `ENABLE_EXPORTS` property to `TRUE` with the
   `set_target_properties` command), so that its symbols are exported.
 * Make sure to use the proper access rights in the calls to \ref PDI_access of your
-  functions (`PDI_IN` for reading, `PDI_OUT` for writing).
+  functions (`PDI_IN` for reading, `PDI_OUT` for writing, `PDI_INOUT` for both).
 * Aliases make it possible to pass different data to a function without
   recompiling the code.
 
@@ -173,6 +173,7 @@ I've got number 42.
 Output handling is very similar to input handling, the only
 difference being the access rights. In this example, we call the
 `add_ten` function when `number` is shared with %PDI.
+Since `add_ten` both reads and writes its input, it accesses it with `PDI_INOUT`.
 
 adding_to_number.c:
 ```C
@@ -181,7 +182,7 @@ adding_to_number.c:
 
 void add_ten(void)
 {
-    void* input; PDI_access("input", &input, PDI_OUT);
+    void* input; PDI_access("input", &input, PDI_INOUT);
     *((int*)input) += 10;
     PDI_release("input");
 }
@@ -192,7 +193,7 @@ int main(int argc, char* argv[])
     PDI_init(conf);
     int number = 42;
     printf("Before expose, number = %d.\n", number);
-    PDI_expose("number", &number, PDI_IN);
+    PDI_expose("number", &number, PDI_INOUT);
     printf("After expose, number = %d.\n", number);
     PDI_finalize();
     return 0;

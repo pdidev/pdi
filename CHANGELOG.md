@@ -35,6 +35,7 @@ and this project adheres to
 * `find_package(PDI)` now sets `PDI_<component>_FOUND` for each component
   requested, so that a project can tell which optional components it got,
   fixing [#948](https://github.com/pdidev/pdi/issues/948).
+* The User-code plugin reference gives examples with the access rights they need.
 
 #### Security
 
