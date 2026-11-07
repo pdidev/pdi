@@ -1,16 +1,16 @@
 # The Decl'NetCDF plugin {#Decl_NetCDF_plugin}
 
-The Decl'NetCDF plugin was created to read from and write to NetCDF files in a declarative way.
+The Decl'NetCDF plugin reads from and writes to NetCDF files in a declarative way.
 
-Decl'NetCDF plugin allows you to:
-1. Read/write data as NetCDF variables from/to NetCDF file.
-2. Define groups in the NetCDF file. Groups can be nested.
-3. Read/write variables and groups attributes. **Automatically read and written when openning the file.**
-4. Execute input/output operations on event.
-5. Execute input/output operations on data share (when the event is not defined).
-6. Define `UNLIMITED` dimension and dimensions names.
-7. Read/write only part of NetCDF variable by hyperslab definition.
-8. Read/write in parallel mode using MPI.
+With the Decl'NetCDF plugin, you can:
+1. read and write data as NetCDF variables of a NetCDF file,
+2. define groups in the NetCDF file, possibly nested,
+3. read and write the attributes of variables and groups, **which happens automatically when the file is opened**,
+4. execute I/O operations on events,
+5. execute I/O operations when data is shared (when no event is defined),
+6. define `UNLIMITED` dimensions, and name the dimensions,
+7. read and write only part of a NetCDF variable, by defining a hyperslab,
+8. read and write in parallel, with MPI.
 
 ## Configuration elements {#decl_netcdf_configuration}
 
