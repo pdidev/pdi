@@ -1,14 +1,14 @@
 # Serialize plugin {#serialize_plugin}
 
-Serialize plugin allows to serialize shared data. The plugin will convert all
-arrays from sparse to dense and dereference all pointers.
+The Serialize plugin serializes shared data: it converts all sparse arrays to dense
+ones, and dereferences all pointers.
 
-The serialized data will be shared as long the user data is shared.
+The serialized data is shared as long as the user data is shared.
 
-1. In case of the share with `PDI_OUT`: plugin will serialize and share serialized data on `PDI_share` of given descriptor.
-2. In case of the share with `PDI_IN`: plugin will deserialize data on `PDI_reclaim` of given descriptor
-(to be sure that the serialized data have been writen to buffer by other plugin (e.g. done on event)).
-3. In case of the share with `PDI_INOUT`: plugin will do step 1. on `PDI_share` and step 2. on `PDI_reclaim`.
+1. When the data is shared with `PDI_OUT`, the plugin serializes it and shares the serialized data on `PDI_share`.
+2. When the data is shared with `PDI_IN`, the plugin deserializes it on `PDI_reclaim`
+(so that another plugin has had the time to write the serialized data, on an event for example).
+3. When the data is shared with `PDI_INOUT`, the plugin does both: step 1 on `PDI_share`, and step 2 on `PDI_reclaim`.
 
 ## Configuration grammar {#serialize_configuration}
 
@@ -34,8 +34,7 @@ plugins:
     logging: debug
     sparse_array: dense_array
 ```
-On each `sparse_array` data share, the plugin will share serialized data under the `dense_array` name.
-The `dense_array` will be of type:
+Each time `sparse_array` is shared, the plugin shares its serialized version under the name `dense_array`, of type:
 ```yaml
 type: array
 subtype: int
@@ -57,8 +56,7 @@ plugins:
   serialize:
     pointer_to_sparse_array: dense_array
 ```
-On each `pointer_to_sparse_array` data share, the plugin will share serialized data under the `dense_array` name.
-The `dense_array` again will be of type:
+Each time `pointer_to_sparse_array` is shared, the plugin shares its serialized version under the name `dense_array`, again of type:
 ```yaml
 type: array
 subtype: int
