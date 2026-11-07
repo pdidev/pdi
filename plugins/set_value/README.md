@@ -1,15 +1,14 @@
 # Set_value plugin {#set_value_plugin}
 
-The Set_value plugin allows setting values to data and metadata descriptors from
-the yaml file.
+The Set_value plugin sets the values of data and metadata from the YAML file.
 
-Here are main features of the plugins:
+It can:
 
-1. Share data - plugin will share new allocated data with given values
-2. Release data - plugin will release shared data
-3. Expose data - plugin will expose new allocated data with given values
-4. Set data - plugin will set given values to the already shared data
-5. Calling an event - plugin will call an event
+1. share data: allocate new data, with the given values, and share it,
+2. release data: release data it shared,
+3. expose data: allocate new data, with the given values, and expose it,
+4. set data: give new values to data that is already shared,
+5. emit an event.
 
 ## Configuration grammar {#set_value_configuration}
 
@@ -221,7 +220,7 @@ Defines settings for global PDI logger.
 |`"pattern"` (*optional*) |pattern to set to the logger|
 |`"evaluate"` (*optional*) |if true evaluate the logger pattern|
 
-## full configuration example {#full_config}
+## Full configuration example {#full_config}
 
 ```yaml
 metadata:
@@ -260,10 +259,10 @@ plugins:
       - release: [record_data]
 ```
 
-## Using old values to set new {#old_to_new}
-### Increment value {#increment}
-The set_value plugin allows to use the old values to set new values, you can use even the same
-descriptor, for example to increment a scalar. 
+## Using old values to set new ones {#old_to_new}
+### Incrementing a value {#increment}
+The new values can be computed from the old ones, even those of the data being set, for example to
+increment a scalar.
 
 ```yaml
 data:
@@ -287,11 +286,11 @@ plugins:
     on_finalize:
       - release: [value_int, int_array]
 ```
-After calling `init` and `increment` event, `value_int` will be equal 1, and `int_array` to [2, 3, 4].
+After the `init` and `increment` events, `value_int` equals 1, and `int_array` [2, 3, 4].
 
-### Getting old value {#increment_in_array}
-The new value is set at the end of processing the whole descriptors. This means, that if
-you want to update the array element depending on other element, the old value will be set:
+### Getting the old value {#increment_in_array}
+The new value of a data is only set once all its elements are evaluated. So when an element of an
+array depends on another element of the same array, it gets the old value of that element:
 
 ```yaml
 metadata:
@@ -309,10 +308,10 @@ plugins:
         - expose:
           - int_array: ["$int_array[0] + 1", "$int_array[0] + 1", "$int_array[1] + 1"]
 ```
-After calling `init` and `increment` event, all values in `int_array` will equal `1`. 
-This is because the `int_array[0]` was updated after setting all the elements.
+After the `init` and `increment` events, all the elements of `int_array` equal `1`,
+because `int_array[0]` is only updated once all the elements are evaluated.
 
-### Getting new value {#update_array_after_scalar}
+### Getting the new value {#update_array_after_scalar}
 
 ```yaml
 metadata:
@@ -333,5 +332,5 @@ plugins:
           - int_scalar: $int_scalar+1
           - int_array: ["$int_scalar", "$int_scalar", "$int_scalar"]
 ```
-After calling `init` and `increment` event, all values in `int_array` will equal `1`. 
-This is because the `int_scalar` is set and then the `int_array` is updated after the `int_scalar` has a new value.
+After the `init` and `increment` events, all the elements of `int_array` equal `1`,
+because the data of a value list are set in order: `int_scalar` has its new value when `int_array` is evaluated.
