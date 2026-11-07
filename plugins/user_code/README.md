@@ -1,37 +1,37 @@
 # The user-code plugin {#user_code_plugin}
 
-The `user-code` plugin enables one to call a user-defined function 
-when a specified event occur or certain data becomes available.
+The `user-code` plugin calls user-defined functions when a given event is
+emitted, or when some data becomes available.
 
 ## Important notes {#important_notes_node}
 
-* Make sure to compile your program with `Wl,--export-dynamic` or `-rdynamic`
-  flag (in CMake set `ENABLE_EXPORTS` to `TRUE` using `set_target_properties`
-  command) in order to generate necessary symbols.
-* Make sure you use the proper access rights in your function in \ref PDI_access
-  (PDI_IN for reading, PDI_OUT for writing).
-* Descriptor aliases enables one to use different descriptors without the need
-  to recompile the code.
+* Make sure to compile your program with the `-Wl,--export-dynamic` or `-rdynamic`
+  flag (in CMake, set the `ENABLE_EXPORTS` property to `TRUE` with the
+  `set_target_properties` command), so that its symbols are exported.
+* Make sure to use the proper access rights in the calls to \ref PDI_access of your
+  functions (`PDI_IN` for reading, `PDI_OUT` for writing).
+* Aliases make it possible to pass different data to a function without
+  recompiling the code.
 
 ## Dependencies between the code and the specification tree {#dependencies_node}
 
-To ensure proper work of the `user-code` plugin, there are several conventions to follow in the application 
-code and the specification tree.
+For the `user-code` plugin to work properly, the application code and the specification tree must follow
+several conventions.
 
 First, each function name in specification tree must be a valid function name (watch out for [name mangling](https://en.wikipedia.org/wiki/Name_mangling)). Please do not use any PDI yaml key for the function name. (e.g., `when`, `file`, etc.)
 
-Second, these functions **can not** take any arguments or return any value (i.e. their type must be `void(void)`). Use descriptors for passing input/output variables instead.
+Second, these functions **cannot** take any argument or return any value (*i.e.* their type must be `void(void)`). Use aliases to pass input and output variables instead.
 
-Third, function's symbols **must** be exported to make them accessible by `user-code` plugin. To do this, compile your program as described in \ref important_notes_node.
+Third, the symbols of the functions **must** be exported, for the `user-code` plugin to find them. To do so, compile your program as described in \ref important_notes_node.
 
 ## Use examples {#use_examples_node}
 
-This section shows a simple examples with the use of a `user-code` plugin.
+This section shows simple examples of the use of the `user-code` plugin.
 
 ### Hello world! {#hello_world_node}
 
-First, we will call simple function without the use of descriptors to print "Hello world!"
-on "print" event.
+First, we call a simple function, without any alias, to print "Hello world!"
+on the "print" event.
 
 hello_world.c:
 ```C
@@ -62,7 +62,7 @@ plugins:
                 hello_world: {}
 ```
 
-output:
+Output:
 ```console
 [PDI][User-code][13:40:55] *** info: Plugin loaded successfully
 [PDI][13:40:55] *** info: Initialization successful
@@ -73,7 +73,7 @@ Hello world!
 
 ### Handling input {#handling_input_node}
 
-Now we will pass some input data to the function.
+Now we pass some input data to the function.
 
 print_number.c:
 ```C
@@ -111,7 +111,7 @@ plugins:
                 print_number: {input: $number}
 ```
 
-output:
+Output:
 ```console
 [PDI][User-code][13:49:30] *** info: Plugin loaded successfully
 [PDI][13:49:30] *** info: Initialization successful
@@ -121,8 +121,8 @@ I've got number 42.
 
 ```
 
-We can simplify this example by using `on_data` to print value of number
-when it is shared to %PDI.
+We can simplify this example by using `on_data` to print the value of `number`
+when it is shared with %PDI.
 
 print_number.c:
 ```C
@@ -159,7 +159,7 @@ plugins:
                 print_number: {input: $number}
 ```
 
-output does not change:
+The output does not change:
 ```console
 [PDI][User-code][13:52:15] *** info: Plugin loaded successfully
 [PDI][13:52:15] *** info: Initialization successful
@@ -170,9 +170,9 @@ I've got number 42.
 
 ### Handling output {#handling_output_node}
 
-Output handling is very similar to the input handling, the only
-difference are the access rights. In this example we will call
-`add_ten` function when `number` is shared to %PDI.
+Output handling is very similar to input handling, the only
+difference being the access rights. In this example, we call the
+`add_ten` function when `number` is shared with %PDI.
 
 adding_to_number.c:
 ```C
@@ -210,7 +210,7 @@ plugins:
                 add_ten: {input: $number}
 ```
 
-output:
+Output:
 ```console
 [PDI][User-code][13:53:51] *** info: Plugin loaded successfully
 [PDI][13:53:51] *** info: Initialization successful
@@ -223,8 +223,8 @@ After expose, number = 52.
 
 ### Multiple input/output data {#multiple_inout_data_node}
 
-In this example we will use multiple data in function. We will add 
-and multiply two given numbers and return the results on event "calculate".
+In this example, we pass several data to the function. It adds
+and multiplies two given numbers, and returns the results, on the "calculate" event.
 
 calculate.c:
 ```C
@@ -276,7 +276,7 @@ plugins:
                 sum_and_multiply: {number1: $foo, number2: $bar, sum: $res1, product: $res2}
 ```
 
-output:
+Output:
 ```console
 [PDI][User-code][13:58:20] *** info: Plugin loaded successfully
 [PDI][13:58:20] *** info: Initialization successful
