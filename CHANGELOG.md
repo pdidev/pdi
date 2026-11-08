@@ -86,6 +86,10 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* The `PDI_COMPUTE_PLUGIN_API_VERSION(MAJOR, MINOR, PATCH)` macro computes a
+  version to compare with `PDI_PLUGIN_API_VERSION` or with what
+  `PDI::plugin_api_version` returns, in `#if` as well as in code, as per
+  [#937](https://github.com/pdidev/pdi/issues/937)
 * Tests check that an array type accepts `order: C` and `order: c` and rejects
   any other order, as per [#758](https://github.com/pdidev/pdi/issues/758)
 
@@ -121,6 +125,15 @@ and this project adheres to
   `Plugin::logger()` accessor.
   `Datatype_template::load_basic_datatypes` takes the logger to warn through.
   Part of [#721](https://github.com/pdidev/pdi/issues/721)
+* The plugin API version follows the version of PDI, as
+  `0.(major × 128 + minor).patch`, instead of staying 0.0.1 while each minor
+  release of PDI may break the plugin API, as per [#938](https://github.com/pdidev/pdi/issues/938)
+* While the plugin API version is 0.y.z, a plugin built for another minor
+  revision of the plugin API is rejected, as semantic versioning has it, instead
+  of only one built for a later minor, as per [#939](https://github.com/pdidev/pdi/issues/939)
+* `PDI::plugin_api_version` and `PDI_PLUGIN_API_VERSION` are `uint64_t` instead
+  of `unsigned long`, with 16 bits per revision number instead of 8, as per
+  [#938](https://github.com/pdidev/pdi/issues/938)
 
 #### Deprecated
 * `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
