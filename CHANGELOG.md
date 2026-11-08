@@ -12,6 +12,9 @@ and this project adheres to
 ### For users
 
 #### Added
+* The `PDI_COMPUTE_VERSION(MAJOR, MINOR, PATCH)` macro computes a version to
+  compare with `PDI_VERSION` or with what `PDI_version` provides, in `#if` as
+  well as in code, as per [#934](https://github.com/pdidev/pdi/issues/934)
 
 #### Changed
 * Improved error message in type check in Decl'NetCDF when reading scalar variable from file
