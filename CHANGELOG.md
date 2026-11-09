@@ -21,6 +21,8 @@ and this project adheres to
 * The `DISABLE_PDI` CMake option of the example project, which builds it against
   the mock PDI, is renamed `PDI_EXAMPLE_USE_MOCK_PDI`, as per
   [#785](https://github.com/pdidev/pdi/issues/785).
+* PDI is no longer tested on macOS 14, whose runners GitHub retired, as per
+  [#914](https://github.com/pdidev/pdi/issues/914).
 
 #### Deprecated
 * The `INSTALL_CMAKEDIR` CMake variable, which sets where the PDI CMake package
