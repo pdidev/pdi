@@ -77,6 +77,13 @@ and this project adheres to
 #### Added
 * Tests check that an array type accepts `order: C` and `order: c` and rejects
   any other order, as per [#758](https://github.com/pdidev/pdi/issues/758)
+* `bin/build_and_run_all_tests --container <image>` runs the tests inside a CI
+  image, set up as the CI does it, as per
+  [#895](https://github.com/pdidev/pdi/issues/895).
+* `bin/build_and_run_all_tests` takes a `--workdir <dir>` option to choose the
+  directory it builds in, and a `--ctest-outdir <dir>` option to choose where
+  it writes the JUnit test reports, part of
+  [#895](https://github.com/pdidev/pdi/issues/895).
 
 #### Changed
 * The API tests project chooses how it gets PDI with `API_TESTS_PDI`, `FIND` or
@@ -111,6 +118,10 @@ and this project adheres to
   `PLUGIN_API_VERSION_PATCH` macros are deprecated in favor of their
   correctly named replacements, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
+* The `TEST_DIR` and `CTEST_DIR` environment variables of
+  `bin/build_and_run_all_tests` are deprecated in favour of its `--workdir` and
+  `--ctest-outdir` options, part of
+  [#895](https://github.com/pdidev/pdi/issues/895).
 
 #### Removed
 * Removed performance micro-benchmarks of the core PDI library that were
@@ -139,6 +150,20 @@ and this project adheres to
 * A plugin that does not export its pretty name, now loads under its own name
   instead of crashing PDI, fixing
   [#836](https://github.com/pdidev/pdi/issues/836)
+* `bin/build_and_run_all_tests` skips the tests listed in `EXCLUDED_PDI_TESTS`
+  as documented, instead of ignoring them, fixing
+  [#894](https://github.com/pdidev/pdi/issues/894).
+* `bin/build_and_run_all_tests` configures, builds and tests the runs against
+  the mock PDI the same way as the others: they take `CMAKE_FLAGS` into
+  account, the MockFind ones build in `tests_<name>` instead of a nested
+  `tests_<name>/tests_<name>`, and `MAKEFLAGS` reach the build tool instead of
+  CMake, which rejected any flag it did not know, such as `-k`, fixing
+  [#783](https://github.com/pdidev/pdi/issues/783).
+* `bin/build_and_run_all_tests` no longer installs the plugins it builds into
+  the directory named by the `PDI_PLUGIN_PATH` environment variable, which only
+  tells PDI where to look for plugins at runtime; pass
+  `-DINSTALL_PDIPLUGINDIR=<dir>` in `CMAKE_FLAGS` to choose where they install,
+  fixing [#905](https://github.com/pdidev/pdi/issues/905).
 
 #### Security
 
