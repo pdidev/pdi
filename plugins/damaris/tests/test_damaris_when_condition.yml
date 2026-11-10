@@ -1,0 +1,48 @@
+logging: debug
+pdi:
+  metadata:
+    nn: int
+    frequency: int
+    mpi_comm: MPI_Comm
+    is_client: int
+  data:
+    iter: int
+  plugins:
+    trace: info
+    mpi:
+    damaris:
+      architecture:
+        sim_name: when_condition
+        domains: 1
+        dedicated:
+          core: 1
+          node: 0
+      get_is_client: is_client
+      client_comm_get: mpi_comm
+      datasets:
+        - dataset:
+            name: iteration_ds
+            layout: scalar_int_layout
+            storage: hdf5_storage
+      layouts:
+        - layout:
+            name: scalar_int_layout
+            type: int
+            global: ["1"]
+            dimensions: ["1"]
+            ghosts: '0:0'
+      storages:
+        - storage:
+            name: hdf5_storage
+            type: HDF5
+            file_mode: Collective
+            files_path: ./HDF5_files/
+      write: 
+        iter:
+          dataset: iteration_ds
+          when: '$iter%$frequency=0'
+          position: ['0']
+      log:
+        rotation_size: 5
+        log_level: info
+        flush: true

@@ -1,0 +1,51 @@
+parallelism: 2
+localsize: 10
+
+logging: debug
+pdi:
+  metadata:
+    mpi_comm: MPI_Comm
+    is_client: int
+    dsize: int
+    psize: int
+    pcoord: int
+    int_values: {size: ["$dsize"], type: array, subtype: int}
+  plugins:
+    trace: info
+    mpi:
+    damaris:
+      architecture:
+        sim_name: damaris_metadata_array
+        domains: 1
+        dedicated:
+          core: 1
+          node: 0
+      get_is_client: is_client
+      client_comm_get: mpi_comm
+      datasets:
+        - dataset:
+            name: int_values
+            layout: int_values_layout
+            storage: hdf5_storage
+      layouts:
+        - layout:
+            name: int_values_layout
+            type: int
+            global: ["$psize*$dsize"]
+            dimensions: ["$dsize"]
+            ghosts: '0:0'
+            depends_on: [psize, dsize]
+      storages:
+        - storage:
+            name: hdf5_storage
+            type: HDF5
+            file_mode: Collective
+            files_path: ./HDF5_files/
+      write: 
+        int_values:
+          dataset: int_values
+          position: ["$dsize*$pcoord"]
+      log:
+        rotation_size: 5
+        log_level: info
+        flush: true

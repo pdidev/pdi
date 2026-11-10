@@ -1,0 +1,37 @@
+# Function to compare two versions
+# Returns 1 if version1 >= version2, 0 otherwise
+function(version_greater_equal version1 version2 result)
+    string(REGEX MATCHALL "[0-9]+" v1_parts "${version1}")
+    string(REGEX MATCHALL "[0-9]+" v2_parts "${version2}")
+
+    # pad missing parts with 0
+    list(LENGTH v1_parts len1)
+    list(LENGTH v2_parts len2)
+    if(len1 LESS 3)
+        math(EXPR pad "3 - ${len1}")
+        foreach(_i RANGE ${pad})
+            list(APPEND v1_parts 0)
+        endforeach()
+    endif()
+    if(len2 LESS 3)
+        math(EXPR pad "3 - ${len2}")
+        foreach(_i RANGE ${pad})
+            list(APPEND v2_parts 0)
+        endforeach()
+    endif()
+
+    set(_result 1)
+    foreach(i RANGE 0 2)
+        list(GET v1_parts ${i} v1i)
+        list(GET v2_parts ${i} v2i)
+        if(v1i GREATER v2i)
+            set(_result 1)
+            break()
+        elseif(v1i LESS v2i)
+            set(_result 0)
+            break()
+        endif()
+    endforeach()
+
+    set(${result} ${_result} PARENT_SCOPE)
+endfunction()
