@@ -78,7 +78,7 @@ pytup pyversion(pytup pyexpected)
 
 	if ((expected_major || expected_minor || expected_patch) && (expected_major != PDI_VERSION_MAJOR || expected_minor > PDI_VERSION_MINOR)) {
 		throw Plugin_error{
-			"Invalid PDI API version: %lu.%lu.%lu, PDI provided version is %lu.%lu.%lu",
+			"expected PDI API version is {}.{}.{}, but provided version is {}.{}.{}",
 			expected_major,
 			expected_minor,
 			expected_patch,
