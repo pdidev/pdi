@@ -373,11 +373,6 @@ void File_op::execute(Context& ctx)
 						"One IOC per {} MPI ranks",
 						ioc_criteria
 					);
-				} else {
-					throw System_error{
-						"Subfiling IOC_selection has incompatible input. Please choose between SELECT_IOC_ONE_PER_NODE, SELECT_IOC_TOTAL, "
-						"and SELECT_IOC_EVERY_NTH_RANK"
-					};
 				}
 
 				H5Pset_fapl_subfiling(file_lst, &subf_config);
