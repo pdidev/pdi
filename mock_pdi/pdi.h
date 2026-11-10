@@ -35,6 +35,11 @@
 extern "C" {
 #endif
 
+#define PDI_VERSION_MAJOR 1
+#define PDI_VERSION_MINOR 12
+#define PDI_VERSION_PATCH 0
+#define PDI_VERSION ((PDI_VERSION_MAJOR << 24) + (PDI_VERSION_MINOR << 16) + (PDI_VERSION_PATCH << 8))
+
 typedef enum PDI_status_e {
 	PDI_OK = 0,
 	PDI_UNAVAILABLE,
@@ -99,6 +104,7 @@ static inline PDI_status_t PDI_finalize(void)
 
 static inline PDI_status_t PDI_version(unsigned long* provided, unsigned long expected)
 {
+	if (provided) *provided = PDI_VERSION;
 	return PDI_OK;
 }
 

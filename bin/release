@@ -86,9 +86,10 @@ s%$OMAJOR\.$OMINOR\.$OPATCH\.tar\.gz%$MAJOR.$MINOR.$PATCH\.tar\.gz%;
 s%$OMAJOR\.$OMINOR\.$OPATCH/build%$MAJOR.$MINOR.$PATCH/build%;
 " -i pdi/docs/Source_installation.md
 sed "s/set(PDI_VERSION .*/set(PDI_VERSION \"$MAJOR.$MINOR.$PATCH\")/" -i mock_pdi/PDIConfigVersion.cmake
+sed "s/^#define PDI_VERSION_MAJOR .*/#define PDI_VERSION_MAJOR $MAJOR/;s/^#define PDI_VERSION_MINOR .*/#define PDI_VERSION_MINOR $MINOR/;s/^#define PDI_VERSION_PATCH .*/#define PDI_VERSION_PATCH $PATCH/" -i mock_pdi/pdi.h
 sed "s/## \[Unreleased\].*/## [$MAJOR.$MINOR.$PATCH] - $(date +%Y-%m-%d)/;/^#### /{N;/^.*\n\s*$/d}" -i CHANGELOG.md
 sed '/^### /{N;N;/^.*\n\s*\n\s*$/d}' -i CHANGELOG.md
-git commit -qm "PDI Release $MAJOR.$MINOR.$PATCH" VERSION pdi/docs/Source_installation.md mock_pdi/PDIConfigVersion.cmake CHANGELOG.md
+git commit -qm "PDI Release $MAJOR.$MINOR.$PATCH" VERSION pdi/docs/Source_installation.md mock_pdi/PDIConfigVersion.cmake CHANGELOG.md mock_pdi/pdi.h
 git tag -m "PDI release $MAJOR.$MINOR.$PATCH" -s "$MAJOR.$MINOR.$PATCH"
 sed -E '1,/^(## .*)/s/^(## .*)/## [Unreleased]\n\n### For users\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n### For plugin developers\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n\n\1/' -i CHANGELOG.md
 git commit -qm "Prepare CHANGELOG for next patch release" CHANGELOG.md

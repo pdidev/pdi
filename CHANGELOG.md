@@ -71,6 +71,9 @@ and this project adheres to
 * A parallel NetCDF found through its own CMake configuration is no longer taken
   for a sequential one when no prefix path points at its headers, as per
   [#771](https://github.com/pdidev/pdi/issues/771).
+* The mock PDI defines the version macros of `pdi.h`, `PDI_VERSION` and its
+  components, with the version of the last release, and its `PDI_version`
+  provides that version, fixing [#951](https://github.com/pdidev/pdi/issues/951)
 
 #### Security
 * PDI builds again against paraconf 1.2.0 with `-Werror=format-security`, and
