@@ -26,6 +26,9 @@ and this project adheres to
 * The error Python's `pdi.version()` raises for an incompatible version shows
   the expected and provided versions, instead of `%lu` placeholders, fixing
   [#935](https://github.com/pdidev/pdi/issues/935)
+* `find_package(PDI QUIET COMPONENTS Fortran)` no longer prints the deprecation
+  warning of the `Fortran` component, which it now only prints without `QUIET`,
+  fixing [#947](https://github.com/pdidev/pdi/issues/947).
 
 #### Security
 
