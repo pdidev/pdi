@@ -71,6 +71,9 @@ and this project adheres to
 * A parallel NetCDF found through its own CMake configuration is no longer taken
   for a sequential one when no prefix path points at its headers, as per
   [#771](https://github.com/pdidev/pdi/issues/771).
+* `find_package(PDI QUIET COMPONENTS Fortran)` no longer prints the deprecation
+  warning of the `Fortran` component, which it now only prints without `QUIET`,
+  fixing [#947](https://github.com/pdidev/pdi/issues/947).
 
 #### Security
 * PDI builds again against paraconf 1.2.0 with `-Werror=format-security`, and
