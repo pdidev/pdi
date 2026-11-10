@@ -53,13 +53,13 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 			} else if (key == "stripe_size") {
 				m_sf_stripe_size = value;
 			} else if (key == "ioc_selection") {
-				if(PDI::is_map(value)) {
+				if (PDI::is_map(value)) {
 					m_sf_ioc_selection = to_string(PC_get(value, "{0}"));
 					m_sf_ioc_criteria = PC_get(value, "<0>");
 				} else if (PDI::is_scalar(value)) {
 					m_sf_ioc_selection = to_string(value);
 				} else {
-				    throw Spectree_error{value, "Invalid configuration in 'subfiling.ioc_selection'. Expecting either map or scalar."};	
+					throw Spectree_error{value, "Invalid configuration in 'subfiling.ioc_selection'. Expecting either map or scalar."};
 				}
 			} else {
 				throw Spectree_error{key_tree, "Invalid configuration key in subfiling: `{}'", key};
