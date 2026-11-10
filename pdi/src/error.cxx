@@ -87,14 +87,14 @@ template <PDI_status_t STATUS>
 	throw Error_impl("{}{}", msg, what());
 }
 
-template class PDI_EXPORT impl::Error_impl<PDI_ERR_VALUE>;
-template class PDI_EXPORT impl::Error_impl<PDI_ERR_PLUGIN>;
-template class PDI_EXPORT impl::Error_impl<PDI_ERR_IMPL>;
-template class PDI_EXPORT impl::Error_impl<PDI_ERR_SYSTEM>;
-template class PDI_EXPORT impl::Error_impl<PDI_ERR_STATE>;
-template class PDI_EXPORT impl::Error_impl<PDI_ERR_PERMISSION>;
-template class PDI_EXPORT impl::Error_impl<PDI_ERR_TYPE>;
-template class PDI_EXPORT impl::Error_impl<PDI_ERR_INVALIDACTION>;
+template class impl::Error_impl<PDI_ERR_VALUE>;
+template class impl::Error_impl<PDI_ERR_PLUGIN>;
+template class impl::Error_impl<PDI_ERR_IMPL>;
+template class impl::Error_impl<PDI_ERR_SYSTEM>;
+template class impl::Error_impl<PDI_ERR_STATE>;
+template class impl::Error_impl<PDI_ERR_PERMISSION>;
+template class impl::Error_impl<PDI_ERR_TYPE>;
+template class impl::Error_impl<PDI_ERR_INVALIDACTION>;
 
 } // namespace impl
 
