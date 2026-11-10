@@ -1,0 +1,53 @@
+# 2 Damaris clients + 2 Damaris server cores (mpirun -np 4), needs a running Dask scheduler, see test_write_pyscript.c
+pdi:
+  metadata:
+    iter:      int
+    psize:     int
+    prank:     int
+    mpi_comm:  MPI_Comm
+    is_client: int
+  data:
+    values: { size: 8, type: array, subtype: int }
+  plugins:
+    mpi:
+    damaris:
+      architecture:
+        sim_name: pyscript_dask_test
+        domains: 1
+        dedicated:
+          core: 2
+          node: 0
+      client_comm_get: mpi_comm
+      get_is_client: is_client
+      datasets:
+        - dataset:
+            name: values
+            layout: values_layout
+            script: TestPyScript
+      layouts:
+        - layout:
+            name: values_layout
+            type: int
+            dimensions: [ '8' ]
+            global: [ '8*$psize' ]
+            depends_on: [psize]
+      pyscript:
+        name: TestPyScript
+        file: ../test_pyscript_dask.py   # relative to the test working directory
+        scheduler_file: dask_file.json   # written by the scheduler started by the test
+        language: python
+        frequency: 1
+        execution: remote
+        scope: core
+        external: false
+        nthreads: 1
+        timeout: 4
+        keep_workers: no
+      write:
+        values:
+          position: [ '8*$prank' ]
+      log:
+        file_name: pyscript_dask_test
+        rotation_size: 5
+        log_level: info
+        flush: true

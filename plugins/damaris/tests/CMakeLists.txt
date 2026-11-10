@@ -137,3 +137,54 @@ target_compile_features(damaris_read_when_condition  PUBLIC cxx_std_17)
 gtest_discover_tests(damaris_read_when_condition PROPERTY TIMEOUT 4)
 # end test for when condition
 #############################
+
+#########################
+# tests for the Damaris `pyscript` (Python in situ analytics)
+# They need Damaris built with Python support.
+file(STRINGS "${Damaris_INCLUDE_DIRS}/Damaris.h" DAMARIS_HAVE_PYTHON REGEX "^#define HAVE_PYTHON_ENABLED")
+if(DAMARIS_HAVE_PYTHON)
+	add_executable(test_write_pyscript test_write_pyscript.c)
+	target_link_libraries(test_write_pyscript PDI::PDI_C MPI::MPI_C)
+
+	foreach(PYSCRIPT_TEST_FILE
+	        test_pyscript.py
+	        test_damaris_pyscript.yml
+	        test_damaris_pyscript_unknown_key.yml
+	        test_damaris_pyscript_missing_file.yml)
+		configure_file(${PYSCRIPT_TEST_FILE} ${PYSCRIPT_TEST_FILE} COPYONLY)
+	endforeach()
+
+	add_executable(test_read_pyscript test_read_pyscript.cxx)
+	target_compile_features(test_read_pyscript PUBLIC cxx_std_20)
+	target_link_libraries(test_read_pyscript PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest)
+	gtest_discover_tests(test_read_pyscript PROPERTIES TIMEOUT 60)
+
+	# Python + Dask distributed: needs a Dask scheduler executable, and the Python run by the
+	# Damaris servers must import `dask.distributed' and `damaris4py' (Damaris Python module).
+	option(DAMARIS_PLUGIN_TEST_DASK "Test the Damaris pyscript with Dask distributed" OFF)
+	if(DAMARIS_PLUGIN_TEST_DASK)
+		find_program(DAMARIS_DASK_SCHEDULER_EXECUTABLE dask-scheduler REQUIRED)
+		# Damaris starts the workers with `dask worker', taken from PATH: use the scheduler's one
+		get_filename_component(DAMARIS_DASK_BIN_DIR "${DAMARIS_DASK_SCHEDULER_EXECUTABLE}" DIRECTORY)
+		set(DAMARIS_DASK_PYTHONPATH "" CACHE STRING
+		    "Extra PYTHONPATH for the Python run by the Damaris servers (e.g. damaris4py and dask site-packages)")
+
+		foreach(PYSCRIPT_TEST_FILE test_pyscript_dask.py test_damaris_pyscript_dask.yml)
+			configure_file(${PYSCRIPT_TEST_FILE} ${PYSCRIPT_TEST_FILE} COPYONLY)
+		endforeach()
+
+		add_executable(test_read_pyscript_dask test_read_pyscript_dask.cxx)
+		target_compile_features(test_read_pyscript_dask PUBLIC cxx_std_20)
+		string(REPLACE ";" ":" DAMARIS_DASK_PYTHONPATH_STR "${DAMARIS_DASK_PYTHONPATH}")
+		target_compile_definitions(test_read_pyscript_dask PRIVATE
+		                           DASK_SCHEDULER_EXECUTABLE="${DAMARIS_DASK_SCHEDULER_EXECUTABLE}"
+		                           DASK_BIN_DIR="${DAMARIS_DASK_BIN_DIR}"
+		                           DASK_PYTHONPATH="${DAMARIS_DASK_PYTHONPATH_STR}")
+		target_link_libraries(test_read_pyscript_dask PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest)
+		gtest_discover_tests(test_read_pyscript_dask PROPERTIES TIMEOUT 120)
+	endif()
+else()
+	message(STATUS "Damaris built without Python support: pyscript tests disabled")
+endif()
+# end tests for the Damaris `pyscript`
+#########################
