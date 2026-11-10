@@ -23,6 +23,8 @@ and this project adheres to
   [#785](https://github.com/pdidev/pdi/issues/785).
 * PDI is no longer tested on macOS 14, whose runners GitHub retired, as per
   [#914](https://github.com/pdidev/pdi/issues/914).
+* PDI is now tested on x86_64 macOS 26, as per
+  [#946](https://github.com/pdidev/pdi/issues/946).
 
 #### Deprecated
 * The `INSTALL_CMAKEDIR` CMake variable, which sets where the PDI CMake package
