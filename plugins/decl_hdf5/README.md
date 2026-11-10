@@ -69,9 +69,9 @@ The possible values for the keys are as follow:
       * `CONTINUE`: Fall back to a standard HDF5 output file.
     * `stripe_size` (non-negative integer, default: 0): The amount of data (in binary bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MiB = 32*1024*1024) is used.
     * `ioc_selection` : The strategy for selecting I/O Concentrator (IOC) processes across MPI ranks. Possible choices:
-      * `SELECT_IOC_ONE_PER_NODE` (default): one IOC per node.
-      * {`SELECT_IOC_TOTAL`: `$-exp`}: `$-exp` IOC in total. 
-      * {`SELECT_IOC_EVERY_NTH_RANK`: `$-exp`}: one IOC per every `$-exp` MPI ranks.
+      * `OnePerNode` (default): one IOC per node.
+      * {`Total`: `$-exp`}: `$-exp` IOC in total. 
+      * {`EveryNthRank`: `$-exp`}: one IOC per every `$-exp` MPI ranks.
   * Yaml example
     * full configuration:
       ```yaml
@@ -79,7 +79,7 @@ The possible values for the keys are as follow:
         count: 4              # generate 4 subfiles
         policy: CONTINUE      # Fallback to standard HDF5 if necessary
         stripe_size: 8388608  # 8MB stripes (8*1024*1024)
-        ioc_selection: {SELECT_IOC_TOTAL: 2} 
+        ioc_selection: {EveryNthRank: 1} # One IOC per MPI rank
       ```
     * shorthand configuration:
       ```

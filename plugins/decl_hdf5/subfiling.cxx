@@ -54,18 +54,26 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 				m_sf_stripe_size = value;
 			} else if (key == "ioc_selection") {
 				if (PDI::is_map(value)) {
-					m_sf_ioc_selection = to_string(PC_get(value, "{0}"));
-					if (m_sf_ioc_selection != "SELECT_IOC_EVERY_NTH_RANK" && m_sf_ioc_selection != "SELECT_IOC_TOTAL") {
-						throw Spectree_error{value, "Invalid map key in 'subfiling.ioc_selection'. Expecting either SELECT_IOC_EVERY_NTH_RANK or SELECT_IOC_TOTAL; getting {}", m_sf_ioc_selection};
+					if (to_string(PC_get(value, "{0}")) == "EveryNthRank") {
+						m_sf_ioc_selection = IocSelect::EveryNthRank;
+					} else if (to_string(PC_get(value, "{0}")) == "Total") {
+						m_sf_ioc_selection = IocSelect::Total;
+					} else {
+						throw Spectree_error{
+							value,
+							"Invalid map key in 'subfiling.ioc_selection'. Expecting either 'EveryNthRank' or 'Total'; getting {}",
+							to_string(PC_get(value, "{0}"))
+						};
 					}
 					m_sf_ioc_criteria = PC_get(value, "<0>");
 				} else if (PDI::is_scalar(value)) {
-					m_sf_ioc_selection = to_string(value);
-					if (m_sf_ioc_selection != "SELECT_IOC_ONE_PER_NODE") {
+					if (to_string(value) == "OnePerNode") {
+						m_sf_ioc_selection = IocSelect::OnePerNode;
+					} else {
 						throw Spectree_error{
 							value,
-							"Invalid scalar in 'subfiling.ioc_selection'. Expecting SELECT_IOC_ONE_PER_NODE; getting {}",
-							m_sf_ioc_selection
+							"Invalid scalar in 'subfiling.ioc_selection'. Expecting 'OnePerNode'; getting {}",
+							to_string(value)
 						};
 					}
 				} else {

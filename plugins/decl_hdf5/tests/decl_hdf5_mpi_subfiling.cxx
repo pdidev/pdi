@@ -65,7 +65,7 @@ plugins:
       subfiling:
         stripe_size: 4096
         count: 4
-        ioc_selection: SELECT_IOC_ONE_PER_NODE
+        ioc_selection: OnePerNode
       datasets:
         reals: {type: array, subtype: double, size: [$njt, $nit]}
       write:
@@ -76,7 +76,7 @@ plugins:
       subfiling:
         stripe_size: 4096
         count: 2
-        ioc_selection: {SELECT_IOC_TOTAL: 2}
+        ioc_selection: {Total: 2}
       datasets:
         values: {type: array, subtype: int, size: [$njt, $nit]}
       write:

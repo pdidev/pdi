@@ -33,6 +33,12 @@
 
 namespace decl_hdf5 {
 
+enum class IocSelect {
+	OnePerNode,
+	EveryNthRank,
+	Total
+};
+
 /** This identifies a selection in an (array) Datatype
  */
 class Subfiling
@@ -47,7 +53,7 @@ class Subfiling
 	PDI::Expression m_sf_policy = "STOP";
 
 	/// The strategy for selecting I/O Concentrator processes across MPI ranks.
-	std::string m_sf_ioc_selection = "SELECT_IOC_ONE_PER_NODE";
+	IocSelect m_sf_ioc_selection = IocSelect::OnePerNode;
 
 	/// H5FD_SUBFILING_IOC_SELECTION_CRITERIA
 	PDI::Expression m_sf_ioc_criteria = 1L;
@@ -91,7 +97,7 @@ public:
 	 *
 	 * \return The IOC strategy of subfiling
 	 */
-	const std::string& ioc_selection() const { return m_sf_ioc_selection; }
+	const IocSelect& ioc_selection() const { return m_sf_ioc_selection; }
 
 	/** Accesses the H5FD_SUBFILING_IOC_SELECTION_CRITERIA of subfiling configuration.
 	 *
