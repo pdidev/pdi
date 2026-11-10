@@ -23,6 +23,8 @@ and this project adheres to
 * The `DISABLE_PDI` CMake option of the example project, which builds it against
   the mock PDI, is renamed `PDI_EXAMPLE_USE_MOCK_PDI`, as per
   [#785](https://github.com/pdidev/pdi/issues/785).
+* PDI is no longer tested on macOS 14, whose runners GitHub retired, as per
+  [#914](https://github.com/pdidev/pdi/issues/914).
 
 #### Deprecated
 * The `INSTALL_CMAKEDIR` CMake variable, which sets where the PDI CMake package
@@ -36,7 +38,8 @@ and this project adheres to
   per [#789](https://github.com/pdidev/pdi/issues/789).
 
 #### Fixed
-* Change JSON package name to `nlohmann_json` so that `USE_nlohmann_json=SYSTEM/AUTO` will find the system version if available.
+* Change JSON package name to `nlohmann_json` so that `USE_nlohmann_json=SYSTEM/AUTO`
+  will find the system version if available.
   [#769](https://github.com/pdidev/pdi/issues/769) 
 * Fix JSON unit tests failing under parallel execution (with `ctest -j`).
   [#772](https://github.com/pdidev/pdi/issues/772)
@@ -59,7 +62,7 @@ and this project adheres to
 * Fix an error in String_literal and its test that would refuse "off" as a valid
   false value.
   [#753](https://github.com/pdidev/pdi/issues/753)
-* Fix a test of PDI_expression which which could not fail.
+* Fix a test of PDI_expression that could not fail.
   [#753](https://github.com/pdidev/pdi/issues/753)
 * The configuration no longer suggests setting `USE_MPI` and `USE_Threads`,
   which have no effect, fixing [#791](https://github.com/pdidev/pdi/issues/791).
@@ -67,8 +70,14 @@ and this project adheres to
   whatever it is, and an expression that ends with a lone `\` is now reported
   as an error instead of crashing, fixing
   [#846](https://github.com/pdidev/pdi/issues/846)
+* A parallel NetCDF found through its own CMake configuration is no longer taken
+  for a sequential one when no prefix path points at its headers, as per
+  [#771](https://github.com/pdidev/pdi/issues/771).
 
 #### Security
+* PDI builds again against paraconf 1.2.0 with `-Werror=format-security`, and
+  the `subtree` of an `include` that contains a `%` now selects the key written,
+  fixing [#873](https://github.com/pdidev/pdi/issues/873).
 
 
 ### For plugin developers
@@ -107,7 +116,7 @@ and this project adheres to
 #### Deprecated
 * `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
   `PLUGIN_API_VERSION_MAJOR`, `PLUGIN_API_VERSION_MINOR` and
-  `PLUGIN_API_VERSION_PATCH` macros are deprecated in favour of their
+  `PLUGIN_API_VERSION_PATCH` macros are deprecated in favor of their
   correctly named replacements, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
 
@@ -124,6 +133,9 @@ and this project adheres to
 * Removed an invalid Windows-specific choice of the console log output, which
   could not compile: spdlog now picks the console output for the platform,
   fixing [#816](https://github.com/pdidev/pdi/issues/816)
+* `random_init` from the testing API now matches the `IntType` used (while
+  bool and char remain intentionally unsupported).
+  Fix [#737](https://github.com/pdidev/pdi/issues/737)
 * `bin/build_and_run_all_tests` configures, builds and tests every project the
   same way, and passes `CMAKE_FLAGS` to all of them, as per
   [#783](https://github.com/pdidev/pdi/issues/783).
