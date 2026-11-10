@@ -301,18 +301,7 @@ Damaris_cfg::Damaris_cfg(PDI::Context& ctx, PC_tree_t tree)
 	damarisXMLModifyModel.RepalceWithRegEx(find_replace_map);
 
 	m_xml_config_object = damarisXMLModifyModel.GetConfigString();
-
-	// Assumes a "log" directory already exists relative to CWD (nothing here creates it,
-	// and Damaris hasn't been initialized yet at this point) - failure is only logged, not fatal.
-	std::ofstream outputXMLFile("log/damaris_config.xml");
-
-	if (outputXMLFile.is_open()) {
-		outputXMLFile << damarisXMLModifyModel.GetConfigString();
-
-		outputXMLFile.close();
-	} else {
-		ctx.logger().error("Could not open the file for writing damaris xml config");
-	}
+	ctx.logger().debug("Generated Damaris XML configuration:\n{}", m_xml_config_object);
 }
 
 void Damaris_cfg::parse_architecture_tree(PDI::Context& ctx, PC_tree_t arch_tree)

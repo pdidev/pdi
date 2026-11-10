@@ -11,6 +11,7 @@ pdi:
   plugins:
     mpi:
     damaris:
+      logging: debug   # prints the generated Damaris XML, checked by PyScript.GeneratedXml
       architecture:
         sim_name: pyscript_test
         domains: 1

@@ -34,5 +34,8 @@
 foreach(PY_EXAMPLE_FILE 3dmesh_py.yml 3dmesh_py.py 3dmesh_dask.yml 3dmesh_dask.py)
 	configure_file(${PY_EXAMPLE_FILE} ${PY_EXAMPLE_FILE} COPYONLY)
 endforeach()
+# Damaris writes its log files to ./log
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/log)
+
 add_executable(3dmesh_py 3dmesh_py.c)
 target_link_libraries(3dmesh_py PDI::PDI_C MPI::MPI_C)

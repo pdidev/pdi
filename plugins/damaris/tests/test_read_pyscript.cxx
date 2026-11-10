@@ -96,8 +96,9 @@ TEST_F(PyScript, GeneratedXml)
 {
 	ASSERT_EQ(run_writer("test_damaris_pyscript.yml"), 0) << "Error in the writing step";
 
-	std::string xml = read_file("log/damaris_config.xml");
-	ASSERT_FALSE(xml.empty()) << "log/damaris_config.xml not generated";
+	// The plugin prints the generated XML at debug level (`logging: debug' in the YAML)
+	std::string xml = read_file("writer.log");
+	ASSERT_NE(xml.find("Generated Damaris XML configuration"), std::string::npos) << xml;
 
 	EXPECT_NE(xml.find("script=\"TestPyScript\""), std::string::npos) << xml;
 	for (const char* attribute:
