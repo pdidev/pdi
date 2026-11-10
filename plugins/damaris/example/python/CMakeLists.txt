@@ -30,8 +30,9 @@
 
 # Python (and Dask) in situ analytics through the Damaris `pyscript` support.
 # Building is always possible; running requires Damaris built with Python support
-# (and Dask for 3dmesh_dask.yml), see README.md.
-foreach(PY_EXAMPLE_FILE 3dmesh_py.yml 3dmesh_py.py 3dmesh_dask.yml 3dmesh_dask.py)
+# (and Dask for 3dmesh_dask.yml and 3dmesh_dask_client.yml), see README.md.
+foreach(PY_EXAMPLE_FILE 3dmesh_py.yml 3dmesh_py.py 3dmesh_dask.yml 3dmesh_dask.py
+		3dmesh_dask_client.yml 3dmesh_dask_client.py)
 	configure_file(${PY_EXAMPLE_FILE} ${PY_EXAMPLE_FILE} COPYONLY)
 endforeach()
 # Damaris writes its log files to ./log

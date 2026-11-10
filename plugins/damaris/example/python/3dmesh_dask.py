@@ -119,6 +119,8 @@ def main(DD):
     from damaris4py.server import getservercomm
     from damaris4py.server import listknownclients
     from damaris4py.dask import damaris_dask
+
+    t_start = time.time()   # time spent in this script, to compare with 3dmesh_dask_client.py
     
    
 
@@ -196,6 +198,7 @@ def main(DD):
                     for dataset_name in client.list_datasets():
                         if dataset_name.startswith('cube_i_'):
                             client.unpublish_dataset(dataset_name)
+                    print('Python iteration ', iteration, ' script time: {:.3f} s'.format(time.time() - t_start))
                     # Use .persist() to not bring datasets back to the curent client
                     # Use .compute() with small datasets (summaries / reductions) to use in displaying results
 

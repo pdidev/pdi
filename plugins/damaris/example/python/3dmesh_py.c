@@ -31,7 +31,7 @@
  * runs the configured `pyscript` on the Damaris server cores.
  *
  *   mpirun -np 5 ./3dmesh_py 3dmesh_py.yml -i 3 -v 2 -r      # Python only (1 server core)
- *   mpirun -np 6 ./3dmesh_py 3dmesh_dask.yml -i 3 -r         # Python + Dask (2 server cores)
+ *   mpirun -np 6 ./3dmesh_py 3dmesh_dask.yml -i 3 -v 2 -r    # Python + Dask (2 server cores)
  */
 
 #include <mpi.h>
