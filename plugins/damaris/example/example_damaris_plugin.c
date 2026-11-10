@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <math.h>
 #include <paraconf.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
