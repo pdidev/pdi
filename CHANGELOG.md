@@ -29,6 +29,9 @@ and this project adheres to
 * `find_package(PDI QUIET COMPONENTS Fortran)` no longer prints the deprecation
   warning of the `Fortran` component, which it now only prints without `QUIET`,
   fixing [#947](https://github.com/pdidev/pdi/issues/947).
+* The mock PDI defines the version macros of `pdi.h`, `PDI_VERSION` and its
+  components, with the version of the last release, and its `PDI_version`
+  provides that version, fixing [#951](https://github.com/pdidev/pdi/issues/951)
 
 #### Security
 
