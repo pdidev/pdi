@@ -226,6 +226,8 @@ Damaris_cfg::Damaris_cfg(PDI::Context& ctx, PC_tree_t tree)
 			parse_layouts_tree(ctx, value);
 		} else if (key == "storages") {
 			parse_storages_tree(ctx, value);
+		} else if (key == "pyscript") {
+			parse_pyscript_tree(ctx, value);
 		}
 
 		else if (key == "write")
@@ -717,6 +719,57 @@ void Damaris_cfg::parse_storages_tree(PDI::Context& ctx, PC_tree_t storages_tree
 	});
 }
 
+void Damaris_cfg::parse_pyscript_tree(PDI::Context& ctx, PC_tree_t pyscript_tree)
+{
+	damaris::model::DamarisPyScriptXML pyscriptxml{};
+	std::map<std::string, std::string> find_replace_map = {};
+
+	PDI::each(pyscript_tree, [&](PC_tree_t py_key, PC_tree_t value) { //pyscript info
+		std::string key = PDI::to_string(py_key);
+
+		int intb; // 0 is false, anything else is true
+		if (key == "name") {
+			pyscriptxml.pyscript_name_ = PDI::to_string(value);
+		} else if (key == "file") {
+			pyscriptxml.pyscript_file_ = PDI::to_string(value);
+		} else if (key == "scheduler_file") {
+			pyscriptxml.scheduler_file_ = PDI::to_string(value);
+		} else if (key == "execution") {
+			pyscriptxml.execution_ = PDI::to_string(value);
+		} else if (key == "language") {
+			pyscriptxml.language_ = PDI::to_string(value);
+		} else if (key == "scope") {
+			pyscriptxml.scope_ = PDI::to_string(value);
+		} else if (key == "external") {
+			PC_bool(value, &intb);
+			pyscriptxml.external_ = (intb == 0) ? false : true;
+		} else if (key == "frequency") {
+			pyscriptxml.frequency_ = PDI::to_long(value);
+		} else if (key == "nthreads") {
+			pyscriptxml.nthreads_ = PDI::to_long(value);
+		} else if (key == "timeout") {
+			pyscriptxml.timeout_ = PDI::to_long(value);
+		} else if (key == "keep_workers") {
+			pyscriptxml.keep_workers_ = PDI::to_string(value); //yes/no
+		} else if (key == "comment") {
+			pyscriptxml.comment_ = PDI::to_string(value);
+		} else {
+			throw PDI::Spectree_error{pyscript_tree, "The key `{}' doesn't exist for a pyscript.", key};
+		}
+	});
+
+	if (pyscriptxml.pyscript_name_.empty() || pyscriptxml.pyscript_file_.empty()) {
+		throw PDI::Spectree_error{pyscript_tree, "A pyscript requires both a `name' and a `file'."};
+	}
+
+	m_pyscript = pyscriptxml;
+
+	find_replace_map.insert({"_SCRIPTS_REGEX_", pyscriptxml.ReturnXMLForPyScript() + "\n_SCRIPTS_REGEX_"});
+
+	//Update the xml config
+	damarisXMLModifyModel.RepalceWithRegEx(find_replace_map);
+}
+
 void Damaris_cfg::parse_write_tree(PDI::Context& ctx, PC_tree_t write_tree_list)
 {
 	PDI::each(write_tree_list, [&](PC_tree_t write_key, PC_tree_t write_ds_tree) { //each dataset to write
@@ -1086,6 +1139,11 @@ const damaris::model::DamarisParameterXML Damaris_cfg::get_parameter_xml(std::st
 const std::unordered_map<std::string, damaris::model::DamarisStoreXML>& Damaris_cfg::storages() const
 {
 	return m_storages;
+}
+
+const damaris::model::DamarisPyScriptXML& Damaris_cfg::pyscript() const
+{
+	return m_pyscript;
 }
 
 const std::unordered_map<std::string, damaris::model::DamarisGroupXML>& Damaris_cfg::groups() const

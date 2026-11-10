@@ -154,6 +154,8 @@ class Damaris_cfg
 	std::unordered_map<std::string, damaris::model::DamarisParameterXML> m_parameters;
 	std::unordered_map<std::string, damaris::model::DamarisStoreXML> m_storages;
 	std::unordered_map<std::string, damaris::model::DamarisGroupXML> m_groups;
+	/// the `pyscript` configured for Damaris Python in situ analytics (empty name/file when unused)
+	damaris::model::DamarisPyScriptXML m_pyscript;
 
 	std::unordered_map<std::string, Desc_type> m_descs;
 	std::unordered_map<std::string, Event_type> m_events;
@@ -218,6 +220,7 @@ protected:
 	void parse_datasets_tree(PDI::Context& ctx, PC_tree_t datasets_tree_list);
 	void parse_layouts_tree(PDI::Context& ctx, PC_tree_t layouts_tree_list);
 	void parse_storages_tree(PDI::Context& ctx, PC_tree_t storages_tree_list);
+	void parse_pyscript_tree(PDI::Context& ctx, PC_tree_t pyscript_tree);
 	void parse_write_tree(PDI::Context& ctx, PC_tree_t write_tree_list);
 	void parse_parameter_to_update_tree(PDI::Context& ctx, PC_tree_t ptu_tree_list, Desc_type op_type);
 	void parse_log_tree(PDI::Context& ctx, PC_tree_t config);
@@ -246,6 +249,7 @@ public:
 	const std::unordered_map<std::string, damaris::model::DamarisParameterXML>& parameters() const;
 	const damaris::model::DamarisParameterXML get_parameter_xml(std::string prm_name) const;
 	const std::unordered_map<std::string, damaris::model::DamarisStoreXML>& storages() const;
+	const damaris::model::DamarisPyScriptXML& pyscript() const;
 	const std::unordered_map<std::string, damaris::model::DamarisGroupXML>& groups() const;
 
 	const std::unordered_map<std::string, Desc_type>& descs() const;

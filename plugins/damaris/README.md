@@ -28,6 +28,7 @@ full potential of this plugin.
     * `name`(string): name of the dataset
     * `layout`(string): name of the layout of this dataset
     * `storage`(string): name of the storage of this dataset
+    * `script`(string): name of the `pyscript` this dataset is passed to (optional)
 
 * `layouts`: list of `LAYOUT_DESC`.
   * `layout:` a key value map that represent a layout defined in a `dataset`. It is composed with
@@ -44,6 +45,18 @@ full potential of this plugin.
     * `type` Type of the output file. Currently only HDF5 is supported.
     * `file_mode` (Collective or FilePerCore)
     * `files_path` Path for the output files
+
+* `pyscript`: a key value map that configures a Python script run by the Damaris server cores on the datasets that reference it through their `script` key (optional; requires Damaris built with Python support). It is composed with
+  * `name` (string, required): name of the script, referenced by the datasets `script` key
+  * `file` (string, required): path to the Python file to run (absolute, or relative to where the simulation is launched)
+  * `frequency` (integer, default: 1): run the script every `frequency` iterations
+  * `scheduler_file` (string): Dask scheduler file, to use Dask distributed from the script (optional)
+  * `nthreads` (integer, default: 1): number of threads per Dask worker
+  * `timeout` (integer, default: 2): Dask connection timeout, in seconds
+  * `keep_workers` (`yes` or `no`, default: `no`): keep the Dask workers alive at the end of the simulation
+  * `language` (default: `python`), `execution` (default: `remote`), `scope` (default: `core`), `external` (default: false), `comment`: passed as is to Damaris
+
+  See `example/python` for a Python and a Dask example.
 
 * `write`: list of data that will be write on the disk by damaris. Each data is composed with
   * `dataset`: The dataset in which the data will be written.
@@ -153,3 +166,20 @@ damaris:
     log_level: info
     flush: true
 ```
+
+## Tests
+
+The tests are built with `-DBUILD_TESTING=ON` and run with `ctest`.
+
+The `pyscript` tests (`PyScript.*`) are added only when Damaris is built with Python support.
+The Dask test (`PyScriptDask.*`) is optional, enable it with `-DDAMARIS_PLUGIN_TEST_DASK=ON`. It
+starts its own Dask scheduler, and needs:
+* `DAMARIS_DASK_SCHEDULER_EXECUTABLE`: the `dask-scheduler` to use (found in `PATH` by default).
+  Its directory is put first in `PATH` during the test, as Damaris starts the Dask workers with `dask worker`.
+* `DAMARIS_DASK_PYTHONPATH` (optional): `;`-separated directories added to `PYTHONPATH`, so that the
+  Python run by the Damaris servers finds `dask.distributed`, `damaris4py` and `mpi4py`. For example,
+  with Dask and damaris4py installed in a virtual environment and mpi4py from the system:
+  ```
+  -DDAMARIS_DASK_SCHEDULER_EXECUTABLE=$VENV/bin/dask-scheduler
+  "-DDAMARIS_DASK_PYTHONPATH=$VENV/lib/python3.12/site-packages;/usr/lib/python3/dist-packages"
+  ```
