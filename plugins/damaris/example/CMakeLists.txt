@@ -42,3 +42,5 @@ target_link_libraries (example_damaris_plugin_with_is_client PDI::PDI_C MPI::MPI
 configure_file(example_damaris_api.xml example_damaris_api.xml COPYONLY)
 add_executable(example_damaris_only example_damaris_only.c)
 target_link_libraries(example_damaris_only ${Damaris_DEPS})
+
+add_subdirectory(python)
