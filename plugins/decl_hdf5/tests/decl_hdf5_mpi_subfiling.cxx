@@ -73,7 +73,10 @@ plugins:
           dataset_selection: {start: [$jstart, $istart]}
     - file: subfiling_values.h5
       communicator: $MPI_COMM_WORLD
-      subfiling: 2
+      subfiling:
+        stripe_size: 4096
+        count: 2
+        ioc_selection: {SELECT_IOC_TOTAL: 2}
       datasets:
         values: {type: array, subtype: int, size: [$njt, $nit]}
       write:

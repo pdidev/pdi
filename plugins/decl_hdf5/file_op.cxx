@@ -381,6 +381,9 @@ void File_op::execute(Context& ctx)
 				}
 
 				H5Pset_fapl_subfiling(file_lst, &subf_config);
+				if (unsetenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA") != 0) {
+					ctx.logger().warn("Failed to unset environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
+                }
 			}
 #endif
 		}
