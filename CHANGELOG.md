@@ -32,6 +32,9 @@ and this project adheres to
 * The mock PDI defines the version macros of `pdi.h`, `PDI_VERSION` and its
   components, with the version of the last release, and its `PDI_version`
   provides that version, fixing [#951](https://github.com/pdidev/pdi/issues/951)
+* `find_package(PDI)` now sets `PDI_<component>_FOUND` for each component
+  requested, so that a project can tell which optional components it got,
+  fixing [#948](https://github.com/pdidev/pdi/issues/948).
 
 #### Security
 
