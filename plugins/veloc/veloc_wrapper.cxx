@@ -22,6 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <pdi/logger.h>
+
 #include "veloc_wrapper.h"
 
 using PDI::Invalid_action_error;

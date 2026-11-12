@@ -23,6 +23,7 @@
  ******************************************************************************/
 
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/error.h>
 #include <pdi/expression.h>
 #include <pdi/plugin.h>

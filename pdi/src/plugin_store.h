@@ -36,6 +36,8 @@
 
 #include <pdi/plugin.h>
 
+#include <pdi/context_proxy.h>
+
 namespace PDI {
 
 /** A store used to load a set of plugins

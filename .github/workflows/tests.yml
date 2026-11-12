@@ -32,6 +32,9 @@ on:
   push: { branches: [ main, 'v[0-9]+.[0-9]+' ] }
   pull_request:
   workflow_dispatch:
+permissions:
+  contents: read
+  checks: write  # for the JUnit test report check runs
 jobs:
   indent:
     runs-on: ubuntu-latest
@@ -104,7 +107,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, macos-15, macos-26]
+        os: [macos-15, macos-latest]
         cxx_std: ['17']
         build_type: ['Debug']
     runs-on: ${{matrix.os}}
@@ -142,3 +145,5 @@ jobs:
       if: ( success() || failure() )  # always run even if the previous step fails
       with:
         report_paths: '/tmp/tests_output/tests_*.xml'
+        # a pull request from a fork gets a read-only token, so only annotate there
+        annotate_only: ${{ github.event.pull_request.head.repo.fork == true }}

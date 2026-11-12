@@ -14,14 +14,36 @@ and this project adheres to
 #### Added
 
 #### Changed
+* Improved error message in type check in Decl'NetCDF when reading scalar variable from file
+  as requested [#731](https://github.com/pdidev/pdi/issues/731)
+* Split the example of HDF5 between serial and parallel versions, 
+  to match NetCDF [#822](https://github.com/pdidev/pdi/issues/822)
+* The `DISABLE_PDI` CMake option of the example project, which builds it against
+  the mock PDI, is renamed `PDI_EXAMPLE_USE_MOCK_PDI`, as per
+  [#785](https://github.com/pdidev/pdi/issues/785).
+* PDI is no longer tested on macOS 14, whose runners GitHub retired, as per
+  [#914](https://github.com/pdidev/pdi/issues/914).
 
 #### Deprecated
+* The `INSTALL_CMAKEDIR` CMake variable, which sets where the PDI CMake package
+  files are installed, is renamed `INSTALL_PDICMAKEDIR`; the old name still
+  works but prints a deprecation warning, as per
+  [#788](https://github.com/pdidev/pdi/issues/788).
 
 #### Removed
-* Remove `BUILD_BENCHMARKING` CMake option from the root CMakeLists.
-  [#845](https://github.com/pdidev/pdi/issues/845)
+* The `BUILD_SHARED_LIBS` CMake option is no longer read: the PDI libraries are
+  always shared, where setting it to `OFF` used to stop the configuration, as
+  per [#789](https://github.com/pdidev/pdi/issues/789).
 
 #### Fixed
+* Change JSON package name to `nlohmann_json` so that `USE_nlohmann_json=SYSTEM/AUTO`
+  will find the system version if available.
+  [#769](https://github.com/pdidev/pdi/issues/769) 
+* Fix JSON unit tests failing under parallel execution (with `ctest -j`).
+  [#772](https://github.com/pdidev/pdi/issues/772)
+* On macOS, a plugin linked into the application is now found, instead of PDI
+  searching for its library and failing when there is none, fixing
+  [#860](https://github.com/pdidev/pdi/issues/860)
 * Fix YAML index mismatch between Paraconf and LibYAML. 
   [#759](https://github.com/pdidev/pdi/issues/759)
 * Corrected an invalid test that prevented a deprecation warning message for
@@ -32,28 +54,67 @@ and this project adheres to
 * The example project asks for the Fortran component of Paraconf when it is
   built with Fortran support, as per
   [#784](https://github.com/pdidev/pdi/issues/784).
+* The build type the distribution profile selects is now actually applied:
+  `DIST_PROFILE=User` builds `Release` and `Devel` builds `Debug`, as per
+  [#773](https://github.com/pdidev/pdi/issues/773).
+* Fix an error in String_literal and its test that would refuse "off" as a valid
+  false value.
+  [#753](https://github.com/pdidev/pdi/issues/753)
+* Fix a test of PDI_expression that could not fail.
+  [#753](https://github.com/pdidev/pdi/issues/753)
+* The configuration no longer suggests setting `USE_MPI` and `USE_Threads`,
+  which have no effect, fixing [#791](https://github.com/pdidev/pdi/issues/791).
+* A `\` in a string $-expression now escapes the character after it correctly,
+  whatever it is, and an expression that ends with a lone `\` is now reported
+  as an error instead of crashing, fixing
+  [#846](https://github.com/pdidev/pdi/issues/846)
+* A parallel NetCDF found through its own CMake configuration is no longer taken
+  for a sequential one when no prefix path points at its headers, as per
+  [#771](https://github.com/pdidev/pdi/issues/771).
 
 #### Security
+* PDI builds again against paraconf 1.2.0 with `-Werror=format-security`, and
+  the `subtree` of an `include` that contains a `%` now selects the key written,
+  fixing [#873](https://github.com/pdidev/pdi/issues/873).
 
 
 ### For plugin developers
 
 #### Added
+* Tests check that an array type accepts `order: C` and `order: c` and rejects
+  any other order, as per [#758](https://github.com/pdidev/pdi/issues/758)
 
 #### Changed
-* Merged `Callbacks` into `Global_context` and renamed the callback functions,
-  as per [#720](https://github.com/pdidev/pdi/issues/720)
+* The API tests project chooses how it gets PDI with `API_TESTS_PDI`, `FIND` or
+  `MOCK`, instead of the `DISABLE_PDI` option, as per
+  [#786](https://github.com/pdidev/pdi/issues/786).
+* `PDI::Callbacks` and `Context::callbacks()` are gone: a plugin registers its
+  callbacks on the context itself, with `on_init`, `on_data`, `on_data_remove`,
+  `on_event` and `on_missing_data` in place of `add_init_callback`,
+  `add_data_callback`, `add_data_remove_callback`, `add_event_callback` and
+  `add_empty_desc_access_callback`, as per
+  [#720](https://github.com/pdidev/pdi/issues/720)
 * Renamed `PDI::TimerEventHandler` to `PDI::Timer_event_handler` to follow the
   class naming convention, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
 * Renamed the `PLUGIN_API_VERSION*` macros to `PDI_PLUGIN_API_VERSION*` to
   follow the macro naming convention, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
+* `PDI::to_bool` now accepts every YAML 1.1 spelling of a boolean, `on`, `off`,
+  `y` and `n` included, and new unit tests cover each spelling.
+  This works around
+  [pdidev/paraconf#6](https://github.com/pdidev/paraconf/issues/6)
+* `pdi/pdi_fwd.h` now forward declares `PDI::Logger`, but `pdi/context.h` no
+  longer includes `pdi/logger.h`, nor does `pdi/logger.h` include
+  `spdlog/spdlog.h`: include them where they are used.
+  This is part of [#721](https://github.com/pdidev/pdi/issues/721)
+* `<pdi/plugin.h>` no longer declares anything at global scope. Fixes
+  [#756](https://github.com/pdidev/pdi/issues/756)
 
 #### Deprecated
 * `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
   `PLUGIN_API_VERSION_MAJOR`, `PLUGIN_API_VERSION_MINOR` and
-  `PLUGIN_API_VERSION_PATCH` macros are deprecated in favour of their
+  `PLUGIN_API_VERSION_PATCH` macros are deprecated in favor of their
   correctly named replacements, part of
   [#755](https://github.com/pdidev/pdi/issues/755)
 
@@ -64,6 +125,26 @@ and this project adheres to
   [#733](https://github.com/pdidev/pdi/issues/733)
 
 #### Fixed
+* `PDI::is_list`, `PDI::is_map` and `PDI::is_scalar` return false for a tree in
+  error, instead of answering for the node it was looked up from or crashing,
+  fixing [#806](https://github.com/pdidev/pdi/issues/806)
+* Removed an invalid Windows-specific choice of the console log output, which
+  could not compile: spdlog now picks the console output for the platform,
+  fixing [#816](https://github.com/pdidev/pdi/issues/816)
+* `random_init` from the testing API now matches the `IntType` used (while
+  bool and char remain intentionally unsupported).
+  Fix [#737](https://github.com/pdidev/pdi/issues/737)
+* `bin/build_and_run_all_tests` configures, builds and tests every project the
+  same way, and passes `CMAKE_FLAGS` to all of them, as per
+  [#783](https://github.com/pdidev/pdi/issues/783).
+* Flags passed to `bin/build_and_run_all_tests` through `CMAKE_FLAGS` take
+  precedence over those the script chooses, as per
+  [#782](https://github.com/pdidev/pdi/issues/782).
+* Building a plugin with `-Wall -Wextra` no longer warns about `pdi/plugin.h`,
+  fixing [#812](https://github.com/pdidev/pdi/issues/812)
+* A plugin that does not export its pretty name, now loads under its own name
+  instead of crashing PDI, fixing
+  [#836](https://github.com/pdidev/pdi/issues/836)
 
 #### Security
 

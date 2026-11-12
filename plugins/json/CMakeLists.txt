@@ -31,11 +31,12 @@ include(GNUInstallDirs)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
-find_package(nlohmann_json 3.9 REQUIRED)
+find_package(nlohmann_json 3.11 REQUIRED)
 
 # The plugin
 add_library(pdi_json_plugin MODULE json.cxx)
 target_link_libraries(pdi_json_plugin PUBLIC PDI::PDI_plugins nlohmann_json::nlohmann_json )
+set_target_properties(pdi_json_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")

@@ -27,11 +27,15 @@
 #include <set>
 #include <netcdf.h>
 
+#include <pdi/logger.h>
+
 #include "dnc_netcdf_file.h"
 
 #include "dnc_file_context.h"
 
 namespace decl_netcdf {
+
+using PDI::to_string;
 
 Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 	: m_ctx{ctx}
@@ -147,9 +151,9 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 			}
 		} else if (PDI::is_map(write_node)) {
 			PDI::each(write_node, [this](PC_tree_t desc_name, PC_tree_t write_value) {
-				std::string write_desc = PDI::to_string(desc_name);
+				std::string write_desc = to_string(desc_name);
 				m_ctx.logger().trace("Creating new write info for: {}", write_desc);
-				this->m_write.emplace(PDI::to_string(desc_name), Dnc_io{this->m_ctx, write_value});
+				this->m_write.emplace(write_desc, Dnc_io{this->m_ctx, write_value});
 			});
 		} else {
 			throw PDI::Spectree_error{write_node, "write node is not parsed correctly"};
@@ -267,7 +271,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 			nc_file.read_variable(*variable);
 
 			// execute read
-			nc_file.get_variable(*variable, read_it->second, ref);
+			nc_file.get_variable(*variable, read_it->second, ref, desc_name);
 		}
 
 		auto size_it = m_sizeof.find(desc_name);
@@ -353,7 +357,7 @@ void Dnc_file_context::execute()
 		i = 0;
 		for (auto&& read: m_read) {
 			Dnc_variable* variable = variables_to_get[i]; // order of loop iteration is the same as was on define loop
-			nc_file->get_variable(*variable, read.second, m_ctx.desc(read.first).ref());
+			nc_file->get_variable(*variable, read.second, m_ctx.desc(read.first).ref(), read.first);
 			i++;
 		}
 	}

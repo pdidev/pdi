@@ -24,6 +24,7 @@
 #include <veloc.h>
 #include <pdi/context.h>
 #include <pdi/paraconf_wrapper.h>
+#include <pdi/logger.h>
 
 #include <unordered_map>
 
