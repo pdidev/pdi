@@ -44,8 +44,15 @@ metadata:
   njt: int
   istart: int
   jstart: int
+  world_dup: MPI_Comm
 data:
   reals:
+    type: array
+    subtype: double
+    size: [$nj + 2*$njg, $ni + 2*$nig]
+    subsize: [$nj, $ni]
+    start: [$njg, $nig]
+  reals_dup:
     type: array
     subtype: double
     size: [$nj + 2*$njg, $ni + 2*$nig]
@@ -71,8 +78,16 @@ plugins:
       write:
         reals:
           dataset_selection: {start: [$jstart, $istart]}
-    - file: subfiling_values.h5
+    - file: subfiling_dup.h5
       communicator: $MPI_COMM_WORLD
+      subfiling: 2
+      datasets:
+        reals_dup: {type: array, subtype: double, size: [$njt, $nit]}
+      write:
+        reals_dup:
+          dataset_selection: {start: [$jstart, $istart]}
+    - file: subfiling_values.h5
+      communicator: $world_dup
       subfiling:
         stripe_size: 4096
         count: 2
@@ -114,6 +129,9 @@ int main(int argc, char* argv[])
 	}
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
+	MPI_Comm world_dup;
+	MPI_Comm_dup(MPI_COMM_WORLD, &world_dup);
+
 	PDI_init(conf);
 	int rank;
 	MPI_Comm_rank(world, &rank);
@@ -125,7 +143,7 @@ int main(int argc, char* argv[])
 		MPI_Abort(MPI_COMM_WORLD, -1);
 	}
 	PDI_expose("nproc", &size, PDI_OUT);
-
+	PDI_expose("world_dup", &world_dup, PDI_OUT);
 
 	MPI_Cart_create(world, DIM, dims, periodic, 0, &comm2D);
 	MPI_Cart_coords(comm2D, rank, DIM, coord);
@@ -169,6 +187,7 @@ int main(int argc, char* argv[])
 
 	///  Test that export/exchange works
 	PDI_multi_expose("", "reals", &reals, PDI_OUT, "values", &values, PDI_INOUT, NULL);
+	PDI_multi_expose("", "reals_dup", &reals, PDI_OUT, NULL);
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
@@ -178,7 +197,19 @@ int main(int argc, char* argv[])
 		if (std::system("grep \"subfile_count=4\" subfiling_reals.h5.subfile_*.config > /dev/null 2>&1")) {
 			return EXIT_FAILURE;
 		}
+		if (std::system("grep \"aggregator_count=1\" subfiling_reals.h5.subfile_*.config > /dev/null 2>&1")) {
+			return EXIT_FAILURE;
+		}
 		if (std::system("grep \"subfile_count=2\" subfiling_values.h5.subfile_*.config > /dev/null 2>&1")) {
+			return EXIT_FAILURE;
+		}
+		if (std::system("grep \"aggregator_count=2\" subfiling_values.h5.subfile_*.config > /dev/null 2>&1")) {
+			return EXIT_FAILURE;
+		}
+		if (std::system("grep \"subfile_count=2\" subfiling_dup.h5.subfile_*.config > /dev/null 2>&1")) {
+			return EXIT_FAILURE;
+		}
+		if (std::system("grep \"aggregator_count=1\" subfiling_dup.h5.subfile_*.config > /dev/null 2>&1")) {
 			return EXIT_FAILURE;
 		}
 	}
