@@ -254,7 +254,7 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
 
 		if (key == "config_file") {
 			m_config_file = to_string(value);
-		}  else if (key == "checkpoint_label") {
+		} else if (key == "checkpoint_label") {
 			m_cp_label = to_string(value);
 		} else if (key == "communicator") {
 			m_veloc_comm = to_string(value);

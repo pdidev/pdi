@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
 	}
 
 	if (rank == 0) printf("veloc_test_managed_1 PASSED\n");
-	
+
 	PDI_finalize();
 	MPI_Finalize();
 

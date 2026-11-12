@@ -49,43 +49,43 @@ plugins:
       synchronize_on_event : sync
       when: '$ii % 2 = 0 '
 )";
- 
+
 int main(int argc, char* argv[])
 {
 	MPI_Init(&argc, &argv);
 	int rank, size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
- 
+
 	if (size != 3) {
 		if (rank == 0) fprintf(stderr, "veloc_test_managed_comm must be run with 3 processes (got %d)\n", size);
 		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
- 
-	// put only rank O and 1 in a communicator 
+
+	// put only rank O and 1 in a communicator
 	const bool in_veloc = rank < 2;
 	MPI_Comm comm;
 	MPI_Comm_split(MPI_COMM_WORLD, in_veloc ? 0 : MPI_UNDEFINED, rank, &comm);
- 
+
 	PC_tree_t conf = PC_parse_string(CONF_YAML);
 	PDI_init(conf);
- 
+
 	PDI_expose("comm", &comm, PDI_OUT);
- 
+
 	int cp_counter;
 	int cp_status;
- 
+
 	int ii = 0;
 	int arr_size = 20;
- 
+
 	PDI_expose("arr_size", &arr_size, PDI_OUT);
- 
+
 	double* arr = new double[arr_size];
 	for (int i = 0; i < arr_size; i++) {
 		arr[i] = 0.0;
 	}
- 
-	// write checkpoints 
+
+	// write checkpoints
 	for (; ii < 5; ++ii) {
 		arr[ii] = ii * 2;
 		PDI_multi_expose("sync", "ii", &ii, PDI_INOUT, "arr", arr, PDI_INOUT, NULL);
@@ -100,12 +100,12 @@ int main(int argc, char* argv[])
 		arr[ii] = ii * 2;
 		PDI_multi_expose("sync", "ii", &ii, PDI_INOUT, "arr", arr, PDI_INOUT, NULL);
 	}
- 
+
 	// read checkpoint counter
 	PDI_expose("cp_counter", &cp_counter, PDI_IN);
- 
-	const int expected = in_veloc ?  5 : 0;
-	if (cp_counter != expected){
+
+	const int expected = in_veloc ? 5 : 0;
+	if (cp_counter != expected) {
 		fprintf(stderr, "Rank %d veloc_test_with_comm:: counter value  %d does not match expected value %d\n", rank, cp_counter, expected);
 		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
@@ -114,16 +114,15 @@ int main(int argc, char* argv[])
 	int total_cp = 0;
 	MPI_Allreduce(&cp_counter, &total_cp, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 	if (total_cp != 2 * 5) {
-		fprintf(stderr, "Rank %d veloc_test_with_comm:: counter value  %d does not match expected value %d\n", rank, total_cp, 5*2);
+		fprintf(stderr, "Rank %d veloc_test_with_comm:: counter value  %d does not match expected value %d\n", rank, total_cp, 5 * 2);
 		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
 
 	if (rank == 0) printf("veloc_test_managed_comm PASSED\n");
- 
+
 	PDI_finalize();
 	delete[] arr;
 	MPI_Finalize();
- 
+
 	return 0;
 }
- 

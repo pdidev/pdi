@@ -67,7 +67,7 @@ class veloc_plugin: public Plugin
 	int m_cp_counter;
 	int m_partial_counter;
 
-	/// Returns true if rank is in veloc comm and if veloc has been initialized 
+	/// Returns true if rank is in veloc comm and if veloc has been initialized
 	bool veloc_ready() const
 	{
 		if (not_in_veloc_comm) return false;
@@ -164,7 +164,8 @@ public:
 							*static_cast<int*>(w_ref.get()) = m_status;
 						}
 						// if app wants to write the status, therefore plugin reads it
-						else if (Ref_r r_ref = ref) {
+						else if (Ref_r r_ref = ref)
+						{
 							int status_value = *static_cast<const int*>(r_ref.get());
 							if (status_value != 0 && status_value != 1) {
 								throw Value_error{fmt::format("Invalid status value: {} (expected 0 or 1)", status_value)};
