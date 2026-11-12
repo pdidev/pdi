@@ -226,6 +226,7 @@ void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio, const std::
 		if (0 > H5Pset_dxpl_mpio(xfer_lst, m_mpio)) {
 			handle_hdf5_err();
 		}
+		ctx.logger().trace("Using {} MPI-I/O transfers", m_mpio == H5FD_MPIO_COLLECTIVE ? "COLLECTIVE" : "INDEPENDENT");
 	}
 #endif
 	if (m_direction == READ) {

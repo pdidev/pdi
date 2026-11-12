@@ -90,7 +90,20 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 #ifdef H5_HAVE_PARALLEL
 			template_op.m_communicator = to_string(value);
 #else
-			throw Spectree_error {key_tree, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
+			throw Spectree_error(key_tree, "Sequential HDF5 used, specifying a communicator is invalid");
+#endif
+		} else if (key == "mpio") {
+#ifdef H5_HAVE_PARALLEL
+			if (to_string(value) == "INDEPENDENT") {
+				template_op.m_mpio = H5FD_MPIO_INDEPENDENT;
+			} else if (to_string(value) == "COLLECTIVE") {
+				template_op.m_mpio = H5FD_MPIO_COLLECTIVE;
+			} else {
+				throw Spectree_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
+			}
+#else
+		throw Spectree_error{value, "Used HDF5 is not parallel. Invalid mpio: `{}'", to_string(value)};
+		throw Spectree_error(key_tree, "Sequential HDF5 used, specifying mpio is invalid");
 #endif
 		} else if (key == "datasets") {
 			each(value, [&](PC_tree_t dset_name, PC_tree_t dset_type) {
