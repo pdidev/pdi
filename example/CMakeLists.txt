@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Centre National de la Recherche Scientifique (CNRS)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
@@ -140,6 +141,20 @@ set_property(TEST PDI_example_decl_hdf5_P PROPERTY PROCESSORS 3)
 endif("${BUILD_PYTHON}")
 endif("${BUILD_MPI_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}")
 endif("${BUILD_DECL_HDF5_PLUGIN}")
+
+if("${BUILD_VELOC_PLUGIN}")
+add_test(NAME PDI_example_veloc COMMAND
+    ${RUNTEST_DIR}
+    "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/veloc_example.cfg"
+    "/bin/bash" "-c"
+        "\"$0\" ${MPIEXEC_NUMPROC_FLAG} 3 ${MPIEXEC_PREFLAGS} \"$1\" ${MPIEXEC_POSTFLAGS} \"$2\" && \"$0\" ${MPIEXEC_NUMPROC_FLAG} 3 ${MPIEXEC_PREFLAGS} \"$1\" ${MPIEXEC_POSTFLAGS} \"$3\""
+    "${MPIEXEC}" "$<TARGET_FILE:PDI_example_C>"
+    "${CMAKE_CURRENT_SOURCE_DIR}/veloc.yml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/veloc_recovery.yml")
+set_tests_properties(PDI_example_veloc PROPERTIES
+    TIMEOUT 30
+    PROCESSORS 3)
+endif()
 
 if("${BUILD_DECL_NETCDF_PLUGIN}")
 add_test(NAME PDI_example_decl_netcdf_C_serial COMMAND ${RUNTEST_DIR} "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_serial.yml")
