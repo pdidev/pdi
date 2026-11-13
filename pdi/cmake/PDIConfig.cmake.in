@@ -141,6 +141,7 @@ foreach(_PDI_ONE_COMPONENT ${PDI_FIND_COMPONENTS})
 		endif()
 	endif()
 endforeach()
+
 if(DEFINED PDI_FIND_REQUIRED_Fortran)
 	# Report the deprecated component under the name it was requested by
 	set(PDI_Fortran_FOUND "${PDI_f90_FOUND}")
