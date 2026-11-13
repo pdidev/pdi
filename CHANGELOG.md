@@ -7,6 +7,39 @@ and this project adheres to
 
 
 
+## [Unreleased]
+
+### For users
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+
 ## [1.13.0] - 2026-11-13
 
 ### For users
