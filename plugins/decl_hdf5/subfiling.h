@@ -45,6 +45,7 @@ public:
 		EveryNthRank,
 		Total
 	};
+
 private:
 	/// The number of subfiles
 	PDI::Expression m_sf_count = 0L;
@@ -112,7 +113,10 @@ public:
 
 	const std::string& get_criteria_origin() const { return m_sf_ioc_criteria_origin; }
 
-	void set_criteria_origin(const char* env_val) { if (env_val) m_sf_ioc_criteria_origin = env_val;}
+	void set_criteria_origin(const char* env_val)
+	{
+		if (env_val) m_sf_ioc_criteria_origin = env_val;
+	}
 };
 
 } // namespace decl_hdf5
