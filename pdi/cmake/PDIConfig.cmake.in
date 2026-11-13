@@ -41,7 +41,7 @@ foreach(_PDI_ONE_COMPONENT ${PDI_FIND_COMPONENTS})
 	if(NOT "${_PDI_ONE_COMPONENT}" IN_LIST _PDI_AVAILABLE_COMPONENTS)
 		# We do not respect PDI_FIND_QUIETLY because we were called in an invalid way
 		message(FATAL_ERROR "PDI: unknown component: \"${_PDI_ONE_COMPONENT}\"")
-	elseif("x${_PDI_ONE_COMPONENT}" STREQUAL "xFortran" AND NOT "${_PDI_FIND_OPTIONAL_QUIETLY}")
+	elseif("x${_PDI_ONE_COMPONENT}" STREQUAL "xFortran" AND NOT "${PDI_FIND_QUIETLY}")
 		message(WARNING "PDI: \"Fortran\" component is deprecated, please use \"f90\" instead")
 	endif()
 endforeach()
