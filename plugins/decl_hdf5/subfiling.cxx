@@ -54,9 +54,10 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 				m_sf_stripe_size = value;
 			} else if (key == "ioc_selection") {
 				if (PDI::is_map(value)) {
-					if (to_string(PC_get(value, "{0}")) == "EveryNthRank") {
+					string selection = to_string(PC_get(value, "{0}"));
+					if (selection == "EveryNthRank") {
 						m_sf_ioc_selection = IocSelect::EveryNthRank;
-					} else if (to_string(PC_get(value, "{0}")) == "Total") {
+					} else if (selection == "Total") {
 						m_sf_ioc_selection = IocSelect::Total;
 					} else {
 						throw Spectree_error{

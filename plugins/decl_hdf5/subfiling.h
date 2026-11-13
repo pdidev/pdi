@@ -33,16 +33,19 @@
 
 namespace decl_hdf5 {
 
-enum class IocSelect {
-	OnePerNode,
-	EveryNthRank,
-	Total
-};
 
 /** This identifies a selection in an (array) Datatype
  */
 class Subfiling
 {
+public:
+	/// Enumeration of different strategy for selecting I/O Concentrator processes across MPI ranks.
+	enum class IocSelect {
+		OnePerNode,
+		EveryNthRank,
+		Total
+	};
+private:
 	/// The number of subfiles
 	PDI::Expression m_sf_count = 0L;
 
@@ -58,6 +61,8 @@ class Subfiling
 	/// H5FD_SUBFILING_IOC_SELECTION_CRITERIA
 	PDI::Expression m_sf_ioc_criteria = 1L;
 
+	std::string m_sf_ioc_criteria_origin = "";
+
 public:
 	/** The default constructor for an empty selection (everything selected)
 	 */
@@ -69,7 +74,7 @@ public:
 	 * - count: an expressions, or an integer value
 	 * - stripe_size: an expressions, or an integer value
 	 * - policy: an expression representing either CONTINUE or STOP
-	 * - ioc_selection: a string specifing the IOC strategy
+	 * - ioc_selection: a string specifying the IOC strategy
 	 *
 	 * \param tree the tree representing the subfiling.
 	 */
@@ -93,7 +98,7 @@ public:
 	 */
 	const PDI::Expression& policy() const { return m_sf_policy; }
 
-	/** Accesses the ios_selection of subfiling configuration.
+	/** Accesses the ioc_selection of subfiling configuration.
 	 *
 	 * \return The IOC strategy of subfiling
 	 */
@@ -104,6 +109,10 @@ public:
 	 * \return The H5FD_SUBFILING_IOC_SELECTION_CRITERIA of subfiling
 	 */
 	const PDI::Expression& ioc_criteria() const { return m_sf_ioc_criteria; }
+
+	const std::string& get_criteria_origin() const { return m_sf_ioc_criteria_origin; }
+
+	void set_criteria_origin(const char* env_val) { if (env_val) m_sf_ioc_criteria_origin = env_val;}
 };
 
 } // namespace decl_hdf5

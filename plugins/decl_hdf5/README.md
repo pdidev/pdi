@@ -70,8 +70,9 @@ The possible values for the keys are as follow:
     * `stripe_size` (non-negative integer, default: 0): The amount of data (in binary bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MiB = 32*1024*1024) is used.
     * `ioc_selection` : The strategy for selecting I/O Concentrator (IOC) processes across MPI ranks. Possible choices:
       * `OnePerNode` (default): one IOC per node.
-      * {`Total`: `$-exp`}: `$-exp` IOC in total. 
+      * {`Total`: `$-exp`}: `$-exp` IOC in total.
       * {`EveryNthRank`: `$-exp`}: one IOC per every `$-exp` MPI ranks.
+    * Two files on the same communicator can not have different `ioc_selection` strategies. A workaround to achieve this is to use different communicators.
   * Yaml example
     * full configuration:
       ```yaml
