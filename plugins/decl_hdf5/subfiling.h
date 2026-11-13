@@ -33,10 +33,20 @@
 
 namespace decl_hdf5 {
 
+
 /** This identifies a selection in an (array) Datatype
  */
 class Subfiling
 {
+public:
+	/// Enumeration of different strategy for selecting I/O Concentrator processes across MPI ranks.
+	enum class IocSelect {
+		OnePerNode, ///< number of IOC = nomber of node
+		EveryNthRank, ///< number of IOC = (total number of MPI ranks / N)
+		Total ///< number of IOC = Total
+	};
+
+private:
 	/// The number of subfiles
 	PDI::Expression m_sf_count = 0L;
 
@@ -45,6 +55,14 @@ class Subfiling
 
 	/// The policy for subfiling when problem
 	PDI::Expression m_sf_policy = "STOP";
+
+	/// The strategy for selecting I/O Concentrator processes across MPI ranks.
+	IocSelect m_sf_ioc_selection = IocSelect::OnePerNode;
+
+	/// H5FD_SUBFILING_IOC_SELECTION_CRITERIA
+	PDI::Expression m_sf_ioc_criteria = 1L;
+
+	std::string m_sf_ioc_criteria_origin = "";
 
 public:
 	/** The default constructor for an empty selection (everything selected)
@@ -57,6 +75,7 @@ public:
 	 * - count: an expressions, or an integer value
 	 * - stripe_size: an expressions, or an integer value
 	 * - policy: an expression representing either CONTINUE or STOP
+	 * - ioc_selection: a string specifying the IOC strategy
 	 *
 	 * \param tree the tree representing the subfiling.
 	 */
@@ -74,12 +93,30 @@ public:
 	 */
 	const PDI::Expression& stripe_size() const { return m_sf_stripe_size; }
 
-	/** Accesses the policy of subfiling configuration if problem
-	 * default.
+	/** Accesses the policy of subfiling configuration if problem.
 	 *
-	 * \return The the policy of subfiling configuration if problem
+	 * \return The policy of subfiling configuration if problem
 	 */
 	const PDI::Expression& policy() const { return m_sf_policy; }
+
+	/** Accesses the ioc_selection of subfiling configuration.
+	 *
+	 * \return The IOC strategy of subfiling
+	 */
+	IocSelect ioc_selection() const { return m_sf_ioc_selection; }
+
+	/** Accesses the H5FD_SUBFILING_IOC_SELECTION_CRITERIA of subfiling configuration.
+	 *
+	 * \return The H5FD_SUBFILING_IOC_SELECTION_CRITERIA of subfiling
+	 */
+	const PDI::Expression& ioc_criteria() const { return m_sf_ioc_criteria; }
+
+	const std::string& get_criteria_origin() const { return m_sf_ioc_criteria_origin; }
+
+	void set_criteria_origin(const char* env_val)
+	{
+		if (env_val) m_sf_ioc_criteria_origin = env_val;
+	}
 };
 
 } // namespace decl_hdf5

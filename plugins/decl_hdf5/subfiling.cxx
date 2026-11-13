@@ -52,6 +52,35 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 				m_sf_count = value;
 			} else if (key == "stripe_size") {
 				m_sf_stripe_size = value;
+			} else if (key == "ioc_selection") {
+				if (PDI::is_map(value)) {
+					if (PDI::len(value) != 1) throw Spectree_error{value, "ioc_selection can only hold one value"};
+					string selection = to_string(PC_get(value, "{0}"));
+					if (selection == "EveryNthRank") {
+						m_sf_ioc_selection = IocSelect::EveryNthRank;
+					} else if (selection == "Total") {
+						m_sf_ioc_selection = IocSelect::Total;
+					} else {
+						throw Spectree_error{
+							value,
+							"Invalid map key in 'subfiling.ioc_selection'. Expecting either 'EveryNthRank' or 'Total'; getting {}",
+							to_string(PC_get(value, "{0}"))
+						};
+					}
+					m_sf_ioc_criteria = PC_get(value, "<0>");
+				} else if (PDI::is_scalar(value)) {
+					if (to_string(value) == "OnePerNode") {
+						m_sf_ioc_selection = IocSelect::OnePerNode;
+					} else {
+						throw Spectree_error{
+							value,
+							"Invalid scalar in 'subfiling.ioc_selection'. Expecting 'OnePerNode'; getting {}",
+							to_string(value)
+						};
+					}
+				} else {
+					throw Spectree_error{value, "Invalid configuration in 'subfiling.ioc_selection'. Expecting either map or scalar."};
+				}
 			} else {
 				throw Spectree_error{key_tree, "Invalid configuration key in subfiling: `{}'", key};
 			}
