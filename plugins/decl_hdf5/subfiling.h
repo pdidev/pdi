@@ -41,9 +41,9 @@ class Subfiling
 public:
 	/// Enumeration of different strategy for selecting I/O Concentrator processes across MPI ranks.
 	enum class IocSelect {
-		OnePerNode,
-		EveryNthRank,
-		Total
+		OnePerNode, ///< number of IOC = nomber of node
+		EveryNthRank, ///< number of IOC = (total number of MPI ranks / N)
+		Total ///< number of IOC = Total
 	};
 
 private:
@@ -103,7 +103,7 @@ public:
 	 *
 	 * \return The IOC strategy of subfiling
 	 */
-	const IocSelect& ioc_selection() const { return m_sf_ioc_selection; }
+	IocSelect ioc_selection() const { return m_sf_ioc_selection; }
 
 	/** Accesses the H5FD_SUBFILING_IOC_SELECTION_CRITERIA of subfiling configuration.
 	 *

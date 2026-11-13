@@ -73,6 +73,7 @@ The possible values for the keys are as follow:
       * {`Total`: `$-exp`}: `$-exp` IOC in total.
       * {`EveryNthRank`: `$-exp`}: one IOC per every `$-exp` MPI ranks.
     * Two files on the same communicator can not have different `ioc_selection` strategies. A workaround to achieve this is to use different communicators.
+    * For the case of `ioc_selection=OnePerNode` or `EveryNthRank`, an environement variable is used to specify the selection criteria `H5FD_SUBFILING_IOC_SELECTION_CRITERIA`. This variable will take the value defined by `$-exp` and will override its original value.
   * Yaml example
     * full configuration:
       ```yaml

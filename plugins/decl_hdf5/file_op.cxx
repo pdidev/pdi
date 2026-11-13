@@ -349,7 +349,6 @@ void File_op::execute(Context& ctx)
 					}
 				}
 
-				const Subfiling::IocSelect& ioc_selection = subfiling().ioc_selection();
 				auto ioc_criteria = subfiling().ioc_criteria().to_long(ctx);
 				if (ioc_criteria <= 0) {
 					ctx.logger().warn(
@@ -366,7 +365,7 @@ void File_op::execute(Context& ctx)
 					ctx.logger().warn("IOC_selection criteria set to stripe_count({}).", subfiling_stripe_count);
 					ioc_criteria = subfiling_stripe_count;
 				}
-				switch (ioc_selection) {
+				switch (subfiling().ioc_selection()) {
 				case Subfiling::IocSelect::OnePerNode:
 					subf_config.shared_cfg.ioc_selection = SELECT_IOC_ONE_PER_NODE;
 					ctx.logger().debug("HDF5 subfiling ioc_selection set to 'OnePerNode'.");
