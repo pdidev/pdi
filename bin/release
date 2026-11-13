@@ -31,6 +31,11 @@
 set -e -o pipefail
 export LC_ALL=C
 
+# insert an empty [Unreleased] section above the first section of CHANGELOG.md
+add_unreleased_section() {
+	sed -E '1,/^(## .*)/s/^(## .*)/## [Unreleased]\n\n### For users\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n### For plugin developers\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n\n\1/' -i CHANGELOG.md
+}
+
 cd "$(mktemp --tmpdir -d PDI.release.XXXXXXXXXX)"
 printf "cloning... "
 git clone -q git@github.com:pdidev/pdi.git .
@@ -90,20 +95,29 @@ sed "s/## \[Unreleased\].*/## [$MAJOR.$MINOR.$PATCH] - $(date +%Y-%m-%d)/;/^####
 sed '/^### /{N;N;/^.*\n\s*\n\s*$/d}' -i CHANGELOG.md
 git commit -qm "PDI Release $MAJOR.$MINOR.$PATCH" VERSION pdi/docs/Source_installation.md mock_pdi/PDIConfigVersion.cmake CHANGELOG.md
 git tag -m "PDI release $MAJOR.$MINOR.$PATCH" -s "$MAJOR.$MINOR.$PATCH"
-sed -E '1,/^(## .*)/s/^(## .*)/## [Unreleased]\n\n### For users\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n### For plugin developers\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n\n\1/' -i CHANGELOG.md
-git commit -qm "Prepare CHANGELOG for next patch release" CHANGELOG.md
+
+# merge the release itself, as tagged, back into main
 git switch -q main
 git merge --no-commit -q --no-ff "v$MAJOR.$MINOR" &> /dev/null || true
 
 echo "$MAJOR.$((MINOR+1)).0-alpha" > VERSION
-if (( PATCH != 0 ))
-then # keep the [Unreleased] entries of main and add the section of this release below them
+if (( PATCH == 0 ))
+then # main is where this release started: open its [Unreleased] section for the next minor
+	git show "$MAJOR.$MINOR.$PATCH:CHANGELOG.md" > CHANGELOG.md
+	add_unreleased_section
+else # keep the [Unreleased] entries of main and add the section of this release below them
 	git show "$MAJOR.$MINOR.$PATCH:CHANGELOG.md" \
 	| sed -n "/^## \[$MAJOR\.$MINOR\.$PATCH\]/,/^## /{/^## \[$MAJOR\.$MINOR\.$PATCH\]/p;/^## /!p}" \
 	| awk '!done && /^## \[[0-9]/ { while ((getline l < "/dev/stdin") > 0) { print l }; done = 1 } { print $0 }' <(git show HEAD:CHANGELOG.md) > CHANGELOG.md
 fi
 git add VERSION CHANGELOG.md
 git commit -q -m "Merge branch 'v${MAJOR}.${MINOR}' back into main"
+
+# only then open the [Unreleased] section of the release branch, for its next patch
+git switch -q "v$MAJOR.$MINOR"
+add_unreleased_section
+git commit -qm "Prepare CHANGELOG for next patch release" CHANGELOG.md
+git switch -q main
 
 read -p "Do you want to push the release that has been prepared in ${PDIDIR} ? [yN] " VALID
 while [[ ! "$VALID" =~ ^y$|^Y$|^n$|^N$|^$ ]]
