@@ -126,7 +126,11 @@ endif()
 foreach(_PDI_ONE_COMPONENT ${PDI_FIND_COMPONENTS})
 	if("@BUILD_PYTHON@" AND "x${_PDI_ONE_COMPONENT}" STREQUAL "xpython")
 		# python is available, nothing to import, pdirun looks for it
-	elseif(NOT TARGET "PDI::PDI_${_PDI_ONE_COMPONENT}")
+		set(PDI_python_FOUND TRUE)
+	elseif(TARGET "PDI::PDI_${_PDI_ONE_COMPONENT}")
+		set("PDI_${_PDI_ONE_COMPONENT}_FOUND" TRUE)
+	else()
+		set("PDI_${_PDI_ONE_COMPONENT}_FOUND" FALSE)
 		if("${PDI_FIND_REQUIRED_${_PDI_ONE_COMPONENT}}")
 			set(PDI_FOUND "FALSE")
 			if(NOT "${PDI_FIND_QUIETLY}")
@@ -137,6 +141,10 @@ foreach(_PDI_ONE_COMPONENT ${PDI_FIND_COMPONENTS})
 		endif()
 	endif()
 endforeach()
+if(DEFINED PDI_FIND_REQUIRED_Fortran)
+	# Report the deprecated component under the name it was requested by
+	set(PDI_Fortran_FOUND "${PDI_f90_FOUND}")
+endif()
 
 
 # Add aliases for (deprecated) backward compatibility

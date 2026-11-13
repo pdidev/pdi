@@ -126,3 +126,29 @@ if ("${BUILD_PYTHON}")
     assert("${PDI_FOUND}")
     assert(TARGET PDI::PDI_C)
 endif()
+
+
+
+message(STATUS "Testing the per-component found variables")
+
+# Each optional component is reported found exactly when the distribution was built with it
+function(assert_component_found COMPONENT BUILT)
+    if("${BUILT}")
+        assert("${PDI_${COMPONENT}_FOUND}")
+    else()
+        assert(DEFINED "PDI_${COMPONENT}_FOUND")
+        assert(NOT "${PDI_${COMPONENT}_FOUND}")
+    endif()
+endfunction()
+
+message("++ find_package with optional components")
+find_package(PDI QUIET COMPONENTS C OPTIONAL_COMPONENTS f90 pysupport python)
+assert("${PDI_FOUND}")
+assert("${PDI_C_FOUND}")
+assert_component_found(f90       "${BUILD_FORTRAN}")
+assert_component_found(pysupport "${BUILD_PYTHON}")
+assert_component_found(python    "${BUILD_PYTHON}")
+
+message("++ find_package with the deprecated Fortran component")
+find_package(PDI QUIET OPTIONAL_COMPONENTS Fortran)
+assert_component_found(Fortran "${BUILD_FORTRAN}")

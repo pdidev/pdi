@@ -73,6 +73,9 @@ and this project adheres to
 * A parallel NetCDF found through its own CMake configuration is no longer taken
   for a sequential one when no prefix path points at its headers, as per
   [#771](https://github.com/pdidev/pdi/issues/771).
+* `find_package(PDI)` now sets `PDI_<component>_FOUND` for each component
+  requested, so that a project can tell which optional components it got,
+  fixing [#948](https://github.com/pdidev/pdi/issues/948).
 
 #### Security
 * PDI builds again against paraconf 1.2.0 with `-Werror=format-security`, and
