@@ -36,6 +36,8 @@ on:
   workflow_dispatch:
 jobs:
   pages:
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout branch
