@@ -43,21 +43,29 @@ class PDI_EXPORT Plugin
 {
 	Context& m_context;
 
+	Logger& m_logger;
+
 public:
 	Plugin(const Plugin&) = delete;
 
 	Plugin(Plugin&&) = delete;
 
 	/** Initialization of the plugin
+	 * \param logger the logger for this plugin instance
 	 * \param ctx the PDI context for this plugin instance
 	 */
-	Plugin(Context& ctx);
+	Plugin(Logger& logger, Context& ctx);
 
 	virtual ~Plugin() noexcept(false);
 
+protected:
 	/** Provides access to the PDI context for this plugin instance
 	 */
 	Context& context();
+
+	/** Provides access to the logger for this plugin instance
+	 */
+	Logger& logger();
 
 }; // class Plugin
 
@@ -119,8 +127,8 @@ unsigned long PDI_EXPORT plugin_api_version(unsigned long expected_version = 0);
 
 /** Declares a plugin to be used with PDI and its dependencies
  *
- * This should be called after having implemented a class that inherits
- * PDI::Plugin with a constructor taking 2 parameters
+ * This should be called after having implemented a class that inherits PDI::Plugin with a constructor taking 3 parameters
+ * - PDI::Logger& logger: the logger for this plugin (forward it to PDI::Plugin)
  * - PDI::Context& ctx: the context for this plugin (forward it to PDI::Plugin)
  * - PC_tree_t conf: the configuration for this plugin
  *
@@ -136,11 +144,12 @@ unsigned long PDI_EXPORT plugin_api_version(unsigned long expected_version = 0);
  */
 #define PDI_PLUGIN(name)                                                                                                                             \
 	PDI_PLUGIN_IGNORE_WARNINGS_BEGIN extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(                              \
+		::PDI::Logger& logger,                                                                                                                       \
 		::PDI::Context& ctx,                                                                                                                         \
 		PC_tree_t conf                                                                                                                               \
 	)                                                                                                                                                \
 	{                                                                                                                                                \
-		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf}};                                                                \
+		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{logger, ctx, conf}};                                                        \
 		::PDI::plugin_api_version(PDI_PLUGIN_API_VERSION);                                                                                           \
 		return plugin;                                                                                                                               \
 	}                                                                                                                                                \

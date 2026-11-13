@@ -108,11 +108,6 @@ public:
 	 */
 	virtual void event(const char* name) = 0;
 
-	/** Logger getter
-	 * \return logger
-	 */
-	virtual Logger& logger() = 0;
-
 	/** Creates a new datatype template from a paraconf-style config
 	 * \param[in] node the configuration to read
 	 *
