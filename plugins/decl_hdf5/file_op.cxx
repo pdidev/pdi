@@ -371,10 +371,8 @@ void File_op::execute(Context& ctx)
 				switch (subfiling().ioc_selection()) {
 				case Subfiling::IocSelect::OnePerNode:
 					subf_config.shared_cfg.ioc_selection = SELECT_IOC_ONE_PER_NODE;
-					if (!setenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA", "1", 1)) {
-						ctx.logger().debug("Successfully set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA to {}!", ioc_criteria);
-					} else {
-						ctx.logger().warn("Failed to set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
+					if (unsetenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA") != 0) {
+						ctx.logger().warn("Failed to unset environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
 					}
 					ctx.logger().debug("HDF5 subfiling ioc_selection set to 'OnePerNode'.");
 					break;
