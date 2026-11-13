@@ -365,22 +365,26 @@ void File_op::execute(Context& ctx)
 					ctx.logger().warn("IOC_selection criteria set to stripe_count({}).", subfiling_stripe_count);
 					ioc_criteria = subfiling_stripe_count;
 				}
+				if (const char* env_criteria_str = std::getenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA")) {
+					subfiling().set_criteria_origin(env_criteria_str);
+				}
 				switch (subfiling().ioc_selection()) {
 				case Subfiling::IocSelect::OnePerNode:
 					subf_config.shared_cfg.ioc_selection = SELECT_IOC_ONE_PER_NODE;
+					if (!setenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA", "1", 1)) {
+						ctx.logger().debug("Successfully set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA to {}!", ioc_criteria);
+					} else {
+						ctx.logger().warn("Failed to set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
+					}
 					ctx.logger().debug("HDF5 subfiling ioc_selection set to 'OnePerNode'.");
 					break;
 				case Subfiling::IocSelect::Total:
 					subf_config.shared_cfg.ioc_selection = SELECT_IOC_TOTAL;
-					if (const char* env_criteria_str = std::getenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA")) {
-						subfiling().set_criteria_origin(env_criteria_str);
-					}
 					if (!setenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA", std::to_string(ioc_criteria).c_str(), 1)) {
 						ctx.logger().debug("Successfully set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA to {}!", ioc_criteria);
 					} else {
 						ctx.logger().warn("Failed to set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
 					}
-
 					ctx.logger().debug(
 						"HDF5 subfiling ioc_selection set to 'Total'. "
 						"Number of IOC = {}",
@@ -389,9 +393,6 @@ void File_op::execute(Context& ctx)
 					break;
 				case Subfiling::IocSelect::EveryNthRank:
 					subf_config.shared_cfg.ioc_selection = SELECT_IOC_EVERY_NTH_RANK;
-					if (const char* env_criteria_str = std::getenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA")) {
-						subfiling().set_criteria_origin(env_criteria_str);
-					}
 					if (!setenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA", std::to_string(ioc_criteria).c_str(), 1)) {
 						ctx.logger().debug("Successfully set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA to {}!", ioc_criteria);
 					} else {
