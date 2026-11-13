@@ -14,6 +14,37 @@ and this project adheres to
 #### Added
 
 #### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+
+## [1.13.0] - 2026-11-13
+
+### For users
+
+#### Changed
 * Improved error message in type check in Decl'NetCDF when reading scalar variable from file
   as requested [#731](https://github.com/pdidev/pdi/issues/731)
 * Split the example of HDF5 between serial and parallel versions, 
@@ -174,8 +205,6 @@ and this project adheres to
 * A test executable built from several files that include `pdi/testing.h` now
   links, instead of failing on a duplicate definition of the `PDI::PdiTest`
   constructor, fixing [#926](https://github.com/pdidev/pdi/issues/926)
-
-#### Security
 
 
 
