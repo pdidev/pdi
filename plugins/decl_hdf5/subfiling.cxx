@@ -54,6 +54,7 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 				m_sf_stripe_size = value;
 			} else if (key == "ioc_selection") {
 				if (PDI::is_map(value)) {
+					if (PDI::len(value) != 1) throw Spectree_error{value, "ioc_selection can only hold one value"};
 					string selection = to_string(PC_get(value, "{0}"));
 					if (selection == "EveryNthRank") {
 						m_sf_ioc_selection = IocSelect::EveryNthRank;
