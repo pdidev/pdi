@@ -23,9 +23,9 @@
  ******************************************************************************/
 
 #include <pdi/context.h>
-#include <pdi/logger.h>
 #include <pdi/error.h>
 #include <pdi/expression.h>
+#include <pdi/logger.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
