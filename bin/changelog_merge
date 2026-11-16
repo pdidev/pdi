@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+##############################################################################
+# Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# * Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# * Neither the names of CEA, nor the names of the contributors may be used to
+#   endorse or promote products derived from this software without specific
+#   prior written  permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+##############################################################################
+
+"""Merge driver for CHANGELOG.md, run by git as `changelog_merge %O %A %B %L %S %X %Y` (base, ours,
+theirs, the size of the conflict markers, and the labels of base, ours and theirs).
+
+The entries theirs added to a subsection of [Unreleased] are appended at the end of the same
+subsection of ours.
+Whenever theirs changed anything else since base, or anything fails, this falls back to the usual
+line-based `git merge-file`.
+"""
+
+import os
+import re
+import sys
+
+RELEASE = re.compile(r"## \[[0-9]")
+
+
+class Fallback(Exception):
+    pass
+
+
+def split(lines):
+    """list(str) -> header:list(str), unreleased:map(key=>list(str)), released:list(str)"""
+    # index of the 1st released section
+    end = next((i for i, line in enumerate(lines) if RELEASE.match(line)), len(lines))
+    head, subsections, key, h3 = [], {}, None, ""
+    for line in lines[:end]:  # handling header + [Unreleased]
+        if line.startswith("### ") or line.startswith("#### "):
+            if line.startswith("### "):
+                h3 = line
+            key = (h3, "" if line.startswith("### ") else line)
+            if key in subsections:
+                raise Fallback()
+            subsections[key] = []
+        (head if key is None else subsections[key]).append(line)
+    return head, subsections, lines[end:]
+
+
+def items(lines):
+    """list(str) -> list(is_entry:bool, entry:str)"""
+    found, in_entry = [], False
+    for line in lines:
+        if in_entry and line.strip() and not line.startswith(("#", "* ")):
+            found[-1] = (True, found[-1][1] + line)
+        else:
+            in_entry = line.startswith("* ")
+            found.append((in_entry, line))
+    return found
+
+
+def read(path):
+    """path -> lines:list(str)"""
+    with open(path, encoding="utf-8", newline="") as file:
+        return file.readlines()
+
+
+base_path = sys.argv[1]
+ours_path = sys.argv[2]
+theirs_path = sys.argv[3]
+marker_size = sys.argv[4] if len(sys.argv) > 4 else "7"
+labels = sys.argv[5:8] if len(sys.argv) > 7 else ["base", "ours", "theirs"]
+try:
+    base, ours, theirs = read(base_path), read(ours_path), read(theirs_path)
+    base_head, base_subs, base_released = split(base)
+    ours_head, ours_subs, ours_released = split(ours)
+    theirs_head, theirs_subs, theirs_released = split(theirs)
+    if (theirs_head != base_head or theirs_released != base_released
+            or theirs_subs.keys() != base_subs.keys()):
+        raise Fallback()
+    for key, theirs_lines in theirs_subs.items():
+        if key not in ours_subs:
+            raise Fallback()
+        base_items = items(base_subs[key])
+        theirs_items = items(theirs_lines)
+        ours_items = items(ours_subs[key])
+        added = [item for item in theirs_items if item[0] and item not in base_items]
+        if [item for item in theirs_items if item not in added] != base_items:
+            raise Fallback()
+        end = max((i + 1 for i, (is_entry, _) in enumerate(ours_items) if is_entry), default=1)
+        new_items = (ours_items[:end]
+                     + [item for item in added if item not in ours_items]
+                     + ours_items[end:])
+        ours_subs[key][:] = [text for _, text in new_items]
+    result = ours_head + [line for lines in ours_subs.values() for line in lines] + ours_released
+except Exception:
+    os.execvp("git",
+              ["git", "merge-file", "--marker-size", marker_size, "-L", labels[1], "-L", labels[0],
+               "-L", labels[2], ours_path, base_path, theirs_path])
+with open(ours_path, "w", encoding="utf-8", newline="") as file:
+    file.writelines(result)

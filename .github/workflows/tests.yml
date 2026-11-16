@@ -41,6 +41,13 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - run: exec ./bin/test_indent
+  changelog:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with: { fetch-depth: 2 } # HEAD is the merge of the pull request into its base, HEAD^1 is that base
+    - run: exec ./bin/check_changelog HEAD^1
   first: # do a first run so as not to needlessly use all resources for all to fail
     needs: indent
     runs-on: ubuntu-24.04
