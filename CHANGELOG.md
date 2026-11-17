@@ -21,7 +21,7 @@ and this project adheres to
 
 #### Fixed
 * The source installation guide lists Doxygen, says that the distribution provides
-  pybind11, ans states that the `Devel` profile selects the `Debug` build type,
+  pybind11, and states that the `Devel` profile selects the `Debug` build type,
   as described in [#774](https://github.com/pdidev/pdi/issues/774).
 * The error Python's `pdi.version()` raises for an incompatible version shows
   the expected and provided versions, instead of `%lu` placeholders, fixing
