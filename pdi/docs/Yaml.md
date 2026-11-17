@@ -118,13 +118,16 @@ plugins:
        ...
 ```
 
+\anchor parse_path
+\anchor parse_path-C
 C source code:
 ```C
 PDI_init(PC_parse_path("example.yaml"));
 ```
 
+\anchor parse_path-Fortran
 Fortran source code:
-```Fortran
+```f90
 type(PC_tree_t), target :: yaml_tree
 
 call PC_parse_path("example.yaml", yaml_tree)
@@ -149,13 +152,16 @@ pdi_subtree:
        ...
 ```
 
+\anchor parse_subtree
+\anchor parse_subtree-C
 C source code:
 ```C
 PDI_init(PC_get(PC_parse_path("example.yaml"), ".pdi_subtree"));
 ```
 
+\anchor parse_subtree-Fortran
 Fortran source code:
-```Fortran
+```f90
 type(PC_tree_t),target :: root
 
 call PC_parse_path("example.yaml", root)

@@ -16,9 +16,12 @@ Yes, that is whole specification tree.
 Trace plugin prints everything, so there is no need to specify what we want it
 to do.
 
+\anchor hello_event
+\anchor hello_event-C
 C source code:
 \include First_steps/hello_event.c
 
+\anchor hello_event-Fortran
 Fortran source code:
 \include First_steps/hello_event.f90
 
@@ -43,9 +46,12 @@ Firstly we have to create a specification tree named `hello_data.yml` with `data
 
 We have declared trace plugin and one descriptor named `world` of integer type.
 
+\anchor hello_data
+\anchor hello_data-C
 C source code:
 \include First_steps/hello_data.c
 
+\anchor hello_data-Fortran
 Fortran source code:
 \include First_steps/hello_data.f90
 
@@ -67,17 +73,24 @@ As we can see from the logs above, when we called `PDI_share` plugin gained acce
 
 The same exact result we can achieve with `PDI_expose` which is just `PDI_share` call and right after `PDI_reclaim` is called.
 
+\anchor hello_expose
+\parblock
+\anchor hello_expose-C
 C source code:
 \snippet First_steps/hello_expose.c share_reclaim
 
 is the same as:
 \snippet First_steps/hello_expose.c expose
+\endparblock
 
+\parblock
+\anchor hello_expose-Fortran
 Fortran source code:
 \snippet First_steps/hello_expose.f90 share_reclaim
 
 is the same as:
 \snippet First_steps/hello_expose.f90 expose
+\endparblock
 
 
 
@@ -86,9 +99,12 @@ is the same as:
 Now we will try to access a descriptor we share with %PDI. In this case we won't need any plugin. We want to define int and a string in our `hello_access.yml`:
 \include First_steps/hello_access.yml
 
+\anchor hello_access
+\anchor hello_access-C
 C source code:
 \include First_steps/hello_access.c
 
+\anchor hello_access-Fortran
 Fortran source code:
 \include First_steps/hello_access.f90
 
@@ -114,8 +130,14 @@ In some cases we would want to expose many descriptors at once. For this we have
 
 We have defined 3 descriptors and trace plugin.
 
+\anchor hello_multi_expose
+\anchor hello_multi_expose-C
 C source code:
 \include First_steps/hello_multi_expose.c
+
+\anchor hello_multi_expose-Fortran
+Fortran source code (it has to use a transaction):
+\include First_steps/hello_multi_expose.f90
 
 First argument of the `PDI_multi_expose` is the event name we want to call when all the descriptors are shared. After this we pass in loop:
 
@@ -123,9 +145,6 @@ First argument of the `PDI_multi_expose` is the event name we want to call when 
 - pointer to the data
 - direction access
 As the last argument we have to pass `NULL`.
-
-Fortran source code (have to use transaction):
-\include First_steps/hello_multi_expose.f90
 
 The output of the execution:
 

@@ -1,24 +1,24 @@
 # JSON plugin {#JSON_plugin}
 
-**WARNING** This documentation is a work in progress and does not 
+**WARNING** This documentation is a work in progress and does not
 reflect the full potential of the JSON plugin.
 
-The JSON plugin enables users to export data in valid JSON format and allows for custom writing formats (\ref json_custom_format).
+The JSON plugin exports data in valid JSON, which can then be turned into custom formats (\ref json_custom_format).
 
-This plugin allows writing multiple variables in the same file as soon as they are available.
+It can write several variables to the same file, each as soon as it is available.
 
-It supports not only basic data types such as scalar, array, record, tuple, and pointer, but also complex and nested combinations of these types. This includes multi-level arrays, multi-level records, and any mixture of the supported basic types at arbitrary levels of nesting. However, not all combinations are fully tested.
+It supports not only the basic datatypes (scalars, arrays, records, tuples and pointers), but also their nested combinations: multi-level arrays, multi-level records, and any mixture of the supported types at any level of nesting. Not all combinations are fully tested, however.
 
-It ensures a JSON valid format at all times, even if the simulation crashes and PDI is not finalized, due to its incremental writing. **Warning:** this may result in increased disk bandwidth and may not be ideal for a performance-sensitive context. 
+Thanks to its incremental writing, the file is valid JSON at all times, even if the simulation crashes before PDI is finalized. **Warning:** this increases the disk bandwidth used, and may not suit a performance-sensitive context.
 <!-- You might then want to consider using the `xxxxx` option to use the open file once behavior, instead of rewriting at each call. This would cause invalid JSON if simulation crashes or PDI's finalization is not called. But then you are using JSON anyways ... -->
 
 Conditionnal writing is supported.
 
-The write to file is only triggered when a variable is shared to PDI with read permission given.
+A variable is only written when it is shared with PDI with read access.
 
-Note that is written to this file the variable whichever variables listed in the "write" section when PDI is granted read permission.
+Each variable listed in the `write` section is written to the file whenever PDI is granted read access to it.
 
-The JSON plugin doesn't yet support the function of waiting for multiple variables to be readable before writing them.
+The JSON plugin cannot yet wait for several variables to be readable before writing them together.
 
 ## Configuration grammar {#json_configuration_grammar}
 
@@ -52,7 +52,7 @@ plugins:
 Note : By default, if the key "when" is not specified, a true condition is set so that the variable is written every time PDI is granted read permission.
 Examples of those two syntax are given in `example/json.yml`.
 
-## Install and test the JSON plugin ! {#json_test_plugin}
+## Installing and testing the JSON plugin {#json_test_plugin}
 The JSON plugin relies on the [nlohmann/json](https://github.com/nlohmann/json) library to output data to JSON format.
 The json library is included in the PDI repo as a submodule. To get the source code of this external library, one needs to do, from the root of PDI:
 ```bash
@@ -61,9 +61,9 @@ git submodule update
 ```
 Next, users can activate the json_plugin by adding `BUILD_JSON_PLUGIN=ON` option to the PDI configuration commande.
 
-Once the plugin installed, the easiest way to test the plugin is referring to the example section, which provides a full somewhat realistic C simulation code, where PDI is enabled and the JSON plugin is used. This one can be found in `example`.
+Once the plugin is installed, the easiest way to test it is the example of `example/`, a full, somewhat realistic C simulation code that uses PDI with the JSON plugin.
 
-To use it, first compile using CMake with `BUILD_TESTING` set to `ON`, then execute : 
+To use it, first build PDI with CMake, with `BUILD_TESTING` set to `ON`, then run:
 ```bash
 build/PDI_EXAMPLE/PDI_example_C example/json.yml
 ```
@@ -72,18 +72,19 @@ build/PDI_EXAMPLE/PDI_example_C example/json.yml
 
 ## Full configuration file example {#json_config_example}
 
- Please refer to `example/json.yml`
-## On going work / Limitations {#json_on_going_work}
+See `example/json.yml`.
 
-- Adding support for reading variables. 
-    Currently, the JSON plugin doesn't support reading variables, only writing them. To cover more use cases, the JSON plugin should be able to read variables as well as write them.
-- The ability to create an on-the-go structures for several variables to be produced in a single JSON object
+## Ongoing work and limitations {#json_on_going_work}
 
-## The JSON plugin for custom formating {#json_custom_format}
+- Reading variables:
+  the JSON plugin can only write variables, not read them yet.
+- Writing several variables in a single JSON object, built on the fly.
 
-For the sake of the example, let's imagine the following code, creating which performs a certain heat transfer simulation.
+## The JSON plugin for custom formatting {#json_custom_format}
 
-### The PDI exposes
+For the sake of the example, let's imagine the following code, which runs a heat transfer simulation.
+
+### The PDI calls
 
 <!-- \image html json_simulation_code_light.png width=800px -->
 
@@ -177,13 +178,13 @@ Mesh configuration was of {{mesh_config.dimensions}} dimensions and {{mesh_confi
 {{/temperature_datal}}
 ```
 
-Finaly, let's print it ! We execute the json to mustache converter ...
+Finally, let's print it! We run the JSON to mustache converter...
 
 ```bash
 vendor/mustach/mustach data.json format.mstch
 ```
 
-... so we can get the following result !
+... and get the following result!
 
 <!-- \image html json_mustache_output_light.png width=800px -->
 

@@ -1,10 +1,10 @@
 # Pycall plugin {#pycall_plugin}
 
-The Pycall plugin allows calling python scripts from yaml file, that can work either if wanted data was shared or program calls specific event.
+The Pycall plugin calls Python code written in the YAML file, when some data is shared or when the program emits some event.
 
 ## Configuration {#pycall_configuration}
 
-Simple plugin build:
+The structure of its configuration:
 ```yaml
 plugins:
   pycall:           // name of plugin
