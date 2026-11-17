@@ -102,7 +102,6 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 				throw Spectree_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
 			}
 #else
-		throw Spectree_error{value, "Used HDF5 is not parallel. Invalid mpio: `{}'", to_string(value)};
 		throw Spectree_error(key_tree, "Sequential HDF5 used, specifying mpio is invalid");
 #endif
 		} else if (key == "datasets") {
