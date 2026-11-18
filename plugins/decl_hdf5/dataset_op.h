@@ -121,22 +121,40 @@ public:
 	 * \param dir the operation direction
 	 * \param name the value name
 	 * \param default_when the default "when" clause as read from the file level (optional)
+	 * \param file_mpio the default mpio mode
 	 */
-	Dataset_op(Direction dir, std::string name, PDI::Expression default_when, Collision_policy file_collision_policy = Collision_policy::WRITE_INTO);
+	Dataset_op(
+		Direction dir,
+		std::string name,
+		PDI::Expression default_when,
+		Collision_policy file_collision_policy = Collision_policy::WRITE_INTO,
+		H5FD_mpio_xfer_t file_mpio = H5FD_MPIO_COLLECTIVE
+	);
+	// Dataset_op(Direction dir, std::string name, PDI::Expression default_when, Collision_policy file_collision_policy = Collision_policy::WRITE_INTO);
 	/** Builds a Dataset_op from its yaml config
 	 *
 	 * \param dir the operation direction
 	 * \param name the value name
 	 * \param default_when the default "when" clause as read from the file level (optional)
 	 * \param tree the configuration tree
+	 * \param file_mpio the default mpio mode
 	 */
 	Dataset_op(
 		Direction dir,
 		std::string name,
 		PDI::Expression default_when,
 		PC_tree_t tree,
-		Collision_policy collision_policy = Collision_policy::WRITE_INTO
+		Collision_policy collision_policy = Collision_policy::WRITE_INTO,
+		H5FD_mpio_xfer_t file_mpio = H5FD_MPIO_COLLECTIVE
 	);
+
+	// Dataset_op(
+	// 	Direction dir,
+	// 	std::string name,
+	// 	PDI::Expression default_when,
+	// 	PC_tree_t tree,
+	// 	Collision_policy collision_policy = Collision_policy::WRITE_INTO
+	// );
 
 	/** Accesses the direction of the transfer (read or write).
 	 *
