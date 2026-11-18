@@ -239,10 +239,6 @@ void create_mesh_and_ghost_type(
 
 	for (int gg = 0; gg < dsize[0]; gg++) {
 		for (int hh = 0; hh < dsize[1]; hh++) {
-			// connectivity[gg][4*hh] = gg + (dsize[0]+1) * hh;
-			// connectivity[gg][4*hh+1] = gg + (dsize[0]+1) * (hh+1);
-			// connectivity[gg][4*hh+2] = (gg+1) + (dsize[0]+1) * (hh+1);
-			// connectivity[gg][4*hh+3] = (gg+1) + (dsize[0]+1) * hh;
 			connectivity[gg][4 * hh] = hh + (dsize[1] + 1) * gg;
 			connectivity[gg][4 * hh + 1] = hh + (dsize[1] + 1) * (gg + 1);
 			connectivity[gg][4 * hh + 2] = (hh + 1) + (dsize[1] + 1) * (gg + 1);
@@ -251,28 +247,12 @@ void create_mesh_and_ghost_type(
 			if (gg == 0 && hh == 0) {
 				for (int ii = 0; ii < 4; ii++) {
 					uint32_t tmp_conn = connectivity[gg][4 * hh + ii];
-					//          printf("SUCCESS connectivity=%u \n", tmp_conn);
-					//          printf("SUCCESS coords_x=%lf, coordx_y=%lf \n", ptr_x[tmp_conn], ptr_y[tmp_conn]);
 				}
 			}
 		}
 	}
 
-	__int32_t* ptr = &connectivity[0][0];
-	/*
-  printf("===first element ===");
-  for(int ii=0; ii< 8; ii++){
-    printf("SUCCESS connectivity=%u \n", ptr[ii]);
-    printf("SUCCESS coords_x=%lf, coordx_y=%lf \n", ptr_x[ptr[ii]], ptr_y[ptr[ii]]);
-  }
-*/
-
-	//  printf("===first coordinate ===\n");
-	//  for(int ii=0; ii< 4*(dsize[1]+1); ii++){
-	//    if(ii%(dsize[1]+1) == 0)
-	//      printf("=================================\n");
-	//    printf("SUCCESS coords_x=%lf, coordx_y=%lf \n", ptr_x[ii], ptr_y[ii]);
-	//  }
+	uint32_t* ptr = &connectivity[0][0];
 
 	for (int gg = 0; gg < dsize[0]; gg++) {
 		for (int hh = 0; hh < dsize[1]; hh++) {
