@@ -25,7 +25,6 @@
 
 #include <gtest/gtest.h>
 
-#include "context_proxy.cxx"
 #include "data_store.cxx"
 #include "logger.cxx"
 

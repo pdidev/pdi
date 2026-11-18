@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
 #
 # All rights reserved.
 #
@@ -32,6 +33,9 @@ on:
   push: { branches: [ main, 'v[0-9]+.[0-9]+' ] }
   pull_request:
   workflow_dispatch:
+permissions:
+  contents: read
+  checks: write  # for the JUnit test report check runs
 jobs:
   indent:
     runs-on: ubuntu-latest
@@ -104,7 +108,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, macos-15, macos-26]
+        os: [macos-15, macos-26-intel, macos-latest]
         cxx_std: ['17']
         build_type: ['Debug']
     runs-on: ${{matrix.os}}
@@ -119,7 +123,8 @@ jobs:
       PDI_SYSTEM: macos
       PDI_COMPILER: clang
       PDI_MPI: openmpi
-      CTEST_DIR: "/tmp/tests_output"
+      # Build against the macOS SDK, so that Homebrew's headers in /usr/local do not shadow the vendored dependencies
+      SDKROOT: macosx
     steps:
     - name: Set up Python
       uses: actions/setup-python@v6
@@ -136,9 +141,11 @@ jobs:
       with:
         submodules: recursive
     - name: Build PDI
-      run: bin/build_and_run_all_tests
+      run: bin/build_and_run_all_tests --ctest-outdir "/tmp/tests_output"
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v6
       if: ( success() || failure() )  # always run even if the previous step fails
       with:
         report_paths: '/tmp/tests_output/tests_*.xml'
+        # a pull request from a fork gets a read-only token, so only annotate there
+        annotate_only: ${{ github.event.pull_request.head.repo.fork == true }}

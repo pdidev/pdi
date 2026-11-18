@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -227,6 +228,40 @@ logging: trace
 	// Reference to a non-existing metadata should fail
 	EXPECT_CALL(*this, PdiError(Eq(PDI_ERR_VALUE), _));
 	PDI_expose("invalid_array", array.data(), PDI_OUT);
+}
+
+// subtree whose key contains a `%`, that must not be read as a format
+TEST_F(IncludeTest, PercentInSubtree)
+{
+	{
+		std::ofstream("PercentInSubtree.yml") << R"==(
+"a%%b":
+  metadata:
+    array_size: int
+  data:
+    array_data:
+      type: array
+      subtype: double
+      size: $array_size
+"a%b":
+  data:
+    array_data:
+      type: array
+      subtype: double
+      size: $invalid_ref
+)==";
+	}
+	InitPdi(PC_parse_string(R"==(
+include:
+  file: PercentInSubtree.yml
+  subtree: .a%%b
+logging: trace
+)=="));
+
+	int constexpr array_size = 7;
+	auto const array = make_a<std::array<double, array_size>>();
+
+	PDI_multi_expose("", "array_size", &array_size, PDI_OUT, "array_data", array.data(), PDI_OUT, nullptr);
 }
 
 // missing included file

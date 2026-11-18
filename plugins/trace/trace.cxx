@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,23 +33,22 @@
 namespace {
 
 using PDI::Context;
+using PDI::Logger;
 using PDI::Plugin;
 using PDI::Ref;
 using std::string;
 
 struct trace_plugin: Plugin {
-	trace_plugin(Context& ctx, PC_tree_t config)
-		: Plugin{ctx}
+	trace_plugin(Logger& logger, Context& ctx, PC_tree_t config)
+		: Plugin{logger, ctx}
 	{
-		ctx.on_data([this](const string& name, Ref ref) { this->context().logger().info("=>>   data becoming available in the store: {}", name); });
-		ctx.on_data_remove([this](const string& name, Ref ref) {
-			this->context().logger().info("<<= data stop being available in the store: {}", name);
-		});
-		ctx.on_event([this](const string& name) { this->context().logger().info("!!!                            named event: {}", name); });
-		context().logger().info("Welcome!");
+		ctx.on_data([this](const string& name, Ref ref) { this->logger().info("=>>   data becoming available in the store: {}", name); });
+		ctx.on_data_remove([this](const string& name, Ref ref) { this->logger().info("<<= data stop being available in the store: {}", name); });
+		ctx.on_event([this](const string& name) { this->logger().info("!!!                            named event: {}", name); });
+		logger.info("Welcome!");
 	}
 
-	~trace_plugin() { context().logger().info("Goodbye!"); }
+	~trace_plugin() { logger().info("Goodbye!"); }
 
 	/** Pretty name for the plugin that will be shown in the logger
 	 *

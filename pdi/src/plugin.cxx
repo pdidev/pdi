@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
@@ -26,14 +26,16 @@
 #include "config.h"
 
 #include "pdi/context.h"
+#include "pdi/logger.h"
 #include "pdi/ref_any.h"
 
 #include "pdi/plugin.h"
 
 namespace PDI {
 
-Plugin::Plugin(Context& ctx)
+Plugin::Plugin(Logger& logger, Context& ctx)
 	: m_context{ctx}
+	, m_logger(logger)
 {}
 
 Plugin::~Plugin() noexcept(false) {}
@@ -43,14 +45,22 @@ Context& Plugin::context()
 	return m_context;
 }
 
-unsigned long plugin_api_version(unsigned long expected_version)
+Logger& Plugin::logger()
 {
-	constexpr unsigned long MASK = (1 << 8) - 1;
-	unsigned long expected_major = (expected_version >> 24) & MASK;
-	unsigned long expected_minor = (expected_version >> 16) & MASK;
-	unsigned long expected_patch = (expected_version >> 8) & MASK;
+	return m_logger;
+}
 
-	if (expected_version && (expected_major != PDI_PLUGIN_API_VERSION_MAJOR || expected_minor > PDI_PLUGIN_API_VERSION_MINOR)) {
+uint64_t plugin_api_version(uint64_t expected_version)
+{
+	constexpr uint64_t MASK = (1 << 16) - 1;
+	uint64_t expected_major = (expected_version >> 48) & MASK;
+	uint64_t expected_minor = (expected_version >> 32) & MASK;
+	uint64_t expected_patch = (expected_version >> 16) & MASK;
+
+	// before 1.0, every minor revision may break the API
+	bool minor_compatible
+		= PDI_PLUGIN_API_VERSION_MAJOR == 0 ? expected_minor == PDI_PLUGIN_API_VERSION_MINOR : expected_minor <= PDI_PLUGIN_API_VERSION_MINOR;
+	if (expected_version && (expected_major != PDI_PLUGIN_API_VERSION_MAJOR || !minor_compatible)) {
 		throw Plugin_error{
 			"Invalid plugin API version: {}.{}.{}, PDI provided version is {}.{}.{}",
 			expected_major,

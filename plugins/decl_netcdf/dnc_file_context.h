@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,6 +43,9 @@ namespace decl_netcdf {
 /// Represents NetCDF file. Created from config.
 class Dnc_file_context
 {
+	/// Logger of this file
+	PDI::Logger& m_logger;
+
 	/// Context of this file
 	PDI::Context& m_ctx;
 
@@ -93,10 +97,11 @@ class Dnc_file_context
 public:
 	/** Creates a NetCDF file information from yaml
 	 *
+	 * \param logger Logger of this file
 	 * \param ctx Context of this file
 	 * \param config Configuration node of this file
 	 */
-	Dnc_file_context(PDI::Context& ctx, PC_tree_t config);
+	Dnc_file_context(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t config);
 
 	/** Copy constructor - deleted
 	 *

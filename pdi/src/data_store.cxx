@@ -139,7 +139,7 @@ public:
 		if (PC_status(result)) {
 			throw System_error("Unable to include file `{}': {}", file_path().string(), PC_errmsg());
 		}
-		result = PC_get(result, ypath().c_str());
+		result = PC_get(result, "%s", ypath().c_str());
 		if (PC_status(result)) {
 			throw System_error("Unable to include subtree `{}' from file `{}': {}", ypath(), file_path().string(), PC_errmsg());
 		}
@@ -396,19 +396,19 @@ void Data_store::notify_missing_data(const string& name)
 
 Data_store::Data_store(PC_tree_t conf)
 	: m_logger{"PDI", PC_get(conf, ".logging")}
-	, m_plugins{*this}
+	, m_plugins{m_logger}
 {
 	// Handle includes and gather all files
 	std::vector<PC_tree_t> confs = get_includes(logger(), conf);
 
 	// load basic datatypes
-	Datatype_template::load_basic_datatypes(*this);
+	Datatype_template::load_basic_datatypes(m_logger, *this);
 	// load user datatypes
 	for (auto&& conf: confs) {
 		Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
 	}
 
-	m_plugins.load_plugins(confs);
+	m_plugins.load_plugins(*this, confs);
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
