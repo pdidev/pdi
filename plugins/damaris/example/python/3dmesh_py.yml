@@ -1,0 +1,92 @@
+# Global cube size, split along depth between the Damaris clients
+cube: { depth: 4, height: 8, width: 16 }
+
+pdi:
+  metadata:
+    iter:      int                                     # current iteration id
+    gsize:     { size: 3, type: array, subtype: int }  # global cube size [depth, height, width]
+    psize:     int                                     # number of Damaris clients
+    prank:     int                                     # rank of the client
+    mpi_comm:  MPI_Comm
+    is_client: int
+  data:
+    cube_i:    { size: [ '$gsize[0]/$psize', '$gsize[1]', '$gsize[2]' ], type: array, subtype: int }
+    cube_f:    { size: [ '$gsize[0]/$psize', '$gsize[1]', '$gsize[2]' ], type: array, subtype: float }
+    last_iter: int
+    array_sum: double
+
+  plugins:
+    mpi:
+    damaris:
+      architecture:
+        sim_name: 3dmesh_py
+        domains: 1
+        buffer_size: 536870912
+        dedicated:
+          core: 1   # one Damaris server core per node runs the Python script
+          node: 0
+      client_comm_get: mpi_comm   # returns the Damaris client communicator
+      get_is_client: is_client    # 1 on client ranks, 0 on Damaris server ranks
+      datasets:
+        - dataset:
+            name: cube_i
+            layout: cells_whd_wf
+            script: MyPyAction    # makes the dataset available to the pyscript below
+        - dataset:
+            name: cube_f
+            layout: cells_whd_wf_float
+            script: MyPyAction
+        - dataset:
+            name: last_iter
+            layout: one_int
+            script: MyPyAction
+        - dataset:
+            name: array_sum
+            layout: one_double
+            script: MyPyAction
+      layouts:
+        - layout:
+            name: cells_whd_wf
+            type: int
+            dimensions: [ '$gsize[0]/$psize', '$gsize[1]', '$gsize[2]' ]
+            global: [ '$gsize[0]', '$gsize[1]', '$gsize[2]' ]
+            depends_on: [gsize, psize]
+        - layout:
+            name: cells_whd_wf_float
+            type: float
+            dimensions: [ '$gsize[0]/$psize', '$gsize[1]', '$gsize[2]' ]
+            global: [ '$gsize[0]', '$gsize[1]', '$gsize[2]' ]
+            depends_on: [gsize, psize]
+        - layout:
+            name: one_int
+            type: int
+            dimensions: '1'
+        - layout:
+            name: one_double
+            type: double
+            dimensions: '1'
+      pyscript:
+        name: MyPyAction
+        file: 3dmesh_py.py        # can be absolute or relative path
+        language: python
+        frequency: 1              # run the script every N iterations
+        #scheduler_file: dask_file.json   # only needed with Dask, see 3dmesh_dask.yml
+        #execution: remote
+        #scope: core
+        #external: false
+        #nthreads: 1
+        #timeout: 2
+        #keep_workers: no
+        #comment: ""
+      write:
+        cube_i:
+          position: [ '$prank*$gsize[0]/$psize', 0, 0 ]
+        cube_f:
+          position: [ '$prank*$gsize[0]/$psize', 0, 0 ]
+        last_iter:
+        array_sum:
+      log:
+        file_name: 3dmesh_py
+        rotation_size: 5
+        log_level: info
+        flush: true
