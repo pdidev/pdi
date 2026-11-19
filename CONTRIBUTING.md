@@ -246,6 +246,20 @@ In term of style, write each entry as a natural sentence that ends with its issu
 The link closes the list item and is worded as part of the sentence:
 `..., fixing [#N](...)`, `..., as per [#N](...)`, or a short closing sentence such as `Part of [#N](...)`.
 
+Entries only ever go under `[Unreleased]`: the released sections are history.
+A CI check, `bin/check_changelog [<base>]`, rejects a pull request that changes anything below `[Unreleased]`.
+
+Branches developed in parallel all append to the same lists, which conflicts on every merge.
+Register the merge driver of `CHANGELOG.md` once in your clone, and the entries a merged branch added go at the end of the same subsection instead:
+
+```sh
+git config merge.changelog.driver 'python3 bin/changelog_merge %O %A %B %L %S %X %Y'
+```
+
+It serves `git merge`, `rebase` and `cherry-pick`.
+Whenever the merged branch did more to `CHANGELOG.md` than add entries, the whole file gets the usual line-based merge, and conflicts as before.
+This only works locally if you have registered the merge driver, not with GitHub merge button.
+
 ### Documentation and related files
 
 * Any change to `pdi/include/pdi.h` **must** be mirrored in `mock_pdi/pdi.h`.
