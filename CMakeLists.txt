@@ -120,7 +120,7 @@ message(STATUS " **Profile**: Default use is: `${USE_DEFAULT}' (-DUSE_DEFAULT=${
 message(STATUS " **Profile**: Unstable activation is: `${BUILD_UNSTABLE}' (-DBUILD_UNSTABLE=${BUILD_UNSTABLE})")
 foreach(FEATURE FORTRAN HDF5_PARALLEL PYTHON TESTING)
 	set(FEATURE_ENABLED "DISABLED")
-	if(${BUILD_${FEATURE}})
+	if("${BUILD_${FEATURE}}")
 		set(FEATURE_ENABLED "ENABLED ")
 	endif()
 	message(STATUS " **Feature**: ${FEATURE_ENABLED} ${FEATURE} (-DBUILD_${FEATURE}=${BUILD_${FEATURE}})")

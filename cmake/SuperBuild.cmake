@@ -56,7 +56,7 @@ function(__sbuild_build_command _SBUILD_OUTVAR)
 endfunction()
 
 
-### Generate a list of all cache variables to forward to subprojects
+### Generate a list of all cache variables and search settings to forward to subprojects
 # 
 # \param #1 the variable in which to store the result
 ###
@@ -74,12 +74,16 @@ function(__sbuild_collect_variables _SBUILD_OUTVAR)
 		endif()
 	endforeach()
 	
-	set(_SBUILD_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_BINARY_DIR}/staging")
+	# The staging tree comes first, so that what the superbuild built wins over a copy in the prefixes of the user.
+	set(_SBUILD_PREFIX_PATH "${CMAKE_BINARY_DIR}/staging" ${CMAKE_PREFIX_PATH})
+	get_property(_SBUILD_SEARCH_ARGS GLOBAL PROPERTY _SBUILD_SEARCH_ARGS)
+	# The search settings come after the cache variables forwarded above, as the last setting of a name wins.
 	list(APPEND _SBUILD_RESULT
 			#TODO: STAGING_PREFIX is not a very good solution, package may not be relocatable (see python) and it prevents RPATH (replace it by INSTALL_PREFIX)
 			# setting INSTALL_PREFIX at install time would be slightly better
 			"-DCMAKE_STAGING_PREFIX:PATH=<INSTALL_DIR>"
-			"-DCMAKE_PREFIX_PATH:PATH=${_SBUILD_PREFIX_PATH}")
+			"-DCMAKE_PREFIX_PATH:PATH=${_SBUILD_PREFIX_PATH}"
+			${_SBUILD_SEARCH_ARGS})
 	
 	set("${_SBUILD_OUTVAR}" "${_SBUILD_RESULT}" PARENT_SCOPE)
 endfunction()
@@ -106,6 +110,8 @@ endfunction()
 # \param MODULE_VARS (optional) the variables set by find_package() to forward to the caller
 # \param DEPENDS (optional) the dependencies to build this one after
 # \param CMAKE_CACHE_ARGS (optional) additional settings to build the shipped copy with
+#
+# The projects declared after this call are handed <name>_ROOT, and an empty <name>_DIR too when the dependency is built.
 ###
 function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	cmake_parse_arguments(PARSE_ARGV 2 _SBUILD "" "EMBEDDED_PATH;VERSION" "CMAKE_CACHE_ARGS;COMPONENTS;DEPENDS;MODULE_VARS")
@@ -158,6 +164,9 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	endif()
 	
 	if(NOT "${_SBUILD_TOBUILD}")
+		# The <name>_ROOT of the user or an empty one, handed at each configure so that the staging value of an earlier configure does not stay in the
+		# caches of the sub-projects.
+		set_property(GLOBAL APPEND PROPERTY _SBUILD_SEARCH_ARGS "-D${_SBUILD_NAME}_ROOT:PATH=$CACHE{${_SBUILD_NAME}_ROOT}")
 		add_custom_target("${_SBUILD_NAME}_pkg")
 		set("${_SBUILD_NAME}_FOUND" TRUE PARENT_SCOPE)
 		foreach(_SBUILD_VAR ${_SBUILD_MODULE_VARS})
@@ -204,6 +213,11 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 		BUILD_COMMAND ${_SBUILD_BUILD_COMMAND}
 		INSTALL_DIR "${CMAKE_BINARY_DIR}/staging"
 	)
+	
+	# The staging tree wins over the <name>_ROOT of the user, variable or environment.
+	# The empty <name>_DIR wins over the location an earlier configure found, which CMake would use without searching.
+	set_property(GLOBAL APPEND PROPERTY _SBUILD_SEARCH_ARGS
+		"-D${_SBUILD_NAME}_ROOT:PATH=${CMAKE_BINARY_DIR}/staging" "-D${_SBUILD_NAME}_DIR:PATH=")
 endfunction()
 
 
