@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
@@ -28,6 +28,7 @@
 
 #include <cerrno>
 #include <memory>
+#include <unordered_set>
 
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
@@ -134,5 +135,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const ** 
 	*val_str = constval;
 	return result;
 }
+
+void Expression::Impl::Int_literal::dependencies(std::unordered_set<std::string>& deps_lst) const {};
 
 } // namespace PDI

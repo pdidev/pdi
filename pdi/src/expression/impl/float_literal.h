@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@
 #define PDI_EXPRESSION_IMPL_FLOAT_LITERAL_H_
 
 #include <memory>
+#include <unordered_set>
 
 #include "pdi/context.h"
 #include "pdi/datatype.h"
@@ -51,6 +52,8 @@ struct PDI_NO_EXPORT Expression::Impl::Float_literal: public Expression::Impl {
 	size_t copy_value(Context& ctx, void* buffer, Datatype_sptr type) const override;
 
 	static std::unique_ptr<Impl> parse(char const ** val_str);
+
+	void dependencies(std::unordered_set<std::string>& deps_lst) const override;
 };
 
 } // namespace PDI
