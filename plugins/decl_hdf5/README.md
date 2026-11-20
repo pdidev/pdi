@@ -67,20 +67,20 @@ The possible values for the keys are as follow:
     * `policy` (string, default: "STOP") : Determines behavior if subfiling requirements are not met.
       * `STOP`: Throw a runtime error.
       * `CONTINUE`: Fall back to a standard HDF5 output file.
-    * `stripe_size` (non-negative integer, default: 0): The amount of data (in binary bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MiB = 32*1024*1024) is used.
+    * `stripe_size` (non-negative integer, default: 0): The amount of data (in bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MiB = 32*1024*1024) is used.
     * `ioc_selection` : The strategy for selecting I/O Concentrator (IOC) processes across MPI ranks. Possible choices:
       * `OnePerNode` (default): one IOC per node.
       * {`Total`: `$-exp`}: `$-exp` IOC in total.
       * {`EveryNthRank`: `$-exp`}: one IOC per every `$-exp` MPI ranks.
-    * Two files on the same communicator can not have different `ioc_selection` strategies. A workaround to achieve this is to use different communicators.
-    * For the case of `ioc_selection=OnePerNode` or `EveryNthRank`, an environement variable is used to specify the selection criteria `H5FD_SUBFILING_IOC_SELECTION_CRITERIA`. This variable will take the value defined by `$-exp` and will override its original value.
+    * A current limitation of HDF5 is that two I/O operations on the same communicator can not have different `ioc_selection` strategies. A workaround to achieve this is to duplicate the communicator to use different communicators.
+    * For the case of `ioc_selection=Total` or `EveryNthRank`, an environment variable is used to specify the selection criteria `H5FD_SUBFILING_IOC_SELECTION_CRITERIA`. This variable will take the value defined by `$-exp` and will override its original value.
   * Yaml example
     * full configuration:
       ```yaml
       subfiling:
         count: 4              # generate 4 subfiles
         policy: CONTINUE      # Fallback to standard HDF5 if necessary
-        stripe_size: 8388608  # 8MB stripes (8*1024*1024)
+        stripe_size: 8388608  # 8MiB stripes (8*1024*1024)
         ioc_selection: {EveryNthRank: 1} # One IOC per MPI rank
       ```
     * shorthand configuration:
