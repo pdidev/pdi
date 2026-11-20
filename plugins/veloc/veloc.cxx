@@ -35,6 +35,7 @@
 using PDI::Context;
 using PDI::Datatype_sptr;
 using PDI::Impl_error;
+using PDI::Logger;
 using PDI::Plugin;
 using PDI::Ref;
 using PDI::Ref_r;
@@ -112,7 +113,7 @@ class veloc_plugin: public Plugin
 
 				size_t element_bytes = total_bytes / n_elements;
 
-				protect_data(context(), data.second, ref.get(), n_elements, element_bytes, data.first);
+				protect_data(data.second, ref.get(), n_elements, element_bytes, data.first);
 			}
 		}
 	}
@@ -120,14 +121,16 @@ class veloc_plugin: public Plugin
 	void unprotect_all()
 	{
 		for (auto&& data: m_config.managed().protected_data) {
-			unprotect_data(context(), data.second, data.first);
+			unprotect_data(data.second, data.first);
 		}
 	}
 
 public:
-	veloc_plugin(Context& ctx, PC_tree_t config)
-		: Plugin(ctx)
-		, m_config{ctx, config}
+	// The parameter is named plugin_logger so that it does not hide Plugin::logger()
+	// (which the lambdas below call through the captured `this`).
+	veloc_plugin(Logger& plugin_logger, Context& ctx, PC_tree_t config)
+		: Plugin(plugin_logger, ctx)
+		, m_config{ctx, plugin_logger, config}
 		, m_veloc_initialized{false}
 		, m_recovered_iter{-1}
 		, m_status{1} // by default, m_status = 1 => recovery is not needed, app only wants to checkpoint
@@ -146,7 +149,7 @@ public:
 							not_in_veloc_comm = true;
 							return;
 						}
-						init(context(), comm, m_config.config());
+						init(comm, m_config.config());
 						m_veloc_initialized = true;
 					} else {
 						throw Impl_error{"The MPI communicator can only be written to the plugin"};
@@ -199,12 +202,12 @@ public:
 					[this](const std::string&) {
 						if (!veloc_ready()) return;
 						if (m_config.managed().when.to_long(context())) {
-							PDI::TimerEventHandler veloc_timer(context(), "veloc");
+							PDI::Timer_event_handler veloc_timer(context(), "veloc");
 							protect_all<Ref_r>();
 							Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 							auto new_iter = new_iter_r.scalar_value<int>();
 							if (new_iter != m_recovered_iter) {
-								write_checkpoint(context(), m_config.label(), new_iter);
+								write_checkpoint(m_config.label(), new_iter);
 								m_cp_counter++;
 							}
 							unprotect_all();
@@ -217,9 +220,9 @@ public:
 				ctx.on_event(
 					[this](const std::string&) {
 						if (!veloc_ready()) return;
-						PDI::TimerEventHandler veloc_timer(context(), "veloc");
+						PDI::Timer_event_handler veloc_timer(context(), "veloc");
 						protect_all<Ref_w>();
-						int result = read_checkpoint(context(), m_config.label(), m_config.managed().requested_checkpoint);
+						int result = read_checkpoint(logger(), m_config.label(), m_config.managed().requested_checkpoint);
 						m_recovered_iter = result;
 						m_status = 1;
 						unprotect_all();
@@ -231,10 +234,10 @@ public:
 				ctx.on_event(
 					[this](const std::string&) {
 						if (!veloc_ready()) return;
-						PDI::TimerEventHandler veloc_timer(context(), "veloc");
+						PDI::Timer_event_handler veloc_timer(context(), "veloc");
 						if (!m_status) { // recovery needed
 							protect_all<Ref_w>();
-							int result = read_checkpoint(context(), m_config.label(), m_config.managed().requested_checkpoint);
+							int result = read_checkpoint(logger(), m_config.label(), m_config.managed().requested_checkpoint);
 							m_recovered_iter = result;
 							m_status = 1;
 							unprotect_all();
@@ -244,7 +247,7 @@ public:
 								Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 								auto new_iter = new_iter_r.scalar_value<int>();
 								if (new_iter != m_recovered_iter) {
-									write_checkpoint(context(), m_config.label(), new_iter);
+									write_checkpoint(m_config.label(), new_iter);
 									m_cp_counter++;
 								}
 								unprotect_all();
@@ -258,10 +261,10 @@ public:
 				ctx.on_event(
 					[this](const std::string&) {
 						if (!veloc_ready()) return;
-						PDI::TimerEventHandler veloc_timer(context(), "veloc");
+						PDI::Timer_event_handler veloc_timer(context(), "veloc");
 						Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 						auto new_iter = new_iter_r.scalar_value<int>();
-						init_checkpoint(context(), m_config.label(), new_iter);
+						init_checkpoint(m_config.label(), new_iter);
 						m_partial_counter++;
 					},
 					event.first
@@ -271,8 +274,8 @@ public:
 				ctx.on_event(
 					[this](const std::string&) {
 						if (!veloc_ready()) return;
-						PDI::TimerEventHandler veloc_timer(context(), "veloc");
-						init_restart(context(), m_config.label(), m_config.custom().manual_rec.requested_checkpoint);
+						PDI::Timer_event_handler veloc_timer(context(), "veloc");
+						init_restart(logger(), m_config.label(), m_config.custom().manual_rec.requested_checkpoint);
 					},
 					event.first
 				);
@@ -281,11 +284,11 @@ public:
 				ctx.on_event(
 					[this](const std::string&) {
 						if (!veloc_ready()) return;
-						PDI::TimerEventHandler veloc_timer(context(), "veloc");
+						PDI::Timer_event_handler veloc_timer(context(), "veloc");
 						Ref_w wref = context().desc(m_config.custom().routed_file).ref();
 						if (wref) {
 							char* routed_chars = static_cast<char*>(wref.get());
-							route_file(context(), m_config.manual_cp().original_file, routed_chars);
+							route_file(logger(), m_config.manual_cp().original_file, routed_chars);
 						}
 					},
 					event.first
@@ -295,11 +298,11 @@ public:
 				ctx.on_event(
 					[this](const std::string&) {
 						if (!veloc_ready()) return;
-						PDI::TimerEventHandler veloc_timer(context(), "veloc");
+						PDI::Timer_event_handler veloc_timer(context(), "veloc");
 						Ref_w wref = context().desc(m_config.custom().routed_file).ref();
 						if (wref) {
 							char* routed_chars = static_cast<char*>(wref.get());
-							route_file(context(), m_config.manual_rec().original_file, routed_chars);
+							route_file(logger(), m_config.manual_rec().original_file, routed_chars);
 						}
 					},
 					event.first
@@ -309,8 +312,8 @@ public:
 				ctx.on_event(
 					[this](const std::string&) {
 						if (!veloc_ready()) return;
-						PDI::TimerEventHandler veloc_timer(context(), "veloc");
-						end_checkpoint(context());
+						PDI::Timer_event_handler veloc_timer(context(), "veloc");
+						end_checkpoint();
 						if (m_partial_counter == 1) {
 							m_cp_counter++;
 							m_partial_counter--;
@@ -323,8 +326,8 @@ public:
 				ctx.on_event(
 					[this](const std::string&) {
 						if (!veloc_ready()) return;
-						PDI::TimerEventHandler veloc_timer(context(), "veloc");
-						end_restart(context());
+						PDI::Timer_event_handler veloc_timer(context(), "veloc");
+						end_restart();
 					},
 					event.first
 				);
@@ -336,17 +339,17 @@ public:
 
 		// VeloC is initialized last to avoid the constructor throwing without finalizing VeloC
 		if (m_config.communicator().empty()) {
-			init(ctx, MPI_COMM_WORLD, m_config.config());
+			init(MPI_COMM_WORLD, m_config.config());
 			m_veloc_initialized = true;
 		}
 	}
 
 	~veloc_plugin()
 	{
-		context().logger().info("{} checkpoints were written", m_cp_counter);
-		context().logger().info("Closing plugin");
+		logger().info("{} checkpoints were written", m_cp_counter);
+		logger().info("Closing plugin");
 		if (m_veloc_initialized) {
-			finalize(context());
+			finalize();
 		}
 	}
 };

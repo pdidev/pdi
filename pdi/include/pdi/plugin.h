@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
@@ -26,6 +26,7 @@
 #ifndef PDI_PLUGIN_H_
 #define PDI_PLUGIN_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_set>
@@ -33,6 +34,7 @@
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/logger.h>
+#include <pdi/version.h>
 
 namespace PDI {
 
@@ -43,31 +45,55 @@ class PDI_EXPORT Plugin
 {
 	Context& m_context;
 
+	Logger& m_logger;
+
 public:
 	Plugin(const Plugin&) = delete;
 
 	Plugin(Plugin&&) = delete;
 
 	/** Initialization of the plugin
+	 * \param logger the logger for this plugin instance
 	 * \param ctx the PDI context for this plugin instance
 	 */
-	Plugin(Context& ctx);
+	Plugin(Logger& logger, Context& ctx);
 
 	virtual ~Plugin() noexcept(false);
 
+protected:
 	/** Provides access to the PDI context for this plugin instance
 	 */
 	Context& context();
 
+	/** Provides access to the logger for this plugin instance
+	 */
+	Logger& logger();
+
 }; // class Plugin
 
-#define PDI_PLUGIN_API_VERSION_MAJOR (0ul)
+/** Major revision number of the plugin API
+ *
+ * The plugin API is not stable yet: it stays at 0, and every minor release of PDI may break it.
+ */
+#define PDI_PLUGIN_API_VERSION_MAJOR 0
 
-#define PDI_PLUGIN_API_VERSION_MINOR (0ul)
+/// Minor revision number of the plugin API: it changes with every major or minor release of PDI, and has to match exactly while the major is 0
+#define PDI_PLUGIN_API_VERSION_MINOR (PDI_VERSION_MAJOR * 128 + PDI_VERSION_MINOR)
 
-#define PDI_PLUGIN_API_VERSION_PATCH (1ul)
+/// Patch revision number of the plugin API: the patch revision number of PDI
+#define PDI_PLUGIN_API_VERSION_PATCH PDI_VERSION_PATCH
 
-#define PDI_PLUGIN_API_VERSION ((PDI_PLUGIN_API_VERSION_MAJOR << 24) + (PDI_PLUGIN_API_VERSION_MINOR << 16) + (PDI_PLUGIN_API_VERSION_PATCH << 8))
+/** Computes a version of the plugin API as a uint64_t, comparable with PDI_PLUGIN_API_VERSION and with what plugin_api_version() returns
+ *
+ * The result is usable in a preprocessor `#if` as well as in code.
+ * Bits 48 to 63 hold the major revision number, bits 32 to 47 the minor one and bits 16 to 31 the patch one.
+ */
+#define PDI_COMPUTE_PLUGIN_API_VERSION(MAJOR, MINOR, PATCH)                                                                                          \
+	(((UINT64_C(0) + (MAJOR)) << 48) | ((UINT64_C(0) + (MINOR)) << 32) | ((UINT64_C(0) + (PATCH)) << 16))
+
+/// The version of the plugin API of the PDI headers as a uint64_t, as PDI_COMPUTE_PLUGIN_API_VERSION computes it
+#define PDI_PLUGIN_API_VERSION                                                                                                                       \
+	PDI_COMPUTE_PLUGIN_API_VERSION(PDI_PLUGIN_API_VERSION_MAJOR, PDI_PLUGIN_API_VERSION_MINOR, PDI_PLUGIN_API_VERSION_PATCH)
 
 /// \deprecated use PDI_PLUGIN_API_VERSION_MAJOR instead
 #define PLUGIN_API_VERSION_MAJOR PDI_PLUGIN_API_VERSION_MAJOR
@@ -91,12 +117,16 @@ public:
 
 /** Checks compatibility with a plugin API
  *
+ * While the major revision number is 0, the expected version is compatible with the provided one if both have the same minor revision number.
+ * From 1 on, it is compatible if both have the same major revision number and the expected minor revision number is not greater than the provided
+ * one.
+ *
  * \param expected_version the expected version of the API or 0 for no check
  * \returns the version of the API provided by PDI
  * \throws PDI::Error if the provided version is incompatible with the expected
  * one
  */
-unsigned long PDI_EXPORT plugin_api_version(unsigned long expected_version = 0);
+uint64_t PDI_EXPORT plugin_api_version(uint64_t expected_version = 0);
 
 } // namespace PDI
 
@@ -119,8 +149,8 @@ unsigned long PDI_EXPORT plugin_api_version(unsigned long expected_version = 0);
 
 /** Declares a plugin to be used with PDI and its dependencies
  *
- * This should be called after having implemented a class that inherits
- * PDI::Plugin with a constructor taking 2 parameters
+ * This should be called after having implemented a class that inherits PDI::Plugin with a constructor taking 3 parameters
+ * - PDI::Logger& logger: the logger for this plugin (forward it to PDI::Plugin)
  * - PDI::Context& ctx: the context for this plugin (forward it to PDI::Plugin)
  * - PC_tree_t conf: the configuration for this plugin
  *
@@ -136,11 +166,12 @@ unsigned long PDI_EXPORT plugin_api_version(unsigned long expected_version = 0);
  */
 #define PDI_PLUGIN(name)                                                                                                                             \
 	PDI_PLUGIN_IGNORE_WARNINGS_BEGIN extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(                              \
+		::PDI::Logger& logger,                                                                                                                       \
 		::PDI::Context& ctx,                                                                                                                         \
 		PC_tree_t conf                                                                                                                               \
 	)                                                                                                                                                \
 	{                                                                                                                                                \
-		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf}};                                                                \
+		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{logger, ctx, conf}};                                                        \
 		::PDI::plugin_api_version(PDI_PLUGIN_API_VERSION);                                                                                           \
 		return plugin;                                                                                                                               \
 	}                                                                                                                                                \

@@ -25,10 +25,12 @@
 #ifndef VELOC_CFG_H_
 #define VELOC_CFG_H_
 
+#include <string>
 #include <unordered_map>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/expression.h>
+#include <pdi/logger.h>
 
 #include <veloc.h>
 
@@ -49,9 +51,9 @@ enum class Desc_type {
 	COUNTER_CP
 };
 
-/** 
- * A ManualCheckpoint stores all information related to the definition 
- * of a checkpoint using VeloC file-based API 
+/**
+ * A ManualCheckpoint stores all information related to the definition
+ * of a checkpoint using VeloC file-based API
  */
 struct ManualCheckpoint {
 	bool is_valid = false;
@@ -61,9 +63,9 @@ struct ManualCheckpoint {
 	Event_type end_cp_on;
 };
 
-/** 
- * A ManualRecovery stores all information related to the definition 
- * of a recovery using VeloC file-based API 
+/**
+ * A ManualRecovery stores all information related to the definition
+ * of a recovery using VeloC file-based API
  */
 struct ManualRecovery {
 	bool is_valid = false;
@@ -74,9 +76,9 @@ struct ManualRecovery {
 	int requested_checkpoint = -1;
 };
 
-/** 
- * A CustomCheckpointingCfg stores all information related to the 
- * definition of a checkpoint-restart process using VeloC file-based API 
+/**
+ * A CustomCheckpointingCfg stores all information related to the
+ * definition of a checkpoint-restart process using VeloC file-based API
  */
 struct CustomCheckpointingCfg {
 	bool is_valid = false;
@@ -85,9 +87,9 @@ struct CustomCheckpointingCfg {
 	ManualRecovery manual_rec;
 };
 
-/** 
- * A ManagedCheckpointingCfg stores all information related to the definition 
- * of a checkpoint using VeloC memory-based API 
+/**
+ * A ManagedCheckpointingCfg stores all information related to the definition
+ * of a checkpoint using VeloC memory-based API
  */
 struct ManagedCheckpointingCfg {
 	bool is_valid = false;
@@ -96,8 +98,8 @@ struct ManagedCheckpointingCfg {
 	int requested_checkpoint = -1;
 };
 
-/** 
- * A Veloc_cfg stores all information required for the correct functioning of VeloC 
+/**
+ * A Veloc_cfg stores all information required for the correct functioning of VeloC
  */
 class Veloc_cfg
 {
@@ -129,90 +131,98 @@ class Veloc_cfg
 	std::unordered_map<std::string, Event_type> m_events;
 
 	/**
-	 * @brief checks that all information stored is coherent 
-	 * 
-	 * @param ctx the context from which to access the logger
+	 * @brief checks that all information stored is coherent
+	 *
+	 * @param logger the plugin logger
+	 * @param status_key_defined whether the 'status' key has been defined
 	 */
-	void check_conformity(PDI::Context& ctx, bool status_key_defined);
+	void check_conformity(PDI::Logger& logger, bool status_key_defined);
 
 public:
-	Veloc_cfg(PDI::Context& ctx, PC_tree_t tree);
+	/**
+	 * @brief parses the configuration of the VeloC plugin
+	 *
+	 * @param ctx the PDI context
+	 * @param logger the plugin logger
+	 * @param tree the subtree defining the behaviour of the plugin
+	 */
+	Veloc_cfg(PDI::Context& ctx, PDI::Logger& logger, PC_tree_t tree);
 
 	/**
-	 * @brief returns the subtree defining the behaviour of the plugin 
-	 * 
-	 * @return PC_tree_t subtree defining the behaviour of the plugin 
+	 * @brief returns the subtree defining the behaviour of the plugin
+	 *
+	 * @return PC_tree_t subtree defining the behaviour of the plugin
 	 */
 	PC_tree_t tree() { return m_tree; }
 
 	/**
 	 * @brief returns the path to VeloC's configuration file
-	 * 
+	 *
 	 * @return std::string VeloC's configuration file path
 	 */
 	std::string config() { return m_config_file; }
 
 	/**
-	 * @brief returns communicator used to initialize VeloC 
-	 * 
-	 * @return std::string VeloC's communicator 
+	 * @brief returns communicator used to initialize VeloC
+	 *
+	 * @return std::string VeloC's communicator
 	 */
 	std::string communicator() { return m_veloc_comm; }
 
 	/**
-     * @brief returns the common checkpoint label
-     *
-     * @return std::string the commong checkpoint label
-     */
+	 * @brief returns the common checkpoint label
+	 *
+	 * @return std::string the common checkpoint label
+	 */
 	std::string label() { return m_cp_label; }
 
 	/**
-     * @brief returns the iterator name in the PDI data store
-     *
-     * @return std::string the iterator name in the PDI data store
-     */
+	 * @brief returns the iterator name in the PDI data store
+	 *
+	 * @return std::string the iterator name in the PDI data store
+	 */
 	std::string iter_name() { return m_iter_name; }
 
 	/**
-     * @brief returns the managed checkpoint configuration
-     *
-     * @return the managed checkpoint configuration
-     */
+	 * @brief returns the managed checkpoint configuration
+	 *
+	 * @return the managed checkpoint configuration
+	 */
 	ManagedCheckpointingCfg& managed() { return m_managed; }
 
 	/**
-     * @brief returns the custom checkpoint-recover configuration
-     *
-     * @return the custom checkpoint-recover configuration
-     */
+	 * @brief returns the custom checkpoint-recover configuration
+	 *
+	 * @return the custom checkpoint-recover configuration
+	 */
 	CustomCheckpointingCfg& custom() { return m_custom; }
 
 	/**
-     * @brief returns the custom checkpoint configuration
-     *
-     * @return the manual checkpoint configuration
-     */
+	 * @brief returns the custom checkpoint configuration
+	 *
+	 * @return the manual checkpoint configuration
+	 */
 	ManualCheckpoint& manual_cp() { return m_custom.manual_cp; }
 
 	/**
-     * @brief returns the custom recovery configuration
-     *
-     * @return the custom recovery configuration
-     */
+	 * @brief returns the custom recovery configuration
+	 *
+	 * @return the custom recovery configuration
+	 */
 	ManualRecovery& manual_rec() { return m_custom.manual_rec; }
 
 	/**
-     * @brief returns the descriptor map
-     *
-     * @return the map of descriptors keyed by name
-     */
+	 * @brief returns the descriptor map
+	 *
+	 * @return the map of descriptors keyed by name
+	 */
 	std::unordered_map<std::string, Desc_type>& descs() { return m_descs; }
 
 	/**
-     * @brief returns the event map
-     *
-     * @return the map of events keyed by name
-     */
+	 * @brief returns the event map
+	 *
+	 * @return the map of events keyed by name
+	 */
 	std::unordered_map<std::string, Event_type>& events() { return m_events; }
 };
 

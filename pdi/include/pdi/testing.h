@@ -207,9 +207,9 @@ class PdiTest: public ::testing::Test
 	}
 
 protected:
-	PdiTest();
+	inline PdiTest();
 
-	~PdiTest();
+	inline ~PdiTest();
 
 	/** make a new repeatably randomly initialized object
 	 */

@@ -26,107 +26,99 @@
 #define VELOC_WRAPPER_H
 
 #include <veloc.h>
-#include <pdi/context.h>
-#include <pdi/context_proxy.h>
 #include <pdi/expression.h>
+#include <pdi/logger.h>
 #include <pdi/plugin.h>
 
 #include <string>
 
 /**
- * @brief initializes VeloC 
- * 
- * @param ctx the context from which to access the logger 
- * @param comm the MPI communicator to inizialize VeloC with  
- * @param veloc_file path to VeloC configuration file  
+ * @brief initializes VeloC
+ *
+ * @param comm the MPI communicator to initialize VeloC with
+ * @param veloc_file path to VeloC configuration file
  */
-void init(PDI::Context& ctx, MPI_Comm comm, std::string veloc_file);
+void init(MPI_Comm comm, std::string veloc_file);
 
 /**
- * @brief registers a data structure as a region to be checkpointed/recovered  
- * 
- * @param ctx the context from which to access the logger 
- * @param id the identifier of the data to register 
- * @param ptr pointer to the data to register.
- * @param n_elements number of elements in the data structure 
- * @param element_bytes size in bytes of each element 
+ * @brief registers a data structure as a region to be checkpointed/recovered
+ *
+ * @param id the identifier of the data to register
+ * @param ptr pointer to the data to register
+ * @param n_elements number of elements in the data structure
+ * @param element_bytes size in bytes of each element
+ * @param name name of the data (used in error messages)
  */
-void protect_data(PDI::Context& ctx, int id, const void* ptr, size_t n_elements, size_t element_bytes, std::string name);
+void protect_data(int id, const void* ptr, size_t n_elements, size_t element_bytes, std::string name);
 
 /**
- * @brief de-registers a data structure to stop tracking it for checkpoint/restart. 
- * 
- * @param ctx the context from which to access the logger 
- * @param id the identifier of the data to de-register 
+ * @brief de-registers a data structure to stop tracking it for checkpoint/restart
+ *
+ * @param id the identifier of the data to de-register
+ * @param name name of the data (used in error messages)
  */
-void unprotect_data(PDI::Context& ctx, int id, std::string name);
+void unprotect_data(int id, std::string name);
 
 /**
  * @brief writes a checkpoint using VeloC memory based API
- * 
- * @param ctx the context from which to access the logger  
- * @param label name of the checkpoint  
+ *
+ * @param label name of the checkpoint
  * @param version version of the checkpoint (iteration number)
  */
-void write_checkpoint(PDI::Context& ctx, std::string label, int version);
+void write_checkpoint(std::string label, int version);
 
 /**
  * @brief reads a checkpoint using VeloC memory based API
- * 
- * @param ctx the context from which to access the logger 
- * @param label name of the checkpoint  
- * @param version version of the checkpoint (iteration number) 
- * @return int version of the checkpoint read 
- */
-int read_checkpoint(PDI::Context& ctx, std::string label, int version);
-
-/**
- * @brief starts a checkpoint phase using VeloC file-based API 
- * 
- * @param ctx the context from which to access the logger 
- * @param label name of the checkpoint  
- * @param version version version of the checkpoint (iteration number)
- */
-void init_checkpoint(PDI::Context& ctx, std::string label, int version);
-
-
-/**
- * @brief routes a user-defined file path to the VeloC-managed checkpoint file path 
  *
- * @param ctx the context from which to access the logger.
- * @param input_filename the user-defined file path 
+ * @param logger the plugin logger
+ * @param label name of the checkpoint
+ * @param version version of the checkpoint (iteration number)
+ * @return int version of the checkpoint read
+ */
+int read_checkpoint(PDI::Logger& logger, std::string label, int version);
+
+/**
+ * @brief starts a checkpoint phase using VeloC file-based API
+ *
+ * @param label name of the checkpoint
+ * @param version version of the checkpoint (iteration number)
+ */
+void init_checkpoint(std::string label, int version);
+
+/**
+ * @brief routes a user-defined file path to the VeloC-managed checkpoint file path
+ *
+ * @param logger the plugin logger
+ * @param input_filename the user-defined file path
  * @param output_filename output buffer receiving the routed file path
  */
-void route_file(PDI::Context& ctx, const std::string& input_filename, char* output_filename);
+void route_file(PDI::Logger& logger, const std::string& input_filename, char* output_filename);
 
 /**
- * @brief ends a checkpoint phase using VeloC file-based API 
- * 
- * @param ctx the context from which to access the logger 
+ * @brief ends a checkpoint phase using VeloC file-based API
+ *
  */
-void end_checkpoint(PDI::Context& ctx);
+void end_checkpoint();
 
 /**
- * @brief starts a restart phase using VeloC file-based API 
- * 
- * @param ctx the context from which to access the logger 
- * @param label name of the checkpoint 
- * @param version version version of the checkpoint (iteration number)
+ * @brief starts a restart phase using VeloC file-based API
+ *
+ * @param logger the plugin logger
+ * @param label name of the checkpoint
+ * @param version version of the checkpoint (iteration number)
  */
-void init_restart(PDI::Context& ctx, std::string label, int version);
+void init_restart(PDI::Logger& logger, std::string label, int version);
 
 /**
- * @brief ends a restart phase using VeloC file-based API 
- * 
- * @param ctx the context from which to access the logger 
+ * @brief ends a restart phase using VeloC file-based API
+ *
  */
-void end_restart(PDI::Context& ctx);
+void end_restart();
 
 /**
  * @brief finalizes VeloC
- * 
- * @param ctx the context from which to access the logger 
+ *
  */
-void finalize(PDI::Context& ctx);
+void finalize();
 
 #endif

@@ -107,7 +107,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15, macos-latest]
+        os: [macos-15, macos-26-intel, macos-latest]
         cxx_std: ['17']
         build_type: ['Debug']
     runs-on: ${{matrix.os}}
@@ -123,6 +123,8 @@ jobs:
       PDI_COMPILER: clang
       PDI_MPI: openmpi
       CTEST_DIR: "/tmp/tests_output"
+      # Build against the macOS SDK, so that Homebrew's headers in /usr/local do not shadow the vendored dependencies
+      SDKROOT: macosx
     steps:
     - name: Set up Python
       uses: actions/setup-python@v6

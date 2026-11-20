@@ -43,6 +43,7 @@
 
 using PDI::Array_datatype;
 using PDI::Context;
+using PDI::Logger;
 using PDI::PdiTest;
 using PDI::Plugin;
 using PDI::Scalar_datatype;
@@ -64,9 +65,9 @@ struct prelinked_plugin: Plugin {
 
 	static const char* pretty_name() { return "prelinked_plugin"; }
 
-	prelinked_plugin(Context& ctx, PC_tree_t)
-		: Plugin{ctx}
-		, m_name(ctx.logger().real_logger()->name())
+	prelinked_plugin(Logger& logger, Context& ctx, PC_tree_t)
+		: Plugin{logger, ctx}
+		, m_name(logger.real_logger()->name())
 	{
 		// share a reference to the name with no memory destruction function
 		ctx[PLUGIN_NAME_DATA].share(
@@ -90,10 +91,10 @@ string no_pretty_name_logger_name;
 
 /// A plugin that records the name of its logger
 struct no_pretty_name_plugin: Plugin {
-	no_pretty_name_plugin(Context& ctx, PC_tree_t)
-		: Plugin{ctx}
+	no_pretty_name_plugin(Logger& logger, Context& ctx)
+		: Plugin{logger, ctx}
 	{
-		no_pretty_name_logger_name = ctx.logger().real_logger()->name();
+		no_pretty_name_logger_name = logger.real_logger()->name();
 	}
 };
 
@@ -114,9 +115,9 @@ PDI_PLUGIN(prelinked)
 #endif
 
 /// The constructor of the `no_pretty_name` plugin
-extern "C" unique_ptr<Plugin> PDI_EXPORT PDI_plugin_no_pretty_name_loader(Context& ctx, PC_tree_t conf)
+extern "C" unique_ptr<Plugin> PDI_EXPORT PDI_plugin_no_pretty_name_loader(Logger& logger, Context& ctx, PC_tree_t conf)
 {
-	return unique_ptr<Plugin>{new no_pretty_name_plugin{ctx, conf}};
+	return unique_ptr<Plugin>{new no_pretty_name_plugin{logger, ctx}};
 }
 
 /// The dependencies of the `no_pretty_name` plugin: none
