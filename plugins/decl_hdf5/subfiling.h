@@ -36,7 +36,9 @@
 
 namespace decl_hdf5 {
 
-/** A Subfiling represents an HDF5 subfiling configuration on a file: number of subfiles, IOC strategy, etc.
+/** A Subfiling represents an HDF5 subfiling configuration on a file: 
+ * number of subfiles, 
+ * IOC strategy, etc.
  */
 class Subfiling
 {
@@ -63,8 +65,6 @@ private:
 
 	/// H5FD_SUBFILING_IOC_SELECTION_CRITERIA
 	PDI::Expression m_sf_ioc_criteria = 1L;
-
-	std::string m_sf_ioc_criteria_origin = "";
 
 public:
 	/** The default constructor for an empty selection (everything selected)
@@ -132,8 +132,9 @@ inline bool restore_env(const char* name, const std::optional<std::string>& valu
 	return unsetenv(name) == 0;
 }
 
-/// Saves the state of one environment variable on construction and
-/// restores it (including "not defined") on destruction.
+/// Save the state of one environment variable on construction and
+/// restore it on destruction, or
+/// unset it on desruction if variable not defined.
 class EnvGuard
 {
 public:
@@ -147,6 +148,7 @@ public:
 	EnvGuard(const EnvGuard&) = delete;
 	EnvGuard& operator= (const EnvGuard&) = delete;
 
+	/// getter of m_saved, not used for now
 	const std::optional<std::string>& saved() const { return m_saved; }
 
 private:

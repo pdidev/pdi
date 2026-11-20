@@ -402,6 +402,12 @@ void File_op::execute(Logger& logger, Context& ctx)
 						);
 						break;
 					}
+				} else { // ioc_selection not defined in yaml
+					if (!guard.saved().has_value()) { // env not defined
+						if (*selection != Subfiling::IocSelect::OnePerNode) {
+							throw System_error{"HDF5 subfiling requires the environment variable bto be defined."};
+						}
+					}
 				}
 
 				H5Pset_fapl_subfiling(file_lst, &subf_config);
