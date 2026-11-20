@@ -64,7 +64,7 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 						throw Spectree_error{
 							value,
 							"Invalid map key in 'subfiling.ioc_selection'. Expecting either 'EveryNthRank' or 'Total'; getting {}",
-							to_string(PC_get(value, "{0}"))
+							selection
 						};
 					}
 					m_sf_ioc_criteria = PC_get(value, "<0>");

@@ -32,7 +32,6 @@
 #endif
 #endif
 
-#include <cstdlib>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -305,6 +304,7 @@ void File_op::execute(Context& ctx)
 
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
 	bool use_mpio = false;
+	EnvGuard guard("H5FD_SUBFILING_IOC_SELECTION_CRITERIA");
 #ifdef H5_HAVE_PARALLEL
 	MPI_Comm comm = MPI_COMM_SELF;
 	if (communicator()) {
@@ -318,6 +318,7 @@ void File_op::execute(Context& ctx)
 		if (auto subfiling_stripe_count = subfiling().count().to_long(ctx)) {
 #ifndef H5_HAVE_SUBFILING_VFD
 			if (subfiling().policy().to_string(ctx) == "CONTINUE") {
+				subfiling_stripe_count = 0;
 				ctx.logger().warn("Used HDF5 does not support subfiling. HDF5 subfiling is ignored");
 			} else {
 				throw System_error{"Used HDF5 does not support subfiling. Please set subfiling to 0."};
@@ -333,8 +334,7 @@ void File_op::execute(Context& ctx)
 					throw System_error{"HDF5 subfiling requires MPI_THREAD_MULTIPLE (3). The provided level of thread support is {}", provided};
 				}
 			}
-#ifdef H5_HAVE_SUBFILING_VFD
-			if (subfiling_stripe_count != 0) {
+			if (subfiling_stripe_count > 0) {
 				ctx.logger().info("HDF5 subfiling enabled for file {}", filename);
 				H5FD_subfiling_config_t subf_config;
 				H5Pget_fapl_subfiling(file_lst, &subf_config);
@@ -351,62 +351,61 @@ void File_op::execute(Context& ctx)
 
 				auto ioc_criteria = subfiling().ioc_criteria().to_long(ctx);
 				if (ioc_criteria <= 0) {
-					ctx.logger().warn(
+					ctx.logger().error(
 						"HDF5 subfiling IOC_selection criteria should be a positive integer, between 1 and stripe_count({}).",
 						subfiling_stripe_count
 					);
-					ctx.logger().warn("IOC_selection criteria set to 1.");
-					ioc_criteria = 1;
-				} else if (ioc_criteria > subfiling_stripe_count) {
-					ctx.logger().warn(
-						"HDF5 subfiling IOC_selection criteria should be a positive integer, between 1 and stripe_count({}).",
-						subfiling_stripe_count
-					);
-					ctx.logger().warn("IOC_selection criteria set to stripe_count({}).", subfiling_stripe_count);
-					ioc_criteria = subfiling_stripe_count;
 				}
-				if (const char* env_criteria_str = std::getenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA")) {
-					subfiling().set_criteria_origin(env_criteria_str);
-				}
-				switch (subfiling().ioc_selection()) {
-				case Subfiling::IocSelect::OnePerNode:
-					subf_config.shared_cfg.ioc_selection = SELECT_IOC_ONE_PER_NODE;
-					if (unsetenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA") != 0) {
-						ctx.logger().warn("Failed to unset environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
+
+				if (const auto selection = subfiling().ioc_selection(); selection.has_value()) {
+					int tmp_size = 0;
+					MPI_Comm_size(comm, &tmp_size);
+					switch (*selection) {
+					case Subfiling::IocSelect::OnePerNode:
+						subf_config.shared_cfg.ioc_selection = SELECT_IOC_ONE_PER_NODE;
+						if (unsetenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA") != 0) {
+							ctx.logger().error("Failed to unset environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
+						}
+						ctx.logger().debug("HDF5 subfiling ioc_selection set to 'OnePerNode'.");
+						break;
+					case Subfiling::IocSelect::Total:
+						subf_config.shared_cfg.ioc_selection = SELECT_IOC_TOTAL;
+						if (ioc_criteria > tmp_size) {
+							ctx.logger().error(
+								"When ioc_selection = Total, ioc_criteria (={}) should be no more than the MPI size (={}).",
+								ioc_criteria,
+								tmp_size
+							);
+						}
+						if (setenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA", std::to_string(ioc_criteria).c_str(), 1) != 0) {
+							ctx.logger().error("Failed to set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
+							return;
+						}
+						ctx.logger().debug(
+							"HDF5 subfiling ioc_selection set to 'Total'. "
+							"Number of IOC = {}",
+							ioc_criteria
+						);
+						break;
+					case Subfiling::IocSelect::EveryNthRank:
+						subf_config.shared_cfg.ioc_selection = SELECT_IOC_EVERY_NTH_RANK;
+						if (setenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA", std::to_string(ioc_criteria).c_str(), 1) != 0) {
+							ctx.logger().error("Failed to set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
+							return;
+						}
+						ctx.logger().debug(
+							"HDF5 subfiling ioc_selection set to 'EveryNthRank'. "
+							"One IOC per {} MPI ranks",
+							ioc_criteria
+						);
+						break;
 					}
-					ctx.logger().debug("HDF5 subfiling ioc_selection set to 'OnePerNode'.");
-					break;
-				case Subfiling::IocSelect::Total:
-					subf_config.shared_cfg.ioc_selection = SELECT_IOC_TOTAL;
-					if (!setenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA", std::to_string(ioc_criteria).c_str(), 1)) {
-						ctx.logger().debug("Successfully set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA to {}!", ioc_criteria);
-					} else {
-						ctx.logger().warn("Failed to set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
-					}
-					ctx.logger().debug(
-						"HDF5 subfiling ioc_selection set to 'Total'. "
-						"Number of IOC = {}",
-						ioc_criteria
-					);
-					break;
-				case Subfiling::IocSelect::EveryNthRank:
-					subf_config.shared_cfg.ioc_selection = SELECT_IOC_EVERY_NTH_RANK;
-					if (!setenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA", std::to_string(ioc_criteria).c_str(), 1)) {
-						ctx.logger().debug("Successfully set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA to {}!", ioc_criteria);
-					} else {
-						ctx.logger().warn("Failed to set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
-					}
-					ctx.logger().debug(
-						"HDF5 subfiling ioc_selection set to 'EveryNthRank'. "
-						"One IOC per {} MPI ranks",
-						ioc_criteria
-					);
-					break;
 				}
 
 				H5Pset_fapl_subfiling(file_lst, &subf_config);
+			} else {
+				ctx.logger().warn("HDF5 subfiling ignored for file {}", filename);
 			}
-#endif
 		}
 	}
 #endif
@@ -451,16 +450,6 @@ void File_op::execute(Context& ctx)
 		ctx.logger().trace("Opening `{}' file to read", filename);
 		h5_file_raw = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, file_lst);
 	}
-#if defined(H5_HAVE_PARALLEL) && defined(H5_HAVE_SUBFILING_VFD)
-	if (!setenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA", subfiling().get_criteria_origin().c_str(), 1)) {
-		ctx.logger().debug(
-			"Successfully reset environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA to its original value {}!",
-			subfiling().get_criteria_origin()
-		);
-	} else {
-		ctx.logger().warn("Failed to set environment variable H5FD_SUBFILING_IOC_SELECTION_CRITERIA.");
-	}
-#endif
 	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose, ("Cannot open `" + filename + "' file").c_str());
 
 	for (auto&& one_dset_op: dset_writes) {
