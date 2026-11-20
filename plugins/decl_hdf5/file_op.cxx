@@ -335,6 +335,7 @@ void File_op::execute(Logger& logger, Context& ctx)
 					throw System_error{"HDF5 subfiling requires MPI_THREAD_MULTIPLE (3). The provided level of thread support is {}", provided};
 				}
 			}
+#ifdef H5_HAVE_SUBFILING_VFD
 			if (subfiling_stripe_count > 0) {
 				logger.info("HDF5 subfiling enabled for file {}", filename);
 				H5FD_subfiling_config_t subf_config;
@@ -407,6 +408,7 @@ void File_op::execute(Logger& logger, Context& ctx)
 			} else {
 				logger.warn("HDF5 subfiling ignored for file {}", filename);
 			}
+#endif
 		}
 	}
 #endif
