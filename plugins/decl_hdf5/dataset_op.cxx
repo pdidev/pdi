@@ -136,16 +136,33 @@ void validate_dataspaces(PC_tree_t selectree, hid_t h5_mem_space, hid_t h5_file_
 
 namespace decl_hdf5 {
 
-Dataset_op::Dataset_op(Direction dir, std::string name, PDI::Expression default_when, Collision_policy file_collision_policy)
+// Dataset_op::Dataset_op(Direction dir, std::string name, PDI::Expression default_when, Collision_policy file_collision_policy)
+Dataset_op::Dataset_op(
+	Direction dir,
+	std::string name,
+	PDI::Expression default_when,
+	Collision_policy file_collision_policy,
+	H5FD_mpio_xfer_t file_mpio
+)
 	: m_collision_policy{file_collision_policy}
 	, m_direction{dir}
 	, m_dataset{name}
 	, m_value{name}
 	, m_when{default_when}
+	, m_mpio{file_mpio}
 {}
 
-Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_tree_t tree, Collision_policy file_collision_policy)
-	: Dataset_op{dir, name, default_when, file_collision_policy}
+// Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_tree_t tree, Collision_policy file_collision_policy)
+// 	: Dataset_op{dir, name, default_when, file_collision_policy}
+Dataset_op::Dataset_op(
+	Direction dir,
+	string name,
+	Expression default_when,
+	PC_tree_t tree,
+	Collision_policy file_collision_policy,
+	H5FD_mpio_xfer_t file_mpio
+)
+	: Dataset_op{dir, name, default_when, file_collision_policy, file_mpio}
 {
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 		if (!PC_status(value)) {
@@ -172,7 +189,16 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 				m_fletcher = value;
 			} else if (key == "attributes") {
 				// pass
+				// } else if (key == "mpio") {
+				// 	if (to_string(value) == "INDEPENDENT") {
+				// 		m_mpio = H5FD_MPIO_INDEPENDENT;
+				// 	} else if (to_string(value) == "COLLECTIVE") {
+				// 		m_mpio = H5FD_MPIO_COLLECTIVE;
+				// 	} else {
+				// 		throw Spectree_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
+				// 	}
 			} else if (key == "mpio") {
+#ifdef H5_HAVE_PARALLEL
 				if (to_string(value) == "INDEPENDENT") {
 					m_mpio = H5FD_MPIO_INDEPENDENT;
 				} else if (to_string(value) == "COLLECTIVE") {
@@ -180,6 +206,9 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 				} else {
 					throw Spectree_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
 				}
+#else
+				throw Spectree_error(key_tree, "Sequential HDF5 used, specifying mpio is invalid");
+#endif
 			} else if (key == "collision_policy") {
 				m_collision_policy = to_collision_policy(to_string(value));
 			} else {
@@ -227,6 +256,7 @@ void Dataset_op::execute(Logger& logger, Context& ctx, hid_t h5_file, bool use_m
 		if (0 > H5Pset_dxpl_mpio(xfer_lst, m_mpio)) {
 			handle_hdf5_err();
 		}
+		logger.trace("Using {} MPI-I/O transfers", m_mpio == H5FD_MPIO_COLLECTIVE ? "COLLECTIVE" : "INDEPENDENT");
 	}
 #endif
 	if (m_direction == READ) {
