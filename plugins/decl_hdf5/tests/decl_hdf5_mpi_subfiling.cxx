@@ -193,23 +193,23 @@ int main(int argc, char* argv[])
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
 
-	if (!std::system("h5cc -showconfig | grep -q 'Subfiling VFD: ON' > /dev/null 2>&1")) {
-		if (std::system("grep \"subfile_count=4\" subfiling_reals.h5.subfile_*.config > /dev/null 2>&1")) {
+	if (!std::system("h5cc -showconfig | grep -q 'Subfiling VFD: ON' ")) {
+		if (std::system("grep -qw \"subfile_count=4\" subfiling_reals.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
-		if (std::system("grep \"aggregator_count=1\" subfiling_reals.h5.subfile_*.config > /dev/null 2>&1")) {
+		if (std::system("grep -qw \"aggregator_count=1\" subfiling_reals.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
-		if (std::system("grep \"subfile_count=2\" subfiling_values.h5.subfile_*.config > /dev/null 2>&1")) {
+		if (std::system("grep -qw \"subfile_count=2\" subfiling_values.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
-		if (std::system("grep \"aggregator_count=2\" subfiling_values.h5.subfile_*.config > /dev/null 2>&1")) {
+		if (std::system("grep -qw \"aggregator_count=2\" subfiling_values.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
-		if (std::system("grep \"subfile_count=2\" subfiling_dup.h5.subfile_*.config > /dev/null 2>&1")) {
+		if (std::system("grep -qw \"subfile_count=2\" subfiling_dup.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
-		if (std::system("grep \"aggregator_count=1\" subfiling_dup.h5.subfile_*.config > /dev/null 2>&1")) {
+		if (std::system("grep -qw \"aggregator_count=1\" subfiling_dup.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
 	}
