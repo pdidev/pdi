@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,12 +47,12 @@ class Share_operation: public Operation
 
 public:
 	/** Creates share operation
-     * \param[in] ctx context of the operation
+     * \param[in] logger the logger to use
      * \param[in] list_of_values yaml config tree of operation
      */
-	Share_operation(PDI::Context& ctx, PC_tree_t list_of_values);
+	Share_operation(PDI::Logger& logger, PC_tree_t list_of_values);
 
-	void execute() override;
+	void execute(PDI::Logger& logger, PDI::Context& ctx) override;
 };
 
 } // namespace set_value

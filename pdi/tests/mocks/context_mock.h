@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,8 +50,6 @@ struct MockContext: public PDI::Context {
 	MOCK_METHOD(PDI::Context::Iterator, find, (const std::string& name), (override));
 
 	MOCK_METHOD(void, event, (const char*), (override));
-
-	MOCK_METHOD(PDI::Logger&, logger, (), (override));
 
 	MOCK_METHOD(PDI::Datatype_template_sptr, datatype, (PC_tree_t), (override));
 	MOCK_METHOD(void, add_datatype, (const std::string&, Datatype_template_parser), (override));

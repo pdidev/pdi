@@ -16,6 +16,77 @@ and this project adheres to
   [#804](https://github.com/pdidev/pdi/issues/804)
 
 #### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+* The source installation guide lists Doxygen, says that the distribution provides
+  pybind11, and states that the `Devel` profile selects the `Debug` build type,
+  as described in [#774](https://github.com/pdidev/pdi/issues/774).
+* The error Python's `pdi.version()` raises for an incompatible version shows
+  the expected and provided versions, instead of `%lu` placeholders, fixing
+  [#935](https://github.com/pdidev/pdi/issues/935)
+* `find_package(PDI QUIET COMPONENTS Fortran)` no longer prints the deprecation
+  warning of the `Fortran` component, which it now only prints without `QUIET`,
+  fixing [#947](https://github.com/pdidev/pdi/issues/947).
+* The mock PDI defines the version macros of `pdi.h`, `PDI_VERSION` and its
+  components, with the version of the last release, and its `PDI_version`
+  provides that version, fixing [#951](https://github.com/pdidev/pdi/issues/951)
+* `find_package(PDI)` now sets `PDI_<component>_FOUND` for each component
+  requested, so that a project can tell which optional components it got,
+  fixing [#948](https://github.com/pdidev/pdi/issues/948).
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+* `bin/build_and_run_all_tests --container <image>` runs the tests inside a CI
+  image, set up as the CI does it, as per
+  [#895](https://github.com/pdidev/pdi/issues/895).
+* `bin/build_and_run_all_tests` takes a `--workdir <dir>` option to choose the
+  directory it builds in, and a `--ctest-outdir <dir>` option to choose where
+  it writes the JUnit test reports, part of
+  [#895](https://github.com/pdidev/pdi/issues/895).
+
+#### Changed
+
+#### Deprecated
+* The `TEST_DIR` and `CTEST_DIR` environment variables of
+  `bin/build_and_run_all_tests` are deprecated in favour of its `--workdir` and
+  `--ctest-outdir` options, part of
+  [#895](https://github.com/pdidev/pdi/issues/895).
+
+#### Removed
+
+#### Fixed
+* `bin/build_and_run_all_tests` skips the tests listed in `EXCLUDED_PDI_TESTS`
+  as documented, instead of ignoring them, fixing
+  [#894](https://github.com/pdidev/pdi/issues/894).
+* `bin/build_and_run_all_tests` configures, builds and tests the runs against
+  the mock PDI the same way as the others: they take `CMAKE_FLAGS` into
+  account, the MockFind ones build in `tests_<name>` instead of a nested
+  `tests_<name>/tests_<name>`, and `MAKEFLAGS` reach the build tool instead of
+  CMake, which rejected any flag it did not know, such as `-k`, fixing
+  [#783](https://github.com/pdidev/pdi/issues/783).
+* `bin/build_and_run_all_tests` no longer installs the plugins it builds into
+  the directory named by the `PDI_PLUGIN_PATH` environment variable, which only
+  tells PDI where to look for plugins at runtime; pass
+  `-DINSTALL_PDIPLUGINDIR=<dir>` in `CMAKE_FLAGS` to choose where they install,
+  fixing [#905](https://github.com/pdidev/pdi/issues/905).
+
+#### Security
+
+
+
+## [1.13.0] - 2026-11-13
+
+### For users
+
+#### Changed
 * Improved error message in type check in Decl'NetCDF when reading scalar variable from file
   as requested [#731](https://github.com/pdidev/pdi/issues/731)
 * Split the example of HDF5 between serial and parallel versions, 
@@ -25,6 +96,8 @@ and this project adheres to
   [#785](https://github.com/pdidev/pdi/issues/785).
 * PDI is no longer tested on macOS 14, whose runners GitHub retired, as per
   [#914](https://github.com/pdidev/pdi/issues/914).
+* PDI is now tested on x86_64 macOS 26, as per
+  [#946](https://github.com/pdidev/pdi/issues/946).
 
 #### Deprecated
 * The `INSTALL_CMAKEDIR` CMake variable, which sets where the PDI CMake package
@@ -73,6 +146,9 @@ and this project adheres to
 * A parallel NetCDF found through its own CMake configuration is no longer taken
   for a sequential one when no prefix path points at its headers, as per
   [#771](https://github.com/pdidev/pdi/issues/771).
+* Building PDI with GCC no longer prints eight warnings about ignored type
+  attributes in `error.cxx`, fixing
+  [#819](https://github.com/pdidev/pdi/issues/819)
 
 #### Security
 * PDI builds again against paraconf 1.2.0 with `-Werror=format-security`, and
@@ -83,6 +159,10 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* The `PDI_COMPUTE_PLUGIN_API_VERSION(MAJOR, MINOR, PATCH)` macro computes a
+  version to compare with `PDI_PLUGIN_API_VERSION` or with what
+  `PDI::plugin_api_version` returns, in `#if` as well as in code, as per
+  [#937](https://github.com/pdidev/pdi/issues/937)
 * Tests check that an array type accepts `order: C` and `order: c` and rejects
   any other order, as per [#758](https://github.com/pdidev/pdi/issues/758)
 
@@ -112,6 +192,21 @@ and this project adheres to
   This is part of [#721](https://github.com/pdidev/pdi/issues/721)
 * `<pdi/plugin.h>` no longer declares anything at global scope. Fixes
   [#756](https://github.com/pdidev/pdi/issues/756)
+* `Context` no longer has a `logger()` accessor.
+  A plugin's constructor must now accept an additional `PDI::Logger&` parameter
+  (before `PDI::Context&`), available afterwards through the inherited
+  `Plugin::logger()` accessor.
+  `Datatype_template::load_basic_datatypes` takes the logger to warn through.
+  Part of [#721](https://github.com/pdidev/pdi/issues/721)
+* The plugin API version follows the version of PDI, as
+  `0.(major × 128 + minor).patch`, instead of staying 0.0.1 while each minor
+  release of PDI may break the plugin API, as per [#938](https://github.com/pdidev/pdi/issues/938)
+* While the plugin API version is 0.y.z, a plugin built for another minor
+  revision of the plugin API is rejected, as semantic versioning has it, instead
+  of only one built for a later minor, as per [#939](https://github.com/pdidev/pdi/issues/939)
+* `PDI::plugin_api_version` and `PDI_PLUGIN_API_VERSION` are `uint64_t` instead
+  of `unsigned long`, with 16 bits per revision number instead of 8, as per
+  [#938](https://github.com/pdidev/pdi/issues/938)
 
 #### Deprecated
 * `PDI::TimerEventHandler` and the `PLUGIN_API_VERSION`,
@@ -125,6 +220,8 @@ and this project adheres to
   intended as examples but provided only misleading information and prevented
   refactoring (Decl'HDF5 benchmarks remain for now). This partially answers
   [#733](https://github.com/pdidev/pdi/issues/733)
+* Removed the `Context_proxy` class.
+  Part of [#721](https://github.com/pdidev/pdi/issues/721)
 
 #### Fixed
 * `PDI::is_list`, `PDI::is_map` and `PDI::is_scalar` return false for a tree in
@@ -147,8 +244,9 @@ and this project adheres to
 * A plugin that does not export its pretty name, now loads under its own name
   instead of crashing PDI, fixing
   [#836](https://github.com/pdidev/pdi/issues/836)
-
-#### Security
+* A test executable built from several files that include `pdi/testing.h` now
+  links, instead of failing on a duplicate definition of the `PDI::PdiTest`
+  constructor, fixing [#926](https://github.com/pdidev/pdi/issues/926)
 
 
 

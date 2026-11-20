@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,11 +51,12 @@ class Dnc_attribute
 public:
 	/** Creates NetCDF attribute information from yaml
 	 *
+	 * \param logger Logger to use while creating this attribute
 	 * \param ctx Context of this I/O
 	 * \param name Name of this attribute
 	 * \param config Configuration node of this attribute
 	 */
-	Dnc_attribute(PDI::Context& ctx, const std::string& name, PC_tree_t config);
+	Dnc_attribute(PDI::Logger& logger, PDI::Context& ctx, const std::string& name, PC_tree_t config);
 
 	/** Getter for attribute name
 	 *

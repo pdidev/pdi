@@ -30,17 +30,16 @@
 
 namespace set_value {
 
-Event_operation::Event_operation(PDI::Context& ctx, PC_tree_t event_value_node)
-	: Operation{ctx}
+Event_operation::Event_operation(PDI::Logger& logger, PC_tree_t event_value_node)
 {
 	m_event_to_call = PDI::to_string(event_value_node);
-	context().logger().debug("Event operation loaded: {}", m_event_to_call);
+	logger.debug("Event operation loaded: {}", m_event_to_call);
 }
 
-void Event_operation::execute()
+void Event_operation::execute(PDI::Logger& logger, PDI::Context& ctx)
 {
-	context().logger().trace("Calling {} event", m_event_to_call);
-	context().event(m_event_to_call.c_str());
+	logger.trace("Calling {} event", m_event_to_call);
+	ctx.event(m_event_to_call.c_str());
 }
 
 } // namespace set_value

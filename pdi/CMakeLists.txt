@@ -41,9 +41,10 @@ string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-
 set(PDI_VERSION_MAJOR "${CMAKE_MATCH_1}")
 set(PDI_VERSION_MINOR "${CMAKE_MATCH_2}")
 set(PDI_VERSION_PATCH "${CMAKE_MATCH_3}")
-set(PDI_VERSION_MODIF "${CMAKE_MATCH_5}")
-if("git" STREQUAL "${PDI_VERSION_MODIF}" OR "alpha" STREQUAL "${PDI_VERSION_MODIF}")
-	execute_process(COMMAND "${PDI_SOURCE_DIR}/cmake/version-uid" "${PDI_VERSION_MODIF}" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(PDI_VERSION_MODIF "${CMAKE_MATCH_4}")
+set(PDI_PRE_RELEASE "${CMAKE_MATCH_5}")
+if("git" STREQUAL "${PDI_PRE_RELEASE}" OR "alpha" STREQUAL "${PDI_PRE_RELEASE}")
+	execute_process(COMMAND "${PDI_SOURCE_DIR}/cmake/version-uid" "${PDI_PRE_RELEASE}" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 set(PDI_VERSION "${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
 set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
@@ -129,7 +130,6 @@ configure_file(src/version.h.in pdi/version.h @ONLY)
 set(PDI_C_SRC
 		src/array_datatype.cxx
 		src/context.cxx
-		src/context_proxy.cxx
 		src/data_descriptor.cxx
 		src/data_descriptor_impl.cxx
 		src/data_store.cxx

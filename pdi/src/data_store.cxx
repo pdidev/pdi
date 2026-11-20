@@ -396,19 +396,19 @@ void Data_store::notify_missing_data(const string& name)
 
 Data_store::Data_store(PC_tree_t conf)
 	: m_logger{"PDI", PC_get(conf, ".logging")}
-	, m_plugins{*this}
+	, m_plugins{m_logger}
 {
 	// Handle includes and gather all files
 	std::vector<PC_tree_t> confs = get_includes(logger(), conf);
 
 	// load basic datatypes
-	Datatype_template::load_basic_datatypes(*this);
+	Datatype_template::load_basic_datatypes(m_logger, *this);
 	// load user datatypes
 	for (auto&& conf: confs) {
 		Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
 	}
 
-	m_plugins.load_plugins(confs);
+	m_plugins.load_plugins(*this, confs);
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
