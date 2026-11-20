@@ -26,6 +26,9 @@
 #ifndef DECL_HDF5_SUBFILING_H_
 #define DECL_HDF5_SUBFILING_H_
 
+#include <cstdlib>
+#include <optional>
+
 #include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
@@ -33,10 +36,21 @@
 
 namespace decl_hdf5 {
 
-/** This identifies a selection in an (array) Datatype
+/** A Subfiling represents an HDF5 subfiling configuration on a file: 
+ * number of subfiles, 
+ * IOC strategy, etc.
  */
 class Subfiling
 {
+public:
+	/// Enumeration of different strategy for selecting I/O Concentrator processes across MPI ranks.
+	enum class IocSelect {
+		OnePerNode, ///< number of IOC == nomber of node
+		EveryNthRank, ///< number of IOC == (total number of MPI ranks / N)
+		Total ///< number of IOC == Total
+	};
+
+private:
 	/// The number of subfiles
 	PDI::Expression m_sf_count = 0L;
 
@@ -45,6 +59,12 @@ class Subfiling
 
 	/// The policy for subfiling when problem
 	PDI::Expression m_sf_policy = "STOP";
+
+	/// The strategy for selecting I/O Concentrator processes across MPI ranks.
+	std::optional<IocSelect> m_sf_ioc_selection;
+
+	/// H5FD_SUBFILING_IOC_SELECTION_CRITERIA
+	PDI::Expression m_sf_ioc_criteria = 1L;
 
 public:
 	/** The default constructor for an empty selection (everything selected)
@@ -57,7 +77,7 @@ public:
 	 * - count: an expressions, or an integer value
 	 * - stripe_size: an expressions, or an integer value
 	 * - policy: an expression representing either CONTINUE or STOP
-	 *
+	 * - ioc_selection: a string/mapping specifying the IOC strategy
 	 * \param tree the tree representing the subfiling.
 	 */
 	Subfiling(PC_tree_t tree);
@@ -74,12 +94,66 @@ public:
 	 */
 	const PDI::Expression& stripe_size() const { return m_sf_stripe_size; }
 
-	/** Accesses the policy of subfiling configuration if problem
-	 * default.
+	/** Accesses the policy of subfiling configuration if problem.
 	 *
-	 * \return The the policy of subfiling configuration if problem
+	 * \return The policy of subfiling configuration if problem
 	 */
 	const PDI::Expression& policy() const { return m_sf_policy; }
+
+	/** Accesses the ioc_selection of subfiling configuration.
+	 *
+	 * \return The IOC strategy of subfiling
+	 */
+	std::optional<IocSelect> ioc_selection() const { return m_sf_ioc_selection; }
+
+	/** Accesses the H5FD_SUBFILING_IOC_SELECTION_CRITERIA of subfiling configuration.
+	 *
+	 * \return The H5FD_SUBFILING_IOC_SELECTION_CRITERIA of subfiling
+	 */
+	const PDI::Expression& ioc_criteria() const { return m_sf_ioc_criteria; }
+};
+
+/// Returns the value of an environment variable, or nullopt if it is not defined.
+inline std::optional<std::string> get_env(const char* name)
+{
+	if (const char* raw = std::getenv(name)) {
+		return std::string{raw};
+	}
+	return std::nullopt;
+}
+
+/// Sets the variable if value holds something, unsets it otherwise.
+/// Returns true on success.
+inline bool restore_env(const char* name, const std::optional<std::string>& value)
+{
+	if (value.has_value()) {
+		return setenv(name, value->c_str(), 1) == 0;
+	}
+	return unsetenv(name) == 0;
+}
+
+/// Save the state of one environment variable on construction and
+/// restore it on destruction, or
+/// unset it on desruction if variable not defined.
+class EnvGuard
+{
+public:
+	explicit EnvGuard(const char* name)
+		: m_name(name)
+		, m_saved(get_env(name))
+	{}
+
+	~EnvGuard() { restore_env(m_name.c_str(), m_saved); }
+
+	EnvGuard(const EnvGuard&) = delete;
+	EnvGuard& operator= (const EnvGuard&) = delete;
+
+	/// getter of m_saved, not used for now
+	const std::optional<std::string>& saved() const { return m_saved; }
+
+private:
+	std::string m_name;
+	std::optional<std::string> m_saved;
 };
 
 } // namespace decl_hdf5
