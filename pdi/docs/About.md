@@ -34,9 +34,9 @@ Discover %PDI and its plugins by looking at the example and going over the tutor
 
 If that's not enough, go beyond and create your own plugin.
 
-1. \subpage how_to_create_plugin "Plugin creation tutorial"
+1. \subpage how_to_create_a_plugin "Plugin creation tutorial"
 2. \subpage plugin_design_guidelines "Plugin design guidelines"
-3. \subpage PDI "API for plugin developers"
+2. \subpage PDI "API for plugin developers"
 
 ## Get support
 

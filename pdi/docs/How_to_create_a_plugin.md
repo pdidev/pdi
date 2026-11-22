@@ -1,4 +1,4 @@
-# How to create a plugin {#how_to_create_plugin}
+# How to create a plugin {#how_to_create_a_plugin}
 
 ## Plugin class {#plugin_class}
 

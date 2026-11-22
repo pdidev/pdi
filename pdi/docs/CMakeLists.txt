@@ -35,7 +35,7 @@ set(DOXYGEN_INPUT
 		"${CMAKE_CURRENT_SOURCE_DIR}/About.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Concepts.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/First_steps.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/How_to_create_plugin.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/How_to_create_a_plugin.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Installation.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Plugin_guidelines.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Plugins.md"
