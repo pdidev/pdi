@@ -1,16 +1,16 @@
 # Plugins {#Plugins}
 
-|Plugin                                               |Description                                                        |
-|:----------------------------------------------------|:------------------------------------------------------------------|
-|\subpage Decl_HDF5_plugin "Decl'HDF5 plugin"         |Read and write data from HDF5 files in a declarative way.          |
-|\subpage Decl_NetCDF_plugin "Decl'NetCDF plugin"     |Read and write data from NetCDF files in a declarative way.        |
-|\subpage mpi_plugin "MPI plugin"                     |Enables MPI support in %PDI and plugins.                           |
-|\subpage pycall_plugin "Pycall plugin"               |Call python scripts from C application                             |
-|\subpage JSON_plugin "JSON plugin"                   |Export data in JSON format.                                        |
-|\subpage serialize_plugin "Serialize plugin"         |Serializes and deserializes shared data.                           |
-|\subpage set_value_plugin "Set Value plugin"         |Set values to data and metadata from yaml file.                    |
-|\subpage timer_plugin "Timer plugin"                 |Measure the time spent by PDI and its plugins.                     |
-|\subpage trace_plugin "Trace plugin"                 |Generate a trace of what happens in %PDI data store.               |
-|\subpage user_code_plugin "user-code plugin"         |Call your function on event or when data becomes available.        |
+| Plugin                                    |                                                            |
+|:------------------------------------------|:-----------------------------------------------------------|
+| \subpage Decl_HDF5_plugin "Decl'HDF5"     | Read and write data in HDF5 files                          |
+| \subpage Decl_NetCDF_plugin "Decl'NetCDF" | Read and write data from NetCDF files                      |
+| \subpage mpi_plugin "MPI"                 | Enables MPI support in %PDI                                |
+| \subpage pycall_plugin "Pycall"           | Call python code directly from the specification tree      |
+| \subpage JSON_plugin "JSON"               | Export data in JSON format                                 |
+| \subpage serialize_plugin "Serialize"     | Serializes and deserializes data                           |
+| \subpage set_value_plugin "Set Value"     | Use %PDI embedded scripting language                       |
+| \subpage timer_plugin "Timer"             | Measure the time spent in %PDI, its plugins, and your code |
+| \subpage trace_plugin "Trace"             | Generate a trace of what happens in %PDI data store        |
+| \subpage user_code_plugin "user-code"     | Call your own functions from the specification tree        |
 
-To learn how to create your own plugin see: \ref how_to_create_plugin "How to create a plugin"
+To learn how to create your own plugin see: \ref how_to_create_a_plugin "How to create a plugin"
