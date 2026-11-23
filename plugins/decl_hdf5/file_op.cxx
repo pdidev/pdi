@@ -32,7 +32,7 @@
 #endif
 #endif
 
-
+#include <cstring>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -114,7 +114,7 @@ class Env_variable
 	void apply(const std::optional<std::string>& value) const
 	{
 		if (value ? setenv(m_name.c_str(), value->c_str(), 1) : unsetenv(m_name.c_str())) {
-			throw PDI::System_error{"Problem modifying environment variable `{}': {}", m_name, std::strerror(errno)};
+			throw PDI::System_error{"Problem modifying environment variable `{}': {}", m_name, strerror(errno)};
 		}
 	}
 
