@@ -69,11 +69,10 @@ The possible values for the keys are as follow:
       * `CONTINUE`: Fall back to a standard HDF5 output file.
     * `stripe_size` (non-negative integer, default: 0): The amount of data (in bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MiB = 32*1024*1024) is used.
     * `ioc_selection` : The strategy for selecting I/O Concentrator (IOC) processes across MPI ranks. Possible choices:
-      * `OnePerNode` (default): one IOC per node.
-      * {`Total`: `$-exp`}: `$-exp` IOC in total.
-      * {`EveryNthRank`: `$-exp`}: one IOC per every `$-exp` MPI ranks.
-    * A current limitation of HDF5 is that two I/O operations on the same communicator can not have different `ioc_selection` strategies. A workaround to achieve this is to duplicate the communicator to use different communicators.
-    * For the case of `ioc_selection=Total` or `EveryNthRank`, an environment variable is used to specify the selection criteria `H5FD_SUBFILING_IOC_SELECTION_CRITERIA`. This variable will take the value defined by `$-exp` and will override its original value.
+      * `ONE_PER_NODE` (default): one IOC per node.
+      * {`TOTAL`: `$-exp`}: `$-exp` IOC in total.
+      * {`EVERY_N_RANK`: `$-exp`}: one IOC per every `$-exp` MPI ranks.
+    * For the case of `ioc_selection=TOTAL` or `EVERY_N_RANK`, an environment variable is used to specify the selection criteria `H5FD_SUBFILING_IOC_SELECTION_CRITERIA`. This variable will take the value defined by `$-exp` and will override its original value.
   * Yaml example
     * full configuration:
       ```yaml
@@ -81,7 +80,7 @@ The possible values for the keys are as follow:
         count: 4              # generate 4 subfiles
         policy: CONTINUE      # Fallback to standard HDF5 if necessary
         stripe_size: 8388608  # 8MiB stripes (8*1024*1024)
-        ioc_selection: {EveryNthRank: 1} # One IOC per MPI rank
+        ioc_selection: {EVERY_N_RANK: 1} # One IOC per MPI rank
       ```
     * shorthand configuration:
       ```
@@ -89,6 +88,24 @@ The possible values for the keys are as follow:
       ```
       This will set `count=2` and all other members use default values.
   * Here are several important notes for using `subfiling` correctly:
+    * A current limitation of HDF5 is that two I/O operations on the same communicator should have the same `ioc_selection` strategy. A workaround to achieve this is to duplicate the communicator to use different strategies.
+    ```yaml
+    - file: output1.h5
+      communicator: $comm
+      subfiling:
+        ioc_selection: {TOTAL: 2}
+        ...
+    - file: output2.h5
+      communicator: $comm_dup
+      subfiling:
+        ioc_selection: {TOTAL: 4} // will be ignored
+        ...
+    - file: output3.h5
+      communicator: $comm_dup2
+      subfiling:
+        ioc_selection: {ONE_PER_NODE} // OK
+        ...    
+    ```
     * **MPI Threading Requirement**: The simulation must be initialized with `MPI_THREAD_MULTIPLE`. If this is not satisfied, the application will throw a runtime error unless policy is set to `CONTINUE`. In `CONTINUE` mode, the simulation will proceed using standard HDF5 I/O.
     * **Stripe Size Configuration**:  The stripe size can be set in the YAML via `stripe_size` or via the environment variable `H5FD_SUBFILING_STRIPE_SIZE`. The YAML value takes precedence if both are provided.
     * **Custom File Locations**: To store subfiles in a specific directory (e.g., a high-speed scratch burst buffer), provide an absolute path to `H5FD_SUBFILING_SUBFILE_PREFIX`. **Note** : You must set the same path to `H5FD_SUBFILING_CONFIG_FILE_PREFIX` so the main .h5 file can locate its constituent subfiles.

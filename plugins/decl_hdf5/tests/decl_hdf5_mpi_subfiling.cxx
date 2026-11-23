@@ -33,7 +33,7 @@
 #define DIM 2
 
 constexpr char CONFIG_YAML[] = R"(
-logging: trace
+logging: debug
 metadata:
   input: int
   ni: int
@@ -45,6 +45,7 @@ metadata:
   istart: int
   jstart: int
   world_dup: MPI_Comm
+  world_dup2: MPI_Comm
 data:
   reals:
     type: array
@@ -72,7 +73,7 @@ plugins:
       subfiling:
         stripe_size: 4096
         count: 4
-        ioc_selection: OnePerNode
+        ioc_selection: ONE_PER_NODE
       datasets:
         reals: {type: array, subtype: double, size: [$njt, $nit]}
       write:
@@ -91,7 +92,7 @@ plugins:
       subfiling:
         stripe_size: 4096
         count: 2
-        ioc_selection: {Total: 2}
+        ioc_selection: {TOTAL: 2}
       datasets:
         values: {type: array, subtype: int, size: [$njt, $nit]}
       write:
