@@ -32,6 +32,7 @@
 #endif
 #endif
 
+
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -354,12 +355,12 @@ void File_op::execute(Logger& logger, Context& ctx)
 				auto ioc_criteria = subfiling().ioc_criteria().to_long(ctx);
 				if (ioc_criteria <= 0) {
 					logger.error(
-						"HDF5 subfiling IOC_selection criteria should be a positive integer, between 1 and stripe_count({}).",
+						"HDF5 subfiling IOC_selection criteria should be a positive integer.",
 						subfiling_stripe_count
 					);
 				}
 
-				if (const auto selection = subfiling().ioc_selection(); selection.has_value()) {
+				if (const auto selection = subfiling().ioc_selection()) {
 					int tmp_size = 0;
 					MPI_Comm_size(comm, &tmp_size);
 					switch (*selection) {
@@ -401,12 +402,6 @@ void File_op::execute(Logger& logger, Context& ctx)
 							ioc_criteria
 						);
 						break;
-					}
-				} else { // ioc_selection not defined in yaml
-					if (!guard.saved().has_value()) { // env not defined
-						if (*selection != Subfiling::IocSelect::OnePerNode) {
-							throw System_error{"HDF5 subfiling requires the environment variable bto be defined."};
-						}
 					}
 				}
 

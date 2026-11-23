@@ -44,8 +44,8 @@ class Subfiling
 {
 public:
 	/// Enumeration of different strategy for selecting I/O Concentrator processes across MPI ranks.
-	enum class IocSelect {
-		OnePerNode, ///< number of IOC == nomber of node
+	enum class Ioc_select {
+		OnePerNode, ///< number of IOC == number of node
 		EveryNthRank, ///< number of IOC == (total number of MPI ranks / N)
 		Total ///< number of IOC == Total
 	};
@@ -134,7 +134,7 @@ inline bool restore_env(const char* name, const std::optional<std::string>& valu
 
 /// Save the state of one environment variable on construction and
 /// restore it on destruction, or
-/// unset it on desruction if variable not defined.
+/// unset it on destruction if variable not defined.
 class EnvGuard
 {
 public:
