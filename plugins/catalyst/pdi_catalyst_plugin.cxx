@@ -18,6 +18,8 @@
 
 #include <pdi/context.h>
 #include <pdi/error.h>
+#include <pdi/logger.h>
+#include <pdi/plugin.h>
 
 #include "catalyst_plugin_structured_ghost.h"
 #include "pdi_catalyst_plugin.h"
@@ -47,8 +49,8 @@ const char* status_to_string(catalyst_status& status)
 	}
 }
 
-catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
-	: Plugin{ctx}
+catalyst_plugin::catalyst_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t spec_tree)
+	: Plugin{logger, ctx}
 	, m_spec_tree(spec_tree)
 	, catalyst_is_initialized{false}
 	, m_proc_in_communicator{true}
@@ -62,7 +64,7 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 		ctx.on_data([this](const std::string& data_name, PDI::Ref ref) { this->init_communicator(data_name, ref); }, m_communicator);
 #else
 		// m_communicator is not defined in this case
-		context().logger().warn("Catalyst is compiled with no mpi support and a communicator is defined.");
+		logger().warn("Catalyst is compiled with no mpi support and a communicator is defined.");
 #endif
 	} else {
 		ctx.on_init([this]() { this->run_catalyst_initialize(); });
@@ -94,14 +96,14 @@ catalyst_plugin::~catalyst_plugin() noexcept
 		run_catalyst_finalize();
 	} catch (const std::exception& e) {
 		try {
-			context().logger().error("When closing catalyst plugin `{}'", e.what());
-			context().logger().info("Closing plugin");
+			logger().error("When closing catalyst plugin `{}'", e.what());
+			logger().info("Closing plugin");
 		} catch (...) {
 		}
 	} catch (...) {
 		try {
-			context().logger().error("When closing catalyst plugin");
-			context().logger().info("Closing plugin");
+			logger().error("When closing catalyst plugin");
+			logger().info("Closing plugin");
 		} catch (...) {
 		}
 	}
@@ -112,7 +114,7 @@ void catalyst_plugin::init_communicator(std::string data_name, PDI::Ref ref)
 {
 	if (!m_communicator_is_exposed) {
 		if (PDI::Ref_r read_ref = ref) {
-			context().logger().trace("call init communicator for data `{}'...", data_name);
+			logger().trace("call init communicator for data `{}'...", data_name);
 			run_catalyst_initialize(read_ref);
 			m_communicator_is_exposed = true;
 		}
@@ -125,7 +127,7 @@ void catalyst_plugin::init_communicator(std::string data_name, PDI::Ref ref)
 void catalyst_plugin::process_event(const std::string& event_name)
 {
 	if (catalyst_is_initialized) {
-		context().logger().trace("call catalyst_execute in event `{}'...", event_name);
+		logger().trace("call catalyst_execute in event `{}'...", event_name);
 		run_catalyst_execute();
 	} else {
 #ifdef CATALYST_IS_PARALLEL
@@ -134,11 +136,11 @@ void catalyst_plugin::process_event(const std::string& event_name)
 		if (!m_communicator.empty()) {
 			if (m_proc_in_communicator) {
 				// process inside m_communicator
-				context().logger().error("Try to execute catalyst_execute before catalyst_initialize.");
+				logger().error("Try to execute catalyst_execute before catalyst_initialize.");
 				throw PDI::System_error("Try to execute catalyst_execute before catalyst_initialize.");
 			} else {
 				// process outside m_communicator
-				context().logger().debug("catalyst_execute is not called for this process.");
+				logger().debug("catalyst_execute is not called for this process.");
 			}
 		} else {
 			throw PDI::System_error("Try to execute catalyst_execute before catalyst_initialize.");
@@ -159,38 +161,36 @@ void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm
 	const char* env_data_dump = std::getenv("CATALYST_DATA_DUMP_DIRECTORY"); // env for stub implementation
 	const char* env_catalyst_impl_preference = std::getenv("CATALYST_IMPLEMENTATION_PREFER_ENV"); // env to only consider env variables
 	if (!(env_catalyst_impl_preference == nullptr)) {
-		context().logger().warn("The environnment variables CATALYST_IMPLEMENTATION_* will be used instead of the value in the specification tree.");
-
-		context().logger().warn("The environnment variables CATALYST_IMPLEMENTATION_* will be used instead of the value in the specification tree.");
+		logger().warn("The environnment variables CATALYST_IMPLEMENTATION_* will be used instead of the value in the specification tree.");
 		const char* env_name_to_check = std::getenv("CATALYST_IMPLEMENTATION_NAME");
 		if (env_name_to_check == nullptr) {
-			context().logger().warn("No CATALYST_IMPLEMENTATION_NAME environement variable is not defined.");
+			logger().warn("No CATALYST_IMPLEMENTATION_NAME environement variable is not defined.");
 		} else {
 			implementation_name = env_name_to_check;
 		}
 		const char* env_paths_to_check = std::getenv("CATALYST_IMPLEMENTATION_PATHS");
 		if (env_paths_to_check == nullptr) {
-			context().logger().warn("No CATALYST_IMPLEMENTATION_PATHS environement variable is not defined.");
+			logger().warn("No CATALYST_IMPLEMENTATION_PATHS environement variable is not defined.");
 		} else {
 			is_path_implementation = true;
 		}
 	} else {
-		context().logger().trace("Read information for implementation");
+		logger().trace("Read information for implementation");
 		auto implementation_spec = PC_get(this->m_spec_tree, ".implementation");
 		if (!PC_status(implementation_spec)) {
 			implementation_name = PDI::to_string(implementation_spec);
 			node["catalyst_load/implementation"].set(implementation_name.c_str());
 		} else {
-			context().logger().trace("No catalyst implementation is given in specification tree.");
+			logger().trace("No catalyst implementation is given in specification tree.");
 			const char* env_catalyst_to_check = std::getenv("CATALYST_IMPLEMENTATION_NAME");
 			if (env_catalyst_to_check == nullptr) {
-				context().logger().warn("No CATALYST_IMPLEMENTATION_NAME environement variable is not defined.");
+				logger().warn("No CATALYST_IMPLEMENTATION_NAME environement variable is not defined.");
 			} else {
 				implementation_name = env_catalyst_to_check;
 			}
 		}
 
-		context().logger().trace("Read information for implementation paths");
+		logger().trace("Read information for implementation paths");
 		auto impl_paths_spec = PC_get(this->m_spec_tree, ".implementation_paths");
 		if (!PC_status(impl_paths_spec)) {
 			int number_paths = 0;
@@ -203,10 +203,10 @@ void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm
 				is_path_implementation = true;
 			}
 		} else {
-			context().logger().trace("No catalyst implementation paths is given in specification tree.");
+			logger().trace("No catalyst implementation paths is given in specification tree.");
 			const char* env_catalyst_to_check = std::getenv("CATALYST_IMPLEMENTATION_PATHS");
 			if (env_catalyst_to_check == nullptr) {
-				context().logger().warn("No CATALYST_IMPLEMENTATION_PATHS environement variable is not defined.");
+				logger().warn("No CATALYST_IMPLEMENTATION_PATHS environement variable is not defined.");
 			} else {
 				is_path_implementation = true;
 			}
@@ -218,11 +218,11 @@ void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm
 	}
 
 	if ((implementation_name.empty() || implementation_name == "stub") && env_data_dump == nullptr) {
-		context().logger().warn("Try to execute catalyst with stub backend but the environnement variable CATALYST_DATA_DUMP_DIRECTORY is defined.");
-		context().logger().warn("No stub output will be generated.");
+		logger().warn("Try to execute catalyst with stub backend but the environnement variable CATALYST_DATA_DUMP_DIRECTORY is defined.");
+		logger().warn("No stub output will be generated.");
 	}
 
-	context().logger().trace("Read information for script.");
+	logger().trace("Read information for script.");
 	auto scripts_spec = PC_get(this->m_spec_tree, ".scripts");
 	if (PC_status(scripts_spec)) {
 		throw PDI::Spectree_error(m_spec_tree, "No python script is defined for catalyst plugin.");
@@ -236,7 +236,7 @@ void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm
 			throw PDI::Spectree_error(scripts_spec, "No python script is defined for catalyst plugin.");
 		}
 	} else {
-		context().logger().debug("The number of python script is `{}'", script_number);
+		logger().debug("The number of python script is `{}'", script_number);
 		// Remark: the name of the script(s) mustn't depend on $expression.
 		auto scripts_node = node["catalyst/scripts"];
 		for (int index = 0; index < script_number; ++index) {
@@ -256,7 +256,7 @@ void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm
 	if (implementation_name == "paraview") {
 		// define the communicator if it exists
 		if (!m_communicator.empty()) {
-			context().logger().trace("Read communicator");
+			logger().trace("Read communicator");
 			MPI_Comm tmp_comm = *(static_cast<const MPI_Comm*>(ref_comm->get()));
 
 			// create communicator node
@@ -265,18 +265,18 @@ void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm
 			// set the fortran MPI_COMMUNICATOR
 			communicator_node.set_int64(static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
 
-			context().logger().debug("Value of the communicator is {}:", static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
-			context().logger().debug("Value of the implementation is {}:", implementation_name);
+			logger().debug("Value of the communicator is {}:", static_cast<int64_t>(MPI_Comm_c2f(tmp_comm)));
+			logger().debug("Value of the implementation is {}:", implementation_name);
 
 			if (tmp_comm == MPI_COMM_NULL) {
 				m_proc_in_communicator = false;
 			}
 		} else {
-			context().logger().warn("No communicator is given by default the communicator is considering to be MPI_COMM_WORLD.");
+			logger().warn("No communicator is given by default the communicator is considering to be MPI_COMM_WORLD.");
 		}
 	} else if ((implementation_name.empty() || implementation_name == "stub")) {
 		if (env_data_dump == nullptr) {
-			context().logger().warn("The communicator is considered to be MPI_COMM_WORLD.");
+			logger().warn("The communicator is considered to be MPI_COMM_WORLD.");
 		} else {
 			// need to be checked before if it is works
 		}
@@ -290,15 +290,15 @@ void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm
 	// node["catalyst/python_path"]
 
 	if (m_proc_in_communicator) {
-		context().logger().debug("catalyst_initialize call...");
+		logger().debug("catalyst_initialize call...");
 		auto result = catalyst_initialize(conduit_cpp::c_node(&node));
 		if (result != catalyst_status_ok) {
 			throw PDI::System_error("catalyst_initialize fails with error message `{}`", status_to_string(result));
 		}
-		context().logger().debug("end catalyst_initialize call...");
+		logger().debug("end catalyst_initialize call...");
 		catalyst_is_initialized = true;
 	} else {
-		context().logger().debug("the proc is outside. JAJAJA");
+		logger().debug("the proc is outside. JAJAJA");
 	}
 }
 
@@ -328,21 +328,21 @@ void catalyst_plugin::build_vtk_ghost_type(
 		auto current = remaining_tree_and_parent_node.top();
 		remaining_tree_and_parent_node.pop();
 
-		context().logger().debug("Read node of name`{}'", current.name);
+		logger().debug("Read node of name`{}'", current.name);
 		if (current.name == "ghost_layers") {
-			context().logger().debug("Ghost layer node: `{}'", current.name);
+			logger().debug("Ghost layer node: `{}'", current.name);
 
 			if (current.tree.node->type == YAML_MAPPING_NODE) {
 				int data_tree_size = PDI::len(current.tree);
 				if (data_tree_size == 0) {
 					throw PDI::Spectree_error(current.tree, "Ghost_layers node defined with a mapping node of size 0.");
 				} else {
-					context().logger().debug("Number of topologies to consider for ghost layers= `{}'", data_tree_size);
+					logger().debug("Number of topologies to consider for ghost layers= `{}'", data_tree_size);
 				}
 
 				// loop over the meshes in the ghost layers tree
 				for (int index = data_tree_size - 1; index >= 0; --index) {
-					list_vtkGhostType_to_create.emplace_back(context(), current.parent_node, current.tree, current_parent_tree, index);
+					list_vtkGhostType_to_create.emplace_back(logger(), context(), current.parent_node, current.tree, current_parent_tree, index);
 				}
 			} else {
 				throw PDI::Spectree_error(current.tree, "Ghost_layers node only support yaml mapping node.");
@@ -411,15 +411,15 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 	while (!remaining_tree_and_parent_node.empty()) {
 		auto current = remaining_tree_and_parent_node.top();
 		remaining_tree_and_parent_node.pop();
-		context().logger().debug("Read node of name `{}'", current.name);
+		logger().debug("Read node of name `{}'", current.name);
 		if (current.name == "ghost_layers") {
-			context().logger().debug(" ghost_layers keys will be read after");
+			logger().debug(" ghost_layers keys will be read after");
 		} else {
 			auto current_node = conduit_cpp::cpp_node(current.parent_node)[current.name];
 			switch (current.tree.node->type) {
 			case YAML_NO_NODE:
 				throw PDI::Spectree_error{current.tree, "Unsupported Empty YAML Node for variable `{}'", current.name};
-				// context().logger().error("Unsupported Empty YAML Node for variable `{}'", current.name);
+				// logger().error("Unsupported Empty YAML Node for variable `{}'", current.name);
 				break;
 			case YAML_SCALAR_NODE:
 				switch (current.tree.node->data.scalar.style) {
@@ -428,24 +428,24 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 				case YAML_DOUBLE_QUOTED_SCALAR_STYLE: {
 					// handle integer or float/double type that depend perhaps on scalar PDI data
 					std::string data_name{PDI::to_string(current.tree)};
-					context().logger().debug("Read value of an integer or float or string for data=`{}'", data_name);
+					logger().debug("Read value of an integer or float or string for data=`{}'", data_name);
 					PDI::Expression data_expression{PDI::to_string(current.tree)};
 
 					PDI::Ref_r spec_ref = data_expression.to_ref(context());
 					if (!spec_ref) {
-						context().logger().debug("problem !spec_ref");
+						logger().debug("problem !spec_ref");
 						throw PDI::Value_error{"Error of right access for: `{}'", data_name};
 					}
 					auto data_type = spec_ref.type()->evaluate(context());
 					if (!data_type) {
-						context().logger().debug("problem !data_type");
+						logger().debug("problem !data_type");
 						throw PDI::Spectree_error{current.tree, "Error of right access for: `{}'", data_name};
 					}
 					if (auto&& scalar_datatype = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type)) {
-						context().logger().debug("case scalar type `{}'", data_name);
+						logger().debug("case scalar type `{}'", data_name);
 						set_value_for_pdi_scalar_datatype(conduit_cpp::c_node(&current_node), current.tree, data_name, *scalar_datatype, spec_ref);
 					} else if (auto&& array_datatype = std::dynamic_pointer_cast<const PDI::Array_datatype>(data_type)) {
-						context().logger().debug("case array type `{}'", data_name);
+						logger().debug("case array type `{}'", data_name);
 
 						// check the array_datatype is a string
 						PDI::Datatype_sptr type = array_datatype->subtype();
@@ -455,15 +455,15 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 						}
 						auto array_scalar_datatype = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(type);
 						if (!array_scalar_datatype) {
-							// context().logger().error("Array subtype of variable {} should be scalar type.", name);
+							// logger().error("Array subtype of variable {} should be scalar type.", name);
 							throw PDI::Spectree_error{current.tree, "Array subtype of variable `{}' should be scalar type.", current.name};
 						}
 						PDI::Scalar_kind scalar_kind = array_scalar_datatype->kind();
 						if (scalar_kind == PDI::Scalar_kind::SIGNED && array_scalar_datatype->buffersize() == sizeof(char)) {
-							context().logger().debug("scalar kind of the array is signed");
+							logger().debug("scalar kind of the array is signed");
 							current_node.set_string(PDI::to_string(current.tree));
 						} else if (scalar_kind == PDI::Scalar_kind::UNSIGNED && array_scalar_datatype->buffersize() == sizeof(unsigned char)) {
-							context().logger().debug("scalar_kind of the array is unsigned");
+							logger().debug("scalar_kind of the array is unsigned");
 							current_node.set_string(PDI::to_string(current.tree));
 						} else {
 							throw PDI::Spectree_error{current.tree, "The scalar type must be a string for `{}'.", current.name};
@@ -512,43 +512,43 @@ void catalyst_plugin::run_catalyst_execute()
 {
 	assert(catalyst_is_initialized);
 
-	context().logger().trace("Run catalyst_execute()");
+	logger().trace("Run catalyst_execute()");
 	conduit_cpp::Node node;
 	std::vector<Catalyst_plugin_structured_ghost> list_vtkGhostType_to_create; // the object used to construct and to store the vtkGhostType field(s)
 	auto execute_spec = PC_get(this->m_spec_tree, ".execute");
 
-	context().logger().debug("Read m_spec_tree execute");
+	logger().debug("Read m_spec_tree execute");
 	conduit_node* node_pointer = conduit_cpp::c_node(&node);
 	// create the Conduit Node for catalyst_execute;
 	create_catalyst_execute_conduit_node(node_pointer, execute_spec);
 
-	context().logger().debug("Read Ghost layers for creating vtk_ghost_type");
+	logger().debug("Read Ghost layers for creating vtk_ghost_type");
 	// read information to create the vtkGhostType for paraview (read "ghost_layers" node in the yaml file)
 	build_vtk_ghost_type(node_pointer, execute_spec, list_vtkGhostType_to_create);
 
-	if (context().logger().level() == spdlog::level::debug || context().logger().level() == spdlog::level::trace) {
-		context().logger().info("Print Conduit Node including vtk ghost type created ...");
+	if (logger().level() == spdlog::level::debug || logger().level() == spdlog::level::trace) {
+		logger().info("Print Conduit Node including vtk ghost type created ...");
 		node.print();
 	}
 
-	context().logger().debug("catalyst_execute call...");
+	logger().debug("catalyst_execute call...");
 	auto result = catalyst_execute(node_pointer);
 	if (result != catalyst_status_ok) {
 		throw PDI::System_error("catalyst_execute fails with error message `{}`", status_to_string(result));
 	}
-	context().logger().debug("end catalyst_execute call...");
+	logger().debug("end catalyst_execute call...");
 }
 
 void catalyst_plugin::run_catalyst_finalize()
 {
 	if (catalyst_is_initialized) {
-		context().logger().debug("catalyst_finalize call...");
+		logger().debug("catalyst_finalize call...");
 		conduit_cpp::Node node;
 		auto result = catalyst_finalize(conduit_cpp::c_node(&node));
 		if (result != catalyst_status_ok) {
 			throw PDI::System_error("catalyst_finalize fails with error message `{}`", status_to_string(result));
 		}
-		context().logger().debug("end catalyst_finalize call...");
+		logger().debug("end catalyst_finalize call...");
 	}
 }
 
@@ -564,7 +564,7 @@ void catalyst_plugin::fill_node_with_pdi_data_array(conduit_node* node, PC_tree_
 	PDI::Ref_r ref_r = context()[name].ref();
 	// check the data can be read from PDI
 	if (!ref_r) {
-		context().logger().warn("Cannot read `{}' this data is not available", name);
+		logger().warn("Cannot read `{}' this data is not available", name);
 		// Remark: This error can happen outside PDI_init. This implies this is not a real config error.
 		throw PDI::System_error{"No \"name\" child in PDI_data_array spec `{}'.", name};
 	}
@@ -859,6 +859,6 @@ std::string catalyst_plugin::read_pdi_execute_event_name()
 	} else {
 		throw PDI::Spectree_error{execute_spec, "No event name for catalyst plugin is given `{}'.", event_name};
 	}
-	context().logger().trace("catalyst_execute will be call in event `{}'.", event_name);
+	logger().trace("catalyst_execute will be call in event `{}'.", event_name);
 	return event_name;
 }

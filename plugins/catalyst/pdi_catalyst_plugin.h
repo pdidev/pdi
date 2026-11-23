@@ -5,6 +5,7 @@
 #include <unordered_set>
 
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 
@@ -42,7 +43,7 @@ public:
 	static std::string pretty_name() { return "Catalyst"; }
 
 	/// \brief Builds a catalyst_plugin specification tree from its yaml config
-	catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree);
+	catalyst_plugin(PDI::Logger& logger, PDI::Context& ctx, PC_tree_t spec_tree);
 
 	~catalyst_plugin() noexcept;
 

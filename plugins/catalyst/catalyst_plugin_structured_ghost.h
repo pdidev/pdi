@@ -10,9 +10,13 @@
 
 #include <pdi/context.h>
 #include <pdi/error.h>
+#include <pdi/logger.h>
 
 class Catalyst_plugin_structured_ghost
 {
+	/// Logger of this file
+	PDI::Logger& m_logger;
+
 	/// Context of this object
 	PDI::Context& m_ctx;
 
@@ -39,9 +43,17 @@ class Catalyst_plugin_structured_ghost
 	std::vector<uint8_t> m_vtk_ghost_type;
 
 public:
-	Catalyst_plugin_structured_ghost(PDI::Context& ctx, conduit_node* parent_node, PC_tree_t& tree, PC_tree_t& parent_tree, const int& index)
+	Catalyst_plugin_structured_ghost(
+		PDI::Logger& logger,
+		PDI::Context& ctx,
+		conduit_node* parent_node,
+		PC_tree_t& tree,
+		PC_tree_t& parent_tree,
+		const int& index
+	)
 		: m_ctx{ctx}
 		, m_ghost_tree(tree)
+		, m_logger{logger}
 		, m_parent_tree(parent_tree)
 		, m_vtk_ghost_type{1, 0}
 	{
@@ -56,7 +68,7 @@ public:
 		// A TESTER:
 		std::string value_type = get_name_from_parent_node(parent_node, "type");
 
-		m_ctx.logger().info("topology type is `{}'", value_type);
+		m_logger.info("topology type is `{}'", value_type);
 
 		//===============================
 		// topo=structured
@@ -73,7 +85,7 @@ public:
 			// A TESTER:
 			std::string value_coordset = get_name_from_parent_node(parent_node, "coordset");
 
-			m_ctx.logger().info("For the uniform topology `{}', the name of coordset is `{}'", m_topology_name, value_coordset);
+			m_logger.info("For the uniform topology `{}', the name of coordset is `{}'", m_topology_name, value_coordset);
 
 			std::string path_to_origins = "topologies/" + m_topology_name + "/origin";
 
@@ -110,7 +122,7 @@ public:
 
 		PDI::each(mask_ghost_spec, [&](PC_tree_t key_tree, PC_tree_t value) {
 			std::string key = PDI::to_string(key_tree);
-			m_ctx.logger().debug("read key= {} in ghost layers section.", key);
+			m_logger.debug("read key= {} in ghost layers section.", key);
 			if (key == "size") {
 				PDI::opt_each(value, [&](PC_tree_t size) { m_size.emplace_back(PDI::to_string(size)); });
 			} else if (key == "start") {
@@ -142,16 +154,18 @@ public:
 
 		// check size + start + dims (TODO:  en dernier)
 
-		m_ctx.logger().info("space dimension {}", m_dimensions.size());
+		m_logger.info("space dimension {}", m_dimensions.size());
 		for (int ii = 0; ii < m_dimensions.size(); ++ii) {
-			m_ctx.logger().info("`{}'-th dimensions of the mesh `{}'", ii, m_dimensions[ii]);
+			m_logger.info("`{}'-th dimensions of the mesh `{}'", ii, m_dimensions[ii]);
 		}
 
 		m_parent_node_path = conduit_cpp::cpp_node(parent_node).path();
-		m_ctx.logger().info("Conduit Node path for the parent node is `{}'", m_parent_node_path);
+		m_logger.info("Conduit Node path for the parent node is `{}'", m_parent_node_path);
 	}
 
 	~Catalyst_plugin_structured_ghost() {}
+
+	/// return the logger
 
 	/// creation of the mask ghost (VtkGhostType) need by paraview
 	void create_vtk_ghost_type()
@@ -169,8 +183,8 @@ public:
 		std::transform(start.begin(), start.end(), last.begin(), last.begin(), [](long start, long last) { return last + start; });
 
 		for (int ii = 0; ii < space_dimension; ++ii) {
-			m_ctx.logger().info("start: `{}'-th dimensions of the mesh `{}'", ii, start[ii]);
-			m_ctx.logger().info("last: `{}'-th dimensions of the mesh `{}'", ii, last[ii]);
+			m_logger.info("start: `{}'-th dimensions of the mesh `{}'", ii, start[ii]);
+			m_logger.info("last: `{}'-th dimensions of the mesh `{}'", ii, last[ii]);
 		}
 
 		if (space_dimension == 2) {
@@ -291,17 +305,17 @@ public:
 						if (node_path.dtype().is_integer()) {
 							int tmp_int = (int)node_path.to_int();
 							m_dimensions.emplace_back(tmp_int);
-							m_ctx.logger().info("dims/`{}' = `{}' for the `{}'.", elem, tmp_int, msg_data);
+							m_logger.info("dims/`{}' = `{}' for the `{}'.", elem, tmp_int, msg_data);
 						} else if (node_path.dtype().is_long()) {
 							int tmp_int = (int)node_path.to_long();
 							m_dimensions.emplace_back(tmp_int);
-							m_ctx.logger().info("dims/`{}' = `{}' for the `{}'.", elem, tmp_int, msg_data);
+							m_logger.info("dims/`{}' = `{}' for the `{}'.", elem, tmp_int, msg_data);
 						} else {
 							throw PDI::Spectree_error{msg_tree, "For `{}' the value of dims/`{}' is not an integer or a long", msg_data, elem};
 						}
 					} else {
 						// info message in case of dims/i, dims/j, dims/k  doesn't exist.
-						m_ctx.logger().info("No dims/`{}' is not defined for the `{}'.", elem, msg_data);
+						m_logger.info("No dims/`{}' is not defined for the `{}'.", elem, msg_data);
 					}
 				}
 				if (m_dimensions.size() == 0) {

@@ -329,7 +329,6 @@ else
 fi
 
 
-
 # Various workarounds
 
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_MPI}" = "xmpich" ]]
@@ -361,13 +360,11 @@ then
 	CMAKE_FLAGS="-DBUILD_JSON_PLUGIN=ON ${CMAKE_FLAGS}"
 fi
 
-if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) ]] && [ -d /opt/catalyst/lib ];
+if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) ]]
 then
-	# Workaround: catalyst need a minimal version of cmake when catalyst is compiled the directory contains the library of catalyst
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_CATALYST_PLUGIN=ON"
-else
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_CATALYST_PLUGIN=OFF"
+	CMAKE_FLAGS="-DBUILD_CATALYST_PLUGIN=ON ${CMAKE_FLAGS}"
 fi
+
 
 
 # Configure, build and test one project in the build directory tests_<name>, with a junit report of the same name, which CI collects as tests_*.xml.
