@@ -106,37 +106,50 @@ namespace {
 // 	std::optional<std::string> m_saved;
 // };
 
-class Env_variable  
-{  
-    std::string m_name;  
-    std::optional<std::optional<std::string>> m_original; //< outer set if the env was modified, inner if the original was set  
-    void apply(const std::optional<std::string>& value) const  
-    {  
-        if (value ? setenv(m_name.c_str(), value->c_str(), 1) : unsetenv(m_name.c_str())) {  
-            throw PDI::System_error{"Problem modifying environment variable `{}': {}", m_name, std::strerror(errno)};  
-        }  
-    }  
-public:  
-    explicit Env_variable(std::string name) : m_name{std::move(name)} {}  
-    Env_variable(const Env_variable&) = delete;  
-    Env_variable& operator= (const Env_variable&) = delete;  
-    void set_env(const std::optional<std::string>& value)  
-    {  
-        if ( ! m_original ) {  
-            const char* original = std::getenv(m_name.c_str());  
-            m_original.emplace(original ? std::optional<std::string>{original} : std::nullopt);  
-        }  
-        apply(value);  
-    }  
-    void reset()  
-    {  
-        if (!m_original) return;  
-        apply(*m_original);  
-        m_original = std::nullopt;  
-    }  
-    ~Env_variable() noexcept { try { reset(); } catch (...) {} }  
-};  
-}
+class Env_variable
+{
+	std::string m_name;
+	std::optional<std::optional<std::string>> m_original; //< outer set if the env was modified, inner if the original was set
+
+	void apply(const std::optional<std::string>& value) const
+	{
+		if (value ? setenv(m_name.c_str(), value->c_str(), 1) : unsetenv(m_name.c_str())) {
+			throw PDI::System_error{"Problem modifying environment variable `{}': {}", m_name, std::strerror(errno)};
+		}
+	}
+
+public:
+	explicit Env_variable(std::string name)
+		: m_name{std::move(name)}
+	{}
+
+	Env_variable(const Env_variable&) = delete;
+	Env_variable& operator= (const Env_variable&) = delete;
+
+	void set_env(const std::optional<std::string>& value)
+	{
+		if (!m_original) {
+			const char* original = std::getenv(m_name.c_str());
+			m_original.emplace(original ? std::optional<std::string>{original} : std::nullopt);
+		}
+		apply(value);
+	}
+
+	void reset()
+	{
+		if (!m_original) return;
+		apply(*m_original);
+		m_original = std::nullopt;
+	}
+
+	~Env_variable() noexcept
+	{
+		try {
+			reset();
+		} catch (...) {}
+	}
+};
+} // namespace
 
 namespace decl_hdf5 {
 
@@ -404,7 +417,7 @@ void File_op::execute(Logger& logger, Context& ctx)
 				}
 			}
 			// Env_guard guard("H5FD_SUBFILING_IOC_SELECTION_CRITERIA");
-			
+
 			if (subfiling_stripe_count > 0) {
 				logger.info("HDF5 subfiling enabled for file {}", filename);
 				H5FD_subfiling_config_t subf_config;
