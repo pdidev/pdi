@@ -146,7 +146,8 @@ public:
 	{
 		try {
 			reset();
-		} catch (...) {}
+		} catch (...) {
+		}
 	}
 };
 } // namespace
