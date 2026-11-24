@@ -106,10 +106,10 @@ endfunction()
 # \param #2 the default of USE_<name>
 # \param EMBEDDED_PATH the source directory or tarball of the copy shipped with the distribution
 # \param VERSION (optional) the minimum version of a system copy
+# \param CMAKE_CACHE_ARGS (optional) additional settings to build the shipped copy with
 # \param COMPONENTS (optional) the components to find on the system
 # \param MODULE_VARS (optional) the variables set by find_package() to forward to the caller
 # \param DEPENDS (optional) the dependencies to build this one after
-# \param CMAKE_CACHE_ARGS (optional) additional settings to build the shipped copy with
 #
 # The projects declared after this call are handed <name>_ROOT, and an empty <name>_DIR too when the dependency is built.
 ###
