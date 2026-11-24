@@ -88,7 +88,7 @@ The possible values for the keys are as follow:
       ```
       This will set `count=2` and all other members use default values.
   * Here are several important notes for using `subfiling` correctly:
-    * A current limitation of HDF5 is that two I/O operations on the same communicator should have the same `ioc_selection` strategy. A workaround to achieve this is to duplicate the communicator to use different strategies.
+    * A current limitation of HDF5 is that two I/O operations on the same communicator should have the same `ioc_selection` strategy, with the same `$-exp` if required.
     ```yaml
     - file: output1.h5
       communicator: $comm
@@ -96,14 +96,14 @@ The possible values for the keys are as follow:
         ioc_selection: {TOTAL: 2}
         ...
     - file: output2.h5
-      communicator: $comm_dup
+      communicator: $comm
       subfiling:
-        ioc_selection: {TOTAL: 4} // will be ignored
+        ioc_selection: {TOTAL: 2} // OK
         ...
     - file: output3.h5
-      communicator: $comm_dup2
+      communicator: $comm
       subfiling:
-        ioc_selection: {ONE_PER_NODE} // OK
+        ioc_selection: {ONE_PER_NODE} // will be ignored
         ...    
     ```
     * **MPI Threading Requirement**: The simulation must be initialized with `MPI_THREAD_MULTIPLE`. If this is not satisfied, the application will throw a runtime error unless policy is set to `CONTINUE`. In `CONTINUE` mode, the simulation will proceed using standard HDF5 I/O.
