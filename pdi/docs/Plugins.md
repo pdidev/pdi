@@ -5,7 +5,7 @@
 | \subpage Decl_HDF5_plugin "Decl'HDF5"     | Read and write data in HDF5 files                          |
 | \subpage Decl_NetCDF_plugin "Decl'NetCDF" | Read and write data in NetCDF files                      |
 | \subpage mpi_plugin "MPI"                 | Enables MPI support in %PDI                                |
-| \subpage pycall_plugin "Pycall"           | Call python code directly from the specification tree      |
+| \subpage pycall_plugin "Pycall"           | Call python code written in the specification tree      |
 | \subpage JSON_plugin "JSON"               | Export data in JSON format                                 |
 | \subpage serialize_plugin "Serialize"     | Serializes and deserializes data                           |
 | \subpage set_value_plugin "Set Value"     | Use %PDI embedded scripting language                       |
