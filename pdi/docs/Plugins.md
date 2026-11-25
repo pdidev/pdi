@@ -3,7 +3,7 @@
 | Plugin                                    |                                                            |
 |:------------------------------------------|:-----------------------------------------------------------|
 | \subpage Decl_HDF5_plugin "Decl'HDF5"     | Read and write data in HDF5 files                          |
-| \subpage Decl_NetCDF_plugin "Decl'NetCDF" | Read and write data from NetCDF files                      |
+| \subpage Decl_NetCDF_plugin "Decl'NetCDF" | Read and write data in NetCDF files                      |
 | \subpage mpi_plugin "MPI"                 | Enables MPI support in %PDI                                |
 | \subpage pycall_plugin "Pycall"           | Call python code directly from the specification tree      |
 | \subpage JSON_plugin "JSON"               | Export data in JSON format                                 |
