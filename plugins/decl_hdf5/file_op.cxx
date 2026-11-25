@@ -91,7 +91,19 @@ vector<File_op> File_op::parse(Logger& logger, Context& ctx, PC_tree_t tree)
 #ifdef H5_HAVE_PARALLEL
 			template_op.m_communicator = to_string(value);
 #else
-			throw Spectree_error {key_tree, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
+			throw Spectree_error(key_tree, "Sequential HDF5 used, specifying a communicator is invalid");
+#endif
+		} else if (key == "mpio") {
+#ifdef H5_HAVE_PARALLEL
+			if (to_string(value) == "INDEPENDENT") {
+				template_op.m_mpio = H5FD_MPIO_INDEPENDENT;
+			} else if (to_string(value) == "COLLECTIVE") {
+				template_op.m_mpio = H5FD_MPIO_COLLECTIVE;
+			} else {
+				throw Spectree_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
+			}
+#else
+		throw Spectree_error(key_tree, "Sequential HDF5 used, specifying mpio is invalid");
 #endif
 		} else if (key == "datasets") {
 			each(value, [&](PC_tree_t dset_name, PC_tree_t dset_type) {
@@ -138,7 +150,8 @@ vector<File_op> File_op::parse(Logger& logger, Context& ctx, PC_tree_t tree)
 		each(read_tree, [&](PC_tree_t tree) {
 			string dset_string = to_string(tree);
 			if (dset_string.find("#") == string::npos) {
-				dset_ops.emplace_back(Dataset_op::READ, to_string(tree), default_when);
+				// dset_ops.emplace_back(Dataset_op::READ, to_string(tree), default_when);
+				dset_ops.emplace_back(Dataset_op::READ, to_string(tree), default_when, Collision_policy::WRITE_INTO, template_op.m_mpio);
 			} else {
 				attr_ops.emplace_back(Attribute_op::READ, tree, default_when);
 			}
@@ -151,7 +164,8 @@ vector<File_op> File_op::parse(Logger& logger, Context& ctx, PC_tree_t tree)
 				} else if (!PC_status(PC_get(value, ".size_of"))) {
 					dset_size_ops.emplace(to_string(name), to_string(PC_get(value, ".size_of")));
 				} else {
-					dset_ops.emplace_back(Dataset_op::READ, to_string(name), default_when, value);
+					// dset_ops.emplace_back(Dataset_op::READ, to_string(name), default_when, value);
+					dset_ops.emplace_back(Dataset_op::READ, to_string(name), default_when, value, Collision_policy::WRITE_INTO, template_op.m_mpio);
 				}
 			});
 		});
@@ -161,7 +175,8 @@ vector<File_op> File_op::parse(Logger& logger, Context& ctx, PC_tree_t tree)
 		each(write_tree, [&](PC_tree_t tree) {
 			string dset_string = to_string(tree);
 			if (dset_string.find("#") == string::npos) {
-				dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when, template_op.m_collision_policy);
+				// dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when, template_op.m_collision_policy);
+				dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when, template_op.m_collision_policy, template_op.m_mpio);
 				if (deflate) {
 					dset_ops.back().deflate(logger, deflate.to_long(ctx));
 				}
@@ -180,7 +195,9 @@ vector<File_op> File_op::parse(Logger& logger, Context& ctx, PC_tree_t tree)
 				});
 			} else {
 				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
-					dset_ops.emplace_back(Dataset_op::WRITE, to_string(name), default_when, value, template_op.m_collision_policy);
+					// dset_ops.emplace_back(Dataset_op::WRITE, to_string(name), default_when, value, template_op.m_collision_policy);
+					dset_ops
+						.emplace_back(Dataset_op::WRITE, to_string(name), default_when, value, template_op.m_collision_policy, template_op.m_mpio);
 					if (deflate) {
 						dset_ops.back().deflate(logger, deflate.to_long(ctx));
 					}
