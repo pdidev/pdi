@@ -16,7 +16,7 @@ pwd_value = os.getcwd() # get the current directory
 env = os.environ.copy()
 env["CATALYST_DATA_DUMP_DIRECTORY"] = pwd_value
 env["CATALYST_IMPLEMENTATION_NAME"] = 'stub' # need to get the Conduit json file for comparison
-env["PDI_PLUGIN_PATH"] = binary_folder + '/..'
+env["PDI_PLUGIN_PATH"] = binary_folder + '/../..'
 result = subprocess.run([binary_folder + "/TestPDICatalyst", binary_folder + "/pdi.yml"], env=env)
 
 if(result.returncode != 0):

@@ -298,7 +298,7 @@ void catalyst_plugin::run_catalyst_initialize(std::optional<PDI::Ref_r> ref_comm
 		logger().debug("end catalyst_initialize call...");
 		catalyst_is_initialized = true;
 	} else {
-		logger().debug("the proc is outside. JAJAJA");
+		logger().debug("the proc is outside.");
 	}
 }
 
