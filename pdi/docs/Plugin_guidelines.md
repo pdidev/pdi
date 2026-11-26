@@ -1,6 +1,6 @@
 # Plugin design guidelines {#plugin_design_guidelines}
 
-To learn how to write the code of a plugin, start with the \ref how_to_create_plugin "plugin creation tutorial".
+To learn how to write the code of a plugin, start with the \ref how_to_create_a_plugin "plugin creation tutorial".
 This document instead gives guidelines on how to design the interface of plugins, their subtree of the specification tree, so that they fit the approach of %PDI.
 
 ## General guidelines
