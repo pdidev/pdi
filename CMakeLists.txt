@@ -120,7 +120,7 @@ message(STATUS " **Profile**: Default use is: `${USE_DEFAULT}' (-DUSE_DEFAULT=${
 message(STATUS " **Profile**: Unstable activation is: `${BUILD_UNSTABLE}' (-DBUILD_UNSTABLE=${BUILD_UNSTABLE})")
 foreach(FEATURE FORTRAN HDF5_PARALLEL PYTHON TESTING)
 	set(FEATURE_ENABLED "DISABLED")
-	if(${BUILD_${FEATURE}})
+	if("${BUILD_${FEATURE}}")
 		set(FEATURE_ENABLED "ENABLED ")
 	endif()
 	message(STATUS " **Feature**: ${FEATURE_ENABLED} ${FEATURE} (-DBUILD_${FEATURE}=${BUILD_${FEATURE}})")
@@ -286,7 +286,6 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 	EMBEDDED_PATH "${PDI_VENDORED_PARACONF_DIR}"
 	COMPONENTS ${PARACONF_COMPONENTS}
 	CMAKE_CACHE_ARGS
-		"-DUSE_yaml:STRING=SYSTEM"
 		"-DBUILD_TESTING:BOOL=OFF"
 	DEPENDS "yaml"
 	VERSION "${PDI_REQUIRED_PARACONF_VERSION}"
@@ -380,6 +379,11 @@ endif()
 
 if("${BUILD_DECL_NETCDF_PLUGIN}")
 	
+	# Workaround: the bundled NetCDF is compiled with the MPI compiler wrapper when HDF5 is parallel, as its documentation asks for parallel builds.
+	# Its CMake files check what a parallel HDF5 offers with code that includes mpi.h through hdf5.h before they look for MPI,
+	# and look for MPI_Comm_f2c and MPI_Info_f2c without linking the MPI library (https://github.com/Unidata/netcdf-c/issues/3199).
+	# With a plain compiler and an HDF5 that provides no CMake package, these checks fail silently:
+	# NetCDF is then built without parallel filters, without collective metadata operations and without the conversion of Fortran MPI handles.
 	if("${BUILD_HDF5_PARALLEL}")
 		set(NETCDF_CC "${MPI_C_COMPILER}")
 	else()
