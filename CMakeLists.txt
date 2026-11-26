@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
+# Copyright (C) 2024-2025 Kitware SAS
 #
 # All rights reserved.
 #
@@ -61,8 +62,6 @@ set(PDI_VENDORED_SPDLOG_DIR     "vendor/spdlog-1.15.3")
 set(PDI_VENDORED_YAML_DIR       "vendor/libyaml-0.2.5")
 set(PDI_VENDORED_ZPP_DIR        "vendor/zpp-1.1.2")
 
-
-
 ### Build options
 
 ## Global options
@@ -104,6 +103,8 @@ option(BUILD_TIMER_PLUGIN       "Build Timer plugin" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
+option(BUILD_CATALYST_PLUGIN    "Build Catalyst plugin" "${BUILD_UNSTABLE}")
+
 
 
 
@@ -579,6 +580,12 @@ sbuild_add_module(PDI_API_TESTS
 sbuild_add_module(TIMER_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_TIMER_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/timer"
+	DEPENDS PDI
+)
+
+sbuild_add_module(CATALYST_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_CATALYST_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/catalyst"
 	DEPENDS PDI
 	SUBSTEPS test
 )

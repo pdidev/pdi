@@ -1,0 +1,32 @@
+# only the following config is passed to PDI
+pdi:
+  metadata: # type of small values for which PDI keeps a copy
+    iter:   int                    # current iteration id
+    dsize: { size: 2, type: array, subtype: int } # number of cells in each direction
+  data: # type odstartf values for which PDI does not keep a copy
+    coords_x: { size: '$dsize[0]+1', type: array, subtype: double } # coordinate of the vertices in x-direction
+    coords_y: { size: '$dsize[1]+1', type: array, subtype: double } # coordinate of the vertices in y-direction
+  plugins:
+    catalyst:
+      scripts:
+        script1: "@CATALYST_SCRIPT_FOLDER@/catalyst_pipeline_save_mesh.py"
+      on_event: "newiter"
+      execute:
+        state:
+          timestep: $iter
+          time: 1.0*$iter
+          multiblock: 0
+        channels:
+           grid:
+            type: "mesh"
+            data:
+              coordsets:
+                my_coords:
+                  type: "rectilinear"
+                  values:
+                    x : { PDI_data_array: "coords_x", size: '($dsize[1]+1)' }
+                    y : { PDI_data_array: "coords_y", size: '($dsize[0]+1)' }
+              topologies:
+                my_mesh:
+                  type: "rectilinear"
+                  coordset: "my_coords"

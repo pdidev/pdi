@@ -329,13 +329,12 @@ else
 fi
 
 
-
 # Various workarounds
 
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_MPI}" = "xmpich" ]]
 then
 	# Workaround: mpi4py in debuntu is packaged for openmpi only
-	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}PDI_example_trace_P|PDI_example_decl_hdf5_P"
+	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}PDI_example_trace_P|PDI_example_decl_hdf5_P|PDI_example_catalyst_P"
 fi
 
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_LIBS}" = "xprovided" ]]
@@ -361,6 +360,11 @@ then
 	CMAKE_FLAGS="-DBUILD_JSON_PLUGIN=ON ${CMAKE_FLAGS}"
 fi
 
+if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) ]]
+then
+	CMAKE_FLAGS="-DBUILD_CATALYST_PLUGIN=ON ${CMAKE_FLAGS}"
+fi
+
 
 
 # Configure, build and test one project in the build directory tests_<name>, with a junit report of the same name, which CI collects as tests_*.xml.
@@ -376,7 +380,6 @@ conf_build_and_run() {
 	${LAUNCHER} cmake --build "${NAME}" -- ${MAKEFLAGS}
 	${LAUNCHER} ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/${NAME}.xml"} ${EXCLUDED_PDI_TESTS:+-E "$EXCLUDED_PDI_TESTS"} --test-dir "${NAME}"
 }
-
 
 
 # And now for the actual tests
