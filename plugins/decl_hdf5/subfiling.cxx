@@ -72,11 +72,7 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 					if (to_string(value) == "ONE_PER_NODE") {
 						m_sf_ioc_selection = Ioc_select::ONE_PER_NODE;
 					} else {
-						throw Spectree_error{
-							value,
-							"Invalid scalar in 'subfiling.ioc_selection'. Expected 'ONE_PER_NODE'; got {}",
-							to_string(value)
-						};
+						throw Spectree_error{value, "Invalid scalar in 'subfiling.ioc_selection'. Expected 'ONE_PER_NODE'; got {}", to_string(value)};
 					}
 				} else {
 					throw Spectree_error{value, "Invalid configuration in 'subfiling.ioc_selection'. Expecting either map or scalar."};
