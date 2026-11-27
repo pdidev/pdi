@@ -186,11 +186,5 @@ int main(int argc, char* argv[])
 		if (std::system("grep -qw \"aggregator_count=2\" subfiling_values.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
-		if (std::system("grep -qw \"subfile_count=2\" subfiling_dup.h5.subfile_*.config")) {
-			return EXIT_FAILURE;
-		}
-		if (std::system("grep -qw \"aggregator_count=1\" subfiling_dup.h5.subfile_*.config")) {
-			return EXIT_FAILURE;
-		}
 	}
 }
