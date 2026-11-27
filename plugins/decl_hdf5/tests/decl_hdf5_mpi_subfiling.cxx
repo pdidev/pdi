@@ -33,7 +33,7 @@
 #define DIM 2
 
 constexpr char CONFIG_YAML[] = R"(
-logging: trace
+logging: debug
 metadata:
   input: int
   ni: int
@@ -65,12 +65,24 @@ plugins:
       subfiling:
         stripe_size: 4096
         count: 4
+        ioc_selection: {EVERY_NTH_RANK: 2}
       datasets:
         reals: {type: array, subtype: double, size: [$njt, $nit]}
       write:
         reals:
           dataset_selection: {start: [$jstart, $istart]}
     - file: subfiling_values.h5
+      communicator: $MPI_COMM_WORLD
+      subfiling:
+        stripe_size: 4096
+        count: 2
+        ioc_selection: {TOTAL: 2}
+      datasets:
+        values: {type: array, subtype: int, size: [$njt, $nit]}
+      write:
+        values:
+          dataset_selection: {start: [$jstart, $istart]}
+    - file: subfiling_short_form.h5
       communicator: $MPI_COMM_WORLD
       subfiling: 2
       datasets:
@@ -122,7 +134,6 @@ int main(int argc, char* argv[])
 	}
 	PDI_expose("nproc", &size, PDI_OUT);
 
-
 	MPI_Cart_create(world, DIM, dims, periodic, 0, &comm2D);
 	MPI_Cart_coords(comm2D, rank, DIM, coord);
 
@@ -170,11 +181,23 @@ int main(int argc, char* argv[])
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
 
-	if (!std::system("h5cc -showconfig | grep -q 'Subfiling VFD: ON' > /dev/null 2>&1")) {
-		if (std::system("grep \"subfile_count=4\" subfiling_reals.h5.subfile_*.config > /dev/null 2>&1")) {
+	if (!std::system("h5cc -showconfig | grep -q 'Subfiling VFD: ON' ")) {
+		if (std::system("grep -qw \"subfile_count=4\" subfiling_reals.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
-		if (std::system("grep \"subfile_count=2\" subfiling_values.h5.subfile_*.config > /dev/null 2>&1")) {
+		if (std::system("grep -qw \"aggregator_count=2\" subfiling_reals.h5.subfile_*.config")) {
+			return EXIT_FAILURE;
+		}
+		if (std::system("grep -qw \"subfile_count=2\" subfiling_values.h5.subfile_*.config")) {
+			return EXIT_FAILURE;
+		}
+		if (std::system("grep -qw \"aggregator_count=2\" subfiling_values.h5.subfile_*.config")) {
+			return EXIT_FAILURE;
+		}
+		if (std::system("grep -qw \"subfile_count=2\" subfiling_short_form.h5.subfile_*.config")) {
+			return EXIT_FAILURE;
+		}
+		if (std::system("grep -qw \"aggregator_count=1\" subfiling_short_form.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
 	}

@@ -26,6 +26,9 @@
 #ifndef DECL_HDF5_SUBFILING_H_
 #define DECL_HDF5_SUBFILING_H_
 
+#include <cstdlib>
+#include <optional>
+
 #include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
@@ -33,10 +36,21 @@
 
 namespace decl_hdf5 {
 
-/** This identifies a selection in an (array) Datatype
+/** A Subfiling represents an HDF5 subfiling configuration on a file: 
+ * number of subfiles, 
+ * IOC strategy, etc.
  */
 class Subfiling
 {
+public:
+	/// Enumeration of different strategy for selecting I/O Concentrator processes across MPI ranks.
+	enum class Ioc_select {
+		ONE_PER_NODE, ///< number of IOC == number of node
+		EVERY_NTH_RANK, ///< number of IOC == (total number of MPI ranks / N)
+		TOTAL ///< number of IOC == Total
+	};
+
+private:
 	/// The number of subfiles
 	PDI::Expression m_sf_count = 0L;
 
@@ -45,6 +59,12 @@ class Subfiling
 
 	/// The policy for subfiling when problem
 	PDI::Expression m_sf_policy = "STOP";
+
+	/// The strategy for selecting I/O Concentrator processes across MPI ranks.
+	std::optional<Ioc_select> m_sf_ioc_selection;
+
+	/// H5FD_SUBFILING_IOC_SELECTION_CRITERIA
+	PDI::Expression m_sf_ioc_criteria = 1L;
 
 public:
 	/** The default constructor for an empty selection (everything selected)
@@ -57,7 +77,7 @@ public:
 	 * - count: an expressions, or an integer value
 	 * - stripe_size: an expressions, or an integer value
 	 * - policy: an expression representing either CONTINUE or STOP
-	 *
+	 * - ioc_selection: a string/mapping specifying the IOC strategy
 	 * \param tree the tree representing the subfiling.
 	 */
 	Subfiling(PC_tree_t tree);
@@ -74,13 +94,25 @@ public:
 	 */
 	const PDI::Expression& stripe_size() const { return m_sf_stripe_size; }
 
-	/** Accesses the policy of subfiling configuration if problem
-	 * default.
+	/** Accesses the policy of subfiling configuration if problem.
 	 *
-	 * \return The the policy of subfiling configuration if problem
+	 * \return The policy of subfiling configuration if problem
 	 */
 	const PDI::Expression& policy() const { return m_sf_policy; }
+
+	/** Accesses the ioc_selection of subfiling configuration.
+	 *
+	 * \return The IOC strategy of subfiling
+	 */
+	std::optional<Ioc_select> ioc_selection() const { return m_sf_ioc_selection; }
+
+	/** Accesses the H5FD_SUBFILING_IOC_SELECTION_CRITERIA of subfiling configuration.
+	 *
+	 * \return The H5FD_SUBFILING_IOC_SELECTION_CRITERIA of subfiling
+	 */
+	const PDI::Expression& ioc_criteria() const { return m_sf_ioc_criteria; }
 };
+
 
 } // namespace decl_hdf5
 
