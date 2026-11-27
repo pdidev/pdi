@@ -88,7 +88,7 @@ The possible values for the keys are as follow:
       ```
       This will set `count=2` and all other members use default values.
   * Here are several important notes for using `subfiling` correctly:
-    * A current limitation of HDF5 is that two I/O operations on the same communicator should have the same `ioc_selection` strategy, with the same `$-exp` if required.
+    * A current limitation of HDF5 is that two I/O operations on the same communicator should have the same "count" (total number of IOC, or number of IOC per rank).
     ```yaml
     - file: output1.h5
       communicator: $comm
@@ -98,12 +98,12 @@ The possible values for the keys are as follow:
     - file: output2.h5
       communicator: $comm
       subfiling:
-        ioc_selection: {TOTAL: 2} // OK
+        ioc_selection: {TOTAL: 2} # OK
         ...
     - file: output3.h5
       communicator: $comm
       subfiling:
-        ioc_selection: {ONE_PER_NODE} // will be ignored
+        ioc_selection: ONE_PER_NODE # will not behave as expected
         ...    
     ```
     * **MPI Threading Requirement**: The simulation must be initialized with `MPI_THREAD_MULTIPLE`. If this is not satisfied, the application will throw a runtime error unless policy is set to `CONTINUE`. In `CONTINUE` mode, the simulation will proceed using standard HDF5 I/O.
