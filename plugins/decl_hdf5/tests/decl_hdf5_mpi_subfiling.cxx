@@ -65,7 +65,7 @@ plugins:
       subfiling:
         stripe_size: 4096
         count: 4
-        ioc_selection: ONE_PER_NODE
+        ioc_selection: {EVERY_NTH_RANK: 2}
       datasets:
         reals: {type: array, subtype: double, size: [$njt, $nit]}
       write:
@@ -77,6 +77,14 @@ plugins:
         stripe_size: 4096
         count: 2
         ioc_selection: {TOTAL: 2}
+      datasets:
+        values: {type: array, subtype: int, size: [$njt, $nit]}
+      write:
+        values:
+          dataset_selection: {start: [$jstart, $istart]}
+    - file: subfiling_short_form.h5
+      communicator: $MPI_COMM_WORLD
+      subfiling: 2
       datasets:
         values: {type: array, subtype: int, size: [$njt, $nit]}
       write:
@@ -177,13 +185,19 @@ int main(int argc, char* argv[])
 		if (std::system("grep -qw \"subfile_count=4\" subfiling_reals.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
-		if (std::system("grep -qw \"aggregator_count=1\" subfiling_reals.h5.subfile_*.config")) {
+		if (std::system("grep -qw \"aggregator_count=2\" subfiling_reals.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
 		if (std::system("grep -qw \"subfile_count=2\" subfiling_values.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
 		if (std::system("grep -qw \"aggregator_count=2\" subfiling_values.h5.subfile_*.config")) {
+			return EXIT_FAILURE;
+		}
+		if (std::system("grep -qw \"subfile_count=2\" subfiling_short_form.h5.subfile_*.config")) {
+			return EXIT_FAILURE;
+		}
+		if (std::system("grep -qw \"aggregator_count=1\" subfiling_short_form.h5.subfile_*.config")) {
 			return EXIT_FAILURE;
 		}
 	}
