@@ -74,7 +74,7 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 					} else {
 						throw Spectree_error{
 							value,
-							"Invalid scalar in 'subfiling.ioc_selection'. Expecting 'ONE_PER_NODE'; getting {}",
+							"Invalid scalar in 'subfiling.ioc_selection'. Expected 'ONE_PER_NODE'; got {}",
 							to_string(value)
 						};
 					}

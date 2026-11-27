@@ -438,8 +438,6 @@ void File_op::execute(Logger& logger, Context& ctx)
 					}
 				}
 				if (0 > H5Pset_fapl_subfiling(file_lst, &subf_config)) handle_hdf5_err();
-			} else {
-				logger.warn("HDF5 subfiling ignored for file {}", filename);
 			}
 #else
 			if (subfiling().policy().to_string(ctx) == "CONTINUE") {
