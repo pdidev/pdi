@@ -129,4 +129,12 @@ size_t Expression::Impl::Mapping::copy_value(Context& ctx, void* buffer, Datatyp
 	}
 }
 
+void Expression::Impl::Mapping::dependencies(std::unordered_set<std::string>& deps_lst) const
+{
+	// This function depends on the dependencies of Record_datatype that is not implemented yet
+	for (const auto& element: m_value) {
+		element.second.dependencies(deps_lst);
+	}
+}
+
 } // namespace PDI

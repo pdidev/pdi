@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <iostream>
 #include <limits>
 #include <memory>
 #include <string>
@@ -51,6 +52,7 @@ using PDI::Array_datatype;
 using PDI::Context;
 using PDI::Data_store;
 using PDI::Datatype_sptr;
+using PDI::Datatype_template_sptr;
 using PDI::Error;
 using PDI::Expression;
 using PDI::Paraconf_wrapper;
@@ -1978,5 +1980,130 @@ TEST(StringExpressionBoolTest, to_long_boolean_string)
 	const vector<string> v_fneg{"n1", "nO", "N0", "Nope", "NOO", "faLse", "Fals", "FaLSE", "OfF", "0f", "FF"};
 	for (auto&& string_value: v_fneg) {
 		EXPECT_THROW(PDI::Expression(string_value).to_long(context_mock), PDI::Error);
+	}
+}
+
+// function to check the list of dependencies
+void check_dependencies(const std::unordered_set<std::string>& expected_dependencies, const std::unordered_set<std::string>& result)
+{
+	// check the size
+	EXPECT_EQ(expected_dependencies.size(), result.size()) << "number of dependencies is not correct";
+
+	// check each data name is in the set
+	for (auto&& expected_elem: expected_dependencies) {
+		EXPECT_TRUE(result.find(expected_elem) != result.end()) << "The dependencies on data " << expected_elem << " is not found";
+	}
+}
+
+/*
+ * Name:                ExpressionDependencies.Operation
+ *
+ * Tested functions:    PDI::Expression::dependencies
+ *
+ *
+ * Description:         Checks if dependencies of an operatiString_literalon expression are correctly evaluated.
+ *
+ */
+TEST(ExpressionDependencies, Operation)
+{
+	Expression first{"$x"};
+	Expression second{"4"};
+	Expression third{"$y"};
+
+	{
+		Expression result_123 = first + second + third;
+
+		std::unordered_set<std::string> expected_dependencies = {"x", "y"};
+		std::unordered_set<std::string> deps;
+		result_123.dependencies(deps);
+
+		check_dependencies(expected_dependencies, deps);
+	}
+
+	{
+		Expression result_23 = second + third;
+
+		std::unordered_set<std::string> expected_dependencies = {"y"};
+		std::unordered_set<std::string> deps;
+		result_23.dependencies(deps);
+
+		check_dependencies(expected_dependencies, deps);
+	}
+
+	{
+		Expression result_12 = first + second;
+
+		std::unordered_set<std::string> expected_dependencies = {"x"};
+		std::unordered_set<std::string> deps;
+		result_12.dependencies(deps);
+
+		check_dependencies(expected_dependencies, deps);
+	}
+}
+
+/*
+ * Name:                ExpressionDependencies.StringLiteral
+ *
+ * Tested functions:    PDI::Expression::dependencies
+ *
+ *
+ * Description:         Checks if dependencies of a String_literal expression are correctly evaluated.
+ *
+ */
+TEST(ExpressionDependencies, StringLiteral)
+{
+	Expression result_str{"str_${z}-x_${x}"};
+
+	std::unordered_set<std::string> expected_dependencies = {"x", "z"};
+	std::unordered_set<std::string> deps;
+	result_str.dependencies(deps);
+
+	check_dependencies(expected_dependencies, deps);
+}
+
+/*
+ * Name:                ExpressionDependencies.MapAndSeq
+ *
+ * Tested functions:    PDI::Expression::dependencies
+ *
+ *
+ * Description:         Checks if dependencies of an mapping/sequence expression are correctly evaluated.
+ *
+ */
+
+TEST(ExpressionDependencies, MapAndSeq)
+{
+	PC_tree_t map_and_seq = PC_parse_string(R"==(
+sequence: [ type: $x, subtype: $inner_attr, $dim_size] #sequence
+mapping: ##maping
+  - type: array
+  - subtype: $type_size
+  - size: 4
+)==");
+
+	{
+		Expression result_map{PC_get(map_and_seq, ".mapping")};
+
+		std::unordered_set<std::string> expected_dependencies = {"type_size"};
+		std::unordered_set<std::string> deps;
+		result_map.dependencies(deps);
+		for (auto&& elem: deps) {
+			std::cout << elem << std::endl;
+		}
+
+		check_dependencies(expected_dependencies, deps);
+	}
+
+	{
+		Expression result_seq{PC_get(map_and_seq, ".sequence")};
+
+		std::unordered_set<std::string> expected_dependencies = {"inner_attr", "x", "dim_size"};
+		std::unordered_set<std::string> deps;
+		result_seq.dependencies(deps);
+		for (auto&& elem: deps) {
+			std::cout << elem << std::endl;
+		}
+
+		check_dependencies(expected_dependencies, deps);
 	}
 }

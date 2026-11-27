@@ -32,6 +32,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -356,6 +357,11 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 
 	*val_str = ref;
 	return result;
+}
+
+void Expression::Impl::Reference_expression::dependencies(std::unordered_set<std::string>& deps_lst) const
+{
+	deps_lst.insert(m_referenced);
 }
 
 } // namespace PDI

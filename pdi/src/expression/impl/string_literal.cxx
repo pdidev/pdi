@@ -153,4 +153,11 @@ unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const 
 	return result;
 }
 
+void Expression::Impl::String_literal::dependencies(std::unordered_set<std::string>& deps_lst) const
+{
+	for (auto&& subval: m_values) {
+		subval.first.dependencies(deps_lst);
+	}
+}
+
 } // namespace PDI

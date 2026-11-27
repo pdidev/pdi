@@ -489,4 +489,12 @@ Expression::Impl::Operation::Operator Expression::Impl::Operation::parse_operato
 	return op;
 }
 
+void Expression::Impl::Operation::dependencies(std::unordered_set<std::string>& deps_lst) const
+{
+	m_first_operand.dependencies(deps_lst);
+	for (auto&& op: m_operands) {
+		op.second.dependencies(deps_lst);
+	}
+}
+
 } // namespace PDI

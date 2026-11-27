@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -164,6 +165,14 @@ struct PDI_NO_EXPORT Expression::Impl {
 	 * \return string with ID name
 	 */
 	static std::string parse_id(char const ** val_str);
+
+	/** Adds the direct dependencies of an expression to deps_lst
+	 *
+	 * \param  deps_lst list of name of metadata or data needed
+	 *  input: list of data name (can be non null)
+	 *  output: input and list of data name needed to evaluate the expression
+	 */
+	virtual void dependencies(std::unordered_set<std::string>& deps_lst) const = 0;
 };
 
 } // namespace PDI

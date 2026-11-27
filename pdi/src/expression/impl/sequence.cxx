@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "pdi/array_datatype.h"
@@ -161,6 +162,14 @@ size_t Expression::Impl::Sequence::copy_value(Context& ctx, void* buffer, Dataty
 		return tuple_type->buffersize();
 	} else {
 		throw Value_error{"Sequence literal cannot copy a value whose type is neither array nor tuple"};
+	}
+}
+
+void Expression::Impl::Sequence::dependencies(std::unordered_set<std::string>& deps_lst) const
+{
+	// This function depends on the dependencies of Array_datatype that is not implemented yet
+	for (const auto& element: m_value) {
+		element.dependencies(deps_lst);
 	}
 }
 
