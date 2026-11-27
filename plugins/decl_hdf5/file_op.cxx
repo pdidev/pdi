@@ -383,7 +383,8 @@ void File_op::execute(Logger& logger, Context& ctx)
 			if (subfiling_stripe_count != 0) {
 				logger.info("HDF5 subfiling enabled for file {}", filename);
 				H5FD_subfiling_config_t subf_config;
-				if ( 0 > H5Pget_fapl_subfiling(file_lst, &subf_config) ) handle_hdf5_err();;
+				if (0 > H5Pget_fapl_subfiling(file_lst, &subf_config)) handle_hdf5_err();
+
 				subf_config.shared_cfg.stripe_count = subfiling_stripe_count;
 				if (auto stripe_size = subfiling().stripe_size().to_long(ctx)) {
 					if (stripe_size > 0) {
@@ -406,10 +407,10 @@ void File_op::execute(Logger& logger, Context& ctx)
 					switch (*selection) {
 					case Subfiling::Ioc_select::ONE_PER_NODE: {
 						subf_config.shared_cfg.ioc_selection = SELECT_IOC_ONE_PER_NODE;
-						env_var.set_env(std::nullopt); // unset the env var
+						sf_ioc_crit_env.set_env(std::nullopt); // unset the env var
 						logger.debug("HDF5 subfiling ioc_selection set to 'ONE_PER_NODE'.");
 					} break;
-					case Subfiling::Ioc_select::TOTAL:
+					case Subfiling::Ioc_select::TOTAL: {
 						subf_config.shared_cfg.ioc_selection = SELECT_IOC_TOTAL;
 						if (ioc_criteria > tmp_size) {
 							logger.warn(
@@ -418,25 +419,25 @@ void File_op::execute(Logger& logger, Context& ctx)
 								tmp_size
 							);
 						}
-						env_var.set_env(std::to_string(ioc_criteria));
+						sf_ioc_crit_env.set_env(std::to_string(ioc_criteria));
 						logger.debug(
 							"HDF5 subfiling ioc_selection set to 'TOTAL'. "
 							"Number of IOC = {}",
 							ioc_criteria
 						);
-						break;
-					case Subfiling::Ioc_select::EVERY_NTH_RANK:
+					} break;
+					case Subfiling::Ioc_select::EVERY_NTH_RANK: {
 						subf_config.shared_cfg.ioc_selection = SELECT_IOC_EVERY_NTH_RANK;
-						env_var.set_env(std::to_string(ioc_criteria));
+						sf_ioc_crit_env.set_env(std::to_string(ioc_criteria));
 						logger.debug(
 							"HDF5 subfiling ioc_selection set to 'EVERY_NTH_RANK'. "
 							"One IOC per {} MPI ranks",
 							ioc_criteria
 						);
-						break;
+					} break;
 					}
 				}
-				if ( 0 > H5Pset_fapl_subfiling(file_lst, &subf_config) ) handle_hdf5_err();
+				if (0 > H5Pset_fapl_subfiling(file_lst, &subf_config)) handle_hdf5_err();
 			} else {
 				logger.warn("HDF5 subfiling ignored for file {}", filename);
 			}
@@ -492,7 +493,7 @@ void File_op::execute(Logger& logger, Context& ctx)
 		h5_file_raw = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, file_lst);
 	}
 	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose, ("Cannot open `" + filename + "' file").c_str());
-	env_var.reset();
+	sf_ioc_crit_env.reset();
 
 	for (auto&& one_dset_op: dset_writes) {
 		one_dset_op.execute(logger, ctx, h5_file, use_mpio, m_datasets);
