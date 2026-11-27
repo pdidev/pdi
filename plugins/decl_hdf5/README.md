@@ -71,8 +71,8 @@ The possible values for the keys are as follow:
     * `ioc_selection` : The strategy for selecting I/O Concentrator (IOC) processes across MPI ranks. Possible choices:
       * `ONE_PER_NODE` (default): one IOC per node.
       * {`TOTAL`: `$-exp`}: `$-exp` IOC in total.
-      * {`EVERY_N_RANK`: `$-exp`}: one IOC per every `$-exp` MPI ranks.
-    * For the case of `ioc_selection=TOTAL` or `EVERY_N_RANK`, an environment variable is used to specify the selection criteria `H5FD_SUBFILING_IOC_SELECTION_CRITERIA`. This variable will take the value defined by `$-exp` and will override its original value.
+      * {`EVERY_NTH_RANK`: `$-exp`}: one IOC per every `$-exp` MPI ranks.
+    * For the case of `ioc_selection=TOTAL` or `EVERY_NTH_RANK`, an environment variable is used to specify the selection criteria `H5FD_SUBFILING_IOC_SELECTION_CRITERIA`. This variable will take the value defined by `$-exp` and will override its original value.
   * Yaml example
     * full configuration:
       ```yaml
@@ -80,7 +80,7 @@ The possible values for the keys are as follow:
         count: 4              # generate 4 subfiles
         policy: CONTINUE      # Fallback to standard HDF5 if necessary
         stripe_size: 8388608  # 8MiB stripes (8*1024*1024)
-        ioc_selection: {EVERY_N_RANK: 1} # One IOC per MPI rank
+        ioc_selection: {EVERY_NTH_RANK: 1} # One IOC per MPI rank
       ```
     * shorthand configuration:
       ```

@@ -56,14 +56,14 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 				if (PDI::is_map(value)) {
 					if (PDI::len(value) != 1) throw Spectree_error{value, "ioc_selection can only hold one value"};
 					string selection = to_string(PC_get(value, "{0}"));
-					if (selection == "EVERY_N_RANK") {
-						m_sf_ioc_selection = Ioc_select::EVERY_N_RANK;
+					if (selection == "EVERY_NTH_RANK") {
+						m_sf_ioc_selection = Ioc_select::EVERY_NTH_RANK;
 					} else if (selection == "TOTAL") {
 						m_sf_ioc_selection = Ioc_select::TOTAL;
 					} else {
 						throw Spectree_error{
 							value,
-							"Invalid map key in 'subfiling.ioc_selection'. Expecting either 'EVERY_N_RANK' or 'TOTAL'; getting {}",
+							"Invalid map key in 'subfiling.ioc_selection'. Expecting either 'EVERY_NTH_RANK' or 'TOTAL'; getting {}",
 							selection
 						};
 					}

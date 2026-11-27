@@ -464,11 +464,11 @@ void File_op::execute(Logger& logger, Context& ctx)
 							ioc_criteria
 						);
 						break;
-					case Subfiling::Ioc_select::EVERY_N_RANK:
+					case Subfiling::Ioc_select::EVERY_NTH_RANK:
 						subf_config.shared_cfg.ioc_selection = SELECT_IOC_EVERY_NTH_RANK;
 						env_var.set_env(std::to_string(ioc_criteria));
 						logger.debug(
-							"HDF5 subfiling ioc_selection set to 'EVERY_N_RANK'. "
+							"HDF5 subfiling ioc_selection set to 'EVERY_NTH_RANK'. "
 							"One IOC per {} MPI ranks",
 							ioc_criteria
 						);

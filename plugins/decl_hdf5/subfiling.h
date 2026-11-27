@@ -45,9 +45,9 @@ class Subfiling
 public:
 	/// Enumeration of different strategy for selecting I/O Concentrator processes across MPI ranks.
 	enum class Ioc_select {
-		ONE_PER_NODE, ///< number of IOC == number of node
-		EVERY_N_RANK, ///< number of IOC == (total number of MPI ranks / N)
-		TOTAL ///< number of IOC == Total
+		ONE_PER_NODE,   ///< number of IOC == number of node
+		EVERY_NTH_RANK, ///< number of IOC == (total number of MPI ranks / N)
+		TOTAL           ///< number of IOC == Total
 	};
 
 private:
