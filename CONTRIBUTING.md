@@ -196,7 +196,7 @@ A plugin defines a `class <name>_plugin:
 public PDI::Plugin` with a constructor taking `(PDI::Logger&, PDI::Context&, PC_tree_t)` and invokes the `PDI_PLUGIN(<name>)` macro, which emits the
 loader together with the optional `dependencies()` and `pretty_name()` hooks.
 Plugins do their work by registering callbacks on the context from their constructor.
-`pdi/docs/How_to_create_plugin.md` is the reference for writing one.
+[How to create a plugin](pdi/docs/How_to_create_a_plugin.md) is the reference for writing one.
 
 ### Tests
 
@@ -260,17 +260,6 @@ It serves `git merge`, `rebase` and `cherry-pick`.
 Whenever the merged branch did more to `CHANGELOG.md` than add entries, the whole file gets the usual line-based merge, and conflicts as before.
 This only works locally if you have registered the merge driver, not with GitHub merge button.
 
-### Documentation and related files
-
-* Any change to `pdi/include/pdi.h` **must** be mirrored in `mock_pdi/pdi.h`.
-* New CMake options, changes to the YAML configuration and changes to the API must be documented in `pdi/docs/`.
-* Document any new or changed function or class with doxygen.
-
-### Copyright and authorship
-
-Update the copyright header of every file you substantially modify, with your institution and the current end-year, and add yourself to the `AUTHORS`
-file.
-
 ### Changing the dependencies
 
 Adding a dependency, dropping one or changing the required version of one touches far more than the build files, so work through this list:
@@ -286,13 +275,38 @@ If the new minimum compiler versions support a more recent version of C, C++ or 
 update `pdi/docs/Source_installation.md`, the language versions stated in the [coding style](#coding-style) below, and every `c_std_??` and
 `cxx_std_??` in the CMake files.
 
+### Changing the user API
+
+The user API is offered in C, Fortran and Python, and `mock_pdi` lets applications build without PDI.
+A change to any of them goes into all of:
+
+* `pdi/include/pdi.h`, the C API, documented with doxygen;
+* `mock_pdi/pdi.h`, the mock of the C API, which must stay in sync with `pdi/include/pdi.h`;
+* `pdi/src/fortran/`, the Fortran API;
+* `pdi/src/python/`, the Python API;
+* `tests/api_tests/`, which exercises the C API against both PDI and `mock_pdi`;
+* the user documentation in `pdi/docs/`, `Using_PDI.md` first.
+
+This API is the stable one: a breaking change there requires a new major version, say so in its `CHANGELOG.md` entry.
+
+### Creating a plugin
+
+Read the [plugin design guidelines](pdi/docs/Plugin_guidelines.md) before designing its specification tree, and follow
+[How to create a plugin](pdi/docs/How_to_create_a_plugin.md) to write it.
+A new plugin also needs:
+
+* its `BUILD_<NAME>_PLUGIN` option and its `sbuild_add_module()` call in the distribution `CMakeLists.txt`;
+* the timer events: every callback doing the work of the plugin instantiates a `PDI::Timer_event_handler` named after the plugin, so that it emits
+  the `<name>_start_timer` and `<name>_stop_timer` events the [Timer plugin](plugins/timer/README.md) relies on;
+* a `plugins/<name>/README.md` documenting its specification tree, added to `DOXYGEN_INPUT` in `pdi/docs/CMakeLists.txt` and listed in
+  `pdi/docs/Plugins.md`;
+* its dependencies, if any, handled as in [Changing the dependencies](#changing-the-dependencies);
+* its build option in the spack, deb and RPM packages, prepared for the next release.
+
 ## Submitting your work
 
 Branch from `main` and open your pull request against it.
 Reference the issue your work resolves in the commit message, using a `Fix #issue` keyword where the change closes it outright.
-
-The pull request template lists the checks to run through before asking for a review; they are the points covered above, plus the formatting check
-described in [Running the tests](#running-the-tests).
 
 ## Publishing a release
 
@@ -463,8 +477,14 @@ The log levels should be used as follow, the first category that applies should 
 
 ### Documentation
 
-Public functions and classes are documented with doxygen, using the backslash form of the commands (`\param`, `\return`, `\brief`, ...) rather than
-the `@` form.
+The CMake options, the YAML specification tree and the API are documented in `pdi/docs/`.
+The code is documented with doxygen and uses the backslash form of the commands (`\param`, `\return`, `\brief`, ...).
+
+### Copyright and authorship
+
+The copyright header of every file names the institution of each contributor who substantially modified it, and ends with the year of its last
+modification.
+Every contributor is listed in the `AUTHORS` file, with their contribution.
 
 ### Indentation and line length
 
@@ -472,10 +492,5 @@ A `.clang-format` configuration file is provided at the root of PDI distribution
 It limits source lines to 150 columns.
 `./bin/test_indent` checks a working tree against it and `./bin/test_indent --apply` reformats it in place.
 
-Markdown files are not covered by `.clang-format`.
-Their lines *should* be kept to 150 columns unless there is a good reason to exceed it; a line that cannot be folded without changing what is rendered
-is such a reason, as in a code block, a long URL or a table row.
-
-Wrap prose by hand, and *always* break the line at the end of a sentence, so that each sentence starts on a line of its own.
+Markdown files are not covered by `.clang-format`, their lines break at the end of a sentence, so that each sentence starts on a line of its own.
 This keeps diffs limited to the sentences that actually changed.
-Break within a sentence only when it would otherwise exceed the 150 column limit, and do not break a line earlier than that without a reason.
